@@ -65,10 +65,14 @@ var buff_defense_bonus: int = 0
 var buff_health_bonus: int = 0
 var buff_speed_bonus: float = 0.0
 
+# === RUNTIME MULTIPLIERS (mount speed, War Cry, ...) ===
+var speed_multiplier: float = 1.0
+var attack_multiplier: float = 1.0
+
 # === COMPUTED STATS (with equipment) ===
 var attack_damage: int:
 	get:
-		return base_attack_damage + equipment_attack_bonus + buff_attack_bonus
+		return int(round((base_attack_damage + equipment_attack_bonus + buff_attack_bonus) * attack_multiplier))
 
 var defense: int:
 	get:
@@ -76,7 +80,7 @@ var defense: int:
 
 var move_speed: float:
 	get:
-		return base_move_speed + equipment_speed_bonus + buff_speed_bonus
+		return (base_move_speed + equipment_speed_bonus + buff_speed_bonus) * speed_multiplier
 
 
 func _init() -> void:

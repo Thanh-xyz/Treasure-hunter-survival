@@ -16,7 +16,7 @@ enum Mode {
 }
 
 ## === CAMERA SETTINGS (Single Source of Truth) ===
-const DEFAULT_ZOOM := Vector2(2, 2)
+const DEFAULT_ZOOM := Vector2(3, 3)  # portrait 720px wide -> 240 world px
 const POSITION_SMOOTHING_ENABLED := true
 const POSITION_SMOOTHING_SPEED := 10.0
 

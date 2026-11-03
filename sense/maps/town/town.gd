@@ -1,6 +1,15 @@
 extends Node2D
 
 
+func _enter_tree() -> void:
+	GameState.current_zone = "town"
+	call_deferred("_emit_zone")
+
+
+func _emit_zone() -> void:
+	GameEvent.zone_entered.emit("town")
+
+
 func get_spawn_position() -> Vector2:
 	var spawn: Node2D = get_node_or_null("Spawn") as Node2D
 	if spawn != null:

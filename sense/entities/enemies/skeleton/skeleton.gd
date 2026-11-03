@@ -160,6 +160,10 @@ var last_direction: Vector2 = Vector2.DOWN  ## Hướng cuối cùng (dùng cho 
 var player: Node2D = null  ## Reference đến Player node
 var patrol_timer: float = 0.0  ## Bộ đếm thời gian cho IDLE/PATROL
 var hitbox_active: bool = false  ## Theo dõi trạng thái hitbox cho visualization
+## Survival RPG integration: content id used for quests/XP, and target radius
+@export var monster_id: String = "skeleton_grunt"
+var body_radius: float = 14.0
+const XP_REWARD := 20
 
 # =============================================================================
 # LIFECYCLE METHODS
@@ -173,6 +177,8 @@ func _ready() -> void:
 	collision_mask = CollisionLayers.Layer.WORLD
 	# print("[SKELETON] Body - Layer: ", collision_layer, " Mask: ", collision_mask)
 	
+	add_to_group("monster")
+	add_to_group("enemy")
 	# Setup hitbox - Layer 8 (EnemyHitbox), Mask: Layer 5 (PlayerHurtbox)
 	if hitbox:
 		hitbox.collision_layer = CollisionLayers.Layer.ENEMY_HITBOX
@@ -475,12 +481,8 @@ func _on_damage_received(amount: int, _knockback: float, _from_position: Vector2
 	# print("[SKELETON] _on_damage_received! Amount: ", amount)
 	if health_component:
 		# print("[SKELETON] Current HP before: ", health_component.current_health)
-		health_component.take_damage(amount)
-		# print("[SKELETON] Current HP after: ", health_component.current_health)
-		# Flash effect
-		anim.modulate = Color.RED
-		await get_tree().create_timer(0.1).timeout
-		anim.modulate = Color.WHITE
+		var r := Combat.roll(float(amount))
+		apply_hit(r["amount"], _from_position, r["crit"])
 
 
 func _on_health_changed(current: int, maximum: int) -> void:
@@ -490,7 +492,30 @@ func _on_health_changed(current: int, maximum: int) -> void:
 		health_bar.visible = current < maximum
 
 
+## Direct damage entry point used by skills, pets and projectiles
+func apply_hit(amount: int, _from_pos: Vector2, crit: bool = false) -> void:
+	if current_state == State.DEATH or health_component == null:
+		return
+	health_component.take_damage(amount)
+	DamageNumber.spawn(get_tree(), global_position + Vector2(0, -40), ("%d!" % amount) if crit else str(amount), Color(1, 0.85, 0.2) if crit else Color.WHITE, crit)
+	anim.modulate = Color.RED
+	await get_tree().create_timer(0.1).timeout
+	if is_instance_valid(anim):
+		anim.modulate = Color.WHITE
+
+
+func is_dead() -> bool:
+	return current_state == State.DEATH
+
+
 func _on_died() -> void:
+	if current_state == State.DEATH:
+		return
+	remove_from_group("monster")
+	GameState.add_xp(XP_REWARD)
+	DamageNumber.spawn(get_tree(), global_position + Vector2(0, -50), "+%d XP" % XP_REWARD, Color(0.75, 0.55, 1.0))
+	GameState.register_kill(monster_id, false)
+	GameEvent.enemy_killed.emit(monster_id, global_position, false)
 	_change_state(State.DEATH)
 	# Disable collisions
 	collision_layer = 0

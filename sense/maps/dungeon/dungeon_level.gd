@@ -49,7 +49,13 @@ var room_width: int
 var room_height: int
 
 
+func _emit_zone() -> void:
+	GameEvent.zone_entered.emit("dungeon")
+
+
 func _ready() -> void:
+	GameState.current_zone = "dungeon"
+	call_deferred("_emit_zone")
 	# Get global player from Main scene (in "player" group)
 	player = get_tree().get_first_node_in_group("player") as CharacterBody2D
 	if player == null:
@@ -328,17 +334,24 @@ func _spawn_room_enemies(room: DungeonGenerator.Room) -> void:
 	var safe_bounds := Rect2i(4, 4, room_width - 8, room_height - 8)
 	
 	for i in range(count):
-		var enemy := SKELETON_SCENE.instantiate() as Node2D
-		add_child(enemy)
-		
 		# Random position within safe bounds
 		var spawn_x := randi_range(safe_bounds.position.x, safe_bounds.end.x) * TILE_SIZE
 		var spawn_y := randi_range(safe_bounds.position.y, safe_bounds.end.y) * TILE_SIZE
+		var enemy: Node2D
 		
-		# BOSS room: single enemy at center
+		# BOSS room: the Crypt Warden boss at center
 		if room.type == DungeonGenerator.RoomType.BOSS:
-			enemy.global_position = _room_center()
+			enemy = Monster.create("crypt_warden")
+			enemy.position = _room_center()
+			add_child(enemy)
+		elif i == count - 1 and count >= 3:
+			# Deeper rooms mix in a ranged Bone Archer
+			enemy = Monster.create("skeleton_archer", randf() < GameContent.ELITE_CHANCE)
+			enemy.position = Vector2(spawn_x, spawn_y)
+			add_child(enemy)
 		else:
+			enemy = SKELETON_SCENE.instantiate() as Node2D
+			add_child(enemy)
 			enemy.global_position = Vector2(spawn_x, spawn_y)
 		
 		_active_enemies.append(enemy)

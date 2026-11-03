@@ -39,6 +39,7 @@ func _create_all_items() -> void:
 	_create_segments()
 	_create_augments()
 	_create_timed_buffs()
+	_create_survival_items()
 
 
 func _create_weapons() -> void:
@@ -537,6 +538,43 @@ func _create_timed_buffs() -> void:
 		"stackable": true, "max_stack": 5, "defense": 15,
 		"augment_type": ItemData.AugmentType.TIMED_BUFF, "buff_duration": 60.0,
 		"icon_name": "defense_brew"
+	})
+
+
+## Survival RPG resources and progression materials
+func _create_survival_items() -> void:
+	items["wood"] = ItemHelper.create_item({
+		"id": "wood", "name": "Wood",
+		"description": "Sturdy timber. Used to build and upgrade homestead buildings.",
+		"stackable": true, "max_stack": 999, "price": 4,
+		"icon_name": "wood"
+	})
+	items["stone"] = ItemHelper.create_item({
+		"id": "stone", "name": "Stone",
+		"description": "Quarried stone. Used to build and upgrade homestead buildings.",
+		"stackable": true, "max_stack": 999, "price": 4,
+		"icon_name": "iron_ore"
+	})
+	items["pet_treat"] = ItemHelper.create_item({
+		"id": "pet_treat", "name": "Pet Treat",
+		"description": "A tasty snack. Feed it to pets to level them up.",
+		"stackable": true, "max_stack": 999, "price": 15,
+		"rarity": ItemData.ItemRarity.UNCOMMON,
+		"icon_name": "heart"
+	})
+	items["hero_shard"] = ItemHelper.create_item({
+		"id": "hero_shard", "name": "Hero Shard",
+		"description": "Crystallized valor. Upgrades hero stars.",
+		"stackable": true, "max_stack": 999, "price": 60,
+		"rarity": ItemData.ItemRarity.RARE,
+		"icon_name": "diamond"
+	})
+	items["boss_core"] = ItemHelper.create_item({
+		"id": "boss_core", "name": "Boss Core",
+		"description": "The pulsing heart of a defeated boss. Sells for a fortune.",
+		"stackable": true, "max_stack": 99, "price": 400,
+		"rarity": ItemData.ItemRarity.EPIC,
+		"icon_name": "skull"
 	})
 
 

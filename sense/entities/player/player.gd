@@ -180,6 +180,18 @@ var passive_processor: PassiveEffectProcessor
 var skill_component: SkillComponent
 ## SkillExecutor — spawns skill hitboxes/effects in the world
 var skill_executor: SkillExecutor
+## HeroSkillRunner — the active hero's three signature skills
+var hero_skills: HeroSkillRunner
+
+# =============================================================================
+# SURVIVAL RPG: mount / pet / auto-aim
+# =============================================================================
+const AUTO_AIM_RANGE := 70.0
+const SPRITE_BASE_POS := Vector2(-1, 0)
+const MOUNT_RAISE := 9.0
+var mount_sprite: Sprite2D = null
+var pet: PetFollower = null
+var _respawn_invuln: float = 0.0
 
 # =============================================================================
 # LIFECYCLE METHODS
@@ -227,6 +239,7 @@ func _ready() -> void:
 	
 	# === CREATE & WIRE NEW COMPONENTS ===
 	_setup_components()
+	_setup_survival()
 
 
 func _physics_process(delta: float) -> void:
@@ -237,6 +250,8 @@ func _physics_process(delta: float) -> void:
 	
 	# Hồi stamina theo thời gian
 	stats.regen_stamina(delta)
+	if _respawn_invuln > 0.0:
+		_respawn_invuln -= delta
 	
 	# Cập nhật thời gian bất tử (iframe sau khi nhận damage)
 	if invincibility_timer > 0:
@@ -276,8 +291,8 @@ func _state_idle() -> void:
 	velocity = Vector2.ZERO
 	move_and_slide()
 	
-	# Ưu tiên 1: Kiểm tra input tấn công
-	if Input.is_action_just_pressed("character_attack"):
+	# Ưu tiên 1: Kiểm tra input tấn công (giữ nút = đánh liên tục)
+	if _wants_attack():
 		_change_state(State.ATTACK)
 		return
 	
@@ -298,7 +313,7 @@ func _state_move() -> void:
 	var move_dir := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	
 	# Ưu tiên 1: Kiểm tra input tấn công (cancel movement)
-	if Input.is_action_just_pressed("character_attack"):
+	if _wants_attack():
 		velocity = Vector2.ZERO
 		move_and_slide()
 		_change_state(State.ATTACK)
@@ -438,7 +453,11 @@ func _on_hurtbox_damage_received(amount: int, knockback: float, from_position: V
 func _apply_damage(damage: int) -> void:
 	# print("[PLAYER] _apply_damage: ", damage)
 	# Gọi take_damage trong stats (sẽ emit signal health_changed)
+	if _respawn_invuln > 0.0:
+		return
+	var before := stats.current_health
 	stats.take_damage(damage)
+	DamageNumber.spawn(get_tree(), global_position + Vector2(0, -20), str(before - stats.current_health), Color(1, 0.35, 0.3))
 	
 	# Bật thời gian bất tử (iframe) để tránh bị hit liên tục
 	invincibility_timer = invincibility_duration
@@ -481,6 +500,7 @@ func _play_move_animation() -> void:
 
 ## Phát animation tấn công và bật hitbox
 func _play_attack_animation() -> void:
+	_auto_aim()
 	var key := _direction_to_attack_key(last_dir)
 	var anim_name := "attack_" + key
 
@@ -495,7 +515,9 @@ func _play_attack_animation() -> void:
 		return
 
 	# Bật hitbox để gây damage
+	refresh_hitbox_damage()
 	_enable_attack_hitbox()
+	_on_basic_attack()
 	
 	# Tắt loop để animation_finished signal được emit khi xong
 	anim.sprite_frames.set_animation_loop(anim_name, false)
@@ -566,10 +588,14 @@ func _direction_to_attack_key(d: Vector2) -> String:
 
 ## Callback khi stats emit signal died
 func _on_died() -> void:
+	if current_state == State.DEATH:
+		return
 	# Clear all buffs on death
 	if buff_component:
 		buff_component.clear_all_buffs()
 	die()
+	GameState.set_mounted(false)
+	GameEvent.player_died.emit()
 
 
 # =============================================================================
@@ -618,6 +644,15 @@ func reset_player() -> void:
 	_change_state(State.IDLE)
 
 
+## Respawn after death: full HP/stamina and 2s of protection
+func respawn() -> void:
+	reset_player()
+	stats.current_stamina = stats.max_stamina
+	_respawn_invuln = 2.0
+	invincibility_timer = 2.0
+	GameEvent.player_respawned.emit()
+
+
 # =============================================================================
 # INVENTORY FUNCTIONS
 # =============================================================================
@@ -626,7 +661,7 @@ func reset_player() -> void:
 func _setup_inventory() -> void:
 	# Create inventory data
 	inventory = InventoryData.new()
-	inventory.gold = 500  # Starting gold
+	inventory.gold = 0  # Starter gold is granted by give_starter_items()
 	
 	# Connect equipment change signal to update stats
 	inventory.equipment_changed.connect(_on_equipment_changed)
@@ -654,11 +689,15 @@ func _add_inventory_to_hud() -> void:
 	if inventory_panel.has_signal("item_used"):
 		inventory_panel.item_used.connect(_on_item_used)
 	
-	# Add some starter items for testing
+	# Starter items are granted by Main for a brand-new profile
+
+
+## Starter kit for a brand-new profile (called by Main when no save exists)
+func give_starter_items() -> void:
+	inventory.gold = 300
 	_add_starter_items()
 
 
-## Add starter items for testing
 func _add_starter_items() -> void:
 	# Get items from ItemDatabase (which has atlas icons configured)
 	var health_potion := ItemDatabase.get_item("health_potion")
@@ -790,8 +829,7 @@ func restore_stamina_from_pickup(amount: float) -> void:
 
 ## Add XP from pickup
 func add_xp(amount: int) -> void:
-	# TODO: Implement XP/leveling system
-	print("[PLAYER] Gained ", amount, " XP")
+	GameState.add_xp(amount)
 
 
 # =============================================================================
@@ -1004,3 +1042,182 @@ func _draw() -> void:
 		if hitbox_active and attack_hitbox.position == offset:
 			dot_color = Color.YELLOW  # Vàng sáng nếu đang active
 		draw_circle(offset, 3, dot_color)
+
+
+# =============================================================================
+# SURVIVAL RPG INTEGRATION (heroes, mounts, pets, auto-aim, quick actions)
+# =============================================================================
+
+func _setup_survival() -> void:
+	hero_skills = HeroSkillRunner.new()
+	hero_skills.name = "HeroSkillRunner"
+	hero_skills.player = self
+	add_child(hero_skills)
+
+	mount_sprite = Sprite2D.new()
+	mount_sprite.name = "MountSprite"
+	mount_sprite.visible = false
+	mount_sprite.z_index = -1
+	mount_sprite.z_as_relative = true
+	add_child(mount_sprite)
+	move_child(mount_sprite, 0)
+
+	GameState.stats_dirty.connect(refresh_profile_stats)
+	GameState.hero_changed.connect(func(_h: String) -> void: _apply_hero_visual())
+	GameState.mount_changed.connect(func(_m: String, _r: bool) -> void: _update_mount_visual())
+	GameState.pet_changed.connect(func(_p: String) -> void: _spawn_pet.call_deferred())
+	GameState.leveled_up.connect(_on_level_up)
+	refresh_profile_stats()
+	_apply_hero_visual()
+	_update_mount_visual()
+	_spawn_pet.call_deferred()
+
+
+## Recompute base stats from hero/level/pet/mount/buildings
+func refresh_profile_stats() -> void:
+	GameState.apply_to_stats(stats)
+	refresh_hitbox_damage()
+
+
+func refresh_hitbox_damage() -> void:
+	if attack_hitbox != null and stats != null:
+		attack_hitbox.damage = stats.attack_damage
+
+
+func _apply_hero_visual() -> void:
+	var hero: Dictionary = GameContent.HEROES.get(GameState.hero_id, {})
+	anim.self_modulate = hero.get("tint", Color.WHITE)
+
+
+func _on_level_up(new_level: int) -> void:
+	stats.current_health = stats.max_health
+	stats.current_stamina = stats.max_stamina
+	RingFX.spawn(get_tree(), global_position + Vector2(0, 8), 34.0, Color(1, 0.9, 0.4), 0.6)
+	DamageNumber.spawn(get_tree(), global_position + Vector2(0, -28), "LEVEL %d!" % new_level, Color(1, 0.9, 0.3), true)
+	GameEvent.toast.emit("Level up! Lv.%d" % new_level, Color(1, 0.9, 0.3))
+
+
+# --- Mount ------------------------------------------------------------------
+
+func toggle_mount() -> void:
+	if is_dead():
+		return
+	if GameState.active_mount == "":
+		GameEvent.toast.emit("No mount yet — open the Mount menu", Color(0.8, 0.8, 0.8))
+		return
+	GameState.set_mounted(not GameState.mounted)
+
+
+func _update_mount_visual() -> void:
+	if mount_sprite == null:
+		return
+	var on := GameState.mounted and GameState.active_mount != ""
+	mount_sprite.visible = on
+	if on:
+		var mdef: Dictionary = GameContent.MOUNTS[GameState.active_mount]
+		mount_sprite.texture = PixelArt.get_texture(mdef["sprite"], GameState.mount_skin_palette(GameState.active_mount))
+		mount_sprite.position = Vector2(0, 17.0 - mount_sprite.texture.get_height() * 0.5)
+		anim.position = SPRITE_BASE_POS + Vector2(0, -MOUNT_RAISE)
+	else:
+		anim.position = SPRITE_BASE_POS
+
+
+func _mount_allows_combat() -> bool:
+	if not GameState.mounted or GameState.active_mount == "":
+		return true
+	return GameContent.MOUNTS[GameState.active_mount]["category"] != "speed"
+
+
+# --- Pet --------------------------------------------------------------------
+
+func _spawn_pet() -> void:
+	if pet != null and is_instance_valid(pet):
+		pet.queue_free()
+		pet = null
+	if GameState.active_pet == "" or get_parent() == null:
+		return
+	pet = PetFollower.new()
+	pet.name = "Pet"
+	pet.setup(GameState.active_pet, self)
+	get_parent().add_child(pet)
+
+
+# --- Combat helpers ---------------------------------------------------------
+
+func _wants_attack() -> bool:
+	return Input.is_action_just_pressed("character_attack") or Input.is_action_pressed("character_attack")
+
+
+## Face the nearest monster within AUTO_AIM_RANGE before swinging
+func _auto_aim() -> void:
+	var target := Combat.nearest_monster(get_tree(), global_position, AUTO_AIM_RANGE)
+	if target != null:
+		var dir := (target.global_position - global_position).normalized()
+		if dir.length() > 0.01:
+			last_dir = dir
+	if not _mount_allows_combat():
+		GameState.set_mounted(false)
+
+
+## Hero attack style extras on top of the melee swing
+func _on_basic_attack() -> void:
+	var hero: Dictionary = GameContent.HEROES.get(GameState.hero_id, {})
+	match hero.get("attack_style", "melee"):
+		"bolt":
+			var target := Combat.nearest_monster(get_tree(), global_position, 170.0)
+			var dir := last_dir
+			if target != null:
+				dir = (target.global_position + Vector2(0, -6) - global_position).normalized()
+			Projectile.fire(get_tree(), global_position, dir, 260.0, stats.attack_damage * 0.8, "player", "bolt")
+		"nova":
+			Combat.hit_monsters_in_radius(get_tree(), global_position + Vector2(0, 8), 26.0, stats.attack_damage * 0.6)
+			RingFX.spawn(get_tree(), global_position + Vector2(0, 8), 26.0, Color(0.8, 0.6, 1.0), 0.25)
+
+
+func on_hero_skill_cast() -> void:
+	if not _mount_allows_combat():
+		GameState.set_mounted(false)
+
+
+## Use the best healing potion in the bag
+func quick_use_potion() -> bool:
+	if inventory == null or is_dead():
+		return false
+	for potion_id in ["large_health_potion", "health_potion"]:
+		for i in range(inventory.inventory_slots.size()):
+			var slot: Dictionary = inventory.inventory_slots[i]
+			if slot.item != null and slot.item.id == potion_id:
+				var result := inventory.use_item(i)
+				if result.get("success", false):
+					_on_item_used(result)
+					DamageNumber.spawn(get_tree(), global_position + Vector2(0, -24), "+%d" % int(result.get("heal_amount", 0)), Color(0.4, 1, 0.5))
+					return true
+	GameEvent.toast.emit("No potions left", Color(1, 0.6, 0.6))
+	return false
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("toggle_mount"):
+		toggle_mount()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("quick_potion"):
+		quick_use_potion()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("gear_skill"):
+		_use_first_gear_skill()
+		get_viewport().set_input_as_handled()
+
+
+## Mobile "gear" button: fire the first equipment-augment skill that is ready
+func _use_first_gear_skill() -> void:
+	if skill_component == null:
+		return
+	for skill: Dictionary in skill_component.available_skills:
+		if skill_component.try_activate_skill(skill.get("skill_id", "")):
+			return
+	GameEvent.toast.emit("No gear skill ready (socket a skill rune)", Color(0.8, 0.8, 0.8))
+
+
+func _process(_delta: float) -> void:
+	if mount_sprite != null and mount_sprite.visible and absf(last_dir.x) > 0.1:
+		mount_sprite.flip_h = last_dir.x < 0.0

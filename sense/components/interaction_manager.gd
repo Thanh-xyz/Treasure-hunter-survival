@@ -42,6 +42,10 @@ func _process(delta: float) -> void:
 
 func _sort_by_distance(area1, area2) -> bool:
 	print("Comparing distances: ", area1.action_name, " and ", area2.action_name)
+	if player == null or not is_instance_valid(player):
+		player = get_tree().get_first_node_in_group("player")
+	if player == null:
+		return false
 	var area1_to_player = player.global_position.distance_to(area1.global_position_area)
 	var area2_to_player = player.global_position.distance_to(area2.global_position_area)
 	return area1_to_player < area2_to_player

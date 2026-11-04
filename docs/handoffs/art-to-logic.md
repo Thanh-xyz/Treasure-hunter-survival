@@ -130,3 +130,14 @@ Agent B's integrated save-validation and shop-transaction work does not overlap
 this feature. Future logic should not bind authentication semantics to the visual
 username/password fields; they are reference presentation for the authorized
 local build, not a recreated backend.
+
+## Fixed HUD And Hotbar Runtime Contract
+
+The HUD visual pass preserves all existing `MobileHUD`, `ActionButton`, and
+`VirtualJoystick` input behavior. The eight `hotbar_1` through `hotbar_8` actions,
+menu callbacks, player binding, death state, and gameplay data remain unchanged.
+
+`panel_stats.png` now supplies the sliced outer hotbar and slot borders, while
+`joystick_ring.png` supplies the movement ring. These are presentation-only local
+assets; Agent B should continue treating action IDs and inventory/skill ownership
+as gameplay contracts independent of the visual frame.

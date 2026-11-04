@@ -96,9 +96,10 @@ files used for this report.
 
 ## Selected Local UI Kit
 
-Twenty-six source images were copied bit-for-bit into
+Twenty-seven source images were copied bit-for-bit into
 `assets/treasure_hunter/ui/reference/`. Ten authentication/startup resources are
-now consumed by `sense/ui/mobile/startup_gate.gd`; the remaining resources stay
+consumed by `sense/ui/mobile/startup_gate.gd`; `panel_stats.png` and
+`joystick_ring.png` are consumed by the mobile HUD. The remaining resources stay
 selected references for later HUD and settings work.
 
 | Group | Stable targets |
@@ -108,7 +109,7 @@ selected references for later HUD and settings work.
 | Authentication background | `login_background_server.png` |
 | Authentication | `login_panel.png`, `login_tab_active.png`, `login_tab_inactive.png`, `login_line.png` |
 | Buttons | `button_blue.png`, `button_orange.png`, `button_close.png`, `button_back.png`, `button_menu.png` |
-| HUD | `joystick.png`, `icon_chat.png`, `icon_attack.png`, `panel_stats.png`, `panel_level.png` |
+| HUD | `joystick.png`, `joystick_ring.png`, `icon_chat.png`, `icon_attack.png`, `panel_stats.png`, `panel_level.png` |
 | Settings tabs | `icon_settings.png`, `icon_gameplay.png`, `icon_profile.png`, `icon_login.png` |
 | Custom layout | `layout_back.png`, `layout_bag.png`, `layout_mount.png`, `layout_pet.png` |
 
@@ -119,6 +120,11 @@ The original tab filenames did not describe visual state reliably. Runtime visua
 comparison verified that `Login_Tab_0__6356.png` is the yellow active state and
 `Login_Tab_1__6566.png` is the gray inactive state; stable target names and manifest
 source mappings now reflect the observed appearance.
+
+HUD render comparison also separated two misleading joystick sources:
+`Joystick_1__6234.png` is the orange gamepad-style button, while
+`Icon_Joystick__5652.png` is the circular directional ring seen around the live
+movement thumb. The runtime uses only the verified ring for movement presentation.
 
 ## Missing Evidence
 
@@ -131,8 +137,7 @@ source mappings now reflect the observed appearance.
 
 ## Recommended Integration Order
 
-1. Reconstruct the fixed HUD frame and eight-slot hotbar without changing gameplay
-   behavior.
-2. Capture Emberfield at `720x1600` and compare fixed regions against ADB evidence.
-3. Add inventory/settings panels only after the shared UI ownership contract is
+1. Finish the remaining fixed HUD panels, icons, and stat layout without changing
+   gameplay behavior.
+2. Add inventory/settings panels only after the shared UI ownership contract is
    agreed with Agent B.

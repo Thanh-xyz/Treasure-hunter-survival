@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-04
-Current feature: startup and authentication visual reconstruction.
+Current feature: fixed mobile HUD frame and eight-slot hotbar reconstruction.
 
 ## Completed Before This Feature
 
@@ -46,12 +46,22 @@ Current feature: startup and authentication visual reconstruction.
 - Kept LAN controls behind the observed `Xem thêm` affordance so the primary
   authentication state remains faithful to the reference capture.
 
+## Fixed HUD And Hotbar Runtime Feature
+
+- Replaced the drawn hotbar borders with the exact sliced `Panel_Stats` source.
+- Added the contiguous outer hotbar frame and aligned eight existing action slots
+  to the verified live/dead HUD captures without changing their input actions.
+- Replaced the inferred joystick ring drawing with the exact
+  `Icon_Joystick__5652.png` source after render comparison showed that
+  `Joystick_1__6234.png` is a different orange gamepad-style control.
+- Extended the deterministic HUD render to capture both live and dead states.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
-- Verified 89 assets, 89 unique asset IDs, and 89 unique target paths.
+- Verified 90 assets, 90 unique asset IDs, and 90 unique target paths.
 - Verified every non-null source and target path exists.
-- Verified all 33 supplied Treasure Hunter entries use
+- Verified all 34 supplied Treasure Hunter entries use
   `distribution_scope: local_only`.
 - Verified the player scene slices its `768x80` sheets into eight `96x80`
   AtlasTexture regions; manifest frame metadata matches the scene.
@@ -68,6 +78,9 @@ Current feature: startup and authentication visual reconstruction.
   diagnostic baselines, not acceptance thresholds.
 - Godot suites passed with exit code `0`: inventory transactions, legacy systems,
   survival systems, startup render, and mobile-HUD render.
+- The HUD render produced `/tmp/emberfield-mobile-hud.png` and
+  `/tmp/emberfield-mobile-hud-dead.png` at `720x1600` for direct comparison with
+  the verified live and dead ADB captures.
 
 ## Not Yet Implemented
 

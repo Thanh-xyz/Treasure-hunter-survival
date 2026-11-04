@@ -7,6 +7,8 @@ extends Control
 @export var radius: float = 72.0
 @export var dead_zone: float = 0.18
 
+const JOYSTICK_RING := preload("res://assets/treasure_hunter/ui/reference/joystick_ring.png")
+
 var _touch_index: int = -1
 var _center: Vector2 = Vector2.ZERO
 var _knob: Vector2 = Vector2.ZERO
@@ -16,6 +18,7 @@ var enabled: bool = true
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_rest_center = Vector2(size.x * 0.5, size.y * 0.55)
 	_center = _rest_center
 	resized.connect(func() -> void:
@@ -78,14 +81,7 @@ func _set_action(action: String, strength: float) -> void:
 
 func _draw() -> void:
 	var alpha: float = float(GameState.settings.get("joystick_opacity", 0.7))
-	var ring := Color(0.73, 0.86, 0.92, 0.72 * alpha)
-	draw_circle(_center, radius, Color(0.08, 0.10, 0.12, 0.22 * alpha))
-	draw_arc(_center, radius, 0, TAU, 64, ring, 4.0)
-	for angle in [0.0, PI * 0.5, PI, PI * 1.5]:
-		var direction := Vector2.from_angle(angle)
-		var side := direction.orthogonal() * 7.0
-		var tip := _center + direction * (radius + 9.0)
-		var marker := PackedVector2Array([tip + direction * 7.0, tip - direction * 5.0 + side, tip - direction * 5.0 - side])
-		draw_colored_polygon(marker, ring)
+	var ring_rect := Rect2(_center - Vector2(radius, radius), Vector2(radius * 2.0, radius * 2.0))
+	draw_texture_rect(JOYSTICK_RING, ring_rect, false, Color(1, 1, 1, alpha))
 	draw_circle(_center + _knob, radius * 0.34, Color(0.23, 0.22, 0.25, 0.96 * alpha))
 	draw_arc(_center + _knob, radius * 0.34, 0, TAU, 36, Color(0.55, 0.54, 0.58, alpha), 3.0)

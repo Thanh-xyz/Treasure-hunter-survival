@@ -191,6 +191,29 @@ func _test_buildings() -> void:
 	_check(GameState.collect_building(2) > 0, "building collection succeeds after freeing a slot")
 	_check(full_inv.get_item_count("wood") > 0, "successful building collection grants resources")
 
+	# Upgrading a producer must collect at its old rate before spending or leveling.
+	GameState.reset_profile()
+	var upgrade_inv := InventoryData.new()
+	upgrade_inv.gold = 500
+	upgrade_inv.add_item(ItemDatabase.get_item("wood"), 999)
+	upgrade_inv.add_item(ItemDatabase.get_item("stone"), 20)
+	upgrade_inv.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE - 2)
+	_stub_player.inventory = upgrade_inv
+	GameState.plots[0] = {
+		"id": "lumber_mill",
+		"level": 1,
+		"last_collect": Time.get_unix_time_from_system() - 3600.0,
+	}
+	var upgrade_timestamp := float(GameState.plots[0]["last_collect"])
+	_check(not GameState.build_or_upgrade(0, "lumber_mill"), "full inventory rejects producer upgrade")
+	_check(int(GameState.plots[0]["level"]) == 1, "failed producer upgrade preserves level")
+	_check(float(GameState.plots[0]["last_collect"]) == upgrade_timestamp, "failed producer upgrade preserves timer")
+	_check(upgrade_inv.gold == 500 and upgrade_inv.get_item_count("stone") == 20, "failed producer upgrade preserves cost")
+	upgrade_inv.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
+	_check(GameState.build_or_upgrade(0, "lumber_mill"), "producer upgrade succeeds after freeing capacity")
+	_check(int(GameState.plots[0]["level"]) == 2, "successful producer upgrade increases level")
+	_check(upgrade_inv.gold == 100 and upgrade_inv.get_item_count("stone") == 0, "successful producer upgrade charges once")
+
 
 func _test_quests() -> void:
 	GameState.reset_profile()

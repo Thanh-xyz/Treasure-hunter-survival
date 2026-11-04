@@ -8,11 +8,16 @@ The first gameplay feature (`feature/th-logic-inventory-transactions`) changes o
 crafting, quest/building reward logic and tests. It does not change any asset key, gameplay ID,
 animation state, direction, sprite path, scene or Agent A-owned file.
 
-The full headless suite is currently blocked because `sense/entities/player/player.tscn`
-references soldier sprite PNGs that are absent from the logic worktree. Agent A should confirm
-whether those files will be restored from the approved local source assets or whether the
-player scene will move to the planned asset-manifest contract. Agent B will not modify the
-scene or provide substitute art independently.
+After a complete Godot import, the tracked player sprites and item atlas resolve correctly.
+The focused, legacy, and survival suites now pass. Agent B still will not modify player visuals
+or provide substitute art independently.
+
+## 2026-11-04 Building upgrade integrity update
+
+The follow-up gameplay feature changes only `GameState.build_or_upgrade()` and gameplay tests.
+It requires pending producer output to fit before an upgrade can spend resources or change
+level. It introduces no art dependency or shared runtime contract and does not overlap Agent
+A's `feature/th-art-reference-ui-kit` asset files.
 
 ## Ownership boundary
 

@@ -69,3 +69,16 @@ Restore the executable baseline by resolving or formally stubbing the missing pl
 resources in coordination with Agent A. After that, build the first reference-parity slice:
 Mosqui/Snailu/Astromophy field combat, loot and inventory, using approved canonical IDs and
 asset metadata.
+
+## 2026-11-04 — Building upgrade integrity
+
+- Branch: `feature/th-logic-building-upgrade-integrity`, based on `origin/develop` at
+  `efc07ce`.
+- Producer upgrades now require pending output to be collected successfully before cost is
+  spent or level is changed.
+- A full inventory preserves building level, production timestamp, gold, and material cost.
+- After capacity is available, pending output is collected at the old building rate and the
+  upgrade charges exactly once.
+- Godot 4.6 focused transaction tests, legacy phases 1–7, and survival tests passed with exit
+  code 0. The corrupt-save warning remains an intentional recovery test.
+- No asset, ID, scene, save schema, networking contract, or Agent A-owned file changed.

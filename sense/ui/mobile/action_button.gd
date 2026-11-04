@@ -20,12 +20,22 @@ var enabled: bool = true
 var _touch_index: int = -1
 var _pressed: bool = false
 const FONT := preload("res://assets/Font/Pixellari.ttf")
+const SLOT_FRAME := preload("res://assets/treasure_hunter/ui/reference/panel_stats.png")
+
+var _frame_style: StyleBoxTexture
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	custom_minimum_size = Vector2(radius * 2, radius * 2)
 	size = custom_minimum_size
+	_frame_style = StyleBoxTexture.new()
+	_frame_style.texture = SLOT_FRAME
+	_frame_style.texture_margin_left = 6.0
+	_frame_style.texture_margin_top = 6.0
+	_frame_style.texture_margin_right = 6.0
+	_frame_style.texture_margin_bottom = 6.0
 
 
 func _input(event: InputEvent) -> void:
@@ -68,8 +78,7 @@ func _draw() -> void:
 	var fill := base_color.lightened(0.2) if _pressed else base_color
 	var outer := Rect2(Vector2.ZERO, size)
 	draw_rect(outer, Color(fill, 0.94 * alpha))
-	draw_rect(outer, Color(0.04, 0.04, 0.05, alpha), false, 5.0)
-	draw_rect(outer.grow(-5.0), Color(UiTheme.C_TRIM, alpha), false, 3.0)
+	draw_style_box(_frame_style, outer)
 	if icon:
 		var isz := Vector2(radius, radius) * 0.95
 		draw_texture_rect(icon, Rect2(c - isz * 0.5, isz), false, Color(1, 1, 1, alpha * (0.4 if locked else 1.0)))

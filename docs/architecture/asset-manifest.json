@@ -2671,6 +2671,34 @@
       ]
     },
     {
+      "asset_id": "ui.reference.hud.joystick.ring",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Icon_Joystick__5652.png",
+      "target_path": "assets/treasure_hunter/ui/reference/joystick_ring.png",
+      "file_format": "png",
+      "dimensions": [
+        78,
+        78
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/virtual_joystick.gd",
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Circular directional ring observed around the movement thumb in live and dead HUD captures.",
+        "Rendered by VirtualJoystick with nearest-neighbor sampling."
+      ]
+    },
+    {
       "asset_id": "ui.reference.hud.joystick",
       "category": "ui_reference",
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Joystick_1__6234.png",
@@ -2693,7 +2721,7 @@
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "selected",
       "notes": [
-        "Observed in reference state: live HUD.",
+        "Verified as the orange gamepad-style HUD button, not the circular movement ring.",
         "No runtime consumer in Emberfield yet."
       ]
     },
@@ -2872,6 +2900,8 @@
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
+        "sense/ui/mobile/action_button.gd",
+        "sense/ui/mobile/mobile_hud.gd",
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
@@ -2880,10 +2910,10 @@
         "license_status": "not_verified_for_public_redistribution"
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
-      "integration_status": "selected",
+      "integration_status": "integrated",
       "notes": [
-        "Observed in reference state: live HUD.",
-        "No runtime consumer in Emberfield yet."
+        "Observed around the fixed HUD controls and eight-slot hotbar.",
+        "Rendered as a sliced frame around the hotbar and ActionButton controls."
       ]
     },
     {

@@ -16,6 +16,7 @@ const BTN_ICONS := {
 	"bag": "bag", "hero": "helmet_horned", "pet": "heart", "mount": "boot_green",
 	"quest": "scroll", "map": "gem_green", "village": "wood", "system": "gamepad",
 }
+const HUD_PANEL := preload("res://assets/treasure_hunter/ui/reference/panel_stats.png")
 
 var legacy_hud: CanvasLayer = null
 var player: Node = null
@@ -30,6 +31,8 @@ var potion_btn: ActionButton
 var mount_btn: ActionButton
 var interact_btn: ActionButton
 var _hotbar_slots: Array[ActionButton] = []
+var _hotbar_fill: ColorRect
+var _hotbar_frame: NinePatchRect
 
 var _hp_bar: ProgressBar
 var _hp_label: Label
@@ -431,9 +434,28 @@ func _build_controls() -> void:
 	add_child(joystick)
 
 	var bottom_y := get_viewport_rect().size.y - 134.0
-	var centers := [48.0, 137.0, 226.0, 315.0, 404.0, 493.0, 582.0, 671.0]
+	_hotbar_fill = ColorRect.new()
+	_hotbar_fill.color = Color(0.025, 0.025, 0.03, 0.96)
+	_hotbar_fill.position = Vector2(10, bottom_y - 48.0)
+	_hotbar_fill.size = Vector2(700, 108)
+	_hotbar_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_hotbar_fill)
+	_controls.append(_hotbar_fill)
+
+	_hotbar_frame = NinePatchRect.new()
+	_hotbar_frame.texture = HUD_PANEL
+	_hotbar_frame.position = Vector2(4, bottom_y - 54.0)
+	_hotbar_frame.size = Vector2(712, 120)
+	_hotbar_frame.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_hotbar_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
+		_hotbar_frame.set_patch_margin(side, 8)
+	add_child(_hotbar_frame)
+	_controls.append(_hotbar_frame)
+
+	var centers := [68.0, 152.0, 236.0, 320.0, 404.0, 488.0, 572.0, 656.0]
 	for i in range(8):
-		var slot := _action_btn("hotbar_%d" % (i + 1), Vector2(centers[i], bottom_y), 39.0, "")
+		var slot := _action_btn("hotbar_%d" % (i + 1), Vector2(centers[i], bottom_y + 5.0), 40.0, "")
 		slot.locked = true
 		_hotbar_slots.append(slot)
 

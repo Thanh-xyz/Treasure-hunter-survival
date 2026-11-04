@@ -173,11 +173,11 @@ func _add_to_slots(slots: Array[Dictionary], item: ItemData, quantity: int) -> i
 
 ## Remove item from inventory by index
 func remove_item_at(index: int, quantity: int = 1) -> bool:
-	if index < 0 or index >= inventory_slots.size():
+	if index < 0 or index >= inventory_slots.size() or quantity <= 0:
 		return false
 	
 	var slot := inventory_slots[index]
-	if slot.item == null:
+	if slot.item == null or int(slot.quantity) < quantity:
 		return false
 	
 	slot.quantity -= quantity
@@ -191,24 +191,10 @@ func remove_item_at(index: int, quantity: int = 1) -> bool:
 
 ## Remove item by ItemData reference
 func remove_item(item: ItemData, quantity: int = 1) -> bool:
-	if item == null:
+	if item == null or quantity <= 0:
 		return false
-	
-	var remaining := quantity
-	for i in range(inventory_slots.size()):
-		var slot := inventory_slots[i]
-		if slot.item != null and slot.item.id == item.id:
-			var remove_amount := mini(slot.quantity, remaining)
-			slot.quantity -= remove_amount
-			remaining -= remove_amount
-			if slot.quantity <= 0:
-				slot.item = null
-				slot.quantity = 0
-			if remaining <= 0:
-				break
-	
-	inventory_changed.emit()
-	return remaining < quantity
+	var removals: Array[Dictionary] = [{"item": item, "quantity": quantity}]
+	return transact_items(removals, [])
 
 
 ## Get item at index

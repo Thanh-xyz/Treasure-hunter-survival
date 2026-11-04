@@ -118,6 +118,13 @@ func _test_inventory_transactions() -> void:
 	_check(inv.get_item_count("iron_ore") == 1, "successful transaction consumes second ingredient")
 	_check(inv.get_item_count("flame_augment_t1") == 1, "successful transaction adds output")
 
+	var remove_inv := InventoryData.new()
+	remove_inv.add_item(ItemDatabase.get_item("wood"), 5)
+	_check(not remove_inv.remove_item(ItemDatabase.get_item("wood"), 6), "insufficient removal is rejected")
+	_check(remove_inv.get_item_count("wood") == 5, "insufficient removal preserves the full stack")
+	_check(not remove_inv.remove_item_at(0, -1), "negative slot removal is rejected")
+	_check(remove_inv.get_item_count("wood") == 5, "negative slot removal cannot increase a stack")
+
 
 func _test_economy_and_collections() -> void:
 	GameState.reset_profile()

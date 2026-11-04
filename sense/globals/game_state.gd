@@ -316,19 +316,26 @@ func spend(cost: Dictionary) -> bool:
 
 
 ## rewards: {"xp": int, "gold": int, "items": {id: qty}}
-func grant(rewards: Dictionary) -> void:
+## Item rewards are all-or-nothing so progression cannot consume a claim silently.
+func grant(rewards: Dictionary) -> bool:
 	var inv := get_inventory()
-	if rewards.has("xp"):
-		add_xp(int(rewards["xp"]))
-	if inv == null:
-		return
-	if rewards.has("gold"):
-		inv.gold += int(rewards["gold"])
 	var items: Dictionary = rewards.get("items", {})
+	if inv == null and (not items.is_empty() or rewards.has("gold")):
+		return false
+	var additions: Array[Dictionary] = []
 	for item_id in items:
 		var item: ItemData = ItemDatabase.get_item(item_id)
-		if item:
-			inv.add_item(item, int(items[item_id]))
+		var quantity := int(items[item_id])
+		if item == null or quantity <= 0:
+			return false
+		additions.append({"item": item, "quantity": quantity})
+	if inv != null and not additions.is_empty() and not inv.transact_items([], additions):
+		return false
+	if rewards.has("xp"):
+		add_xp(int(rewards["xp"]))
+	if inv != null and rewards.has("gold"):
+		inv.gold += int(rewards["gold"])
+	return true
 
 
 func format_cost(cost: Dictionary) -> String:
@@ -578,14 +585,15 @@ func collect_building(plot_index: int) -> int:
 	var p: Dictionary = plots[plot_index]
 	if p.is_empty():
 		return 0
-	p["last_collect"] = _now()
 	if amount <= 0:
 		return 0
 	var bdef: Dictionary = GameContent.BUILDINGS[p["id"]]
 	var items := {bdef["produces"]: amount}
 	if bdef.has("bonus_item"):
 		items[bdef["bonus_item"]] = maxi(1, amount / 10)
-	grant({"items": items})
+	if not grant({"items": items}):
+		return 0
+	p["last_collect"] = _now()
 	buildings_changed.emit()
 	return amount
 

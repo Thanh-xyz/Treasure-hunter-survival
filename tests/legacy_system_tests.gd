@@ -1003,7 +1003,7 @@ func _test_phase7() -> void:
 	assert(cp.selected_recipe.can_craft(craft_inv, 1), "Can craft T1 flame augment")
 
 	# Execute craft (calls GameEvent.item_crafted.emit internally)
-	cp._execute_craft()
+	assert(cp._execute_craft(), "Craft succeeds when ingredients and output fit")
 	assert(ge_craft_ids.size() == 1, "GameEvent.item_crafted emitted once")
 	assert(ge_craft_ids[0] == "flame_augment", "item_crafted recipe_id = flame_augment")
 	assert(ge_craft_tiers[0] == 1, "item_crafted tier = 1")
@@ -1014,6 +1014,18 @@ func _test_phase7() -> void:
 
 	# Result item added
 	assert(craft_inv.has_item("flame_augment_t1", 1), "flame_augment_t1 in inventory")
+
+	# A full inventory with surplus ingredients must reject the craft atomically.
+	var blocked_inv := InventoryData.new()
+	blocked_inv.add_item(fire_shard, 4)
+	blocked_inv.add_item(iron_ore, 3)
+	blocked_inv.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE - 2)
+	cp.player_inventory = blocked_inv
+	assert(not cp._execute_craft(), "Craft fails when output cannot fit")
+	assert(blocked_inv.get_item_count("fire_shard") == 4, "Failed craft preserves fire shards")
+	assert(blocked_inv.get_item_count("iron_ore") == 3, "Failed craft preserves iron ore")
+	assert(blocked_inv.get_item_count("flame_augment_t1") == 0, "Failed craft does not add output")
+	assert(ge_craft_ids.size() == 1, "Failed craft emits no crafted event")
 
 	cp.queue_free()
 	GameEvent.item_crafted.disconnect(_h_item_crafted)

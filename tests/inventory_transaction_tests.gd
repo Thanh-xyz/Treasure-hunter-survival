@@ -17,6 +17,7 @@ func _ready() -> void:
 	add_child(_player)
 	_test_inventory_transaction()
 	_test_economy_transaction()
+	_test_inventory_removal_invariants()
 	_test_crafting_transaction()
 	_test_quest_claim_transaction()
 	_test_building_collection_transaction()
@@ -88,6 +89,34 @@ func _test_economy_transaction() -> void:
 	_check(_player.inventory.gold == 50, "valid mixed cost charged incorrect gold")
 	_check(_player.inventory.get_item_count("wood") == 6, "valid mixed cost charged incorrect item quantity")
 	_check(int(inventory_signals["value"]) == 1 and int(gold_signals["value"]) == 1, "mixed cost did not emit one final-state signal per domain")
+
+
+func _test_inventory_removal_invariants() -> void:
+	var inventory := InventoryData.new()
+	var wood := ItemDatabase.get_item("wood")
+	inventory.add_item(wood, 5)
+	var signals := {"value": 0}
+	inventory.inventory_changed.connect(func() -> void: signals["value"] += 1)
+	signals["value"] = 0
+
+	_check(not inventory.remove_item(wood, 6), "remove_item accepted an insufficient total quantity")
+	_check(inventory.get_item_count("wood") == 5, "failed remove_item partially consumed a stack")
+	_check(not inventory.remove_item(wood, 0), "remove_item accepted zero quantity")
+	_check(not inventory.remove_item(wood, -2), "remove_item accepted negative quantity")
+	_check(int(signals["value"]) == 0, "invalid remove_item emitted inventory changes")
+
+	_check(not inventory.remove_item_at(0, 6), "remove_item_at accepted an insufficient stack")
+	_check(not inventory.remove_item_at(0, 0), "remove_item_at accepted zero quantity")
+	_check(not inventory.remove_item_at(0, -2), "remove_item_at accepted negative quantity")
+	_check(inventory.get_item_count("wood") == 5, "invalid remove_item_at changed stack quantity")
+	_check(int(signals["value"]) == 0, "invalid remove_item_at emitted inventory changes")
+
+	_check(inventory.remove_item(wood, 3), "valid remove_item failed")
+	_check(inventory.get_item_count("wood") == 2, "valid remove_item removed the wrong quantity")
+	_check(int(signals["value"]) == 1, "valid remove_item did not emit exactly one change")
+	_check(inventory.remove_item_at(0, 2), "valid remove_item_at failed")
+	_check(inventory.get_item_count("wood") == 0, "valid remove_item_at did not clear the stack")
+	_check(int(signals["value"]) == 2, "valid remove_item_at did not emit exactly one change")
 
 
 func _test_crafting_transaction() -> void:

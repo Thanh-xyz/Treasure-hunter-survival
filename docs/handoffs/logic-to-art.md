@@ -25,6 +25,12 @@ The economy follow-up extends the existing inventory transaction boundary to inc
 migrates `GameState.spend()`/`grant()`. It changes no presentation, asset, scene, gameplay ID,
 animation, save, or networking contract and remains disjoint from Agent A's UI kit work.
 
+## 2026-11-04 Inventory removal update
+
+Inventory removal now enforces positive, fully available quantities before mutation. The
+feature changes only gameplay code/tests and has no overlap with Agent A PR #8 or its UI asset
+manifest changes.
+
 ## Ownership boundary
 
 Agent A owns final art, sprites, animation metadata, maps/tilesets, UI visuals, the asset

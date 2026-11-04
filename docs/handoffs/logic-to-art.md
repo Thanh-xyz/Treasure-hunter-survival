@@ -31,6 +31,15 @@ Inventory removal now enforces positive, fully available quantities before mutat
 feature changes only gameplay code/tests and has no overlap with Agent A PR #8 or its UI asset
 manifest changes.
 
+## 2026-11-04 Save validation update
+
+Save/load now validates versioned profile, quest, inventory, equipment and augment payloads
+before mutating runtime state or rotating the last known-good backup. The feature changes
+`sense/globals/save_service.gd`, gameplay tests, and Agent B-owned reports only. It introduces
+no asset key, gameplay ID, scene, animation, direction, UI or networking contract. Agent A PR
+#8 is already integrated into `develop`; its additive reference UI files remain disjoint from
+this feature.
+
 ## Ownership boundary
 
 Agent A owns final art, sprites, animation metadata, maps/tilesets, UI visuals, the asset

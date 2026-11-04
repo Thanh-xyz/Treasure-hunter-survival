@@ -121,3 +121,17 @@ asset metadata.
   with Godot `4.6.stable.official.89cea1439`; legacy phases 1–7 and the survival runner passed.
 - Expected warnings cover intentionally corrupt/future/invalid saves and backup fallback. No
   asset ID, scene, presentation, networking or Agent A-owned file changed.
+
+## 2026-11-04 — Authoritative shop transactions
+
+- Branch: `feature/th-logic-shop-transactions`, based on `origin/develop` at `860d910`.
+- Shop purchases now resolve price and display name from the authoritative `ItemDatabase`
+  record instead of trusting the UI payload. Unknown items and records without a positive
+  catalog price are rejected.
+- Item capacity and gold payment commit through one `InventoryData.transact()` call. A full
+  inventory or insufficient gold leaves both domains unchanged, and signals observe only the
+  final combined state.
+- Focused tests cover a negative spoofed price, full inventory, insufficient gold, unknown
+  item, non-sale item, exact charge and final-state signal visibility.
+- `git diff --check`, focused inventory tests, legacy phases 1–7 and survival tests passed with
+  Godot 4.6 and exit code 0. No asset, UI scene, gameplay ID or networking contract changed.

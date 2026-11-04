@@ -96,13 +96,14 @@ files used for this report.
 
 ## Selected Local UI Kit
 
-Twenty-four source sprites were copied bit-for-bit into
+Twenty-five source sprites were copied bit-for-bit into
 `assets/treasure_hunter/ui/reference/`. They are selected reference assets, not yet
 runtime-integrated resources.
 
 | Group | Stable targets |
 | --- | --- |
 | Branding | `logo_title.png`, `notice_age_18.png` |
+| Authentication background | `login_background_server.png` |
 | Authentication | `login_panel.png`, `login_tab_active.png`, `login_tab_inactive.png`, `login_line.png` |
 | Buttons | `button_blue.png`, `button_orange.png`, `button_close.png`, `button_back.png`, `button_menu.png` |
 | HUD | `joystick.png`, `icon_chat.png`, `icon_attack.png`, `panel_stats.png`, `panel_level.png` |
@@ -114,7 +115,7 @@ Every selected asset has a `local_only` provenance entry in
 
 ## Missing Evidence
 
-- Exact startup/login background source has not been uniquely matched.
+- Exact Halloween startup/loading background source has not been uniquely matched.
 - Font asset and exact font metrics are not yet linked to the observed labels.
 - Sliced-border values and Unity pixels-per-unit settings require metadata or
   controlled reconstruction.

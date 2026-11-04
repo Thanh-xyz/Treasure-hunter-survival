@@ -25,8 +25,10 @@ Current feature: workflow and art-governance foundation.
 - Captured and classified 14 authorized runtime states at `720x1600`.
 - Documented the observed navigation graph, dynamic exclusion regions, and visual
   system in `docs/reports/reference-screen-inventory.md`.
-- Curated 24 exact exported UI sprites into
+- Curated 25 exact exported UI sprites into
   `assets/treasure_hunter/ui/reference/` with stable names.
+- Matched the exact `1024x1024` castle/village background used by the observed
+  login and registration states.
 - Added manifest provenance and evidence metadata for all selected UI sprites.
 - Kept the feature additive: no gameplay, scene, script, or test file changed.
 

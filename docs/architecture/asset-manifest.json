@@ -2335,6 +2335,34 @@
       ]
     },
     {
+      "asset_id": "ui.reference.login.background.server",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/BannerServer_0__6399.png",
+      "target_path": "assets/treasure_hunter/ui/reference/login_background_server.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "transparency": "opaque",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Exact castle and village background observed behind login and registration panels.",
+        "Reference runtime scales and crops the square source to the portrait viewport.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
       "asset_id": "ui.reference.notice.age_18",
       "category": "ui_reference",
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Logo18__5461.png",

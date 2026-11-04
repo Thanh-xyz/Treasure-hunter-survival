@@ -20,6 +20,20 @@ Current feature: workflow and art-governance foundation.
 - Documented the Agent A scout findings and art-to-logic contract.
 - Created external coordination records for Agent A and shared decisions.
 
+## Reference UI Kit Feature
+
+- Captured and classified 14 authorized runtime states at `720x1600`.
+- Documented the observed navigation graph, dynamic exclusion regions, and visual
+  system in `docs/reports/reference-screen-inventory.md`.
+- Curated 26 exact exported UI images into
+  `assets/treasure_hunter/ui/reference/` with stable names.
+- Matched the exact `1024x1024` castle/village background used by the observed
+  login and registration states.
+- Matched the exact `683x1024` Halloween illustration used by the observed startup
+  loading states.
+- Added manifest provenance and evidence metadata for all selected UI sprites.
+- Kept the feature additive: no gameplay, scene, script, or test file changed.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
@@ -37,7 +51,6 @@ Current feature: workflow and art-governance foundation.
 ## Not Yet Implemented
 
 - Deterministic Godot visual baseline.
-- Full screen/state inventory document.
 - Runtime asset registry.
 - Character assembly and directional Treasure Hunter animation.
 - Complete monster, pet, mount, item, equipment, UI, VFX, and audio migration.

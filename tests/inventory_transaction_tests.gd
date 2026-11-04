@@ -1,0 +1,112 @@
+extends Node
+
+var _failures: Array[String] = []
+var _player: StubPlayer
+
+
+class StubPlayer:
+	extends Node
+	var inventory := InventoryData.new()
+	func get_inventory() -> InventoryData:
+		return inventory
+
+
+func _ready() -> void:
+	_player = StubPlayer.new()
+	_player.add_to_group("player")
+	add_child(_player)
+	_test_inventory_transaction()
+	_test_crafting_transaction()
+	_test_quest_claim_transaction()
+	_test_building_collection_transaction()
+	if _failures.is_empty():
+		print("[INVENTORY TRANSACTION TEST] ALL PASSED")
+		get_tree().quit(0)
+		return
+	for failure: String in _failures:
+		push_error("[INVENTORY TRANSACTION TEST] " + failure)
+	get_tree().quit(1)
+
+
+func _check(condition: bool, message: String) -> void:
+	if not condition:
+		_failures.append(message)
+
+
+func _full_inventory_with_craft_materials() -> InventoryData:
+	var inventory := InventoryData.new()
+	inventory.add_item(ItemDatabase.get_item("fire_shard"), 4)
+	inventory.add_item(ItemDatabase.get_item("iron_ore"), 3)
+	inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE - 2)
+	return inventory
+
+
+func _test_inventory_transaction() -> void:
+	var inventory := _full_inventory_with_craft_materials()
+	var signal_count := {"value": 0}
+	inventory.inventory_changed.connect(func() -> void: signal_count["value"] += 1)
+	var removals: Array[Dictionary] = [
+		{"item": ItemDatabase.get_item("fire_shard"), "quantity": 3},
+		{"item": ItemDatabase.get_item("iron_ore"), "quantity": 2},
+	]
+	var additions: Array[Dictionary] = [
+		{"item": ItemDatabase.get_item_copy("flame_augment_t1"), "quantity": 1},
+	]
+	_check(not inventory.transact_items(removals, additions), "full inventory accepted a transaction")
+	_check(int(signal_count["value"]) == 0, "failed transaction emitted an inventory change")
+	_check(inventory.get_item_count("fire_shard") == 4, "failed transaction consumed fire shards")
+	_check(inventory.get_item_count("iron_ore") == 3, "failed transaction consumed iron ore")
+	inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
+	signal_count["value"] = 0
+	_check(inventory.transact_items(removals, additions), "transaction failed after freeing a slot")
+	_check(int(signal_count["value"]) == 1, "successful transaction did not emit exactly one change")
+	_check(inventory.get_item_count("flame_augment_t1") == 1, "successful transaction omitted output")
+
+
+func _test_crafting_transaction() -> void:
+	var inventory := _full_inventory_with_craft_materials()
+	var panel := CraftingPanel.new()
+	panel.player_inventory = inventory
+	panel.selected_recipe = RecipeDatabase.get_recipe("flame_augment")
+	panel.selected_tier = 1
+	_check(not panel._execute_craft(), "craft succeeded without output capacity")
+	_check(inventory.get_item_count("fire_shard") == 4, "failed craft consumed fire shards")
+	_check(inventory.get_item_count("iron_ore") == 3, "failed craft consumed iron ore")
+	inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
+	_check(panel._execute_craft(), "craft failed after freeing a slot")
+	_check(inventory.get_item_count("flame_augment_t1") == 1, "craft did not add its output")
+	panel.free()
+
+
+func _test_quest_claim_transaction() -> void:
+	GameState.reset_profile()
+	QuestService.reset()
+	_player.inventory = InventoryData.new()
+	_player.inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	QuestService.main_index = 1
+	QuestService.main_progress = int(GameContent.MAIN_QUESTS[1]["obj"]["count"])
+	QuestService.main_ready = true
+	var xp_before := GameState.xp
+	_check(not QuestService.claim("q02"), "quest advanced without reward capacity")
+	_check(QuestService.main_index == 1 and QuestService.main_ready, "failed quest claim changed state")
+	_check(GameState.xp == xp_before, "failed quest claim granted partial XP")
+	_player.inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
+	_check(QuestService.claim("q02"), "quest failed after freeing reward capacity")
+	_check(_player.inventory.get_item_count("health_potion") == 3, "quest did not grant full item reward")
+
+
+func _test_building_collection_transaction() -> void:
+	GameState.reset_profile()
+	_player.inventory = InventoryData.new()
+	_player.inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	GameState.plots[0] = {
+		"id": "lumber_mill",
+		"level": 1,
+		"last_collect": Time.get_unix_time_from_system() - 3600.0,
+	}
+	var timestamp := float(GameState.plots[0]["last_collect"])
+	_check(GameState.collect_building(0) == 0, "building collection succeeded without capacity")
+	_check(float(GameState.plots[0]["last_collect"]) == timestamp, "failed collection reset production time")
+	_player.inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
+	_check(GameState.collect_building(0) > 0, "building collection failed after freeing capacity")
+	_check(_player.inventory.get_item_count("wood") > 0, "building collection omitted resources")

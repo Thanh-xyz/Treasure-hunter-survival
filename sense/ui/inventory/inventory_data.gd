@@ -85,6 +85,81 @@ func add_item(item: ItemData, quantity: int = 1) -> int:
 	return remaining
 
 
+## Apply item removals and additions as one inventory mutation.
+## Each entry is {"item": ItemData, "quantity": int}. Nothing changes on failure.
+func transact_items(removals: Array[Dictionary], additions: Array[Dictionary]) -> bool:
+	var simulated := _copy_slots(inventory_slots)
+	for entry: Dictionary in removals:
+		var item := entry.get("item") as ItemData
+		var quantity := int(entry.get("quantity", 0))
+		if item == null or quantity <= 0 or not _remove_from_slots(simulated, item.id, quantity):
+			return false
+	for entry: Dictionary in additions:
+		var item := entry.get("item") as ItemData
+		var quantity := int(entry.get("quantity", 0))
+		if item == null or quantity <= 0 or _add_to_slots(simulated, item, quantity) > 0:
+			return false
+	inventory_slots = simulated
+	inventory_changed.emit()
+	return true
+
+
+func _copy_slots(source: Array[Dictionary]) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for slot: Dictionary in source:
+		result.append({"item": slot.get("item"), "quantity": int(slot.get("quantity", 0))})
+	return result
+
+
+func _remove_from_slots(slots: Array[Dictionary], item_id: String, quantity: int) -> bool:
+	var available := 0
+	for slot: Dictionary in slots:
+		var slot_item := slot.get("item") as ItemData
+		if slot_item != null and slot_item.id == item_id:
+			available += int(slot.get("quantity", 0))
+	if available < quantity:
+		return false
+	var remaining := quantity
+	for slot: Dictionary in slots:
+		var slot_item := slot.get("item") as ItemData
+		if slot_item == null or slot_item.id != item_id:
+			continue
+		var remove_amount := mini(int(slot.get("quantity", 0)), remaining)
+		slot.quantity = int(slot.get("quantity", 0)) - remove_amount
+		remaining -= remove_amount
+		if int(slot.quantity) <= 0:
+			slot.item = null
+			slot.quantity = 0
+		if remaining <= 0:
+			break
+	return true
+
+
+func _add_to_slots(slots: Array[Dictionary], item: ItemData, quantity: int) -> int:
+	var remaining := quantity
+	if item.stackable:
+		for slot: Dictionary in slots:
+			var slot_item := slot.get("item") as ItemData
+			if slot_item == null or slot_item.id != item.id:
+				continue
+			var can_add := mini(item.max_stack - int(slot.get("quantity", 0)), remaining)
+			if can_add > 0:
+				slot.quantity = int(slot.get("quantity", 0)) + can_add
+				remaining -= can_add
+			if remaining <= 0:
+				return 0
+	for slot: Dictionary in slots:
+		if slot.get("item") != null:
+			continue
+		var add_amount := mini(item.max_stack if item.stackable else 1, remaining)
+		slot.item = item
+		slot.quantity = add_amount
+		remaining -= add_amount
+		if remaining <= 0:
+			break
+	return remaining
+
+
 ## Remove item from inventory by index
 func remove_item_at(index: int, quantity: int = 1) -> bool:
 	if index < 0 or index >= inventory_slots.size():

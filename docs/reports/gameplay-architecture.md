@@ -1,0 +1,150 @@
+# Gameplay Architecture Proposal
+
+Status: approved as the incremental direction on 2026-11-04. The first implementation slice
+adds atomic inventory transactions behind the existing APIs; broader service extraction is
+still deferred until reference parity and Agent A contracts are available.
+
+## Goals
+
+- Preserve the current Godot 4.6 project, scenes and public gameplay behavior.
+- Make local single-player the authoritative reference implementation.
+- Allow the same commands and rules to run under a host-authoritative LAN session later.
+- Keep presentation, transport and persistence outside deterministic gameplay rules.
+- Introduce changes incrementally behind the existing APIs instead of replacing the vertical
+  slice.
+
+## Proposed boundaries
+
+```text
+Presentation / Godot scenes
+  player.gd, Monster, HUD, menus, field scenes
+                 |
+                 v
+Application services and commands
+  attack, use skill, equip, craft, gather, claim quest, respawn
+                 |
+                 v
+Pure domain rules and typed snapshots
+  attributes, damage, cooldowns, inventory, recipes, progression, AI decisions
+          |                         |
+          v                         v
+Persistence adapter           Authority adapter
+local versioned save          offline / LAN host
+                                    |
+                                    v
+                              ENet transport adapter
+```
+
+Offline mode should execute commands locally through the authority interface. LAN clients
+should submit the same command DTOs to the host; the host validates and executes them, then
+replicates events/snapshots. No rule should depend on ENet RPC annotations.
+
+## Domain model proposal
+
+Use typed Resources/RefCounted value objects where Godot supports them, with dictionaries only
+at serialization and imported-reference boundaries.
+
+| Domain | Proposed responsibility |
+| --- | --- |
+| `CharacterDefinition` | Stable character ID, base attributes, growth, skills and asset key. |
+| `CharacterState` | Current HP/mana-or-stamina, level, XP, state and cooldowns. |
+| `AttributeSet` | Base, equipment, buff and derived values with one aggregation path. |
+| `CombatResolver` | Validated attack request -> deterministic damage/status events using injected RNG. |
+| `MonsterDefinition` | Stable monster ID, stats, AI profile, drops and asset key. |
+| `MonsterBrain` | Pure/isolated state transitions and target/attack decisions. |
+| `ItemDefinition` | Immutable item identity, category, stack/equipment rules and static modifiers. |
+| `ItemInstance` | Unique equipment state: enhancement, augments and durability if confirmed. |
+| `InventoryState` | Slots, stacks, equipment slots and atomic transactions. |
+| `RecipeDefinition` | Ingredients, requirements and outputs. |
+| `CraftingService` | Validate and commit one inventory transaction. |
+| `ProgressionService` | XP curve, unlocks, quest progress and rewards. |
+| `WorldState` | Resource nodes, bosses, chests, plots and respawn timestamps. |
+| `GameSnapshot` | Versioned aggregate for one player plus local world state. |
+
+## Contracts and events
+
+Gameplay should publish small domain events rather than presentation-specific callbacks:
+
+- `character_damaged`, `character_healed`, `character_died`, `character_respawned`
+- `attack_started`, `attack_resolved`, `critical_hit`, `status_applied`, `status_expired`
+- `monster_spawned`, `monster_state_changed`, `monster_died`
+- `item_added`, `item_removed`, `equipment_changed`, `item_enhanced`
+- `craft_succeeded`, `craft_failed`
+- `xp_gained`, `level_changed`, `quest_progressed`, `quest_completed`
+- `world_object_changed`, `zone_changed`
+
+Existing `GameEvent` signals remain adapters during migration. Event payloads need IDs,
+quantities and source/target identifiers sufficient for persistence, UI and replication.
+
+## Determinism and authority
+
+- Replace direct `randf`/`randf_range` use in domain calculations with an injected seeded RNG.
+- Centralize defense, critical, variance, resistance and status calculations in one resolver.
+- Use monotonic command IDs and idempotent inventory/reward transactions.
+- Host validates actor ownership, zone, distance, cooldown, resource cost and target state.
+- Client visuals may predict wind-up/movement, but HP, loot, crafting, equipment and quest
+  rewards are committed by the authority.
+- PvP should be a later ruleset using the same resolver with explicit friendly-fire, team,
+  respawn and scoring policies.
+
+## Content and evidence pipeline
+
+Keep source evidence outside runtime content definitions:
+
+```text
+assets-ths extracted data
+        |
+        v
+read-only analysis/import tool
+        |
+        v
+normalized review artifact + evidence status
+        |
+        v
+approved Godot content definitions
+```
+
+Every migrated record should carry an evidence classification:
+
+- `confirmed`: observed directly in config or runtime capture.
+- `inferred`: strongly supported by names, scene data or repeated behavior.
+- `provisional`: clean-room value used to keep the local game playable.
+
+No static identifier alone should be treated as a formula or cap.
+
+## Persistence proposal
+
+Move from save version 1 to a validated schema only after characterization tests exist.
+
+- Save `schema_version`, `content_version`, player snapshot, inventory/equipment instances,
+  quest state and local world state.
+- Validate types, bounds, IDs and quantities before applying data.
+- Preserve the last known-good backup and verify the newly written JSON before rotating it.
+- Add explicit migrations per version and fixtures for corrupt, old and future-version saves.
+- Keep LAN client simulation out of the local save; commit only host-approved earned deltas.
+
+## Compatibility approach
+
+1. Add characterization tests around current public methods and signals.
+2. Introduce domain services behind adapters used by existing nodes.
+3. Move one rule at a time, preserving scene APIs and save compatibility.
+4. Remove duplicate rule paths only after equivalent tests pass.
+5. Change shared IDs or visual contracts only through an agreed handoff with Agent A.
+
+## Implemented first slice
+
+`InventoryData.transact_items()` now simulates removals and additions before committing one
+slot mutation. Crafting, quest rewards and homestead collection use this boundary so a full
+inventory cannot consume ingredients, advance a claim or reset stored production. This is an
+incremental adapter-compatible step toward `InventoryState`; it does not change item IDs,
+equipment contracts, assets, save schema or network transport.
+
+## Key risks
+
+- `player.gd` and `LanSession` are large cross-layer files, so broad refactors would create
+  high regression and merge-conflict risk.
+- Current content IDs mix legacy placeholders and reference-facing names.
+- The focused gameplay transaction suite runs with a temporary Godot 4.6 binary. The complete
+  legacy/survival suite is still blocked by tracked scene references to missing player sprites.
+- Reference server rules are absent; online parity cannot be claimed from XAPK evidence.
+- Source-derived art needs a distribution-rights decision before any public release.

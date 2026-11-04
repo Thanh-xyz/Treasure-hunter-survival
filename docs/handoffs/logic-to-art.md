@@ -40,6 +40,13 @@ no asset key, gameplay ID, scene, animation, direction, UI or networking contrac
 #8 is already integrated into `develop`; its additive reference UI files remain disjoint from
 this feature.
 
+## 2026-11-04 Shop transaction update
+
+Shop purchases now use authoritative item prices and one atomic inventory/gold transaction.
+The feature is limited to `sense/components/shop_component.gd`, gameplay tests and Agent B
+reports. It does not modify shop visuals, UI scenes, assets, item IDs, animation metadata or
+network contracts, and it does not overlap Agent A's active startup/auth visual files.
+
 ## Ownership boundary
 
 Agent A owns final art, sprites, animation metadata, maps/tilesets, UI visuals, the asset

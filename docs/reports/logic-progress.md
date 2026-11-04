@@ -82,3 +82,15 @@ asset metadata.
 - Godot 4.6 focused transaction tests, legacy phases 1–7, and survival tests passed with exit
   code 0. The corrupt-save warning remains an intentional recovery test.
 - No asset, ID, scene, save schema, networking contract, or Agent A-owned file changed.
+
+## 2026-11-04 — Atomic economy transactions
+
+- Branch: `feature/th-logic-atomic-economy`, based on `origin/develop` at `b7e907b`.
+- `InventoryData.transact()` now commits item slots and gold as one validated mutation while
+  preserving `transact_items()` as a compatible wrapper.
+- `GameState.spend()` rejects unknown item IDs and rolls back the entire mixed gold/item cost
+  when any requirement is invalid or insufficient.
+- `GameState.grant()` now commits gold and item rewards together before applying XP.
+- Focused tests verify rollback emits no signals and a successful mixed transaction emits one
+  final-state signal for gold and inventory.
+- Focused, legacy phases 1–7, and survival suites passed with Godot 4.6 and exit code 0.

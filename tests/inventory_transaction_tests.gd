@@ -16,6 +16,7 @@ func _ready() -> void:
 	_player.add_to_group("player")
 	add_child(_player)
 	_test_inventory_transaction()
+	_test_economy_transaction()
 	_test_crafting_transaction()
 	_test_quest_claim_transaction()
 	_test_building_collection_transaction()
@@ -62,6 +63,31 @@ func _test_inventory_transaction() -> void:
 	_check(inventory.transact_items(removals, additions), "transaction failed after freeing a slot")
 	_check(int(signal_count["value"]) == 1, "successful transaction did not emit exactly one change")
 	_check(inventory.get_item_count("flame_augment_t1") == 1, "successful transaction omitted output")
+
+
+func _test_economy_transaction() -> void:
+	_player.inventory = InventoryData.new()
+	_player.inventory.gold = 100
+	_player.inventory.add_item(ItemDatabase.get_item("wood"), 10)
+	var inventory_signals := {"value": 0}
+	var gold_signals := {"value": 0}
+	_player.inventory.inventory_changed.connect(func() -> void: inventory_signals["value"] += 1)
+	_player.inventory.gold_changed.connect(func(_amount: int) -> void: gold_signals["value"] += 1)
+	inventory_signals["value"] = 0
+	gold_signals["value"] = 0
+
+	_check(not GameState.spend({"gold": 50, "wood": 11}), "mixed cost succeeded without enough items")
+	_check(_player.inventory.gold == 100, "failed mixed cost consumed gold")
+	_check(_player.inventory.get_item_count("wood") == 10, "failed mixed cost consumed items")
+	_check(int(inventory_signals["value"]) == 0 and int(gold_signals["value"]) == 0, "failed mixed cost emitted changes")
+
+	_check(not GameState.spend({"gold": 50, "missing_item": 1}), "unknown cost item was accepted")
+	_check(_player.inventory.gold == 100 and _player.inventory.get_item_count("wood") == 10, "invalid cost changed economy state")
+
+	_check(GameState.spend({"gold": 50, "wood": 4}), "valid mixed cost failed")
+	_check(_player.inventory.gold == 50, "valid mixed cost charged incorrect gold")
+	_check(_player.inventory.get_item_count("wood") == 6, "valid mixed cost charged incorrect item quantity")
+	_check(int(inventory_signals["value"]) == 1 and int(gold_signals["value"]) == 1, "mixed cost did not emit one final-state signal per domain")
 
 
 func _test_crafting_transaction() -> void:

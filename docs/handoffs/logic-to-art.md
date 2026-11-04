@@ -19,6 +19,12 @@ It requires pending producer output to fit before an upgrade can spend resources
 level. It introduces no art dependency or shared runtime contract and does not overlap Agent
 A's `feature/th-art-reference-ui-kit` asset files.
 
+## 2026-11-04 Atomic economy update
+
+The economy follow-up extends the existing inventory transaction boundary to include gold and
+migrates `GameState.spend()`/`grant()`. It changes no presentation, asset, scene, gameplay ID,
+animation, save, or networking contract and remains disjoint from Agent A's UI kit work.
+
 ## Ownership boundary
 
 Agent A owns final art, sprites, animation metadata, maps/tilesets, UI visuals, the asset

@@ -2306,6 +2306,710 @@
       "evidence_status": "verified_export_manifest_and_repository_file",
       "integration_status": "integrated",
       "notes": []
+    },
+    {
+      "asset_id": "ui.reference.logo.title",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets0.assets/Logo1__13.png",
+      "target_path": "assets/treasure_hunter/ui/reference/logo_title.png",
+      "file_format": "png",
+      "dimensions": [
+        204,
+        107
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: splash and login.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.login.background.server",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/BannerServer_0__6399.png",
+      "target_path": "assets/treasure_hunter/ui/reference/login_background_server.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "transparency": "opaque",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Exact castle and village background observed behind login and registration panels.",
+        "Reference runtime scales and crops the square source to the portrait viewport.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.loading.background.halloween",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/textures/421ae0aa107404c4b859c2537d8d763e/BannerHalloween_1__1.png",
+      "target_path": "assets/treasure_hunter/ui/reference/loading_background_halloween.png",
+      "file_format": "png",
+      "dimensions": [
+        683,
+        1024
+      ],
+      "transparency": "opaque",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Exact Halloween illustration observed in startup loading and loading-tip states.",
+        "Reference runtime scales and center-crops the source behind branding and loading overlays.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.notice.age_18",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Logo18__5461.png",
+      "target_path": "assets/treasure_hunter/ui/reference/notice_age_18.png",
+      "file_format": "png",
+      "dimensions": [
+        340,
+        148
+      ],
+      "transparency": "opaque",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: login and live HUD.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.login.panel",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Login_Panel_0__6597.png",
+      "target_path": "assets/treasure_hunter/ui/reference/login_panel.png",
+      "file_format": "png",
+      "dimensions": [
+        48,
+        48
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: login and registration.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.login.tab.inactive",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Login_Tab_0__6356.png",
+      "target_path": "assets/treasure_hunter/ui/reference/login_tab_inactive.png",
+      "file_format": "png",
+      "dimensions": [
+        48,
+        48
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: login and registration.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.login.tab.active",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Login_Tab_1__6566.png",
+      "target_path": "assets/treasure_hunter/ui/reference/login_tab_active.png",
+      "file_format": "png",
+      "dimensions": [
+        48,
+        48
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: login and registration.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.login.line",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Login_Line__6366.png",
+      "target_path": "assets/treasure_hunter/ui/reference/login_line.png",
+      "file_format": "png",
+      "dimensions": [
+        48,
+        16
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: login.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.button.blue",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Button1_0__6920.png",
+      "target_path": "assets/treasure_hunter/ui/reference/button_blue.png",
+      "file_format": "png",
+      "dimensions": [
+        48,
+        48
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: login and settings.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.button.orange",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Button1_0__6916.png",
+      "target_path": "assets/treasure_hunter/ui/reference/button_orange.png",
+      "file_format": "png",
+      "dimensions": [
+        48,
+        48
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: login and HUD controls.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.button.close",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Button_Close__6576.png",
+      "target_path": "assets/treasure_hunter/ui/reference/button_close.png",
+      "file_format": "png",
+      "dimensions": [
+        48,
+        48
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: material bag.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.button.back",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Button_Back__6069.png",
+      "target_path": "assets/treasure_hunter/ui/reference/button_back.png",
+      "file_format": "png",
+      "dimensions": [
+        48,
+        48
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: settings.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.button.menu",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Button_Menu__6002.png",
+      "target_path": "assets/treasure_hunter/ui/reference/button_menu.png",
+      "file_format": "png",
+      "dimensions": [
+        48,
+        48
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: live HUD.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.joystick",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Joystick_1__6234.png",
+      "target_path": "assets/treasure_hunter/ui/reference/joystick.png",
+      "file_format": "png",
+      "dimensions": [
+        32,
+        32
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: live HUD.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.icon.chat",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/IconSlot_Chat__6165.png",
+      "target_path": "assets/treasure_hunter/ui/reference/icon_chat.png",
+      "file_format": "png",
+      "dimensions": [
+        26,
+        23
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: live HUD.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.icon.settings",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/IconSlot_SettingHUD__5859.png",
+      "target_path": "assets/treasure_hunter/ui/reference/icon_settings.png",
+      "file_format": "png",
+      "dimensions": [
+        34,
+        27
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: settings tabs.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.icon.gameplay",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/IconSlot_GamePlay__6587.png",
+      "target_path": "assets/treasure_hunter/ui/reference/icon_gameplay.png",
+      "file_format": "png",
+      "dimensions": [
+        21,
+        16
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: settings tabs.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.icon.profile",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/IconSlot_Profile__6656.png",
+      "target_path": "assets/treasure_hunter/ui/reference/icon_profile.png",
+      "file_format": "png",
+      "dimensions": [
+        22,
+        28
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: settings tabs.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.icon.login",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/IconSlot_Login__6669.png",
+      "target_path": "assets/treasure_hunter/ui/reference/icon_login.png",
+      "file_format": "png",
+      "dimensions": [
+        31,
+        30
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: settings tabs.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.icon.attack",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/IconSlot_Attack__6270.png",
+      "target_path": "assets/treasure_hunter/ui/reference/icon_attack.png",
+      "file_format": "png",
+      "dimensions": [
+        30,
+        24
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: live HUD and custom layout.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.panel.stats",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Panel_Stats__5844.png",
+      "target_path": "assets/treasure_hunter/ui/reference/panel_stats.png",
+      "file_format": "png",
+      "dimensions": [
+        48,
+        48
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: live HUD.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.panel.level",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Panel_Level__6572.png",
+      "target_path": "assets/treasure_hunter/ui/reference/panel_level.png",
+      "file_format": "png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: live HUD.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.layout.icon.back",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/SPBG_Back__3492.png",
+      "target_path": "assets/treasure_hunter/ui/reference/layout_back.png",
+      "file_format": "png",
+      "dimensions": [
+        24,
+        18
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: custom HUD layout.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.layout.icon.bag",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/SPBG_Bag__4695.png",
+      "target_path": "assets/treasure_hunter/ui/reference/layout_bag.png",
+      "file_format": "png",
+      "dimensions": [
+        17,
+        16
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: custom HUD layout.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.layout.icon.mount",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/SPBG_Horse__8899.png",
+      "target_path": "assets/treasure_hunter/ui/reference/layout_mount.png",
+      "file_format": "png",
+      "dimensions": [
+        17,
+        17
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: custom HUD layout.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.layout.icon.pet",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/SPBG_Pet__7230.png",
+      "target_path": "assets/treasure_hunter/ui/reference/layout_pet.png",
+      "file_format": "png",
+      "dimensions": [
+        12,
+        10
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Observed in reference state: custom HUD layout.",
+        "No runtime consumer in Emberfield yet."
+      ]
     }
   ]
 }

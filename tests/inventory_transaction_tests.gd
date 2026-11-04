@@ -17,6 +17,7 @@ func _ready() -> void:
 	add_child(_player)
 	_test_inventory_transaction()
 	_test_economy_transaction()
+	_test_shop_purchase_transaction()
 	_test_inventory_removal_invariants()
 	_test_crafting_transaction()
 	_test_quest_claim_transaction()
@@ -89,6 +90,35 @@ func _test_economy_transaction() -> void:
 	_check(_player.inventory.gold == 50, "valid mixed cost charged incorrect gold")
 	_check(_player.inventory.get_item_count("wood") == 6, "valid mixed cost charged incorrect item quantity")
 	_check(int(inventory_signals["value"]) == 1 and int(gold_signals["value"]) == 1, "mixed cost did not emit one final-state signal per domain")
+
+
+func _test_shop_purchase_transaction() -> void:
+	_player.inventory = InventoryData.new()
+	_player.inventory.gold = 200
+	var shop := ShopComponent.new()
+	add_child(shop)
+	var observed := {"gold": -1, "items": -1}
+	_player.inventory.gold_changed.connect(func(amount: int) -> void:
+		observed["gold"] = amount
+		observed["items"] = _player.inventory.get_item_count("iron_sword")
+	)
+
+	_check(shop.process_purchase({"id": "iron_sword", "name": "Iron Sword", "price": -500}), "shop rejected a valid catalog item")
+	_check(_player.inventory.gold == 100, "shop trusted a spoofed client price")
+	_check(_player.inventory.get_item_count("iron_sword") == 1, "shop purchase omitted the item")
+	_check(int(observed["gold"]) == 100 and int(observed["items"]) == 1, "shop signals exposed a partial purchase state")
+
+	_player.inventory.add_item(ItemDatabase.get_item("wooden_sword"), InventoryData.INVENTORY_SIZE - 1)
+	_check(not shop.process_purchase({"id": "wooden_sword", "name": "Wooden Sword", "price": 1}), "full inventory accepted a shop purchase")
+	_check(_player.inventory.gold == 100, "failed full-inventory purchase consumed gold")
+
+	_player.inventory = InventoryData.new()
+	_player.inventory.gold = 49
+	_check(not shop.process_purchase({"id": "wooden_sword", "name": "Wooden Sword", "price": 1}), "shop purchase ignored insufficient authoritative gold")
+	_check(_player.inventory.gold == 49 and _player.inventory.get_item_count("wooden_sword") == 0, "failed shop purchase changed inventory")
+	_check(not shop.process_purchase({"id": "flame_augment_t1", "price": -100}), "shop accepted an item without a catalog price")
+	_check(not shop.process_purchase({"id": "missing_item", "price": -100}), "shop accepted an unknown item")
+	shop.queue_free()
 
 
 func _test_inventory_removal_invariants() -> void:

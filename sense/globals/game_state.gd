@@ -555,12 +555,18 @@ func build_or_upgrade(plot_index: int, building_id: String) -> bool:
 	elif p["id"] != building_id or int(p["level"]) >= GameContent.BUILDING_MAX_LEVEL:
 		return false
 	var cost := build_cost(plot_index, building_id)
-	if cost.is_empty() or not spend(cost):
+	if cost.is_empty() or not can_afford(cost):
+		return false
+	# Preserve the old rate boundary: pending output must be collected before
+	# changing level, and a full inventory must leave both cost and level intact.
+	if not p.is_empty() and building_pending(plot_index) > 0:
+		if collect_building(plot_index) <= 0:
+			return false
+	if not spend(cost):
 		return false
 	if p.is_empty():
 		plots[plot_index] = {"id": building_id, "level": 1, "last_collect": _now()}
 	else:
-		collect_building(plot_index)
 		p["level"] = int(p["level"]) + 1
 	buildings_changed.emit()
 	stats_dirty.emit()

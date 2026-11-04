@@ -19,6 +19,7 @@ func _ready() -> void:
 	_test_crafting_transaction()
 	_test_quest_claim_transaction()
 	_test_building_collection_transaction()
+	_test_building_upgrade_transaction()
 	if _failures.is_empty():
 		print("[INVENTORY TRANSACTION TEST] ALL PASSED")
 		get_tree().quit(0)
@@ -110,3 +111,31 @@ func _test_building_collection_transaction() -> void:
 	_player.inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
 	_check(GameState.collect_building(0) > 0, "building collection failed after freeing capacity")
 	_check(_player.inventory.get_item_count("wood") > 0, "building collection omitted resources")
+
+
+func _test_building_upgrade_transaction() -> void:
+	GameState.reset_profile()
+	_player.inventory = InventoryData.new()
+	_player.inventory.gold = 500
+	_player.inventory.add_item(ItemDatabase.get_item("wood"), 999)
+	_player.inventory.add_item(ItemDatabase.get_item("stone"), 20)
+	_player.inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE - 2)
+	GameState.plots[0] = {
+		"id": "lumber_mill",
+		"level": 1,
+		"last_collect": Time.get_unix_time_from_system() - 3600.0,
+	}
+	var timestamp := float(GameState.plots[0]["last_collect"])
+	_check(not GameState.build_or_upgrade(0, "lumber_mill"), "upgrade succeeded while pending output could not fit")
+	_check(int(GameState.plots[0]["level"]) == 1, "failed upgrade changed building level")
+	_check(float(GameState.plots[0]["last_collect"]) == timestamp, "failed upgrade reset production time")
+	_check(_player.inventory.gold == 500, "failed upgrade consumed gold")
+	_check(_player.inventory.get_item_count("wood") == 999, "failed upgrade consumed wood")
+	_check(_player.inventory.get_item_count("stone") == 20, "failed upgrade consumed stone")
+
+	_player.inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
+	_check(GameState.build_or_upgrade(0, "lumber_mill"), "upgrade failed after freeing output capacity")
+	_check(int(GameState.plots[0]["level"]) == 2, "successful upgrade did not increase level")
+	_check(float(GameState.plots[0]["last_collect"]) > timestamp, "successful upgrade did not advance production time")
+	_check(_player.inventory.gold == 100, "successful upgrade did not charge gold exactly once")
+	_check(_player.inventory.get_item_count("stone") == 0, "successful upgrade did not charge stone exactly once")

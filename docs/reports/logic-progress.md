@@ -104,3 +104,20 @@ asset metadata.
   increase a stack through a negative quantity.
 - Valid removal paths still consume exactly the requested amount and emit one inventory signal.
 - Focused, legacy phases 1–7, and survival suites passed with Godot 4.6 and exit code 0.
+
+## 2026-11-04 — Save validation and recovery integrity
+
+- Branch: `feature/th-logic-save-validation`, updated to `origin/develop` after Agent A PR #8.
+- Save snapshots and temporary files are validated before any live-state mutation or backup
+  rotation. Future versions, malformed nested profile/quest state, invalid inventory stacks,
+  incompatible equipment and invalid augments are rejected.
+- Version `0` snapshots using the current shape migrate to version `1`; versions newer than the
+  runtime are rejected so unsupported data is never silently downgraded.
+- Direct inventory hydration validates the complete payload before mutating gold, slots or
+  equipment. Invalid payloads preserve the existing inventory and emit no change signals.
+- A corrupt primary save is replaced without rotating over the last known-good backup. If the
+  final temporary-file rename fails after a valid primary was preserved, the backup is restored.
+- `git diff --check`, `InventoryTransactionTests.tscn`, and `LegacySystemTests.tscn` all passed
+  with Godot `4.6.stable.official.89cea1439`; legacy phases 1–7 and the survival runner passed.
+- Expected warnings cover intentionally corrupt/future/invalid saves and backup fallback. No
+  asset ID, scene, presentation, networking or Agent A-owned file changed.

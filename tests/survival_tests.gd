@@ -332,6 +332,91 @@ func _test_save_roundtrip() -> void:
 	f.close()
 	_check(not SaveService.read_snapshot().is_empty(), "falls back to .bak on corrupt save")
 
+	# Future and structurally invalid snapshots must also fall back to the good backup.
+	var future := snap.duplicate(true)
+	future["version"] = SaveService.SAVE_VERSION + 1
+	f = FileAccess.open(SaveService.SAVE_PATH, FileAccess.WRITE)
+	f.store_string(JSON.stringify(future))
+	f.close()
+	var recovered_future := SaveService.read_snapshot()
+	_check(int(recovered_future.get("version", 0)) == SaveService.SAVE_VERSION, "future save version falls back to backup")
+	var invalid_version := snap.duplicate(true)
+	invalid_version["version"] = "1"
+	f = FileAccess.open(SaveService.SAVE_PATH, FileAccess.WRITE)
+	f.store_string(JSON.stringify(invalid_version))
+	f.close()
+	_check(SaveService.read_snapshot().get("inventory", {}).get("gold", -1) == 1234, "non-numeric save version falls back to backup")
+
+	var invalid_inventory := snap.duplicate(true)
+	invalid_inventory["inventory"] = {
+		"gold": 10,
+		"slots": [{"id": "wood", "qty": 1000}],
+		"equipment": {},
+	}
+	f = FileAccess.open(SaveService.SAVE_PATH, FileAccess.WRITE)
+	f.store_string(JSON.stringify(invalid_inventory))
+	f.close()
+	var recovered_inventory := SaveService.read_snapshot()
+	_check(recovered_inventory.get("inventory", {}).get("gold", -1) == 1234, "invalid inventory falls back to backup")
+
+	var legacy := snap.duplicate(true)
+	legacy["version"] = 0
+	f = FileAccess.open(SaveService.SAVE_PATH, FileAccess.WRITE)
+	f.store_string(JSON.stringify(legacy))
+	f.close()
+	_check(int(SaveService.read_snapshot().get("version", 0)) == SaveService.SAVE_VERSION, "legacy save version migrates before validation")
+
+	var invalid_profile := snap.duplicate(true)
+	invalid_profile["profile"]["pets"]["lucky_cat"]["level"] = "max"
+	f = FileAccess.open(SaveService.SAVE_PATH, FileAccess.WRITE)
+	f.store_string(JSON.stringify(invalid_profile))
+	f.close()
+	_check(SaveService.read_snapshot().get("inventory", {}).get("gold", -1) == 1234, "invalid nested profile falls back to backup")
+
+	var invalid_quests := snap.duplicate(true)
+	invalid_quests["quests"]["main_ready"] = "yes"
+	f = FileAccess.open(SaveService.SAVE_PATH, FileAccess.WRITE)
+	f.store_string(JSON.stringify(invalid_quests))
+	f.close()
+	_check(SaveService.read_snapshot().get("inventory", {}).get("gold", -1) == 1234, "invalid quest flags fall back to backup")
+
+	# Direct inventory hydration rejects malformed data without touching live state.
+	var protected_gold := inv.gold
+	var protected_wood := inv.get_item_count("wood")
+	_check(not SaveService.deserialize_inventory(inv, {
+		"gold": 999,
+		"slots": [{"id": "wood", "qty": 1000}],
+		"equipment": {"helmet": {"id": "iron_sword", "qty": 1}},
+	}), "invalid inventory hydration is rejected")
+	_check(not SaveService.deserialize_inventory(inv, {
+		"gold": 999,
+		"slots": [{"id": "wood", "qty": 1.5}],
+		"equipment": {},
+	}), "fractional inventory quantity is rejected")
+	_check(inv.gold == protected_gold and inv.get_item_count("wood") == protected_wood, "rejected hydration preserves live inventory")
+
+	# Invalid live state cannot replace the last known-good save.
+	var valid_zone := GameState.current_zone
+	GameState.current_zone = "invalid_zone"
+	SaveService.enabled = true
+	_check(not SaveService.save_game(), "invalid snapshot is not written")
+	SaveService.enabled = false
+	GameState.current_zone = valid_zone
+	_check(not SaveService.read_snapshot().is_empty(), "failed save preserves recoverable data")
+
+	# A corrupt current file must not replace the known-good backup during rotation.
+	f = FileAccess.open(SaveService.SAVE_PATH, FileAccess.WRITE)
+	f.store_string("{not json")
+	f.close()
+	inv.gold = 2222
+	SaveService.enabled = true
+	_check(SaveService.save_game(), "valid save replaces corrupt primary")
+	SaveService.enabled = false
+	f = FileAccess.open(SaveService.SAVE_PATH, FileAccess.WRITE)
+	f.store_string("{not json")
+	f.close()
+	_check(SaveService.read_snapshot().get("inventory", {}).get("gold", -1) == 1234, "corrupt primary never rotates over good backup")
+
 
 func _add_and_find(inv: InventoryData, item_id: String) -> int:
 	inv.add_item(ItemDatabase.get_item(item_id), 1)

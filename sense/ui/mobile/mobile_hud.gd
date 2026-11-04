@@ -17,6 +17,8 @@ const BTN_ICONS := {
 	"quest": "scroll", "map": "gem_green", "village": "wood", "system": "gamepad",
 }
 const HUD_PANEL := preload("res://assets/treasure_hunter/ui/reference/panel_stats.png")
+const MENU_BUTTON := preload("res://assets/treasure_hunter/ui/reference/button_menu.png")
+const MINIMIZE_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_minimize.png")
 
 var legacy_hud: CanvasLayer = null
 var player: Node = null
@@ -338,9 +340,9 @@ func _build_boss_bar() -> void:
 
 
 func _build_menu_rail() -> void:
-	_fold_button = _icon_button(BTN_ICONS["hero"], "Hide controls", _toggle_hud_chrome)
+	_fold_button = _reference_icon_button(MINIMIZE_ICON, "Hide controls", _toggle_hud_chrome)
 	_fold_button.position = Vector2(540, 18)
-	var system_button := _nav_button("system", "Menu")
+	var system_button := _reference_image_button(MENU_BUTTON, "Menu", func() -> void: _on_menu_button("system"))
 	system_button.position = Vector2(622, 18)
 
 	var resources := _panel(Rect2(532, 150, 180, 154))
@@ -421,6 +423,63 @@ func _icon_button(icon_name: String, caption: String, callback: Callable) -> But
 	b.text = ""
 	b.tooltip_text = caption
 	b.add_theme_constant_override("icon_max_width", 46)
+	b.pressed.connect(callback)
+	add_child(b)
+	_controls.append(b)
+	return b
+
+
+func _reference_icon_button(texture: Texture2D, caption: String, callback: Callable) -> Button:
+	var b := Button.new()
+	b.focus_mode = Control.FOCUS_NONE
+	b.custom_minimum_size = Vector2(72, 72)
+	b.size = Vector2(72, 72)
+	b.tooltip_text = caption
+	for state in ["normal", "hover", "pressed", "disabled"]:
+		b.add_theme_stylebox_override(state, StyleBoxEmpty.new())
+
+	var background := ColorRect.new()
+	background.color = UiTheme.C_PANEL
+	background.set_anchors_preset(Control.PRESET_FULL_RECT)
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	b.add_child(background)
+
+	var frame := NinePatchRect.new()
+	frame.texture = HUD_PANEL
+	frame.set_anchors_preset(Control.PRESET_FULL_RECT)
+	frame.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
+		frame.set_patch_margin(side, 6)
+	b.add_child(frame)
+
+	var icon := TextureRect.new()
+	icon.texture = texture
+	icon.position = Vector2(14, 13)
+	icon.size = Vector2(44, 46)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	b.add_child(icon)
+
+	b.pressed.connect(callback)
+	add_child(b)
+	_controls.append(b)
+	return b
+
+
+func _reference_image_button(texture: Texture2D, caption: String, callback: Callable) -> Button:
+	var b := Button.new()
+	b.flat = true
+	b.focus_mode = Control.FOCUS_NONE
+	b.custom_minimum_size = Vector2(72, 72)
+	b.size = Vector2(72, 72)
+	b.icon = texture
+	b.expand_icon = true
+	b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	b.tooltip_text = caption
+	b.add_theme_constant_override("icon_max_width", 72)
 	b.pressed.connect(callback)
 	add_child(b)
 	_controls.append(b)

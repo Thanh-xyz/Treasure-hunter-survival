@@ -97,14 +97,18 @@ ownership, integration branch, and feature merge order.
 
 ## Reference UI Kit Update
 
-Agent A captured 14 runtime states and selected 25 exact source sprites for login,
-HUD, settings tabs, and custom-layout controls. Stable files live under
+Agent A captured 14 runtime states and selected 26 exact source images for startup,
+login, HUD, settings tabs, and custom-layout controls. Stable files live under
 `assets/treasure_hunter/ui/reference/`; all are `local_only` and currently marked
 `selected`, not `integrated`.
 
 The selected login set now includes the exact `1024x1024` castle/village source
 background as `login_background_server.png`; the runtime portrait presentation is
 a scale/crop of this square source.
+
+The exact `683x1024` Halloween startup illustration is selected as
+`loading_background_halloween.png`; the runtime presents it with a center crop
+behind the logo, progress bar, phase text, spinner, and tip panel.
 
 No runtime consumer or gameplay contract changed. Before Agent A reconstructs the
 HUD or authentication scene, both agents must sequence ownership for the affected

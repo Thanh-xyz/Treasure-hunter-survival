@@ -2363,6 +2363,34 @@
       ]
     },
     {
+      "asset_id": "ui.reference.loading.background.halloween",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/textures/421ae0aa107404c4b859c2537d8d763e/BannerHalloween_1__1.png",
+      "target_path": "assets/treasure_hunter/ui/reference/loading_background_halloween.png",
+      "file_format": "png",
+      "dimensions": [
+        683,
+        1024
+      ],
+      "transparency": "opaque",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Exact Halloween illustration observed in startup loading and loading-tip states.",
+        "Reference runtime scales and center-crops the source behind branding and loading overlays.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
       "asset_id": "ui.reference.notice.age_18",
       "category": "ui_reference",
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Logo18__5461.png",

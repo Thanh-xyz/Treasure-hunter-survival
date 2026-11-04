@@ -94,3 +94,13 @@ asset metadata.
 - Focused tests verify rollback emits no signals and a successful mixed transaction emits one
   final-state signal for gold and inventory.
 - Focused, legacy phases 1–7, and survival suites passed with Godot 4.6 and exit code 0.
+
+## 2026-11-04 — Inventory removal integrity
+
+- `remove_item()` now rejects non-positive or insufficient quantities without partial removal
+  and reuses the atomic inventory transaction path.
+- `remove_item_at()` rejects non-positive or oversized quantities before changing the slot.
+- Regression tests verify invalid removals preserve stack counts, emit no signals, and cannot
+  increase a stack through a negative quantity.
+- Valid removal paths still consume exactly the requested amount and emit one inventory signal.
+- Focused, legacy phases 1–7, and survival suites passed with Godot 4.6 and exit code 0.

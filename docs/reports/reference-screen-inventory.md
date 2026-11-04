@@ -97,8 +97,9 @@ files used for this report.
 ## Selected Local UI Kit
 
 Twenty-six source images were copied bit-for-bit into
-`assets/treasure_hunter/ui/reference/`. They are selected reference assets, not yet
-runtime-integrated resources.
+`assets/treasure_hunter/ui/reference/`. Ten authentication/startup resources are
+now consumed by `sense/ui/mobile/startup_gate.gd`; the remaining resources stay
+selected references for later HUD and settings work.
 
 | Group | Stable targets |
 | --- | --- |
@@ -114,22 +115,24 @@ runtime-integrated resources.
 Every selected asset has a `local_only` provenance entry in
 `docs/architecture/asset-manifest.json`.
 
+The original tab filenames did not describe visual state reliably. Runtime visual
+comparison verified that `Login_Tab_0__6356.png` is the yellow active state and
+`Login_Tab_1__6566.png` is the gray inactive state; stable target names and manifest
+source mappings now reflect the observed appearance.
+
 ## Missing Evidence
 
-- Exact scale/crop and overlay coordinates for the startup backgrounds require a
-  deterministic Emberfield render comparison.
+- Startup and authentication have deterministic Emberfield renders at `720x1600`;
+  quantitative masked visual-diff thresholds are not yet established.
 - Font asset and exact font metrics are not yet linked to the observed labels.
 - Sliced-border values and Unity pixels-per-unit settings require metadata or
   controlled reconstruction.
 - Some rail icons and stat/currency icons remain unmapped.
-- No deterministic Emberfield render exists for visual diff yet.
 
 ## Recommended Integration Order
 
-1. Build an art-owned reference theme/resource using only the selected sprites.
-2. Reconstruct login/register as a deterministic isolated visual state.
-3. Reconstruct the fixed HUD frame and eight-slot hotbar without changing gameplay
+1. Reconstruct the fixed HUD frame and eight-slot hotbar without changing gameplay
    behavior.
-4. Capture Emberfield at `720x1600` and compare fixed regions against ADB evidence.
-5. Add inventory/settings panels only after the shared UI ownership contract is
+2. Capture Emberfield at `720x1600` and compare fixed regions against ADB evidence.
+3. Add inventory/settings panels only after the shared UI ownership contract is
    agreed with Agent B.

@@ -2320,7 +2320,8 @@
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
-        "docs/reports/reference-screen-inventory.md"
+        "docs/reports/reference-screen-inventory.md",
+        "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
         "status": "user_supplied_extracted",
@@ -2328,10 +2329,10 @@
         "license_status": "not_verified_for_public_redistribution"
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
-      "integration_status": "selected",
+      "integration_status": "integrated",
       "notes": [
         "Observed in reference state: splash and login.",
-        "No runtime consumer in Emberfield yet."
+        "Rendered by StartupGate for loading and authentication states."
       ]
     },
     {
@@ -2347,7 +2348,8 @@
       "transparency": "opaque",
       "animation": null,
       "usage": [
-        "docs/reports/reference-screen-inventory.md"
+        "docs/reports/reference-screen-inventory.md",
+        "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
         "status": "user_supplied_extracted",
@@ -2355,11 +2357,11 @@
         "license_status": "not_verified_for_public_redistribution"
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
-      "integration_status": "selected",
+      "integration_status": "integrated",
       "notes": [
         "Exact castle and village background observed behind login and registration panels.",
         "Reference runtime scales and crops the square source to the portrait viewport.",
-        "No runtime consumer in Emberfield yet."
+        "Rendered by StartupGate for authentication states."
       ]
     },
     {
@@ -2375,7 +2377,8 @@
       "transparency": "opaque",
       "animation": null,
       "usage": [
-        "docs/reports/reference-screen-inventory.md"
+        "docs/reports/reference-screen-inventory.md",
+        "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
         "status": "user_supplied_extracted",
@@ -2383,11 +2386,11 @@
         "license_status": "not_verified_for_public_redistribution"
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
-      "integration_status": "selected",
+      "integration_status": "integrated",
       "notes": [
         "Exact Halloween illustration observed in startup loading and loading-tip states.",
         "Reference runtime scales and center-crops the source behind branding and loading overlays.",
-        "No runtime consumer in Emberfield yet."
+        "Rendered by StartupGate for the initial loading state."
       ]
     },
     {
@@ -2403,7 +2406,8 @@
       "transparency": "opaque",
       "animation": null,
       "usage": [
-        "docs/reports/reference-screen-inventory.md"
+        "docs/reports/reference-screen-inventory.md",
+        "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
         "status": "user_supplied_extracted",
@@ -2411,10 +2415,10 @@
         "license_status": "not_verified_for_public_redistribution"
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
-      "integration_status": "selected",
+      "integration_status": "integrated",
       "notes": [
         "Observed in reference state: login and live HUD.",
-        "No runtime consumer in Emberfield yet."
+        "Rendered by StartupGate for authentication states."
       ]
     },
     {
@@ -2430,7 +2434,8 @@
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
-        "docs/reports/reference-screen-inventory.md"
+        "docs/reports/reference-screen-inventory.md",
+        "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
         "status": "user_supplied_extracted",
@@ -2438,16 +2443,16 @@
         "license_status": "not_verified_for_public_redistribution"
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
-      "integration_status": "selected",
+      "integration_status": "integrated",
       "notes": [
         "Observed in reference state: login and registration.",
-        "No runtime consumer in Emberfield yet."
+        "Rendered as nine-patch outer and form panels by StartupGate."
       ]
     },
     {
       "asset_id": "ui.reference.login.tab.inactive",
       "category": "ui_reference",
-      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Login_Tab_0__6356.png",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Login_Tab_1__6566.png",
       "target_path": "assets/treasure_hunter/ui/reference/login_tab_inactive.png",
       "file_format": "png",
       "dimensions": [
@@ -2457,7 +2462,8 @@
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
-        "docs/reports/reference-screen-inventory.md"
+        "docs/reports/reference-screen-inventory.md",
+        "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
         "status": "user_supplied_extracted",
@@ -2465,16 +2471,16 @@
         "license_status": "not_verified_for_public_redistribution"
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
-      "integration_status": "selected",
+      "integration_status": "integrated",
       "notes": [
         "Observed in reference state: login and registration.",
-        "No runtime consumer in Emberfield yet."
+        "Rendered by StartupGate for the inactive authentication tab."
       ]
     },
     {
       "asset_id": "ui.reference.login.tab.active",
       "category": "ui_reference",
-      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Login_Tab_1__6566.png",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Login_Tab_0__6356.png",
       "target_path": "assets/treasure_hunter/ui/reference/login_tab_active.png",
       "file_format": "png",
       "dimensions": [
@@ -2484,7 +2490,8 @@
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
-        "docs/reports/reference-screen-inventory.md"
+        "docs/reports/reference-screen-inventory.md",
+        "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
         "status": "user_supplied_extracted",
@@ -2492,10 +2499,10 @@
         "license_status": "not_verified_for_public_redistribution"
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
-      "integration_status": "selected",
+      "integration_status": "integrated",
       "notes": [
         "Observed in reference state: login and registration.",
-        "No runtime consumer in Emberfield yet."
+        "Rendered by StartupGate for the active authentication tab."
       ]
     },
     {
@@ -2511,7 +2518,8 @@
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
-        "docs/reports/reference-screen-inventory.md"
+        "docs/reports/reference-screen-inventory.md",
+        "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
         "status": "user_supplied_extracted",
@@ -2519,10 +2527,10 @@
         "license_status": "not_verified_for_public_redistribution"
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
-      "integration_status": "selected",
+      "integration_status": "integrated",
       "notes": [
         "Observed in reference state: login.",
-        "No runtime consumer in Emberfield yet."
+        "Rendered by StartupGate below the forgot-password label."
       ]
     },
     {
@@ -2538,7 +2546,8 @@
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
-        "docs/reports/reference-screen-inventory.md"
+        "docs/reports/reference-screen-inventory.md",
+        "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
         "status": "user_supplied_extracted",
@@ -2546,10 +2555,10 @@
         "license_status": "not_verified_for_public_redistribution"
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
-      "integration_status": "selected",
+      "integration_status": "integrated",
       "notes": [
         "Observed in reference state: login and settings.",
-        "No runtime consumer in Emberfield yet."
+        "Rendered as the primary authentication and LAN join buttons by StartupGate."
       ]
     },
     {
@@ -2565,7 +2574,8 @@
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
-        "docs/reports/reference-screen-inventory.md"
+        "docs/reports/reference-screen-inventory.md",
+        "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
         "status": "user_supplied_extracted",
@@ -2573,10 +2583,10 @@
         "license_status": "not_verified_for_public_redistribution"
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
-      "integration_status": "selected",
+      "integration_status": "integrated",
       "notes": [
         "Observed in reference state: login and HUD controls.",
-        "No runtime consumer in Emberfield yet."
+        "Rendered as quick-login, password, host, and close buttons by StartupGate."
       ]
     },
     {

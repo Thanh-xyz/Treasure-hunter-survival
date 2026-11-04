@@ -141,3 +141,10 @@ menu callbacks, player binding, death state, and gameplay data remain unchanged.
 `joystick_ring.png` supplies the movement ring. These are presentation-only local
 assets; Agent B should continue treating action IDs and inventory/skill ownership
 as gameplay contracts independent of the visual frame.
+
+## Fixed HUD Chrome Contract
+
+`MobileHUD` now uses the verified `Button_Menu` and dot-and-chevron minimize icon
+for its existing top-right controls. `_on_menu_button("system")` and
+`_toggle_hud_chrome()` are unchanged; this is presentation-only and introduces no
+new gameplay events or settings keys.

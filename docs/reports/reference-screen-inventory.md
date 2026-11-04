@@ -96,7 +96,7 @@ files used for this report.
 
 ## Selected Local UI Kit
 
-Twenty-seven source images were copied bit-for-bit into
+Twenty-eight source images were copied bit-for-bit into
 `assets/treasure_hunter/ui/reference/`. Ten authentication/startup resources are
 consumed by `sense/ui/mobile/startup_gate.gd`; `panel_stats.png` and
 `joystick_ring.png` are consumed by the mobile HUD. The remaining resources stay
@@ -109,7 +109,7 @@ selected references for later HUD and settings work.
 | Authentication background | `login_background_server.png` |
 | Authentication | `login_panel.png`, `login_tab_active.png`, `login_tab_inactive.png`, `login_line.png` |
 | Buttons | `button_blue.png`, `button_orange.png`, `button_close.png`, `button_back.png`, `button_menu.png` |
-| HUD | `joystick.png`, `joystick_ring.png`, `icon_chat.png`, `icon_attack.png`, `panel_stats.png`, `panel_level.png` |
+| HUD | `joystick.png`, `joystick_ring.png`, `icon_minimize.png`, `icon_chat.png`, `icon_attack.png`, `panel_stats.png`, `panel_level.png` |
 | Settings tabs | `icon_settings.png`, `icon_gameplay.png`, `icon_profile.png`, `icon_login.png` |
 | Custom layout | `layout_back.png`, `layout_bag.png`, `layout_mount.png`, `layout_pet.png` |
 
@@ -125,6 +125,10 @@ HUD render comparison also separated two misleading joystick sources:
 `Joystick_1__6234.png` is the orange gamepad-style button, while
 `Icon_Joystick__5652.png` is the circular directional ring seen around the live
 movement thumb. The runtime uses only the verified ring for movement presentation.
+
+The top-right collapse control uses `Icon_Arrow__5990.png`. The four-direction
+`Button_MinimizeMode 2__6229.png` candidate was rejected because its silhouette
+does not match the captured dot-and-chevron control.
 
 ## Missing Evidence
 

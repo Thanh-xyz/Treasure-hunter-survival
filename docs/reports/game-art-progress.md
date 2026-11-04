@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-04
-Current feature: fixed mobile HUD frame and eight-slot hotbar reconstruction.
+Current feature: verified fixed HUD chrome controls.
 
 ## Completed Before This Feature
 
@@ -56,12 +56,20 @@ Current feature: fixed mobile HUD frame and eight-slot hotbar reconstruction.
   `Joystick_1__6234.png` is a different orange gamepad-style control.
 - Extended the deterministic HUD render to capture both live and dead states.
 
+## Fixed HUD Chrome Feature
+
+- Replaced the inferred top-right menu control with the exact `Button_Menu` source.
+- Replaced the generic collapse icon with the verified dot-and-chevron
+  `Icon_Arrow__5990.png` source while preserving the compact-HUD callback.
+- Rejected `Button_MinimizeMode 2__6229.png` and the selected crossed-sword attack
+  icon after direct comparison showed that they do not match those captured states.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
-- Verified 90 assets, 90 unique asset IDs, and 90 unique target paths.
+- Verified 91 assets, 91 unique asset IDs, and 91 unique target paths.
 - Verified every non-null source and target path exists.
-- Verified all 34 supplied Treasure Hunter entries use
+- Verified all 35 supplied Treasure Hunter entries use
   `distribution_scope: local_only`.
 - Verified the player scene slices its `768x80` sheets into eight `96x80`
   AtlasTexture regions; manifest frame metadata matches the scene.

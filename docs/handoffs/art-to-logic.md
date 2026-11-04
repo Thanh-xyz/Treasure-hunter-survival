@@ -1,7 +1,7 @@
 # Art-to-Logic Contract
 
 Date: 2026-11-04
-Status: Agent A proposal; runtime contract changes still require coordinated implementation.
+Status: startup/auth presentation integrated; broader asset registry remains proposed.
 
 ## Ownership
 
@@ -72,14 +72,10 @@ Agent A does not modify these files in the workflow/art-governance feature.
 
 ## Agent B Active Work
 
-Agent B completed and pushed commit `e225178` on
-`feature/th-logic-inventory-transactions`, changing gameplay state, quests,
-crafting, inventory, and gameplay tests. Agent A continues avoiding those files.
-
-Agent B's scout handoff reported missing soldier PNGs in its worktree. Agent A
-verified that the referenced files now exist in both worktrees and are tracked by
-Git, so no art restoration change is currently required. This does not certify the
-Godot suite because no Godot CLI is available on Agent A's command path.
+Agent B's shop-transaction feature is integrated through PR #14 into `develop`
+and PR #15 into `main`. Its changed gameplay files are disjoint from this
+startup/auth feature, which changes only Agent A-owned art/docs plus `StartupGate`
+and its render test.
 
 ## Future Coordination
 
@@ -90,17 +86,21 @@ ownership, integration branch, and feature merge order.
 ## Current Feature Validation
 
 - Manifest JSON parsed successfully.
-- 63 asset IDs are unique; all recorded source and target paths exist.
-- Seven supplied Treasure Hunter entries are marked `local_only`.
+- 89 asset IDs and target paths are unique; all recorded paths exist.
+- 33 supplied Treasure Hunter entries are marked `local_only`.
+- All 26 UI reference targets match their manifest source files bit-for-bit.
+- Ten startup/authentication assets are marked `integrated`.
 - All ten shared workflow Skills passed `quick_validate.py`.
-- No gameplay or shared runtime file is part of Agent A's feature.
+- Inventory, legacy, and survival Godot suites passed.
+- Startup and mobile-HUD render scenes passed with Godot 4.6 under Xvfb/OpenGL.
 
 ## Reference UI Kit Update
 
 Agent A captured 14 runtime states and selected 26 exact source images for startup,
 login, HUD, settings tabs, and custom-layout controls. Stable files live under
-`assets/treasure_hunter/ui/reference/`; all are `local_only` and currently marked
-`selected`, not `integrated`.
+`assets/treasure_hunter/ui/reference/`; all are `local_only`. Ten startup and
+authentication entries are integrated; the remaining HUD/settings entries stay
+selected references.
 
 The selected login set now includes the exact `1024x1024` castle/village source
 background as `login_background_server.png`; the runtime portrait presentation is
@@ -110,7 +110,23 @@ The exact `683x1024` Halloween startup illustration is selected as
 `loading_background_halloween.png`; the runtime presents it with a center crop
 behind the logo, progress bar, phase text, spinner, and tip panel.
 
-No runtime consumer or gameplay contract changed. Before Agent A reconstructs the
-HUD or authentication scene, both agents must sequence ownership for the affected
-shared UI files. See `docs/reports/reference-screen-inventory.md` for the observed
-screen graph and recommended order.
+The runtime consumer is now `sense/ui/mobile/startup_gate.gd`. No gameplay ID,
+save model, backend-authentication behavior, or LAN protocol changed. See
+`docs/reports/reference-screen-inventory.md` for the observed screen graph and
+recommended order.
+
+## Startup And Authentication Runtime Contract
+
+`StartupGate` now renders the observed loading, register, and login presentation
+with selected source assets. Existing public behavior is preserved:
+
+- `_choose_local()` still stops LAN, unpauses the tree, emits `local_selected`, and
+  emits mode `local`.
+- `_choose_host()` and `_choose_join()` still delegate to `LanSession`.
+- `_on_lan_ready()` still unpauses and emits the LAN role.
+- `configure()` and `open()` remain the entry points used by `sense/main.gd`.
+
+Agent B's integrated save-validation and shop-transaction work does not overlap
+this feature. Future logic should not bind authentication semantics to the visual
+username/password fields; they are reference presentation for the authorized
+local build, not a recreated backend.

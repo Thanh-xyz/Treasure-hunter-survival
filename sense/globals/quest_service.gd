@@ -94,7 +94,8 @@ func claim(quest_id: String) -> bool:
 	if not main.is_empty() and main["id"] == quest_id:
 		if not main_ready:
 			return false
-		GameState.grant(main.get("reward", {}))
+		if not GameState.grant(main.get("reward", {})):
+			return false
 		quest_completed.emit(quest_id, main["name"])
 		main_index += 1
 		main_progress = 0
@@ -107,8 +108,9 @@ func claim(quest_id: String) -> bool:
 		var st: Dictionary = dailies[quest_id]
 		if st["claimed"] or int(st["progress"]) < int(dq["obj"]["count"]):
 			return false
+		if not GameState.grant(dq.get("reward", {})):
+			return false
 		st["claimed"] = true
-		GameState.grant(dq.get("reward", {}))
 		quest_completed.emit(quest_id, dq["name"])
 		quests_changed.emit()
 		return true

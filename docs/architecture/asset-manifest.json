@@ -1,0 +1,2311 @@
+{
+  "schema_version": 1,
+  "project": "Treasure Hunter - Survival local recreation in Emberfield",
+  "generated_from": "Agent A repository inventory on 2026-11-04",
+  "evidence_policy": {
+    "priority": [
+      "runtime_capture",
+      "user_supplied_extracted_asset",
+      "static_metadata",
+      "explicit_inference"
+    ],
+    "unknown_values": "Use null or unknown; do not fabricate metadata.",
+    "local_asset_scope": "Supplied Treasure Hunter assets are authorized for local/private use and marked local_only."
+  },
+  "asset_id_pattern": "<category>.<subject>.<identity>.<variant>",
+  "assets": [
+    {
+      "asset_id": "asset.font.pixellari",
+      "category": "font",
+      "source_path": "assets/Font/Pixellari.ttf",
+      "target_path": "assets/Font/Pixellari.ttf",
+      "file_format": "ttf",
+      "dimensions": null,
+      "transparency": "not_applicable",
+      "animation": null,
+      "usage": [
+        "sense/network/lan_remote_avatar.gd",
+        "sense/ui/mobile/ui_theme.gd",
+        "sense/ui/mobile/action_button.gd",
+        "sense/combat/damage_number.gd",
+        "sense/entities/player/player.gd",
+        "sense/maps/homestead/homestead_map.gd",
+        "sense/entities/npcs/merchant/ItemSell.tscn",
+        "sense/entities/npcs/merchant/UI.tscn",
+        "sense/entities/enemies/monster/monster.gd",
+        "sense/components/interaction_manager.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "asset.font.pixel",
+      "category": "font",
+      "source_path": "assets/Font/pixel.ttf",
+      "target_path": "assets/Font/pixel.ttf",
+      "file_format": "ttf",
+      "dimensions": null,
+      "transparency": "not_applicable",
+      "animation": null,
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "asset.shop.general.shop.merchant.cart.aseprite",
+      "category": "shop_art",
+      "source_path": "assets/Shop/General-shop/Merchant Cart.aseprite",
+      "target_path": "assets/Shop/General-shop/Merchant Cart.aseprite",
+      "file_format": "unknown_aseprite_extension",
+      "dimensions": null,
+      "transparency": "not_applicable",
+      "animation": null,
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": [
+        "Extension is .aseprite; file command reports: OpenPGP Public Key. Format requires manual verification."
+      ]
+    },
+    {
+      "asset_id": "asset.shop.general.shop.merchant.cart",
+      "category": "shop_art",
+      "source_path": "assets/Shop/General-shop/Merchant Cart.png",
+      "target_path": "assets/Shop/General-shop/Merchant Cart.png",
+      "file_format": "png",
+      "dimensions": [
+        64,
+        64
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/entities/npcs/merchant/general_goods.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "asset.shop.general.shop.merchant.man.sheet",
+      "category": "shop_art",
+      "source_path": "assets/Shop/General-shop/Merchant Man-Sheet.png",
+      "target_path": "assets/Shop/General-shop/Merchant Man-Sheet.png",
+      "file_format": "png",
+      "dimensions": [
+        96,
+        32
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "idle"
+        ],
+        "directions": [],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          32,
+          32
+        ],
+        "frame_count": 3,
+        "fps": 5.0,
+        "loop": true,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "general_goods_scene"
+      },
+      "usage": [
+        "sense/entities/npcs/merchant/general_goods.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "asset.shop.ui.element.coin",
+      "category": "shop_art",
+      "source_path": "assets/Shop/UI-element/Coin.png",
+      "target_path": "assets/Shop/UI-element/Coin.png",
+      "file_format": "png",
+      "dimensions": [
+        32,
+        32
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/entities/npcs/merchant/ItemSell.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "asset.shop.ui.element.ui.background",
+      "category": "shop_art",
+      "source_path": "assets/Shop/UI-element/UI-background.png",
+      "target_path": "assets/Shop/UI-element/UI-background.png",
+      "file_format": "png",
+      "dimensions": [
+        128,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/entities/npcs/merchant/UI.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "asset.shop.ui.element.ui.shop.item.background",
+      "category": "shop_art",
+      "source_path": "assets/Shop/UI-element/UI-shop-item-background.png",
+      "target_path": "assets/Shop/UI-element/UI-shop-item-background.png",
+      "file_format": "png",
+      "dimensions": [
+        54,
+        12
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/entities/npcs/merchant/ItemSell.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "asset.blacksmith.black.smith.objects",
+      "category": "environment_or_effect_sheet",
+      "source_path": "assets/blacksmith/black_smith_objects.png",
+      "target_path": "assets/blacksmith/black_smith_objects.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/entities/npcs/blacksmith/blacksmith.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "asset.blacksmith.fire.frames",
+      "category": "environment_or_effect_sheet",
+      "source_path": "assets/blacksmith/fire_frames.png",
+      "target_path": "assets/blacksmith/fire_frames.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "fire_loop"
+        ],
+        "directions": [],
+        "direction_aliases": {},
+        "frame_dimensions": null,
+        "frame_count": 6,
+        "fps": 5.0,
+        "loop": true,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "blacksmith_scene_uses_nonuniform_atlas_regions"
+      },
+      "usage": [
+        "sense/entities/npcs/blacksmith/blacksmith.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.attack.down_left",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/attack/attack_bottom_left.png",
+      "target_path": "assets/enemies/skeleton_hammer/attack/attack_bottom_left.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "attack"
+        ],
+        "directions": [
+          "down_left"
+        ],
+        "direction_aliases": {
+          "bottom_left": "down_left"
+        },
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": null,
+        "loop": null,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "sheet_dimensions_and_filename"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.attack.down_right",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/attack/attack_bottom_right.png",
+      "target_path": "assets/enemies/skeleton_hammer/attack/attack_bottom_right.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "attack"
+        ],
+        "directions": [
+          "down_right"
+        ],
+        "direction_aliases": {
+          "bottom_right": "down_right"
+        },
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": null,
+        "loop": null,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "sheet_dimensions_and_filename"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.attack.down",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/attack/attack_down.png",
+      "target_path": "assets/enemies/skeleton_hammer/attack/attack_down.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "attack"
+        ],
+        "directions": [
+          "down"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": false,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_skeleton_scene"
+      },
+      "usage": [
+        "sense/entities/enemies/skeleton/skeleton.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.attack.left",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/attack/attack_left.png",
+      "target_path": "assets/enemies/skeleton_hammer/attack/attack_left.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "attack"
+        ],
+        "directions": [
+          "left"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": false,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_skeleton_scene"
+      },
+      "usage": [
+        "sense/entities/enemies/skeleton/skeleton.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.attack.right",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/attack/attack_right.png",
+      "target_path": "assets/enemies/skeleton_hammer/attack/attack_right.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "attack"
+        ],
+        "directions": [
+          "right"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": false,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_skeleton_scene"
+      },
+      "usage": [
+        "sense/entities/enemies/skeleton/skeleton.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.attack.up_left",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/attack/attack_top_left.png",
+      "target_path": "assets/enemies/skeleton_hammer/attack/attack_top_left.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "attack"
+        ],
+        "directions": [
+          "up_left"
+        ],
+        "direction_aliases": {
+          "top_left": "up_left"
+        },
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": null,
+        "loop": null,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "sheet_dimensions_and_filename"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.attack.up_right",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/attack/attack_top_right.png",
+      "target_path": "assets/enemies/skeleton_hammer/attack/attack_top_right.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "attack"
+        ],
+        "directions": [
+          "up_right"
+        ],
+        "direction_aliases": {
+          "top_right": "up_right"
+        },
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": null,
+        "loop": null,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "sheet_dimensions_and_filename"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.attack.up",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/attack/attack_up.png",
+      "target_path": "assets/enemies/skeleton_hammer/attack/attack_up.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "attack"
+        ],
+        "directions": [
+          "up"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": false,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_skeleton_scene"
+      },
+      "usage": [
+        "sense/entities/enemies/skeleton/skeleton.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.death.default",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/death/death.png",
+      "target_path": "assets/enemies/skeleton_hammer/death/death.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "death"
+        ],
+        "directions": [],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": false,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_skeleton_scene"
+      },
+      "usage": [
+        "sense/entities/enemies/skeleton/skeleton.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.idle.down_left",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/idle/idle_bottom_left.png",
+      "target_path": "assets/enemies/skeleton_hammer/idle/idle_bottom_left.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "idle"
+        ],
+        "directions": [
+          "down_left"
+        ],
+        "direction_aliases": {
+          "bottom_left": "down_left"
+        },
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": null,
+        "loop": null,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "sheet_dimensions_and_filename"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.idle.down_right",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/idle/idle_bottom_right.png",
+      "target_path": "assets/enemies/skeleton_hammer/idle/idle_bottom_right.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "idle"
+        ],
+        "directions": [
+          "down_right"
+        ],
+        "direction_aliases": {
+          "bottom_right": "down_right"
+        },
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": null,
+        "loop": null,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "sheet_dimensions_and_filename"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.idle.down",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/idle/idle_down.png",
+      "target_path": "assets/enemies/skeleton_hammer/idle/idle_down.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "idle"
+        ],
+        "directions": [
+          "down"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": null,
+        "loop": null,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "sheet_dimensions_and_filename"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.idle.left",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/idle/idle_left.png",
+      "target_path": "assets/enemies/skeleton_hammer/idle/idle_left.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "idle"
+        ],
+        "directions": [
+          "left"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": null,
+        "loop": null,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "sheet_dimensions_and_filename"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.idle.right",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/idle/idle_right.png",
+      "target_path": "assets/enemies/skeleton_hammer/idle/idle_right.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "idle"
+        ],
+        "directions": [
+          "right"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": null,
+        "loop": null,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "sheet_dimensions_and_filename"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.idle.up_left",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/idle/idle_top_left.png",
+      "target_path": "assets/enemies/skeleton_hammer/idle/idle_top_left.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "idle"
+        ],
+        "directions": [
+          "up_left"
+        ],
+        "direction_aliases": {
+          "top_left": "up_left"
+        },
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": null,
+        "loop": null,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "sheet_dimensions_and_filename"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.idle.up_right",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/idle/idle_top_right.png",
+      "target_path": "assets/enemies/skeleton_hammer/idle/idle_top_right.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "idle"
+        ],
+        "directions": [
+          "up_right"
+        ],
+        "direction_aliases": {
+          "top_right": "up_right"
+        },
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": null,
+        "loop": null,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "sheet_dimensions_and_filename"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.idle.up",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/idle/idle_up.png",
+      "target_path": "assets/enemies/skeleton_hammer/idle/idle_up.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "idle"
+        ],
+        "directions": [
+          "up"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": null,
+        "loop": null,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "sheet_dimensions_and_filename"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.walk.down_left",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/walk/walk_bottom_left.png",
+      "target_path": "assets/enemies/skeleton_hammer/walk/walk_bottom_left.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "move"
+        ],
+        "directions": [
+          "down_left"
+        ],
+        "direction_aliases": {
+          "bottom_left": "down_left"
+        },
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": null,
+        "loop": null,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "sheet_dimensions_and_filename"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.walk.down_right",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/walk/walk_bottom_right.png",
+      "target_path": "assets/enemies/skeleton_hammer/walk/walk_bottom_right.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "move"
+        ],
+        "directions": [
+          "down_right"
+        ],
+        "direction_aliases": {
+          "bottom_right": "down_right"
+        },
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": null,
+        "loop": null,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "sheet_dimensions_and_filename"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.walk.down",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/walk/walk_down.png",
+      "target_path": "assets/enemies/skeleton_hammer/walk/walk_down.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "move"
+        ],
+        "directions": [
+          "down"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": true,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_skeleton_scene"
+      },
+      "usage": [
+        "sense/entities/enemies/skeleton/skeleton.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.walk.left",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/walk/walk_left.png",
+      "target_path": "assets/enemies/skeleton_hammer/walk/walk_left.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "move"
+        ],
+        "directions": [
+          "left"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": true,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_skeleton_scene"
+      },
+      "usage": [
+        "sense/entities/enemies/skeleton/skeleton.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.walk.right",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/walk/walk_right.png",
+      "target_path": "assets/enemies/skeleton_hammer/walk/walk_right.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "move"
+        ],
+        "directions": [
+          "right"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": true,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_skeleton_scene"
+      },
+      "usage": [
+        "sense/entities/enemies/skeleton/skeleton.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.walk.up_left",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/walk/walk_top_left.png",
+      "target_path": "assets/enemies/skeleton_hammer/walk/walk_top_left.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "move"
+        ],
+        "directions": [
+          "up_left"
+        ],
+        "direction_aliases": {
+          "top_left": "up_left"
+        },
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": null,
+        "loop": null,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "sheet_dimensions_and_filename"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.walk.up_right",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/walk/walk_top_right.png",
+      "target_path": "assets/enemies/skeleton_hammer/walk/walk_top_right.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "move"
+        ],
+        "directions": [
+          "up_right"
+        ],
+        "direction_aliases": {
+          "top_right": "up_right"
+        },
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": null,
+        "loop": null,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "sheet_dimensions_and_filename"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.enemy.skeleton_hammer.walk.up",
+      "category": "monster_sprite",
+      "source_path": "assets/enemies/skeleton_hammer/walk/walk_up.png",
+      "target_path": "assets/enemies/skeleton_hammer/walk/walk_up.png",
+      "file_format": "png",
+      "dimensions": [
+        1024,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "move"
+        ],
+        "directions": [
+          "up"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          128,
+          128
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": true,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_skeleton_scene"
+      },
+      "usage": [
+        "sense/entities/enemies/skeleton/skeleton.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "asset.items.item.icons",
+      "category": "item_icon_atlas",
+      "source_path": "assets/items/item_icons.png",
+      "target_path": "assets/items/item_icons.png",
+      "file_format": "png",
+      "dimensions": [
+        512,
+        867
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/items/item_database.gd",
+        "sense/items/debug_icon_atlas.gd"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.player.soldier.attack.down",
+      "category": "character_sprite",
+      "source_path": "assets/soldiers/attack/attack1_down.png",
+      "target_path": "assets/soldiers/attack/attack1_down.png",
+      "file_format": "png",
+      "dimensions": [
+        768,
+        80
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "attack"
+        ],
+        "directions": [
+          "down"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          96,
+          80
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": false,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_player_scene"
+      },
+      "usage": [
+        "sense/entities/player/player.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.player.soldier.attack.left",
+      "category": "character_sprite",
+      "source_path": "assets/soldiers/attack/attack1_left.png",
+      "target_path": "assets/soldiers/attack/attack1_left.png",
+      "file_format": "png",
+      "dimensions": [
+        768,
+        80
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "attack"
+        ],
+        "directions": [
+          "left"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          96,
+          80
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": false,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_player_scene"
+      },
+      "usage": [
+        "sense/entities/player/player.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.player.soldier.attack.right",
+      "category": "character_sprite",
+      "source_path": "assets/soldiers/attack/attack1_right.png",
+      "target_path": "assets/soldiers/attack/attack1_right.png",
+      "file_format": "png",
+      "dimensions": [
+        768,
+        80
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "attack"
+        ],
+        "directions": [
+          "right"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          96,
+          80
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": false,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_player_scene"
+      },
+      "usage": [
+        "sense/entities/player/player.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.player.soldier.attack.up",
+      "category": "character_sprite",
+      "source_path": "assets/soldiers/attack/attack1_up.png",
+      "target_path": "assets/soldiers/attack/attack1_up.png",
+      "file_format": "png",
+      "dimensions": [
+        768,
+        80
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "attack"
+        ],
+        "directions": [
+          "up"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          96,
+          80
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": false,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_player_scene"
+      },
+      "usage": [
+        "sense/entities/player/player.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.player.soldier.idle.down",
+      "category": "character_sprite",
+      "source_path": "assets/soldiers/idle/Idle_Down.png",
+      "target_path": "assets/soldiers/idle/Idle_Down.png",
+      "file_format": "png",
+      "dimensions": [
+        768,
+        80
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "idle"
+        ],
+        "directions": [
+          "down"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          96,
+          80
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": true,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_player_scene"
+      },
+      "usage": [
+        "sense/entities/player/player.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.player.soldier.idle.up",
+      "category": "character_sprite",
+      "source_path": "assets/soldiers/idle/Idle_Up.png",
+      "target_path": "assets/soldiers/idle/Idle_Up.png",
+      "file_format": "png",
+      "dimensions": [
+        768,
+        80
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "idle"
+        ],
+        "directions": [
+          "up"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          96,
+          80
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": true,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_player_scene"
+      },
+      "usage": [
+        "sense/entities/player/player.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.player.soldier.idle.left",
+      "category": "character_sprite",
+      "source_path": "assets/soldiers/idle/idle_left.png",
+      "target_path": "assets/soldiers/idle/idle_left.png",
+      "file_format": "png",
+      "dimensions": [
+        768,
+        80
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "idle"
+        ],
+        "directions": [
+          "left"
+        ],
+        "direction_aliases": {
+          "up_left": "left",
+          "down_left": "left"
+        },
+        "frame_dimensions": [
+          96,
+          80
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": true,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_player_scene"
+      },
+      "usage": [
+        "sense/entities/player/player.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.player.soldier.idle.right",
+      "category": "character_sprite",
+      "source_path": "assets/soldiers/idle/idle_right.png",
+      "target_path": "assets/soldiers/idle/idle_right.png",
+      "file_format": "png",
+      "dimensions": [
+        768,
+        80
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "idle"
+        ],
+        "directions": [
+          "right"
+        ],
+        "direction_aliases": {
+          "up_right": "right",
+          "down_right": "right"
+        },
+        "frame_dimensions": [
+          96,
+          80
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": true,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_player_scene"
+      },
+      "usage": [
+        "sense/entities/player/player.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.player.soldier.move.down",
+      "category": "character_sprite",
+      "source_path": "assets/soldiers/walk/run_down.png",
+      "target_path": "assets/soldiers/walk/run_down.png",
+      "file_format": "png",
+      "dimensions": [
+        768,
+        80
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "move"
+        ],
+        "directions": [
+          "down"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          96,
+          80
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": true,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_player_scene"
+      },
+      "usage": [
+        "sense/entities/player/player.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.player.soldier.move.left",
+      "category": "character_sprite",
+      "source_path": "assets/soldiers/walk/run_left.png",
+      "target_path": "assets/soldiers/walk/run_left.png",
+      "file_format": "png",
+      "dimensions": [
+        768,
+        80
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "move"
+        ],
+        "directions": [
+          "left"
+        ],
+        "direction_aliases": {
+          "up_left": "left",
+          "down_left": "left"
+        },
+        "frame_dimensions": [
+          96,
+          80
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": true,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_player_scene"
+      },
+      "usage": [
+        "sense/entities/player/player.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.player.soldier.move.right",
+      "category": "character_sprite",
+      "source_path": "assets/soldiers/walk/run_right.png",
+      "target_path": "assets/soldiers/walk/run_right.png",
+      "file_format": "png",
+      "dimensions": [
+        768,
+        80
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "move"
+        ],
+        "directions": [
+          "right"
+        ],
+        "direction_aliases": {
+          "up_right": "right",
+          "down_right": "right"
+        },
+        "frame_dimensions": [
+          96,
+          80
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": true,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_player_scene"
+      },
+      "usage": [
+        "sense/entities/player/player.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.player.soldier.move.up",
+      "category": "character_sprite",
+      "source_path": "assets/soldiers/walk/run_up.png",
+      "target_path": "assets/soldiers/walk/run_up.png",
+      "file_format": "png",
+      "dimensions": [
+        768,
+        80
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "move"
+        ],
+        "directions": [
+          "up"
+        ],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          96,
+          80
+        ],
+        "frame_count": 8,
+        "fps": 5.0,
+        "loop": true,
+        "pivot": null,
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "current_player_scene"
+      },
+      "usage": [
+        "sense/entities/player/player.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "asset.tilesets.tx.plant",
+      "category": "tileset",
+      "source_path": "assets/tilesets/TX Plant.png",
+      "target_path": "assets/tilesets/TX Plant.png",
+      "file_format": "png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/maps/field/world_props.gd"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "asset.tilesets.tx.props",
+      "category": "tileset",
+      "source_path": "assets/tilesets/TX Props.png",
+      "target_path": "assets/tilesets/TX Props.png",
+      "file_format": "png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/maps/field/world_props.gd",
+        "sense/maps/town/town.tscn",
+        "sense/maps/portal/portal.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "asset.tilesets.tx.shadow.plant",
+      "category": "tileset",
+      "source_path": "assets/tilesets/TX Shadow Plant.png",
+      "target_path": "assets/tilesets/TX Shadow Plant.png",
+      "file_format": "png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "asset.tilesets.tx.shadow",
+      "category": "tileset",
+      "source_path": "assets/tilesets/TX Shadow.png",
+      "target_path": "assets/tilesets/TX Shadow.png",
+      "file_format": "png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "available",
+      "notes": []
+    },
+    {
+      "asset_id": "asset.tilesets.tx.struct",
+      "category": "tileset",
+      "source_path": "assets/tilesets/TX Struct.png",
+      "target_path": "assets/tilesets/TX Struct.png",
+      "file_format": "png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/maps/town/town.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "asset.tilesets.tx.tileset.grass",
+      "category": "tileset",
+      "source_path": "assets/tilesets/TX Tileset Grass.png",
+      "target_path": "assets/tilesets/TX Tileset Grass.png",
+      "file_format": "png",
+      "dimensions": [
+        256,
+        256
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/maps/town/town.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "asset.tilesets.tx.tileset.stone.ground",
+      "category": "tileset",
+      "source_path": "assets/tilesets/TX Tileset Stone Ground.png",
+      "target_path": "assets/tilesets/TX Tileset Stone Ground.png",
+      "file_format": "png",
+      "dimensions": [
+        256,
+        256
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/maps/dungeon/dungeon_map.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "asset.tilesets.tx.tileset.wall",
+      "category": "tileset",
+      "source_path": "assets/tilesets/TX Tileset Wall.png",
+      "target_path": "assets/tilesets/TX Tileset Wall.png",
+      "file_format": "png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/maps/dungeon/dungeon_map.tscn",
+        "sense/maps/town/town.tscn"
+      ],
+      "provenance": {
+        "status": "unknown",
+        "distribution_scope": "unknown",
+        "license_status": "unknown"
+      },
+      "evidence_status": "verified_file_metadata",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "environment.field.bush.default",
+      "category": "environment_prop",
+      "source_path": null,
+      "target_path": "assets/treasure_hunter/field/bush.png",
+      "file_format": "png",
+      "dimensions": [
+        86,
+        83
+      ],
+      "transparency": "indexed_transparency",
+      "animation": null,
+      "usage": [
+        "sense/maps/field/world_props.gd"
+      ],
+      "provenance": {
+        "status": "user_supplied_capture_derived",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_repository_file_source_capture_not_uniquely_recorded",
+      "integration_status": "integrated",
+      "notes": [
+        "Derived from user-supplied runtime capture; exact crop source is not uniquely recorded."
+      ]
+    },
+    {
+      "asset_id": "environment.field.stump.default",
+      "category": "environment_prop",
+      "source_path": null,
+      "target_path": "assets/treasure_hunter/field/stump.png",
+      "file_format": "png",
+      "dimensions": [
+        85,
+        82
+      ],
+      "transparency": "indexed_transparency",
+      "animation": null,
+      "usage": [
+        "sense/maps/field/world_props.gd"
+      ],
+      "provenance": {
+        "status": "user_supplied_capture_derived",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_repository_file_source_capture_not_uniquely_recorded",
+      "integration_status": "integrated",
+      "notes": [
+        "Derived from user-supplied runtime capture; exact crop source is not uniquely recorded."
+      ]
+    },
+    {
+      "asset_id": "environment.field.tree.cluster",
+      "category": "environment_prop",
+      "source_path": null,
+      "target_path": "assets/treasure_hunter/field/tree_cluster.png",
+      "file_format": "png",
+      "dimensions": [
+        230,
+        283
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/maps/field/world_props.gd"
+      ],
+      "provenance": {
+        "status": "user_supplied_capture_derived",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_repository_file_source_capture_not_uniquely_recorded",
+      "integration_status": "integrated",
+      "notes": [
+        "Derived from user-supplied runtime capture; exact crop source is not uniquely recorded."
+      ]
+    },
+    {
+      "asset_id": "environment.field.tree.medium",
+      "category": "environment_prop",
+      "source_path": null,
+      "target_path": "assets/treasure_hunter/field/tree_medium.png",
+      "file_format": "png",
+      "dimensions": [
+        184,
+        208
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/maps/field/world_props.gd"
+      ],
+      "provenance": {
+        "status": "user_supplied_capture_derived",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_repository_file_source_capture_not_uniquely_recorded",
+      "integration_status": "integrated",
+      "notes": [
+        "Derived from user-supplied runtime capture; exact crop source is not uniquely recorded."
+      ]
+    },
+    {
+      "asset_id": "actor.monster.astromophy.default",
+      "category": "monster_sprite",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-9bf8909fc6767df3cd3cdca70518662f/Astromophy Icon__-7044068644866088262.png",
+      "target_path": "assets/treasure_hunter/monsters/astromophy.png",
+      "file_format": "png",
+      "dimensions": [
+        38,
+        35
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/globals/game_content.gd"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_manifest_and_repository_file",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.monster.mosqui.default",
+      "category": "monster_sprite",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-9ac7487ed9508f65ea7e90613628d28a/Mosqui Icon__4335706373204967772.png",
+      "target_path": "assets/treasure_hunter/monsters/mosqui.png",
+      "file_format": "png",
+      "dimensions": [
+        31,
+        33
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/globals/game_content.gd"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_manifest_and_repository_file",
+      "integration_status": "integrated",
+      "notes": []
+    },
+    {
+      "asset_id": "actor.monster.snailu.default",
+      "category": "monster_sprite",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-08664126c192323ab85d3904401b6343/Snailu Icon__-6501788369669652302.png",
+      "target_path": "assets/treasure_hunter/monsters/snailu.png",
+      "file_format": "png",
+      "dimensions": [
+        25,
+        22
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/globals/game_content.gd"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_manifest_and_repository_file",
+      "integration_status": "integrated",
+      "notes": []
+    }
+  ]
+}

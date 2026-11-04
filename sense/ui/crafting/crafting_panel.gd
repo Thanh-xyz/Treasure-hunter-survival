@@ -537,26 +537,31 @@ func _on_craft_pressed() -> void:
 	_execute_craft()
 
 
-func _execute_craft() -> void:
-	# Consume ingredients
+func _execute_craft() -> bool:
+	var removals: Array[Dictionary] = []
 	var ingredients := selected_recipe.get_ingredients(selected_tier)
 	for ingredient: Dictionary in ingredients:
 		var item_id: String = ingredient.get("item_id", "")
 		var qty: int = ingredient.get("quantity", 0)
 		var item_data: ItemData = ItemDatabase.get_item(item_id)
-		if item_data:
-			player_inventory.remove_item(item_data, qty)
+		if item_data == null or qty <= 0:
+			return false
+		removals.append({"item": item_data, "quantity": qty})
 
-	# Add result item
 	var result_id := selected_recipe.get_result_item_id(selected_tier)
 	var result_qty := selected_recipe.get_result_quantity(selected_tier)
 	var result_item: ItemData = ItemDatabase.get_item_copy(result_id)
-	if result_item:
-		player_inventory.add_item(result_item, result_qty)
+	if result_item == null or result_qty <= 0:
+		return false
+	var additions: Array[Dictionary] = [{"item": result_item, "quantity": result_qty}]
+	if not player_inventory.transact_items(removals, additions):
+		GameEvent.toast.emit("Inventory full", Color(1.0, 0.55, 0.45))
+		return false
 
 	item_crafted.emit(result_id)
 	GameEvent.item_crafted.emit(selected_recipe.id, selected_tier)
 	_refresh_all()
+	return true
 
 
 # =============================================================================

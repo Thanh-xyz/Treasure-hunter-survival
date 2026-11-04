@@ -43,6 +43,7 @@ func run_all() -> bool:
 
 	_test_pixel_art()
 	_test_progression()
+	_test_inventory_transactions()
 	_test_economy_and_collections()
 	_test_buildings()
 	_test_quests()
@@ -91,6 +92,31 @@ func _test_progression() -> void:
 	GameState.apply_to_stats(stats)
 	_check(stats.max_health == s2["hp"], "apply_to_stats sets max HP")
 	_check(stats.current_health == stats.max_health, "full HP stays full")
+
+
+func _test_inventory_transactions() -> void:
+	var inv := InventoryData.new()
+	var fire_shard := ItemDatabase.get_item("fire_shard")
+	var iron_ore := ItemDatabase.get_item("iron_ore")
+	var output := ItemDatabase.get_item_copy("flame_augment_t1")
+	inv.add_item(fire_shard, 4)
+	inv.add_item(iron_ore, 3)
+	inv.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE - 2)
+	var removals: Array[Dictionary] = [
+		{"item": fire_shard, "quantity": 3},
+		{"item": iron_ore, "quantity": 2},
+	]
+	var additions: Array[Dictionary] = [{"item": output, "quantity": 1}]
+	_check(not inv.transact_items(removals, additions), "full inventory rejects atomic craft transaction")
+	_check(inv.get_item_count("fire_shard") == 4, "failed transaction preserves first ingredient")
+	_check(inv.get_item_count("iron_ore") == 3, "failed transaction preserves second ingredient")
+	_check(inv.get_item_count("flame_augment_t1") == 0, "failed transaction does not add output")
+
+	inv.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
+	_check(inv.transact_items(removals, additions), "transaction succeeds when output fits")
+	_check(inv.get_item_count("fire_shard") == 1, "successful transaction consumes first ingredient")
+	_check(inv.get_item_count("iron_ore") == 1, "successful transaction consumes second ingredient")
+	_check(inv.get_item_count("flame_augment_t1") == 1, "successful transaction adds output")
 
 
 func _test_economy_and_collections() -> void:
@@ -149,10 +175,27 @@ func _test_buildings() -> void:
 	_check(GameState.build_or_upgrade(1, "training_hall"), "build training hall")
 	_check(GameState.compute_base_stats()["atk"] > atk0, "training hall adds attack")
 
+	# A full bag must not discard stored production or reset its timer.
+	var full_inv := InventoryData.new()
+	full_inv.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	_stub_player.inventory = full_inv
+	GameState.plots[2] = {
+		"id": "lumber_mill",
+		"level": 1,
+		"last_collect": Time.get_unix_time_from_system() - 3600.0,
+	}
+	var stored_timestamp := float(GameState.plots[2]["last_collect"])
+	_check(GameState.collect_building(2) == 0, "full inventory rejects building collection")
+	_check(float(GameState.plots[2]["last_collect"]) == stored_timestamp, "failed collection preserves production timer")
+	full_inv.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
+	_check(GameState.collect_building(2) > 0, "building collection succeeds after freeing a slot")
+	_check(full_inv.get_item_count("wood") > 0, "successful building collection grants resources")
+
 
 func _test_quests() -> void:
 	GameState.reset_profile()
 	QuestService.reset()
+	_stub_player.inventory = InventoryData.new()
 	var q := QuestService.get_main_quest()
 	_check(q["id"] == "q01", "first main quest is q01")
 	GameEvent.ground_dug.emit("stone", 1)
@@ -167,6 +210,25 @@ func _test_quests() -> void:
 	_check(QuestService.dailies["d_boss"]["progress"] == 1, "daily boss counts boss kill")
 	_check(QuestService.claim("d_boss"), "claim daily boss")
 	_check(not QuestService.claim("d_boss"), "daily cannot be claimed twice")
+
+	# q02 has an item reward; a full bag must keep the quest claimable.
+	QuestService.reset()
+	QuestService.main_index = 1
+	QuestService.main_progress = int(GameContent.MAIN_QUESTS[1]["obj"]["count"])
+	QuestService.main_ready = true
+	var full_inv := InventoryData.new()
+	full_inv.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	_stub_player.inventory = full_inv
+	var xp_before := GameState.xp
+	var gold_before := full_inv.gold
+	_check(not QuestService.claim("q02"), "full inventory rejects quest item reward")
+	_check(QuestService.main_index == 1 and QuestService.main_ready, "failed claim preserves quest state")
+	_check(GameState.xp == xp_before and full_inv.gold == gold_before, "failed claim grants no partial XP or gold")
+	full_inv.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
+	_check(QuestService.claim("q02"), "quest claim succeeds after freeing a slot")
+	_check(QuestService.main_index == 2, "successful claim advances quest")
+	_check(full_inv.get_item_count("health_potion") == 3, "successful claim grants full item reward")
+	_stub_player.inventory = InventoryData.new()
 
 
 func _test_ground_dig() -> void:

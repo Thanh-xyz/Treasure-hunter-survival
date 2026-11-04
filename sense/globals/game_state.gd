@@ -299,20 +299,23 @@ func can_afford(cost: Dictionary) -> bool:
 
 
 func spend(cost: Dictionary) -> bool:
-	if not can_afford(cost):
-		return false
 	var inv := get_inventory()
+	if inv == null:
+		return false
+	var removals: Array[Dictionary] = []
+	var gold_cost := 0
 	for key in cost:
 		var amount: int = cost[key]
 		if amount <= 0:
 			continue
 		if key == "gold":
-			inv.gold -= amount
+			gold_cost += amount
 		else:
 			var item: ItemData = ItemDatabase.get_item(key)
-			if item:
-				inv.remove_item(item, amount)
-	return true
+			if item == null:
+				return false
+			removals.append({"item": item, "quantity": amount})
+	return inv.transact(removals, [], -gold_cost)
 
 
 ## rewards: {"xp": int, "gold": int, "items": {id: qty}}
@@ -322,6 +325,9 @@ func grant(rewards: Dictionary) -> bool:
 	var items: Dictionary = rewards.get("items", {})
 	if inv == null and (not items.is_empty() or rewards.has("gold")):
 		return false
+	var gold_reward := int(rewards.get("gold", 0))
+	if gold_reward < 0:
+		return false
 	var additions: Array[Dictionary] = []
 	for item_id in items:
 		var item: ItemData = ItemDatabase.get_item(item_id)
@@ -329,12 +335,10 @@ func grant(rewards: Dictionary) -> bool:
 		if item == null or quantity <= 0:
 			return false
 		additions.append({"item": item, "quantity": quantity})
-	if inv != null and not additions.is_empty() and not inv.transact_items([], additions):
+	if inv != null and not inv.transact([], additions, gold_reward):
 		return false
 	if rewards.has("xp"):
 		add_xp(int(rewards["xp"]))
-	if inv != null and rewards.has("gold"):
-		inv.gold += int(rewards["gold"])
 	return true
 
 

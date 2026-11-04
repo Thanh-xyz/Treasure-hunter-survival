@@ -88,6 +88,14 @@ func add_item(item: ItemData, quantity: int = 1) -> int:
 ## Apply item removals and additions as one inventory mutation.
 ## Each entry is {"item": ItemData, "quantity": int}. Nothing changes on failure.
 func transact_items(removals: Array[Dictionary], additions: Array[Dictionary]) -> bool:
+	return transact(removals, additions, 0)
+
+
+## Commit item and gold changes together. Signals observe the final combined state.
+func transact(removals: Array[Dictionary], additions: Array[Dictionary], gold_delta: int = 0) -> bool:
+	var resulting_gold := gold + gold_delta
+	if resulting_gold < 0:
+		return false
 	var simulated := _copy_slots(inventory_slots)
 	for entry: Dictionary in removals:
 		var item := entry.get("item") as ItemData
@@ -100,7 +108,10 @@ func transact_items(removals: Array[Dictionary], additions: Array[Dictionary]) -
 		if item == null or quantity <= 0 or _add_to_slots(simulated, item, quantity) > 0:
 			return false
 	inventory_slots = simulated
-	inventory_changed.emit()
+	if gold_delta != 0:
+		gold = resulting_gold
+	if not removals.is_empty() or not additions.is_empty():
+		inventory_changed.emit()
 	return true
 
 

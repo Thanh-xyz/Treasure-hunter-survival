@@ -127,6 +127,12 @@ func _test_economy_and_collections() -> void:
 	GameState.grant({"gold": 5000, "items": {"hero_shard": 20, "pet_treat": 30}})
 	_check(inv.gold == 5000, "grant adds gold")
 	_check(inv.get_item_count("hero_shard") == 20, "grant adds items")
+	var gold_before_cost := inv.gold
+	var treats_before_cost := inv.get_item_count("pet_treat")
+	_check(not GameState.spend({"gold": 25, "pet_treat": treats_before_cost + 1}), "mixed cost rejects insufficient items")
+	_check(inv.gold == gold_before_cost and inv.get_item_count("pet_treat") == treats_before_cost, "failed mixed cost is atomic")
+	_check(GameState.spend({"gold": 25, "pet_treat": 1}), "valid mixed cost succeeds")
+	_check(inv.gold == gold_before_cost - 25 and inv.get_item_count("pet_treat") == treats_before_cost - 1, "valid mixed cost charges exactly")
 
 	# Heroes
 	GameState.level = 5

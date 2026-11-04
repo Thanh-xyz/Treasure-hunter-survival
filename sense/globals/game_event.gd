@@ -12,6 +12,7 @@ signal shop_closed
 # --- Survival RPG domain events ---------------------------------------------
 signal enemy_killed(monster_id: String, position: Vector2, is_boss: bool)
 signal resource_gathered(item_id: String, quantity: int)
+signal ground_dug(item_id: String, quantity: int)
 signal zone_entered(zone_id: String)
 signal building_built(building_id: String, level: int)
 signal player_died

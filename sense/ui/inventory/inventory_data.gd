@@ -471,6 +471,8 @@ func use_item(index: int) -> Dictionary:
 	if item.is_timed_buff():
 		var buff_result := {
 			"success": true,
+			"item_id": item.id,
+			"consumed_quantity": 1,
 			"is_timed_buff": true,
 			"buff_item": item,  # Pass full ItemData so BuffComponent can read it
 			"heal_amount": 0,
@@ -483,6 +485,8 @@ func use_item(index: int) -> Dictionary:
 	# Handle regular consumables (existing logic)
 	var result := {
 		"success": true,
+		"item_id": item.id,
+		"consumed_quantity": 1,
 		"is_timed_buff": false,
 		"heal_amount": item.heal_amount,
 		"stamina_restore": item.stamina_restore,

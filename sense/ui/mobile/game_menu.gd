@@ -2,7 +2,7 @@ class_name GameMenu
 extends Control
 ## Full-screen tabbed menu (portrait): Hero, Pet, Mount, Quest, Map, Village,
 ## System. Each tab is rebuilt from GameState/QuestService when shown or when
-## the underlying data changes. The game pauses while the menu is open.
+## the underlying data changes. The world keeps simulating behind the overlay.
 
 signal closed
 
@@ -11,8 +11,6 @@ const TAB_TITLES := {
 	"hero": "Heroes", "pet": "Pets", "mount": "Mounts", "quest": "Quests",
 	"map": "World Map", "village": "Homestead", "system": "System",
 }
-const HERO_SHEET := preload("res://assets/soldiers/idle/Idle_Down.png")
-
 var current_tab: String = "hero"
 var _content: VBoxContainer
 var _title: Label
@@ -24,7 +22,18 @@ var _dirty: bool = false
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	theme = UiTheme.get_theme()
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	if get_parent() is Control:
+		anchor_left = 0.0
+		anchor_top = 0.0
+		anchor_right = 1.0
+		anchor_bottom = 1.0
+		offset_left = 0.0
+		offset_top = 0.0
+		offset_right = 0.0
+		offset_bottom = 0.0
+	else:
+		set_anchors_preset(Control.PRESET_TOP_LEFT)
+		size = get_viewport_rect().size
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	visible = false
 
@@ -85,13 +94,14 @@ func open(tab: String = "") -> void:
 	if tab != "":
 		current_tab = tab
 	visible = true
-	get_tree().paused = true
 	_rebuild()
 
 
 func close() -> void:
+	# Settings and collection changes are local profile data; closing the menu is
+	# a natural persistence boundary on mobile.
+	SaveService.save_game()
 	visible = false
-	get_tree().paused = false
 	closed.emit()
 
 
@@ -172,11 +182,8 @@ func _icon(tex: Texture2D, size_px: int = 72, tint: Color = Color.WHITE) -> Text
 	return tr
 
 
-static func hero_portrait() -> AtlasTexture:
-	var at := AtlasTexture.new()
-	at.atlas = HERO_SHEET
-	at.region = Rect2(30, 18, 32, 44)
-	return at
+static func hero_portrait() -> Texture2D:
+	return PixelArt.make_guest_portrait()
 
 
 func _act(ok: bool, fail_msg: String) -> void:
@@ -417,8 +424,32 @@ func _build_village() -> void:
 # --- System -------------------------------------------------------------------
 func _build_system() -> void:
 	var v := _card()
+	v.add_child(UiTheme.label("SETTINGS", 30, UiTheme.C_GOLD))
 	v.add_child(UiTheme.label("Profile: Lv.%d, %d kills, bosses: %s" % [GameState.level, GameState.kills_total, str(GameState.boss_kills)], 18, UiTheme.C_MUTED))
+	v.add_child(UiTheme.label("Session: %s" % LanSession.role_text(), 18, UiTheme.C_MUTED))
+	if LanSession.is_active():
+		v.add_child(UiTheme.button("Disconnect Wi-Fi", func() -> void:
+			close()
+			LanSession.stop(true)
+		))
 	v.add_child(UiTheme.button("Save game", _save))
+	var fps_row := _row(v)
+	fps_row.add_child(UiTheme.label("Frame rate", 20))
+	var fps_picker := OptionButton.new()
+	fps_picker.custom_minimum_size = Vector2(220, 50)
+	for cap in [30, 60, 120]:
+		fps_picker.add_item("%d FPS" % cap, cap)
+	var current_fps := int(GameState.settings.get("max_fps", 60))
+	for i in range(fps_picker.item_count):
+		if fps_picker.get_item_id(i) == current_fps:
+			fps_picker.select(i)
+			break
+	fps_picker.item_selected.connect(func(index: int) -> void:
+		var cap := fps_picker.get_item_id(index)
+		GameState.settings["max_fps"] = cap
+		Engine.max_fps = cap
+	)
+	fps_row.add_child(fps_picker)
 	var opacity_row := _row(v)
 	opacity_row.add_child(UiTheme.label("Controls opacity", 20))
 	var slider := HSlider.new()
@@ -434,6 +465,11 @@ func _build_system() -> void:
 	dn.button_pressed = bool(GameState.settings.get("damage_numbers", true))
 	dn.toggled.connect(func(on: bool) -> void: GameState.settings["damage_numbers"] = on)
 	v.add_child(dn)
+	var compact := CheckButton.new()
+	compact.text = "Compact HUD"
+	compact.button_pressed = bool(GameState.settings.get("compact_hud", false))
+	compact.toggled.connect(func(on: bool) -> void: GameState.settings["compact_hud"] = on)
+	v.add_child(compact)
 	var danger := _card()
 	danger.add_child(UiTheme.label("Danger zone", 22, UiTheme.C_BAD))
 	danger.add_child(UiTheme.button("Start a new game (deletes save)", _new_game))

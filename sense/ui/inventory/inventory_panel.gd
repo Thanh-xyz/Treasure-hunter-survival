@@ -23,6 +23,8 @@ var _embedded := false
 # Node references from scene
 @onready var slots_grid: GridContainer = $CenterContainer/MainPanel/MainMargin/MainHBox/InventoryVBox/InventoryGrid/GridMargin/SlotsGrid
 @onready var equip_grid: GridContainer = $CenterContainer/MainPanel/MainMargin/MainHBox/EquipmentPanel/EquipMargin/EquipVBox/EquipGrid
+@onready var character_preview: Panel = $CenterContainer/MainPanel/MainMargin/MainHBox/EquipmentPanel/EquipMargin/EquipVBox/CharacterPreview
+@onready var character_preview_label: Label = $CenterContainer/MainPanel/MainMargin/MainHBox/EquipmentPanel/EquipMargin/EquipVBox/CharacterPreview/Label
 
 # Tab buttons
 @onready var sort_button: Button = $CenterContainer/MainPanel/MainMargin/MainHBox/InventoryVBox/HeaderRow/TabsContainer/Sort
@@ -61,10 +63,57 @@ var tab_buttons: Array[Button] = []
 
 
 func _ready() -> void:
+	theme = UiTheme.get_theme()
 	visible = false
 	_create_inventory_slots()
 	_setup_equipment_slots()
 	_setup_tabs()
+	_setup_character_preview()
+	_add_touch_close_button()
+
+
+func _add_touch_close_button() -> void:
+	var close_button := Button.new()
+	close_button.text = "X"
+	close_button.focus_mode = Control.FOCUS_NONE
+	close_button.anchor_left = 1.0
+	close_button.anchor_right = 1.0
+	close_button.offset_left = -76
+	close_button.offset_right = -16
+	close_button.offset_top = 16
+	close_button.offset_bottom = 72
+	close_button.add_theme_font_size_override("font_size", 26)
+	close_button.pressed.connect(close_inventory)
+	add_child(close_button)
+
+
+func _setup_character_preview() -> void:
+	var portrait := TextureRect.new()
+	portrait.name = "HeroPortrait"
+	portrait.texture = GameMenu.hero_portrait()
+	portrait.set_anchors_preset(Control.PRESET_FULL_RECT)
+	portrait.offset_left = 80
+	portrait.offset_top = 26
+	portrait.offset_right = -80
+	portrait.offset_bottom = -52
+	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	character_preview.add_child(portrait)
+	character_preview.move_child(portrait, 0)
+	_refresh_character_preview()
+
+
+func _refresh_character_preview() -> void:
+	var hero: Dictionary = GameContent.HEROES.get(GameState.hero_id, {})
+	var portrait := character_preview.get_node_or_null("HeroPortrait") as TextureRect
+	if portrait:
+		portrait.self_modulate = hero.get("tint", Color.WHITE)
+	character_preview_label.text = "%s\nLv.%d" % [hero.get("name", "Hero"), GameState.level]
+	character_preview_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	character_preview_label.add_theme_color_override("font_color", UiTheme.C_GOLD)
+	character_preview_label.add_theme_font_size_override("font_size", 24)
 
 
 func _input(event: InputEvent) -> void:
@@ -247,6 +296,7 @@ func setup(data: InventoryData, stats: CharacterStats = null) -> void:
 
 func open_inventory() -> void:
 	visible = true
+	_refresh_character_preview()
 	_refresh_inventory()
 	_refresh_stats()
 

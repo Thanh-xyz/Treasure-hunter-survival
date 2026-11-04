@@ -111,6 +111,11 @@ var _bob_time: float = 0.0
 var _proximity_timer: float = 0.0
 var _velocity: Vector2 = Vector2.ZERO
 var _friction: float = 5.0
+var network_id: int = 0
+var network_zone_id: String = ""
+var network_replica: bool = false
+var _network_pickup_pending: bool = false
+var _network_pickup_request_msec: int = 0
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # NODE REFERENCES
@@ -264,6 +269,14 @@ func _on_body_exited(body: Node2D) -> void:
 func _collect(collector: Node2D) -> void:
 	if _is_collected:
 		return
+	if network_replica:
+		var now := Time.get_ticks_msec()
+		if _network_pickup_pending and now - _network_pickup_request_msec < 500:
+			return
+		_network_pickup_pending = true
+		_network_pickup_request_msec = now
+		LanSession.request_loot_pickup(network_id)
+		return
 	
 	# Check lock (async because _try_unlock may show message)
 	if locked and not await _try_unlock(collector):
@@ -290,6 +303,14 @@ func _collect(collector: Node2D) -> void:
 	collected.emit(content_type, item_id, quantity if content_type == ContentType.ITEM else value)
 	
 	# Cleanup
+	_play_collect_effect()
+
+
+func apply_network_collected() -> void:
+	if _is_collected:
+		return
+	_is_collected = true
+	_can_pickup = false
 	_play_collect_effect()
 
 
@@ -641,6 +662,9 @@ func scatter_from(origin: Vector2) -> void:
 ## Pops up, then arcs toward the collector with a trail-like shrink at the end
 func magnet_collect(collector: Node2D, duration: float = 0.45) -> void:
 	if _is_collected:
+		return
+	if network_replica:
+		_collect(collector)
 		return
 	_is_collected = true
 	_can_pickup = false

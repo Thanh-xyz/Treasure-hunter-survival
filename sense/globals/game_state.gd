@@ -31,7 +31,13 @@ var plots: Array = []              ## index -> {} or {"id","level","last_collect
 var boss_kills: Dictionary = {}
 var kills_total: int = 0
 var current_zone: String = "town"
-var settings: Dictionary = {"joystick_opacity": 0.7, "left_handed": false, "damage_numbers": true}
+var settings: Dictionary = {
+	"joystick_opacity": 0.7,
+	"left_handed": false,
+	"damage_numbers": true,
+	"compact_hud": false,
+	"max_fps": 60,
+}
 
 
 func _ready() -> void:
@@ -55,6 +61,7 @@ func reset_profile() -> void:
 	boss_kills = {}
 	kills_total = 0
 	current_zone = "town"
+	_apply_runtime_settings()
 
 
 # =============================================================================
@@ -109,7 +116,12 @@ func from_dict(d: Dictionary) -> void:
 	var s: Dictionary = d.get("settings", {})
 	for k in s:
 		settings[k] = s[k]
+	_apply_runtime_settings()
 	_emit_all()
+
+
+func _apply_runtime_settings() -> void:
+	Engine.max_fps = clampi(int(settings.get("max_fps", 60)), 30, 120)
 
 
 ## JSON turns ints into floats; normalize nested numeric dictionaries.

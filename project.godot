@@ -31,12 +31,13 @@ ConfirmDialog="*res://sense/globals/confirm_dialog.gd"
 GameState="*res://sense/globals/game_state.gd"
 QuestService="*res://sense/globals/quest_service.gd"
 SaveService="*res://sense/globals/save_service.gd"
+LanSession="*res://sense/network/lan_session.gd"
 
 [display]
 
 window/size/viewport_width=720
-window/size/viewport_height=1280
-window/size/window_width_override=450
+window/size/viewport_height=1600
+window/size/window_width_override=360
 window/size/window_height_override=800
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"

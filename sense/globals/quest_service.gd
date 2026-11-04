@@ -21,6 +21,7 @@ var daily_date: String = ""
 func _ready() -> void:
 	GameEvent.enemy_killed.connect(_on_enemy_killed)
 	GameEvent.resource_gathered.connect(_on_resource_gathered)
+	GameEvent.ground_dug.connect(_on_ground_dug)
 	GameEvent.zone_entered.connect(_on_zone_entered)
 	GameEvent.building_built.connect(_on_building_built)
 	GameEvent.item_crafted.connect(func(_r: String, _t: int) -> void: _advance("craft", "any", 1))
@@ -186,6 +187,10 @@ func _on_enemy_killed(monster_id: String, _pos: Vector2, is_boss: bool) -> void:
 
 func _on_resource_gathered(item_id: String, quantity: int) -> void:
 	_advance("gather", item_id, quantity)
+
+
+func _on_ground_dug(_item_id: String, _quantity: int) -> void:
+	_advance("dig", "any", 1)
 
 
 func _on_zone_entered(zone_id: String) -> void:

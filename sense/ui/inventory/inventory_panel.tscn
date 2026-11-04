@@ -3,12 +3,12 @@
 [ext_resource type="Script" uid="uid://hgyj1b7xs3gh" path="res://sense/ui/inventory/inventory_panel.gd" id="1_panel"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_main_panel"]
-bg_color = Color(0.16, 0.14, 0.18, 1)
+bg_color = Color(0.29, 0.27, 0.31, 1)
 border_width_left = 6
 border_width_top = 6
 border_width_right = 6
 border_width_bottom = 6
-border_color = Color(0.45, 0.4, 0.35, 1)
+border_color = Color(0.56, 0.56, 0.57, 1)
 expand_margin_left = 2.0
 expand_margin_top = 2.0
 expand_margin_right = 2.0
@@ -16,15 +16,15 @@ expand_margin_bottom = 2.0
 shadow_size = 4
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_equipment_panel"]
-bg_color = Color(0.12, 0.11, 0.14, 1)
+bg_color = Color(0.12, 0.12, 0.13, 1)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.35, 0.32, 0.28, 1)
+border_color = Color(0.5, 0.5, 0.52, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_preview"]
-bg_color = Color(0.08, 0.07, 0.1, 1)
+bg_color = Color(0.16, 0.15, 0.18, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
@@ -107,7 +107,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="MainPanel" type="Panel" parent="CenterContainer" unique_id=1561455466]
-custom_minimum_size = Vector2(684, 450)
+custom_minimum_size = Vector2(684, 1480)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_main_panel")
 
@@ -118,17 +118,17 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 20
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 70
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
 
-[node name="MainHBox" type="HBoxContainer" parent="CenterContainer/MainPanel/MainMargin" unique_id=1011527719]
+[node name="MainHBox" type="VBoxContainer" parent="CenterContainer/MainPanel/MainMargin" unique_id=1011527719]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 12
 
 [node name="EquipmentPanel" type="Panel" parent="CenterContainer/MainPanel/MainMargin/MainHBox" unique_id=39514076]
-custom_minimum_size = Vector2(220, 0)
+custom_minimum_size = Vector2(0, 820)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_equipment_panel")
 
@@ -151,11 +151,11 @@ theme_override_constants/separation = 8
 [node name="Title" type="Label" parent="CenterContainer/MainPanel/MainMargin/MainHBox/EquipmentPanel/EquipMargin/EquipVBox" unique_id=11998304]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.55, 0.58, 0.65, 1)
-text = "EQUIPMENT"
+text = "CHARACTER INFORMATION"
 horizontal_alignment = 1
 
 [node name="CharacterPreview" type="Panel" parent="CenterContainer/MainPanel/MainMargin/MainHBox/EquipmentPanel/EquipMargin/EquipVBox" unique_id=156763872]
-custom_minimum_size = Vector2(100, 100)
+custom_minimum_size = Vector2(440, 300)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_preview")
@@ -168,8 +168,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0.4, 0.4, 0.4, 1)
-text = "Character
-Preview"
+text = "HERO PREVIEW"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -366,22 +365,26 @@ theme_override_constants/separation = 8
 layout_mode = 2
 
 [node name="Title" type="Label" parent="CenterContainer/MainPanel/MainMargin/MainHBox/InventoryVBox/HeaderRow" unique_id=1658725800]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.55, 0.58, 0.65, 1)
-text = "INVENTORY"
+text = "STORAGE"
 
 [node name="TabsContainer" type="HBoxContainer" parent="CenterContainer/MainPanel/MainMargin/MainHBox/InventoryVBox/HeaderRow" unique_id=1224119151]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 4
 
 [node name="Sort" type="Button" parent="CenterContainer/MainPanel/MainMargin/MainHBox/InventoryVBox/HeaderRow/TabsContainer" unique_id=1297377262]
+custom_minimum_size = Vector2(56, 40)
 layout_mode = 2
 text = "⛓"
 
 [node name="TabAll" type="Button" parent="CenterContainer/MainPanel/MainMargin/MainHBox/InventoryVBox/HeaderRow/TabsContainer" unique_id=72837067]
-custom_minimum_size = Vector2(80, 28)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_tab_active")
@@ -390,24 +393,26 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_tab_hover")
 text = "All"
 
 [node name="TabEquip" type="Button" parent="CenterContainer/MainPanel/MainMargin/MainHBox/InventoryVBox/HeaderRow/TabsContainer" unique_id=2124347187]
-custom_minimum_size = Vector2(80, 28)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_tab_inactive")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_tab_active")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tab_hover")
-text = "Equip"
+text = "Gear"
 
 [node name="TabMaterial" type="Button" parent="CenterContainer/MainPanel/MainMargin/MainHBox/InventoryVBox/HeaderRow/TabsContainer" unique_id=1499573775]
-custom_minimum_size = Vector2(80, 28)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_tab_inactive")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_tab_active")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tab_hover")
-text = "Material"
+text = "Materials"
 
 [node name="InventoryGrid" type="Panel" parent="CenterContainer/MainPanel/MainMargin/MainHBox/InventoryVBox" unique_id=2005520295]
 layout_mode = 2

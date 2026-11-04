@@ -5,8 +5,13 @@ extends RefCounted
 
 const PLANT_SHEET := preload("res://assets/tilesets/TX Plant.png")
 const PROPS_SHEET := preload("res://assets/tilesets/TX Props.png")
-const GRASS_SHEET := preload("res://assets/tilesets/TX Tileset Grass.png")
-const STONE_SHEET := preload("res://assets/tilesets/TX Tileset Stone Ground.png")
+const THS_TREE_CLUSTER := preload("res://assets/treasure_hunter/field/tree_cluster.png")
+const THS_TREE_MEDIUM := preload("res://assets/treasure_hunter/field/tree_medium.png")
+const THS_BUSH := preload("res://assets/treasure_hunter/field/bush.png")
+const THS_STUMP := preload("res://assets/treasure_hunter/field/stump.png")
+const SOURCE_CAPTURE_SCALE := 0.5
+
+static var _ground_tileset: TileSet = null
 
 const REGIONS := {
 	"tree_1": ["plant", Rect2(24, 14, 113, 139)],
@@ -38,15 +43,55 @@ const REGIONS := {
 
 
 static func make_sprite(key: String, scale: float = 1.0) -> Sprite2D:
+	var source_texture := _source_texture_for(key)
+	if source_texture != null:
+		var source_sprite := Sprite2D.new()
+		source_sprite.texture = source_texture
+		source_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		var source_scale := scale * SOURCE_CAPTURE_SCALE * _source_scale_for(key)
+		source_sprite.scale = Vector2(source_scale, source_scale)
+		source_sprite.position = Vector2(0, -source_texture.get_height() * source_scale * 0.5 + 2.0)
+		return source_sprite
 	var entry: Array = REGIONS.get(key, REGIONS["rock_1"])
 	var spr := Sprite2D.new()
 	spr.texture = PLANT_SHEET if entry[0] == "plant" else PROPS_SHEET
 	spr.region_enabled = true
 	var rect: Rect2 = entry[1]
 	spr.region_rect = rect
-	spr.scale = Vector2(scale, scale)
-	spr.position = Vector2(0, -rect.size.y * scale * 0.5 + 2.0)
+	var source_scale := scale * _source_scale_for(key)
+	spr.scale = Vector2(source_scale, source_scale)
+	spr.position = Vector2(0, -rect.size.y * source_scale * 0.5 + 2.0)
 	return spr
+
+
+static func _source_texture_for(key: String) -> Texture2D:
+	match key:
+		"tree_1", "tree_3":
+			return THS_TREE_CLUSTER
+		"tree_2":
+			return THS_TREE_MEDIUM
+		"bush_1", "bush_2", "bush_3", "bush_4", "bush_5":
+			return THS_BUSH
+		"stump":
+			return THS_STUMP
+		_:
+			return null
+
+
+static func _source_scale_for(key: String) -> float:
+	match key:
+		"tree_1", "tree_3":
+			return 1.9
+		"tree_2":
+			return 2.1
+		"bush_1", "bush_2", "bush_3", "bush_4", "bush_5":
+			return 2.0
+		"stump":
+			return 0.7
+		"rock_big", "rock_1", "rock_2", "pebble":
+			return 1.15
+		_:
+			return 1.0
 
 
 ## Static obstacle with a sprite and a small collision footprint at its base.
@@ -65,20 +110,60 @@ static func make_obstacle(key: String, scale: float, footprint: Vector2) -> Stat
 	return body
 
 
-## Ground TileSet: source 0 = grass sheet, source 1 = stone ground sheet
+## Clean-room ground atlas. The field source is visually dominated by flat,
+## muted grass, so the variants only add a few low-contrast pixel marks.
 static func make_ground_tileset() -> TileSet:
+	if _ground_tileset != null:
+		return _ground_tileset
 	var ts := TileSet.new()
 	ts.tile_size = Vector2i(16, 16)
 	var grass := TileSetAtlasSource.new()
-	grass.texture = GRASS_SHEET
+	grass.texture = _make_grass_atlas()
 	grass.texture_region_size = Vector2i(16, 16)
 	for y in range(7):
 		for x in range(16):
 			grass.create_tile(Vector2i(x, y))
 	ts.add_source(grass, 0)
 	var stone := TileSetAtlasSource.new()
-	stone.texture = STONE_SHEET
+	stone.texture = _make_road_tile()
 	stone.texture_region_size = Vector2i(16, 16)
 	stone.create_tile(Vector2i(0, 0))
 	ts.add_source(stone, 1)
-	return ts
+	_ground_tileset = ts
+	return _ground_tileset
+
+
+static func _make_grass_atlas() -> ImageTexture:
+	var image := Image.create(16 * 16, 7 * 16, false, Image.FORMAT_RGBA8)
+	var base := Color("3c784a")
+	var dark := Color("326c42")
+	var light := Color("478454")
+	image.fill(base)
+	for tile_y in range(7):
+		for tile_x in range(16):
+			var origin := Vector2i(tile_x * 16, tile_y * 16)
+			var variant := tile_y * 16 + tile_x
+			# Deterministic, sparse accents keep repetition invisible in motion.
+			if variant % 3 == 0:
+				image.set_pixelv(origin + Vector2i(3 + variant % 8, 5 + variant % 6), dark)
+			if variant % 5 == 0:
+				var p := origin + Vector2i(10 - variant % 5, 11 - variant % 4)
+				image.set_pixelv(p, light)
+				image.set_pixelv(p + Vector2i(1, -1), light)
+			if variant % 11 == 0:
+				image.set_pixelv(origin + Vector2i(13, 3), dark)
+	return ImageTexture.create_from_image(image)
+
+
+static func _make_road_tile() -> ImageTexture:
+	var image := Image.create(16, 16, false, Image.FORMAT_RGBA8)
+	image.fill(Color("756a52"))
+	var dark := Color("5e5747")
+	var light := Color("8b7d5e")
+	for x in range(16):
+		image.set_pixel(x, 7, dark)
+	image.set_pixel(5, 2, light)
+	image.set_pixel(6, 2, light)
+	image.set_pixel(12, 11, dark)
+	image.set_pixel(3, 13, light)
+	return ImageTexture.create_from_image(image)

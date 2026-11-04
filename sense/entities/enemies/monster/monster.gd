@@ -44,6 +44,10 @@ var facing: Vector2 = Vector2.DOWN
 var state: String = "idle"
 var state_time: float = 0.0
 var attack_cooldown: float = 0.0
+var network_id: int = 0
+var network_zone_id: String = ""
+var network_replica: bool = false
+var network_target_position: Vector2 = Vector2.ZERO
 
 var visual: Node2D = null
 var hurtbox: HurtboxComponent = null
@@ -58,6 +62,7 @@ var _knock: Vector2 = Vector2.ZERO
 var _charge_dir: Vector2 = Vector2.ZERO
 var _charge_hit: bool = false
 var _base_visual_scale: Vector2 = Vector2.ONE
+var _last_attacker_peer_id: int = 1
 
 
 static func create(id: String, p_elite: bool = false) -> Monster:
@@ -103,6 +108,12 @@ func _ready() -> void:
 	_build_hurtbox()
 	_build_nameplate()
 	attack_cooldown = randf_range(0.2, 1.0)
+	network_target_position = global_position
+	if network_replica:
+		collision_layer = 0
+		collision_mask = 0
+	if LanSession.is_host() and not network_replica:
+		LanSession.register_enemy(self)
 
 
 # =============================================================================
@@ -126,7 +137,12 @@ func _build_visual() -> void:
 		body_radius = 14.0 * s
 	else:
 		var spr := Sprite2D.new()
-		spr.texture = PixelArt.get_texture(def.get("sprite", "slime"), def.get("palette", ""))
+		var texture_path := String(def.get("texture", ""))
+		if texture_path != "":
+			spr.texture = load(texture_path) as Texture2D
+		if spr.texture == null:
+			spr.texture = PixelArt.get_texture(def.get("sprite", "slime"), def.get("palette", ""))
+		spr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		var h := float(spr.texture.get_height())
 		spr.scale = Vector2(s, s)
 		spr.position = Vector2(0, -h * s * 0.5)
@@ -167,9 +183,9 @@ func _build_hurtbox() -> void:
 
 func _build_nameplate() -> void:
 	name_label = Label.new()
-	name_label.text = ("Elite " if elite else "") + "Lv.%d %s" % [level, def.get("name", def_id)]
+	name_label.text = ("Elite " if elite else "") + str(def.get("name", def_id))
 	name_label.add_theme_font_override("font", NAME_FONT)
-	name_label.add_theme_font_size_override("font_size", 16)
+	name_label.add_theme_font_size_override("font_size", 18)
 	var col := Color(1, 0.85, 0.3) if elite else Color(1, 0.95, 0.9)
 	if is_boss:
 		col = Color(1, 0.45, 0.4)
@@ -177,9 +193,9 @@ func _build_nameplate() -> void:
 	name_label.add_theme_color_override("font_outline_color", Color(0.08, 0.05, 0.1))
 	name_label.add_theme_constant_override("outline_size", 5)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.size = Vector2(200, 20)
-	name_label.scale = Vector2(0.4, 0.4)
-	name_label.position = Vector2(-40, -visual_height - 16)
+	name_label.size = Vector2(200, 22)
+	name_label.scale = Vector2(0.55, 0.55)
+	name_label.position = Vector2(-55, -visual_height - 19)
 	name_label.z_index = 50
 	add_child(name_label)
 
@@ -207,6 +223,12 @@ static func _get_skeleton_frames() -> SpriteFrames:
 
 func _physics_process(delta: float) -> void:
 	if _dead:
+		return
+	if network_replica:
+		global_position = global_position.lerp(network_target_position, minf(delta * 12.0, 1.0))
+		visible = network_zone_id == GameState.current_zone
+		_update_visual()
+		queue_redraw()
 		return
 	_t += delta
 	state_time += delta
@@ -398,7 +420,8 @@ func _update_visual() -> void:
 		var spr := visual as Sprite2D
 		if absf(facing.x) > 0.1:
 			spr.flip_h = facing.x < 0.0
-		var squash := 1.0 + 0.07 * sin(_t * (10.0 if velocity.length() > 2.0 else 4.0))
+		var squash_amount := float(def.get("squash", 0.07))
+		var squash := 1.0 + squash_amount * sin(_t * (10.0 if velocity.length() > 2.0 else 4.0))
 		if state == "windup" or state == "telegraph":
 			squash = 1.0 - 0.15 * minf(state_time * 3.0, 1.0)
 		spr.scale = Vector2(_base_visual_scale.x * (2.0 - squash), _base_visual_scale.y * squash)
@@ -440,12 +463,12 @@ func _draw() -> void:
 	if state == "telegraph":
 		var end := _charge_dir * 240.0 * 0.45
 		draw_line(Vector2(0, -4), end, Color(1, 0.2, 0.15, 0.6), 4.0)
-	# HP bar (bosses use the HUD boss bar)
-	if not is_boss and hp < max_hp:
-		var w := 22.0
+	# Captured field monsters keep a small red HP bar visible even when full.
+	if not is_boss:
+		var w := 30.0
 		var y := -visual_height - 6.0
-		draw_rect(Rect2(-w / 2 - 1, y - 1, w + 2, 4), Color(0.08, 0.05, 0.1))
-		draw_rect(Rect2(-w / 2, y, w * float(hp) / float(max_hp), 2), Color(0.85, 0.2, 0.2))
+		draw_rect(Rect2(-w / 2 - 1, y - 1, w + 2, 5), Color(0.03, 0.025, 0.03), true)
+		draw_rect(Rect2(-w / 2, y, w * float(hp) / float(max_hp), 3), Color(0.78, 0.06, 0.07), true)
 
 
 # =============================================================================
@@ -461,9 +484,13 @@ func _on_hurtbox_damage(amount: int, _knockback: float, from_position: Vector2) 
 	apply_hit(r["amount"], from_position, r["crit"])
 
 
-func apply_hit(amount: int, from_pos: Vector2, crit: bool = false) -> void:
+func apply_hit(amount: int, from_pos: Vector2, crit: bool = false, attacker_peer_id: int = 1) -> void:
 	if _dead:
 		return
+	if network_replica:
+		LanSession.request_enemy_hit(network_id)
+		return
+	_last_attacker_peer_id = attacker_peer_id
 	hp = maxi(0, hp - amount)
 	_flash = 0.1
 	hp_changed.emit(hp, max_hp)
@@ -492,7 +519,7 @@ func _die() -> void:
 	if name_label:
 		name_label.visible = false
 	queue_redraw()
-	_grant_rewards()
+	_grant_rewards(_last_attacker_peer_id)
 	GameState.register_kill(def_id, is_boss)
 	GameEvent.enemy_killed.emit(def_id, global_position, is_boss)
 	monster_died.emit(self)
@@ -507,21 +534,69 @@ func _die() -> void:
 	queue_free()
 
 
-func _grant_rewards() -> void:
+func apply_network_snapshot(pos: Vector2, snapshot_facing: Vector2, snapshot_state: String, snapshot_hp: int, snapshot_max_hp: int, zone_id: String) -> void:
+	if not network_replica or _dead:
+		return
+	network_target_position = pos
+	if snapshot_facing.length_squared() > 0.01:
+		facing = snapshot_facing.normalized()
+	state = snapshot_state
+	max_hp = maxi(snapshot_max_hp, 1)
+	hp = clampi(snapshot_hp, 0, max_hp)
+	network_zone_id = zone_id
+	visible = network_zone_id == GameState.current_zone
+	hp_changed.emit(hp, max_hp)
+	queue_redraw()
+
+
+func apply_network_death() -> void:
+	if not network_replica or _dead:
+		return
+	_dead = true
+	remove_from_group("monster")
+	collision_layer = 0
+	collision_mask = 0
+	if hurtbox:
+		hurtbox.set_deferred("monitorable", false)
+		hurtbox.set_deferred("monitoring", false)
+	if name_label:
+		name_label.visible = false
+	queue_redraw()
+	if visual is AnimatedSprite2D and (visual as AnimatedSprite2D).sprite_frames.has_animation("death"):
+		(visual as AnimatedSprite2D).play("death")
+		await get_tree().create_timer(0.9).timeout
+	else:
+		var tw := create_tween()
+		tw.tween_property(visual, "scale", visual.scale * Vector2(1.4, 0.2), 0.25)
+		tw.parallel().tween_property(visual, "modulate:a", 0.0, 0.3)
+		await tw.finished
+	queue_free()
+
+
+func _grant_rewards(killer_peer_id: int = 1) -> void:
 	var pos := global_position
-	# XP straight to the profile (shown as floating text)
-	GameState.add_xp(xp_reward)
-	DamageNumber.spawn(get_tree(), pos + Vector2(0, -visual_height - 10), "+%d XP" % xp_reward, Color(0.75, 0.55, 1.0))
+	if LanSession.is_host() and killer_peer_id != 1:
+		LanSession.grant_peer_xp(killer_peer_id, xp_reward)
+	else:
+		GameState.add_xp(xp_reward)
+		DamageNumber.spawn(get_tree(), pos + Vector2(0, -visual_height - 10), "+%d XP" % xp_reward, Color(0.75, 0.55, 1.0))
 	# Gold
 	var bonus: Dictionary = GameState.compute_base_stats()
 	var g: Vector2i = def.get("gold", Vector2i(0, 0))
 	var gold := int(randi_range(g.x, g.y) * (1.0 + float(bonus.get("gold_pct", 0.0))) * (2.0 if elite else 1.0))
 	if gold > 0:
-		ItemSpawner.spawn_gold(get_tree(), pos, gold, pos)
+		if LanSession.is_host():
+			LanSession.spawn_authoritative_gold(pos, gold)
+		else:
+			ItemSpawner.spawn_gold(get_tree(), pos, gold, pos)
 	# Items: each entry rolls independently, weight = percent chance
 	var loot: Array = def.get("loot", [])
 	var luck := 2.0 if elite else 1.0
 	for entry in loot:
 		var chance := float(entry[1]) * luck
 		if randf() * 100.0 < chance:
-			ItemSpawner.spawn_item(get_tree(), pos, entry[0], randi_range(int(entry[2]), int(entry[3])), pos)
+			var quantity := randi_range(int(entry[2]), int(entry[3]))
+			if LanSession.is_host():
+				LanSession.spawn_authoritative_item(pos, String(entry[0]), quantity)
+			else:
+				ItemSpawner.spawn_item(get_tree(), pos, entry[0], quantity, pos)

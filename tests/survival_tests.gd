@@ -12,6 +12,7 @@ class StubPlayer:
 	var inventory := InventoryData.new()
 	var stats := CharacterStats.new()
 	var damage_taken: int = 0
+	var dig_swings: int = 0
 	func get_inventory() -> InventoryData:
 		return inventory
 	func take_damage(amount: int) -> void:
@@ -20,6 +21,11 @@ class StubPlayer:
 		pass
 	func is_dead() -> bool:
 		return false
+	func can_auto_dig() -> bool:
+		return true
+	func play_auto_dig_swing(_target_position: Vector2) -> bool:
+		dig_swings += 1
+		return true
 
 
 func _check(cond: bool, msg: String) -> void:
@@ -40,8 +46,11 @@ func run_all() -> bool:
 	_test_economy_and_collections()
 	_test_buildings()
 	_test_quests()
+	await _test_ground_dig()
 	_test_save_roundtrip()
 	await _test_monster_kill()
+	await _test_menu_keeps_world_running()
+	await _test_auto_farm_toggle()
 	_test_combat_roll()
 
 	_stub_player.queue_free()
@@ -58,7 +67,7 @@ func run_all() -> bool:
 
 
 func _test_pixel_art() -> void:
-	for key in ["slime", "bat", "boar", "mushroom", "pet_fox", "pet_turtle", "pet_owl", "pet_cat", "mount_pony", "mount_stag", "mount_boar", "mount_tortoise", "altar", "bolt"]:
+	for key in ["slime", "bat", "boar", "mushroom", "mosquito", "snail", "field_stump", "hud_helmet", "hud_heart", "hud_sword", "hud_boot", "hud_world", "hud_coin", "pet_fox", "pet_turtle", "pet_owl", "pet_cat", "mount_pony", "mount_stag", "mount_boar", "mount_tortoise", "altar", "bolt"]:
 		var tex := PixelArt.get_texture(key)
 		_check(tex != null and tex.get_width() > 4 and tex.get_height() > 4, "pixel art %s builds" % key)
 	_check(PixelArt.get_texture("slime", "slime_king") != PixelArt.get_texture("slime"), "palette variants are distinct textures")
@@ -146,8 +155,8 @@ func _test_quests() -> void:
 	QuestService.reset()
 	var q := QuestService.get_main_quest()
 	_check(q["id"] == "q01", "first main quest is q01")
-	GameEvent.zone_entered.emit("greenwood")
-	_check(QuestService.main_ready, "visit objective completes")
+	GameEvent.ground_dug.emit("stone", 1)
+	_check(QuestService.main_ready, "dig objective completes")
 	_check(QuestService.claim("q01"), "claim q01")
 	_check(QuestService.get_main_quest()["id"] == "q02", "advances to q02")
 	for i in range(8):
@@ -158,6 +167,23 @@ func _test_quests() -> void:
 	_check(QuestService.dailies["d_boss"]["progress"] == 1, "daily boss counts boss kill")
 	_check(QuestService.claim("d_boss"), "claim daily boss")
 	_check(not QuestService.claim("d_boss"), "daily cannot be claimed twice")
+
+
+func _test_ground_dig() -> void:
+	var inv: InventoryData = _stub_player.inventory
+	var before := inv.get_item_count("stone")
+	var swings_before: int = _stub_player.dig_swings
+	var spot := DigSpot.create(1234)
+	spot.hits_required = 1
+	spot.reward_pool = [{"item_id": "stone", "weight": 1, "min": 2, "max": 2}]
+	add_child(spot)
+	await get_tree().process_frame
+	spot._player = _stub_player
+	spot._dig_once()
+	_check(_stub_player.dig_swings == swings_before + 1, "standing on a dig plot triggers an automatic swing")
+	_check(spot._depleted, "dig plot depletes after required hits")
+	_check(inv.get_item_count("stone") == before + 2, "dig reward is auto-collected into inventory")
+	spot.queue_free()
 
 
 func _test_save_roundtrip() -> void:
@@ -171,6 +197,8 @@ func _test_save_roundtrip() -> void:
 	_check(GameState.unlock_pet("lucky_cat"), "adopt lucky cat for save test")
 	inv.gold = 1234
 	GameState.plots[2] = {"id": "stable", "level": 2, "last_collect": 100.0}
+	GameState.settings["compact_hud"] = true
+	GameState.settings["max_fps"] = 30
 	QuestService.main_index = 3
 	SaveService.enabled = true
 	_check(SaveService.save_game(), "save writes file")
@@ -181,12 +209,17 @@ func _test_save_roundtrip() -> void:
 	# Wipe live state then load
 	GameState.reset_profile()
 	QuestService.reset()
+	GameState.settings["compact_hud"] = false
+	GameState.settings["max_fps"] = 120
+	Engine.max_fps = 120
 	inv.gold = 0
 	SaveService.deserialize_inventory(inv, {"gold": 0, "slots": [], "equipment": {}})
 	_check(SaveService.load_game(), "load succeeds")
 	_check(GameState.level == 7, "level restored")
 	_check(GameState.pets.has("lucky_cat"), "pets restored")
 	_check(GameState.plots[2].get("id", "") == "stable", "buildings restored")
+	_check(bool(GameState.settings.get("compact_hud", false)), "compact HUD setting restored")
+	_check(int(GameState.settings.get("max_fps", 0)) == 30 and Engine.max_fps == 30, "FPS setting restored and applied")
 	_check(QuestService.main_index == 3, "quest progress restored")
 	_check(inv.gold == 1234, "gold restored")
 	_check(inv.get_item_count("wood") == 42, "items restored")
@@ -226,6 +259,7 @@ func _test_monster_kill() -> void:
 	await get_tree().process_frame
 	_check(m.is_in_group("monster"), "monster joins group")
 	_check(m.max_hp == int(GameContent.MONSTERS["slime"]["hp"]), "monster HP from data")
+	_check(m.name_label != null and m.name_label.text == GameContent.MONSTERS["slime"]["name"], "monster nameplate matches field capture format")
 	var elite := Monster.create("slime", true)
 	_check(elite.max_hp > m.max_hp, "elite has more HP")
 	elite.free()
@@ -244,6 +278,44 @@ func _test_monster_kill() -> void:
 	boss.apply_hit(boss.max_hp / 2 + 1, Vector2.ZERO)
 	_check((boss as Boss).phase == 2, "boss enters phase 2 at half HP")
 	boss.queue_free()
+
+
+func _test_menu_keeps_world_running() -> void:
+	var menu := GameMenu.new()
+	add_child(menu)
+	await get_tree().process_frame
+	menu.open("system")
+	_check(menu.visible, "mobile menu opens")
+	_check(not get_tree().paused, "mobile menu does not pause world simulation")
+	menu.close()
+	menu.queue_free()
+
+
+func _test_auto_farm_toggle() -> void:
+	var player_scene: PackedScene = preload("res://sense/entities/player/player.tscn")
+	var local_player = player_scene.instantiate()
+	local_player.set_physics_process(false)
+	add_child(local_player)
+	await get_tree().process_frame
+	var target := Monster.create("slime")
+	target.position = local_player.position + Vector2(90, 0)
+	add_child(target)
+	await get_tree().process_frame
+	local_player.set_auto_farm(true)
+	_check(local_player.auto_farm_enabled, "auto-farm can be enabled")
+	var before: Vector2 = local_player.position
+	_check(local_player._drive_auto_farm(), "auto-farm acquires a nearby monster")
+	_check(local_player.position != before, "auto-farm moves toward an out-of-range monster")
+	target.position = local_player.position + Vector2(10, 0)
+	local_player._drive_auto_farm()
+	_check(local_player.current_state == local_player.State.ATTACK, "auto-farm attacks in range")
+	local_player.set_auto_farm(false)
+	_check(not local_player.auto_farm_enabled, "auto-farm can be disabled")
+	local_player.die()
+	local_player.toggle_auto_farm()
+	_check(not local_player.auto_farm_enabled, "auto-farm stays disabled while dead")
+	target.queue_free()
+	local_player.queue_free()
 
 
 func _test_combat_roll() -> void:

@@ -2,7 +2,7 @@ class_name FieldMap
 extends Node2D
 ## Procedurally laid-out open field zone (deterministic per zone seed).
 ##
-## Builds: grass ground, stone road, border, decorative + gatherable trees and
+## Builds: grass ground, border, decorative + gatherable trees and
 ## rocks, monster camps with respawn, a world-boss altar with a timer, and a
 ## town gate. Configured from GameContent.ZONES[zone_id].
 
@@ -32,7 +32,9 @@ func _ready() -> void:
 	cfg = GameContent.ZONES.get(zone_id, GameContent.ZONES["greenwood"])
 	var size: Vector2i = cfg.get("size", Vector2i(60, 90))
 	map_size_px = Vector2(size) * TILE
-	spawn_point = Vector2(map_size_px.x * 0.5, map_size_px.y - 70.0)
+	# Keep enough world below the entrance for the camera to center the player.
+	# Spawning against the southern limit pinned the avatar behind the hotbar.
+	spawn_point = Vector2(map_size_px.x * 0.5, maxf(map_size_px.y - 540.0, 520.0))
 	altar_point = Vector2(map_size_px.x * 0.5, 120.0)
 	_rng.seed = int(cfg.get("seed", 1))
 	_build_ground(size)
@@ -40,6 +42,7 @@ func _ready() -> void:
 	_build_border_trees()
 	_build_altar()
 	_build_gate()
+	_build_dig_spots()
 	_scatter_world()
 	_build_camps()
 	_boss_timer = float(cfg.get("boss_interval", 180.0)) * 0.5
@@ -97,12 +100,6 @@ func _build_ground(size: Vector2i) -> void:
 			if _rng.randf() < 0.12:
 				atlas = Vector2i(_rng.randi_range(8, 15), _rng.randi_range(0, 6))
 			ground.set_cell(Vector2i(x, y), 0, atlas)
-	# Stone road from the gate (bottom) to the altar (top)
-	var cx := size.x / 2
-	for y in range(4, size.y):
-		var wobble := int(round(sin(float(y) * 0.15) * 2.0))
-		for dx in range(-1, 2):
-			ground.set_cell(Vector2i(cx + dx + wobble, y), 1, Vector2i(0, 0))
 
 
 func _build_bounds() -> void:
@@ -169,15 +166,41 @@ func _build_altar() -> void:
 
 
 func _build_gate() -> void:
+	var gate_point := spawn_point + Vector2(0, 260)
 	for side: int in [-1, 1]:
 		var p := WorldProps.make_obstacle("pillar", 0.6, Vector2(14, 8))
-		p.position = spawn_point + Vector2(40 * side, 40)
+		p.position = gate_point + Vector2(40 * side, 0)
 		add_child(p)
 	var signpost := WorldProps.make_obstacle("signpost", 0.8, Vector2.ZERO)
-	signpost.position = spawn_point + Vector2(-56, 10)
+	signpost.position = gate_point + Vector2(-56, -30)
 	add_child(signpost)
 	_occupied.append(spawn_point)
-	_add_interaction(spawn_point + Vector2(0, 40), 26.0, "return to town", func() -> void: SceneTransitionService.go_to("town"))
+	_occupied.append(gate_point)
+	_add_interaction(gate_point + Vector2(0, 30), 26.0, "return to town", func() -> void: SceneTransitionService.go_to("town"))
+
+
+func _build_dig_spots() -> void:
+	# Source-like starter plots stay outside the monster bands so the first
+	# "Đào đất" objective can be learned safely after entering the field.
+	for offset in [Vector2(-76, -40), Vector2(-38, -40), Vector2(-76, -78), Vector2(58, -58)]:
+		_add_dig_spot(spawn_point + offset)
+	var remaining := int(cfg.get("dig_spots", 36))
+	while remaining > 0:
+		var anchor := _free_spot(54.0, 40.0)
+		if anchor.x < 0:
+			break
+		var cluster_size := mini(_rng.randi_range(1, 4), remaining)
+		var offsets := [Vector2.ZERO, Vector2(38, 0), Vector2(0, 38), Vector2(38, 38)]
+		for i in range(cluster_size):
+			_add_dig_spot(anchor + offsets[i])
+		remaining -= cluster_size
+
+
+func _add_dig_spot(pos: Vector2) -> void:
+	var spot := DigSpot.create(int(_rng.randi()))
+	spot.position = pos
+	add_child(spot)
+	_occupied.append(pos)
 
 
 func _add_interaction(pos: Vector2, radius: float, action: String, callback: Callable) -> void:
@@ -197,9 +220,7 @@ func _add_interaction(pos: Vector2, radius: float, action: String, callback: Cal
 func _free_spot(min_dist: float, margin: float = 48.0) -> Vector2:
 	for attempt in range(30):
 		var p := Vector2(_rng.randf_range(margin, map_size_px.x - margin), _rng.randf_range(margin + 60.0, map_size_px.y - margin - 40.0))
-		if absf(p.x - map_size_px.x * 0.5) < 36.0:
-			continue  # keep the road clear
-		if p.distance_to(spawn_point) < 120.0 or p.distance_to(altar_point) < 130.0:
+		if p.distance_to(spawn_point) < 185.0 or p.distance_to(altar_point) < 160.0:
 			continue
 		var ok := true
 		for o in _occupied:
@@ -214,11 +235,11 @@ func _free_spot(min_dist: float, margin: float = 48.0) -> Vector2:
 
 func _scatter_world() -> void:
 	for i in range(int(cfg.get("trees", 50))):
-		var p := _free_spot(30.0)
+		var p := _free_spot(96.0)
 		if p.x >= 0:
 			_add_decor_tree(p)
 	for i in range(int(cfg.get("lumber", 10))):
-		var p := _free_spot(30.0)
+		var p := _free_spot(88.0)
 		if p.x >= 0:
 			var n := ResourceNode.create("wood", "tree_3", 0.42, 5)
 			n.position = p
@@ -232,10 +253,14 @@ func _scatter_world() -> void:
 			add_child(n)
 	# Decor without collision
 	for i in range(140):
-		var key: String = ["bush_1", "bush_2", "bush_3", "bush_4", "bush_5", "tuft_1", "tuft_2", "tuft_3", "tuft_4", "pebble"][_rng.randi_range(0, 9)]
-		var spr := WorldProps.make_sprite(key, 0.5 if key.begins_with("bush") else 1.0)
+		var p := _free_spot(26.0, 20.0)
+		if p.x < 0:
+			continue
+		var key: String = ["bush_1", "bush_2", "bush_3", "bush_4", "bush_5", "tuft_1", "tuft_2", "tuft_3", "tuft_4", "pebble", "stump"][_rng.randi_range(0, 10)]
+		var decor_scale := 0.5 if key.begins_with("bush") else (1.5 if key == "stump" else 1.0)
+		var spr := WorldProps.make_sprite(key, decor_scale)
 		var holder := Node2D.new()
-		holder.position = Vector2(_rng.randf_range(20, map_size_px.x - 20), _rng.randf_range(20, map_size_px.y - 20))
+		holder.position = p
 		holder.add_child(spr)
 		if key.begins_with("tuft") or key == "pebble":
 			holder.z_index = -6
@@ -263,6 +288,8 @@ func _build_camps() -> void:
 				if absf(pos.x - map_size_px.x * 0.5) > 30.0 and pos.distance_to(spawn_point) > 180.0:
 					break
 			_camps.append({"id": entry[0], "pos": pos, "monster": null, "timer": 0.0})
+	if LanSession.mode == LanSession.Mode.CLIENT:
+		return
 	for camp in _camps:
 		_spawn_camp(camp)
 
@@ -270,6 +297,7 @@ func _build_camps() -> void:
 func _spawn_camp(camp: Dictionary) -> void:
 	var elite := randf() < GameContent.ELITE_CHANCE
 	var m := Monster.create(camp["id"], elite)
+	m.network_zone_id = zone_id
 	m.position = camp["pos"] + Vector2(randf_range(-16, 16), randf_range(-16, 16))
 	add_child(m)
 	camp["monster"] = m
@@ -281,6 +309,8 @@ func _spawn_camp(camp: Dictionary) -> void:
 # =============================================================================
 
 func _process(delta: float) -> void:
+	if LanSession.mode == LanSession.Mode.CLIENT:
+		return
 	for camp in _camps:
 		var m: Variant = camp["monster"]
 		if m == null or not is_instance_valid(m) or (m as Monster).is_dead():
@@ -314,6 +344,7 @@ func _summon_boss() -> void:
 	if boss_id == "" or (_boss != null and is_instance_valid(_boss) and not _boss.is_dead()):
 		return
 	_boss = Monster.create(boss_id)
+	_boss.network_zone_id = zone_id
 	_boss.position = altar_point + Vector2(0, 40)
 	add_child(_boss)
 	_boss_timer = float(cfg.get("boss_interval", 180.0))

@@ -72,7 +72,9 @@ extends CharacterBody2D
 ## - ATTACK: Đứng yên, chờ animation xong. Bật hitbox gây damage
 ## - SKILL: Đứng yên, sử dụng active skill (từ augment). SkillExecutor handles effect
 ## - DEATH: Chết, không xử lý input, chờ respawn
-enum State { IDLE, MOVE, ATTACK, DEATH, SKILL }
+enum State { IDLE, MOVE, ATTACK, DEATH, SKILL, DIG }
+
+const SURVIVAL_NAME_FONT := preload("res://assets/Font/Pixellari.ttf")
 
 # =============================================================================
 # DEBUG VISUALIZATION
@@ -86,7 +88,8 @@ const STATE_COLORS := {
 	State.MOVE: Color.GREEN,      # Xanh lá - đang di chuyển
 	State.ATTACK: Color.RED,      # Đỏ - đang tấn công
 	State.DEATH: Color.BLACK,     # Đen - đã chết
-	State.SKILL: Color.MAGENTA    # Tím - đang dùng skill
+	State.SKILL: Color.MAGENTA,   # Tím - đang dùng skill
+	State.DIG: Color.ORANGE       # Cam - đang tự đào đất
 }
 
 const STATE_NAMES := {
@@ -94,7 +97,8 @@ const STATE_NAMES := {
 	State.MOVE: "MOVE",
 	State.ATTACK: "ATTACK",
 	State.DEATH: "DEATH",
-	State.SKILL: "SKILL"
+	State.SKILL: "SKILL",
+	State.DIG: "DIG"
 }
 
 ## ┌─────────────────────────────────────────────────────────────────┐
@@ -187,11 +191,18 @@ var hero_skills: HeroSkillRunner
 # SURVIVAL RPG: mount / pet / auto-aim
 # =============================================================================
 const AUTO_AIM_RANGE := 70.0
-const SPRITE_BASE_POS := Vector2(-1, 0)
+const AUTO_FARM_SCAN_RANGE := 320.0
+const AUTO_FARM_ATTACK_RANGE := 38.0
+const SPRITE_BASE_POS := Vector2(0, 4)
 const MOUNT_RAISE := 9.0
 var mount_sprite: Sprite2D = null
 var pet: PetFollower = null
 var _respawn_invuln: float = 0.0
+var _survival_name_label: Label = null
+var _survival_hp_bar: ProgressBar = null
+var auto_farm_enabled: bool = false
+var _auto_farm_target: Node2D = null
+var _dig_tween: Tween = null
 
 # =============================================================================
 # LIFECYCLE METHODS
@@ -210,6 +221,7 @@ func _ready() -> void:
 	
 	# Add to player group for easy reference
 	add_to_group("player")
+	_apply_source_style_frames()
 	
 	# Tạo stats mặc định nếu chưa có
 	if stats == null:
@@ -242,6 +254,14 @@ func _ready() -> void:
 	_setup_survival()
 
 
+func _apply_source_style_frames() -> void:
+	anim.sprite_frames = PixelArt.make_guest_frames()
+	anim.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	anim.position = SPRITE_BASE_POS
+	anim.scale = Vector2(1.22, 1.35)
+	anim.play("idle_down")
+
+
 func _physics_process(delta: float) -> void:
 	# Không xử lý gì nếu đã chết
 	if current_state == State.DEATH:
@@ -261,23 +281,32 @@ func _physics_process(delta: float) -> void:
 	else:
 		anim.modulate.a = 1.0
 	
-	# State machine - xử lý logic theo trạng thái hiện tại
-	match current_state:
-		State.IDLE:
-			_state_idle()
-		State.MOVE:
-			_state_move()
-		State.ATTACK:
-			_state_attack()
-		State.SKILL:
-			_state_skill()
+	var manual_move := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	if auto_farm_enabled and manual_move.length_squared() > 0.04:
+		set_auto_farm(false, true)
+
+	# Auto-farm owns movement only while it has a local target. Manual joystick
+	# input immediately returns control to the player.
+	var auto_handled := auto_farm_enabled and _drive_auto_farm()
+	if not auto_handled:
+		match current_state:
+			State.IDLE:
+				_state_idle()
+			State.MOVE:
+				_state_move()
+			State.ATTACK:
+				_state_attack()
+			State.SKILL:
+				_state_skill()
+			State.DIG:
+				_state_dig()
 	
 	# Check inventory toggle input (B key)
 	if Input.is_action_just_pressed("open_inventory"):
 		_toggle_inventory()
 		return
 
-	# Request redraw cho debug visualization
+	# The source-style contact shadow is static; debug overlays still redraw live.
 	if debug_draw_enabled:
 		queue_redraw()
 
@@ -350,10 +379,23 @@ func _state_skill() -> void:
 	# State transition handled by _on_skill_effect_finished()
 
 
-## Xử lý trạng thái DEATH - nhân vật đã chết
-func _state_death() -> void:
+func _state_dig() -> void:
+	var move_dir := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	if move_dir.length_squared() > 0.04:
+		_cancel_dig_motion()
+		last_dir = move_dir
+		_change_state(State.MOVE)
+		return
 	velocity = Vector2.ZERO
-	# Không xử lý input, chờ animation death kết thúc hoặc respawn
+	move_and_slide()
+
+
+## The captured client keeps the joystick active while downed, allowing the
+## body/camera to drift until village respawn. Combat remains disabled.
+func _state_death() -> void:
+	var move_dir := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	velocity = move_dir * stats.move_speed
+	move_and_slide()
 
 
 # =============================================================================
@@ -374,6 +416,8 @@ func _change_state(new_state: State) -> void:
 			_play_death_animation()
 		State.SKILL:
 			_play_idle_animation()  # Use idle anim as placeholder during skill
+		State.DIG:
+			_play_dig_animation()
 
 
 ## Callback khi animation kết thúc
@@ -386,6 +430,8 @@ func _on_animation_finished() -> void:
 		State.DEATH:
 			# Death animation xong - có thể emit signal để xử lý game over
 			pass
+		State.DIG:
+			_change_state(State.IDLE)
 
 
 # =============================================================================
@@ -439,6 +485,8 @@ func _disable_attack_hitbox() -> void:
 ## @param knockback: Lực đẩy lùi  
 ## @param from_position: Vị trí nguồn damage
 func _on_hurtbox_damage_received(amount: int, knockback: float, from_position: Vector2) -> void:
+	if LanSession.mode == LanSession.Mode.CLIENT:
+		return
 	# print("[PLAYER] _on_hurtbox_damage_received! Amount: ", amount)
 	# Bỏ qua nếu đang bất tử hoặc đã chết
 	if invincibility_timer > 0 or current_state == State.DEATH:
@@ -525,6 +573,36 @@ func _play_attack_animation() -> void:
 	anim.play(anim_name)
 
 
+func _play_dig_animation() -> void:
+	# The combat sheet bakes a large sword arc into its attack frames. Reusing it
+	# here made digging look like combat, so the clean-room placeholder uses a
+	# short body dip while the plot itself draws the impact and crack feedback.
+	_play_idle_animation()
+	if _dig_tween != null and _dig_tween.is_valid():
+		_dig_tween.kill()
+	anim.rotation = -0.08
+	anim.position = SPRITE_BASE_POS + Vector2(0, 2)
+	_dig_tween = create_tween()
+	_dig_tween.tween_property(anim, "rotation", 0.1, 0.12)
+	_dig_tween.parallel().tween_property(anim, "position", SPRITE_BASE_POS + Vector2(0, 5), 0.12)
+	_dig_tween.tween_property(anim, "rotation", 0.0, 0.12)
+	_dig_tween.parallel().tween_property(anim, "position", SPRITE_BASE_POS, 0.12)
+	_dig_tween.tween_callback(_finish_dig_swing)
+
+
+func _finish_dig_swing() -> void:
+	if current_state == State.DIG:
+		_change_state(State.IDLE)
+
+
+func _cancel_dig_motion() -> void:
+	if _dig_tween != null and _dig_tween.is_valid():
+		_dig_tween.kill()
+	_dig_tween = null
+	anim.rotation = 0.0
+	anim.position = SPRITE_BASE_POS
+
+
 ## Phát animation chết
 func _play_death_animation() -> void:
 	var key := _direction_to_attack_key(last_dir)
@@ -535,6 +613,10 @@ func _play_death_animation() -> void:
 		if anim.sprite_frames.has_animation("death"):
 			anim_name = "death"
 		else:
+			# The current clean-room sheet has no prone frames. A sideways pose keeps
+			# the captured downed silhouette readable until replacement art exists.
+			anim.rotation = PI / 2.0
+			anim.position = SPRITE_BASE_POS + Vector2(0, 7)
 			return
 	
 	anim.speed_scale = 1.0
@@ -590,6 +672,8 @@ func _direction_to_attack_key(d: Vector2) -> String:
 func _on_died() -> void:
 	if current_state == State.DEATH:
 		return
+	_cancel_dig_motion()
+	set_auto_farm(false)
 	# Clear all buffs on death
 	if buff_component:
 		buff_component.clear_all_buffs()
@@ -619,6 +703,8 @@ func is_dead() -> bool:
 ## Có hỗ trợ iframe - không nhận damage liên tục
 ## @param amount: Số damage nhận vào
 func take_damage(amount: int) -> void:
+	if LanSession.mode == LanSession.Mode.CLIENT:
+		return
 	# Bỏ qua nếu đã chết hoặc đang bất tử
 	if current_state == State.DEATH:
 		return
@@ -638,19 +724,55 @@ func heal(amount: int) -> void:
 
 ## Reset nhân vật về trạng thái ban đầu (dùng cho respawn)
 func reset_player() -> void:
+	_cancel_dig_motion()
 	stats.reset()
 	invincibility_timer = 0.0
 	anim.modulate.a = 1.0
+	anim.rotation = 0.0
+	anim.position = SPRITE_BASE_POS
 	_change_state(State.IDLE)
 
 
 ## Respawn after death: full HP/stamina and 2s of protection
 func respawn() -> void:
+	if LanSession.mode == LanSession.Mode.CLIENT:
+		LanSession.request_player_respawn()
+		return
+	set_auto_farm(false)
 	reset_player()
 	stats.current_stamina = stats.max_stamina
 	_respawn_invuln = 2.0
 	invincibility_timer = 2.0
 	GameEvent.player_respawned.emit()
+
+
+func apply_lan_vitals(hp: int, authoritative_max_hp: int, dead: bool, respawned: bool, respawn_pos: Vector2) -> void:
+	if LanSession.mode != LanSession.Mode.CLIENT or stats == null:
+		return
+	stats.base_max_health = maxi(1, authoritative_max_hp - stats.equipment_health_bonus - stats.buff_health_bonus)
+	var was_dead := current_state == State.DEATH
+	if dead:
+		if stats.current_health > 0:
+			stats.current_health = 0
+		elif not was_dead:
+			die()
+			GameEvent.player_died.emit()
+		return
+	if respawned or was_dead:
+		set_auto_farm(false)
+		reset_player()
+		global_position = respawn_pos
+		stats.current_health = clampi(hp, 1, stats.max_health)
+		_respawn_invuln = 2.0
+		invincibility_timer = 2.0
+		GameEvent.player_respawned.emit()
+		return
+	var before := stats.current_health
+	stats.current_health = clampi(hp, 1, stats.max_health)
+	if stats.current_health < before:
+		DamageNumber.spawn(get_tree(), global_position + Vector2(0, -20), str(before - stats.current_health), Color(1, 0.35, 0.3))
+	elif stats.current_health > before:
+		DamageNumber.spawn(get_tree(), global_position + Vector2(0, -24), "+%d" % (stats.current_health - before), Color(0.4, 1, 0.5))
 
 
 # =============================================================================
@@ -806,8 +928,13 @@ func _on_item_used(result: Dictionary) -> void:
 	# Handle regular consumables (existing logic)
 	var heal_amount: int = result.get("heal_amount", 0)
 	if heal_amount > 0:
-		stats.heal(heal_amount)
-		print("[PLAYER] Used item: healed ", heal_amount, " HP")
+		if LanSession.mode == LanSession.Mode.CLIENT:
+			var item_id := String(result.get("item_id", ""))
+			if not LanSession.request_consumable_use(item_id) and inventory:
+				inventory.add_item(ItemDatabase.get_item(item_id), int(result.get("consumed_quantity", 1)))
+		else:
+			stats.heal(heal_amount)
+			print("[PLAYER] Used item: healed ", heal_amount, " HP")
 	
 	var stamina_restore: float = result.get("stamina_restore", 0.0)
 	if stamina_restore > 0:
@@ -991,6 +1118,10 @@ func _get_hotbar() -> Hotbar:
 ## └────────────────────────────────────────────────────────────────────────────┘
 
 func _draw() -> void:
+	# Treasure Hunter keeps a compact dark-green oval directly under actors.
+	draw_set_transform(Vector2(0, 7), 0.0, Vector2(1.0, 0.38))
+	draw_circle(Vector2.ZERO, 10.0, Color(0.08, 0.24, 0.17, 0.72))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	if not debug_draw_enabled:
 		return
 	
@@ -1049,6 +1180,7 @@ func _draw() -> void:
 # =============================================================================
 
 func _setup_survival() -> void:
+	_build_survival_nameplate()
 	hero_skills = HeroSkillRunner.new()
 	hero_skills.name = "HeroSkillRunner"
 	hero_skills.player = self
@@ -1071,6 +1203,57 @@ func _setup_survival() -> void:
 	_apply_hero_visual()
 	_update_mount_visual()
 	_spawn_pet.call_deferred()
+
+
+func _build_survival_nameplate() -> void:
+	var plate := Node2D.new()
+	plate.name = "SurvivalNameplate"
+	plate.position = Vector2(0, -22)
+	plate.z_index = 60
+	add_child(plate)
+
+	_survival_name_label = Label.new()
+	_survival_name_label.text = "Guest_Local"
+	_survival_name_label.add_theme_font_override("font", SURVIVAL_NAME_FONT)
+	_survival_name_label.add_theme_font_size_override("font_size", 20)
+	_survival_name_label.add_theme_color_override("font_color", Color(1.0, 0.96, 0.86))
+	_survival_name_label.add_theme_color_override("font_outline_color", Color(0.04, 0.03, 0.05))
+	_survival_name_label.add_theme_constant_override("outline_size", 5)
+	_survival_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_survival_name_label.position = Vector2(-65, -16)
+	_survival_name_label.size = Vector2(130, 24)
+	_survival_name_label.scale = Vector2(0.65, 0.65)
+	plate.add_child(_survival_name_label)
+
+	var badge := Label.new()
+	badge.text = "◆"
+	badge.add_theme_font_override("font", SURVIVAL_NAME_FONT)
+	badge.add_theme_font_size_override("font_size", 16)
+	badge.add_theme_color_override("font_color", Color(0.25, 0.72, 1.0))
+	badge.add_theme_color_override("font_outline_color", Color(0.03, 0.05, 0.08))
+	badge.add_theme_constant_override("outline_size", 3)
+	badge.position = Vector2(-20, 1)
+	badge.scale = Vector2(0.6, 0.6)
+	plate.add_child(badge)
+
+	_survival_hp_bar = ProgressBar.new()
+	_survival_hp_bar.show_percentage = false
+	_survival_hp_bar.position = Vector2(-18, 1)
+	_survival_hp_bar.size = Vector2(60, 7)
+	_survival_hp_bar.scale = Vector2(0.5, 0.5)
+	_survival_hp_bar.add_theme_stylebox_override("background", UiTheme.box(Color(0.025, 0.025, 0.03), Color(0.02, 0.02, 0.02), 1))
+	_survival_hp_bar.add_theme_stylebox_override("fill", UiTheme.box(Color(0.08, 0.65, 0.16), Color(0.08, 0.65, 0.16), 0))
+	plate.add_child(_survival_hp_bar)
+
+	stats.health_changed.connect(_update_survival_nameplate)
+	_update_survival_nameplate(stats.current_health, stats.max_health)
+
+
+func _update_survival_nameplate(current: int, maximum: int) -> void:
+	if _survival_hp_bar == null:
+		return
+	_survival_hp_bar.max_value = maxi(maximum, 1)
+	_survival_hp_bar.value = current
 
 
 ## Recompute base stats from hero/level/pet/mount/buildings
@@ -1144,8 +1327,77 @@ func _spawn_pet() -> void:
 
 # --- Combat helpers ---------------------------------------------------------
 
+func can_auto_dig() -> bool:
+	if is_dead() or auto_farm_enabled or current_state == State.ATTACK or current_state == State.SKILL:
+		return false
+	if GameState.mounted:
+		return false
+	var manual_move := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	return manual_move.length_squared() <= 0.04 and (current_state == State.IDLE or current_state == State.DIG)
+
+
+func play_auto_dig_swing(target_position: Vector2) -> bool:
+	if not can_auto_dig():
+		return false
+	var direction := target_position - global_position
+	last_dir = direction.normalized() if direction.length_squared() > 1.0 else Vector2.DOWN
+	velocity = Vector2.ZERO
+	_change_state(State.DIG)
+	return true
+
 func _wants_attack() -> bool:
 	return Input.is_action_just_pressed("character_attack") or Input.is_action_pressed("character_attack")
+
+
+func toggle_auto_farm() -> void:
+	if is_dead():
+		return
+	set_auto_farm(not auto_farm_enabled)
+
+
+func set_auto_farm(enabled: bool, manual_override: bool = false) -> void:
+	if enabled and is_dead():
+		return
+	if auto_farm_enabled == enabled:
+		return
+	auto_farm_enabled = enabled
+	_auto_farm_target = null
+	if not enabled and current_state == State.MOVE:
+		velocity = Vector2.ZERO
+		_change_state(State.IDLE)
+	var suffix := " (manual movement)" if manual_override else ""
+	GameEvent.toast.emit("Auto farm %s%s" % ["on" if enabled else "off", suffix], UiTheme.C_GOLD if enabled else UiTheme.C_MUTED)
+
+
+func _drive_auto_farm() -> bool:
+	if current_state == State.DEATH or current_state == State.SKILL:
+		return false
+	if not Combat.is_alive_target(_auto_farm_target):
+		_auto_farm_target = Combat.nearest_monster(get_tree(), global_position, AUTO_FARM_SCAN_RANGE)
+	if _auto_farm_target == null:
+		if current_state == State.MOVE:
+			velocity = Vector2.ZERO
+			_change_state(State.IDLE)
+		return false
+	if current_state == State.ATTACK:
+		return true
+
+	var offset := _auto_farm_target.global_position - global_position
+	var distance := offset.length()
+	var reach := AUTO_FARM_ATTACK_RANGE + Combat.body_radius(_auto_farm_target, 8.0)
+	if distance > reach:
+		last_dir = offset.normalized()
+		velocity = last_dir * stats.move_speed
+		move_and_slide()
+		current_state = State.MOVE
+		_play_move_animation()
+		return true
+
+	velocity = Vector2.ZERO
+	move_and_slide()
+	last_dir = offset.normalized() if distance > 0.01 else last_dir
+	_change_state(State.ATTACK)
+	return true
 
 
 ## Face the nearest monster within AUTO_AIM_RANGE before swinging
@@ -1190,7 +1442,8 @@ func quick_use_potion() -> bool:
 				var result := inventory.use_item(i)
 				if result.get("success", false):
 					_on_item_used(result)
-					DamageNumber.spawn(get_tree(), global_position + Vector2(0, -24), "+%d" % int(result.get("heal_amount", 0)), Color(0.4, 1, 0.5))
+					if LanSession.mode != LanSession.Mode.CLIENT:
+						DamageNumber.spawn(get_tree(), global_position + Vector2(0, -24), "+%d" % int(result.get("heal_amount", 0)), Color(0.4, 1, 0.5))
 					return true
 	GameEvent.toast.emit("No potions left", Color(1, 0.6, 0.6))
 	return false

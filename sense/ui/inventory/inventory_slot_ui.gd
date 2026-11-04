@@ -46,7 +46,7 @@ const SLOT_BORDER_HOVER := Color(0.6, 0.55, 0.45, 1.0)
 const SLOT_BORDER_SELECTED := Color(1.0, 0.8, 0.3, 1.0)
 const SLOT_BORDER_DROP := Color(0.4, 0.7, 0.3, 1.0)  # Green when can drop
 
-const SLOT_SIZE := Vector2(44, 44)
+const SLOT_SIZE := Vector2(68, 68)
 const ICON_PADDING := 4
 const BORDER_WIDTH := 2
 const FILTERED_DIM_ALPHA := 0.3  # Opacity for filtered-out items

@@ -2,14 +2,14 @@ class_name MobileHUD
 extends Control
 ## Portrait mobile HUD layered on top of the legacy HUD CanvasLayer.
 ##
-## Regions (720x1280 logical):
-##   top-left    player card (portrait, level, HP / energy / XP bars, gold)
-##   top-right   legacy minimap + loot feed (kept)
-##   right rail  menu buttons (Bag, Hero, Pet, Mount, Quest, Map, Home, Menu)
-##   left        zone name, quest tracker, world-boss timer
+## Regions (720x1600 logical), measured from a direct 4.3.6 device capture:
+##   top-left    square portrait and four-row stat stack
+##   top-right   map/system buttons and three-row world/resource stack
+##   side rails  four square navigation buttons on each side
+##   right       quest tracker and world-boss timer
 ##   top         boss bar (when a boss is engaged)
-##   bottom-left floating virtual joystick
-##   bottom-right attack + 3 hero skills + gear skill + potion + mount + interact
+##   lower field fixed compass joystick
+##   bottom      eight contiguous action slots
 ##   overlays    toasts, death panel, GameMenu
 
 const BTN_ICONS := {
@@ -23,18 +23,24 @@ var player: Node = null
 var game_menu: GameMenu
 var joystick: VirtualJoystick
 var attack_btn: ActionButton
+var auto_farm_btn: ActionButton
 var skill_btns: Array[ActionButton] = []
 var gear_btn: ActionButton
 var potion_btn: ActionButton
 var mount_btn: ActionButton
 var interact_btn: ActionButton
+var _hotbar_slots: Array[ActionButton] = []
 
 var _hp_bar: ProgressBar
 var _hp_label: Label
 var _en_bar: ProgressBar
 var _xp_bar: ProgressBar
 var _name_label: Label
-var _gold_label: Label
+var _attack_label: Label
+var _speed_label: Label
+var _world_time_label: Label
+var _world_coord_label: Label
+var _world_gold_label: Label
 var _portrait: TextureRect
 var _zone_label: Label
 var _quest_box: VBoxContainer
@@ -44,16 +50,25 @@ var _boss_bar: ProgressBar
 var _boss_label: Label
 var _toast_box: VBoxContainer
 var _death_panel: Control
-var _death_label: Label
+var _death_button: Button
+var _quest_tracker: Control
+var _fold_button: Button
+var _hud_collapsed: bool = false
 var _death_timer: float = 0.0
 var _controls: Array[Control] = []
+var _foldable_controls: Array[Control] = []
 var _quest_btn_badge_t: float = 0.0
+var _world_info_t: float = 0.0
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	theme = UiTheme.get_theme()
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	_hud_collapsed = bool(GameState.settings.get("compact_hud", false))
+	# This node is parented directly to a CanvasLayer, so use an explicit logical
+	# viewport rect rather than full-rect anchors with no Control parent.
+	set_anchors_preset(Control.PRESET_TOP_LEFT)
+	size = get_viewport_rect().size
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_build_player_card()
 	_build_left_panel()
@@ -108,12 +123,14 @@ func _on_hp_changed(c: int, m: int) -> void:
 
 
 func _on_stamina_changed(c: float, m: float) -> void:
-	_en_bar.max_value = m
-	_en_bar.value = c
+	if _en_bar:
+		_en_bar.max_value = m
+		_en_bar.value = c
 
 
 func _on_gold_changed(g: int) -> void:
-	_gold_label.text = "Gold %d" % g
+	if _world_gold_label:
+		_world_gold_label.text = str(g)
 
 
 # =============================================================================
@@ -123,14 +140,14 @@ func _on_gold_changed(g: int) -> void:
 func _adapt_legacy_hud() -> void:
 	if legacy_hud == null:
 		return
-	# Hide legacy HP/stamina (replaced by player card) and the landscape hotbar
-	for path in ["MarginContainer", "HotbarAnchor"]:
+	# The captured mobile HUD has no legacy landscape bars, minimap or feed.
+	for path in ["MarginContainer", "MinimapContainer", "FeedContainer", "HotbarAnchor"]:
 		var n := legacy_hud.get_node_or_null(path) as CanvasItem
 		if n:
 			n.visible = false
 	var icons := legacy_hud.get_node_or_null("StatusIconsContainer") as Control
 	if icons:
-		icons.position = Vector2(12, 150)
+		icons.position = Vector2(12, 370)
 	# Fit legacy popups (designed for 1280x720) into the portrait screen
 	legacy_hud.child_entered_tree.connect(_on_legacy_child_added)
 	for c in legacy_hud.get_children():
@@ -198,61 +215,107 @@ func _panel(rect: Rect2) -> PanelContainer:
 
 
 func _build_player_card() -> void:
-	var card := _panel(Rect2(10, 10, 340, 132))
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	card.add_child(row)
-	var frame := PanelContainer.new()
-	frame.add_theme_stylebox_override("panel", UiTheme.box(Color(0.1, 0.08, 0.1), UiTheme.C_GOLD, 3))
-	frame.custom_minimum_size = Vector2(92, 104)
-	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(frame)
+	var frame := Button.new()
+	frame.position = Vector2(18, 18)
+	frame.size = Vector2(98, 98)
+	frame.focus_mode = Control.FOCUS_NONE
+	frame.add_theme_stylebox_override("normal", UiTheme.box(Color(0.08, 0.08, 0.08, 0.96), UiTheme.C_TRIM, 4))
+	frame.add_theme_stylebox_override("hover", UiTheme.box(Color(0.12, 0.12, 0.13, 0.96), UiTheme.C_GOLD, 4))
+	frame.add_theme_stylebox_override("pressed", UiTheme.box(Color(0.20, 0.10, 0.04, 0.96), UiTheme.C_GOLD, 4))
+	frame.pressed.connect(func() -> void: _on_menu_button("bag"))
+	add_child(frame)
 	_portrait = TextureRect.new()
 	_portrait.texture = GameMenu.hero_portrait()
 	_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_portrait.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_portrait.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_portrait.offset_left = 8
+	_portrait.offset_top = 8
+	_portrait.offset_right = -8
+	_portrait.offset_bottom = -8
+	_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	frame.add_child(_portrait)
+
+	_xp_bar = UiTheme.bar(Color(0.12, 0.62, 0.96), 7)
+	_xp_bar.position = Vector2(28, 124)
+	_xp_bar.size = Vector2(78, 7)
+	add_child(_xp_bar)
+
+	var stats := _panel(Rect2(8, 150, 180, 204))
+	stats.add_theme_stylebox_override("panel", UiTheme.box(Color(0.04, 0.08, 0.06, 0.92), UiTheme.C_TRIM, 2))
 	var col := VBoxContainer.new()
-	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	col.add_theme_constant_override("separation", 3)
-	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(col)
-	_name_label = UiTheme.label("Lv.1 Ironwarden", 22, UiTheme.C_GOLD)
-	col.add_child(_name_label)
-	var hp_stack := Control.new()
-	hp_stack.custom_minimum_size = Vector2(0, 22)
-	col.add_child(hp_stack)
-	_hp_bar = UiTheme.bar(Color(0.85, 0.2, 0.2), 22)
-	_hp_bar.set_anchors_preset(Control.PRESET_FULL_RECT)
-	hp_stack.add_child(_hp_bar)
-	_hp_label = UiTheme.label("100/100", 16)
-	_hp_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	col.add_theme_constant_override("separation", 1)
+	stats.add_child(col)
+	var level_row := _hud_value_row("hud_helmet")
+	_name_label = UiTheme.label("2,0", 20, UiTheme.C_GOLD)
+	_name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	level_row.add_child(_name_label)
+	col.add_child(level_row)
+	var hp_row := Control.new()
+	hp_row.custom_minimum_size = Vector2(0, 49)
+	var hp_icon := TextureRect.new()
+	hp_icon.texture = PixelArt.get_texture("hud_heart")
+	hp_icon.position = Vector2(0, 2)
+	hp_icon.size = Vector2(44, 44)
+	hp_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	hp_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	hp_icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	hp_row.add_child(hp_icon)
+	_hp_bar = UiTheme.bar(Color(0.72, 0.06, 0.05), 25)
+	_hp_bar.position = Vector2(50, 12)
+	_hp_bar.size = Vector2(116, 25)
+	hp_row.add_child(_hp_bar)
+	_hp_label = UiTheme.label("100/100", 18)
+	_hp_label.position = Vector2(50, 7)
+	_hp_label.size = Vector2(116, 34)
 	_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	hp_stack.add_child(_hp_label)
-	_en_bar = UiTheme.bar(Color(0.3, 0.6, 1.0), 12)
-	col.add_child(_en_bar)
-	_xp_bar = UiTheme.bar(Color(0.7, 0.45, 1.0), 8)
-	col.add_child(_xp_bar)
-	_gold_label = UiTheme.label("Gold 0", 18, UiTheme.C_GOLD)
-	col.add_child(_gold_label)
+	hp_row.add_child(_hp_label)
+	col.add_child(hp_row)
+	var energy_row := _hud_value_row("hud_sword")
+	_attack_label = UiTheme.label("10,0", 20, UiTheme.C_TEXT)
+	_attack_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_attack_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	energy_row.add_child(_attack_label)
+	col.add_child(energy_row)
+	var speed_row := _hud_value_row("hud_boot")
+	_speed_label = UiTheme.label("2,00", 20, UiTheme.C_TEXT)
+	_speed_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_speed_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	speed_row.add_child(_speed_label)
+	col.add_child(speed_row)
+
+
+func _hud_value_row(icon_name: String) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.custom_minimum_size = Vector2(0, 49)
+	row.add_theme_constant_override("separation", 4)
+	var icon := TextureRect.new()
+	icon.texture = PixelArt.get_texture(icon_name) if icon_name.begins_with("hud_") else ItemIconAtlas.get_named_icon(icon_name)
+	icon.custom_minimum_size = Vector2(44, 44)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	row.add_child(icon)
+	return row
 
 
 func _build_left_panel() -> void:
 	var box := VBoxContainer.new()
-	box.position = Vector2(10, 196)
-	box.size = Vector2(360, 300)
+	box.position = Vector2(488, 472)
+	box.size = Vector2(224, 190)
 	box.add_theme_constant_override("separation", 4)
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(box)
-	_zone_label = UiTheme.label("", 22, Color(0.9, 1, 0.9))
+	_quest_tracker = box
+	_zone_label = UiTheme.label("", 16, UiTheme.C_GOOD)
 	box.add_child(_zone_label)
-	_boss_timer_label = UiTheme.label("", 18, Color(1, 0.6, 0.5))
+	_boss_timer_label = UiTheme.label("", 14, Color(1, 0.64, 0.3))
 	box.add_child(_boss_timer_label)
 	var qp := PanelContainer.new()
-	qp.add_theme_stylebox_override("panel", UiTheme.box(Color(0.1, 0.07, 0.06, 0.72), Color(0.85, 0.66, 0.3, 0.6), 2))
+	qp.add_theme_stylebox_override("panel", UiTheme.box(Color(0.06, 0.045, 0.035, 0.72), Color(UiTheme.C_TRIM, 0.65), 1))
 	box.add_child(qp)
 	_quest_box = VBoxContainer.new()
 	_quest_box.add_theme_constant_override("separation", 2)
@@ -260,58 +323,119 @@ func _build_left_panel() -> void:
 
 
 func _build_boss_bar() -> void:
-	_boss_panel = _panel(Rect2(60, 150, 500, 50))
+	_boss_panel = _panel(Rect2(110, 374, 500, 48))
 	_boss_panel.visible = false
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 0)
 	_boss_panel.add_child(v)
-	_boss_label = UiTheme.label("Boss", 18, Color(1, 0.6, 0.5))
+	_boss_label = UiTheme.label("Boss", 16, Color(1, 0.5, 0.35))
 	v.add_child(_boss_label)
 	_boss_bar = UiTheme.bar(Color(0.75, 0.15, 0.2), 14)
 	v.add_child(_boss_bar)
 
 
 func _build_menu_rail() -> void:
-	var ids := ["bag", "hero", "pet", "mount", "quest", "map", "village", "system"]
-	var captions := {"bag": "Bag", "hero": "Hero", "pet": "Pet", "mount": "Mount", "quest": "Quest", "map": "Map", "village": "Home", "system": "Menu"}
-	for i in range(ids.size()):
-		var id: String = ids[i]
-		var b := Button.new()
-		b.focus_mode = Control.FOCUS_NONE
-		b.custom_minimum_size = Vector2(74, 74)
-		b.size = Vector2(74, 74)
-		b.position = Vector2(560 + (i % 2) * 80, 266 + (i / 2) * 82)
-		b.icon = ItemIconAtlas.get_named_icon(BTN_ICONS[id])
-		b.expand_icon = true
-		b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		b.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
-		b.text = captions[id]
-		b.add_theme_font_size_override("font_size", 16)
-		b.add_theme_constant_override("icon_max_width", 36)
-		b.pressed.connect(func() -> void: _on_menu_button(id))
-		add_child(b)
-		_controls.append(b)
+	_fold_button = _icon_button(BTN_ICONS["hero"], "Hide controls", _toggle_hud_chrome)
+	_fold_button.position = Vector2(540, 18)
+	var system_button := _nav_button("system", "Menu")
+	system_button.position = Vector2(622, 18)
+
+	var resources := _panel(Rect2(532, 150, 180, 154))
+	resources.add_theme_stylebox_override("panel", UiTheme.box(Color(0.04, 0.08, 0.06, 0.92), UiTheme.C_TRIM, 2))
+	var rv := VBoxContainer.new()
+	rv.add_theme_constant_override("separation", 1)
+	resources.add_child(rv)
+	_world_time_label = _world_info_row(rv, "", "[Local] 00:00:00", UiTheme.C_TEXT)
+	_world_coord_label = _world_info_row(rv, "hud_world", "0,00", UiTheme.C_TEXT)
+	_world_gold_label = _world_info_row(rv, "hud_coin", "0", UiTheme.C_GOLD)
+	_refresh_world_info()
+
+	var left_ids := ["hero", "pet", "mount", "village"]
+	for i in range(4):
+		var left := _nav_button(left_ids[i], left_ids[i].capitalize())
+		left.position = Vector2(12, 958 + i * 102)
+		left.size = Vector2(90, 90)
+		_foldable_controls.append(left)
+
+	# Direct 4.3.6 capture places combat on the right rail. The starter hotbar
+	# below remains empty instead of carrying an invented ATK slot.
+	attack_btn = _action_btn("character_attack", Vector2(663, 1003), 45.0, "")
+	attack_btn.icon = ItemIconAtlas.get_named_icon("iron_sword")
+	_foldable_controls.append(attack_btn)
+
+	var inventory_button := _nav_button("bag", "Inventory")
+	inventory_button.position = Vector2(618, 1060)
+	inventory_button.size = Vector2(90, 90)
+	_foldable_controls.append(inventory_button)
+
+	var pet_button := _nav_button("pet", "Pets")
+	pet_button.position = Vector2(618, 1162)
+	pet_button.size = Vector2(90, 90)
+	_foldable_controls.append(pet_button)
+
+	auto_farm_btn = _action_btn("", Vector2(663, 1309), 45.0, "")
+	auto_farm_btn.radar_icon = true
+	auto_farm_btn.tapped.connect(_toggle_auto_farm)
+	_foldable_controls.append(auto_farm_btn)
+
+
+func _nav_button(id: String, caption: String) -> Button:
+	return _icon_button(BTN_ICONS[id], caption, func() -> void: _on_menu_button(id))
+
+
+func _world_info_row(parent: VBoxContainer, icon_name: String, initial_text: String, color: Color) -> Label:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(0, 49)
+	panel.add_theme_stylebox_override("panel", UiTheme.box(Color(0.035, 0.055, 0.04, 0.88), Color(UiTheme.C_TRIM, 0.8), 1))
+	parent.add_child(panel)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	panel.add_child(row)
+	if icon_name != "":
+		var icon := TextureRect.new()
+		icon.texture = PixelArt.get_texture(icon_name) if icon_name.begins_with("hud_") else ItemIconAtlas.get_named_icon(icon_name)
+		icon.custom_minimum_size = Vector2(46, 46)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		row.add_child(icon)
+	var value := UiTheme.label(initial_text, 18, color)
+	value.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	value.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(value)
+	return value
+
+
+func _icon_button(icon_name: String, caption: String, callback: Callable) -> Button:
+	var b := Button.new()
+	b.focus_mode = Control.FOCUS_NONE
+	b.custom_minimum_size = Vector2(72, 72)
+	b.size = Vector2(72, 72)
+	b.icon = ItemIconAtlas.get_named_icon(icon_name)
+	b.expand_icon = true
+	b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	b.text = ""
+	b.tooltip_text = caption
+	b.add_theme_constant_override("icon_max_width", 46)
+	b.pressed.connect(callback)
+	add_child(b)
+	_controls.append(b)
+	return b
 
 
 func _build_controls() -> void:
 	joystick = VirtualJoystick.new()
-	joystick.position = Vector2(0, 820)
-	joystick.size = Vector2(340, 460)
+	joystick.position = Vector2(274, 980)
+	joystick.size = Vector2(238, 300)
 	add_child(joystick)
 
-	attack_btn = _action_btn("character_attack", Vector2(615, 1150), 68.0, "ATK")
-	attack_btn.icon = ItemIconAtlas.get_named_icon("iron_sword")
-	var skill_pos := [Vector2(478, 1190), Vector2(494, 1060), Vector2(590, 1000)]
-	for i in range(3):
-		var sb := _action_btn("hero_skill_%d" % (i + 1), skill_pos[i], 46.0, "")
-		skill_btns.append(sb)
-	gear_btn = _action_btn("gear_skill", Vector2(684, 1024), 34.0, "Gear")
-	potion_btn = _action_btn("quick_potion", Vector2(684, 940), 34.0, "")
-	potion_btn.icon = ItemIconAtlas.get_named_icon("potion_red")
-	potion_btn.base_color = Color(0.35, 0.12, 0.12)
-	mount_btn = _action_btn("toggle_mount", Vector2(600, 900), 34.0, "Ride")
-	interact_btn = _action_btn("character_interact", Vector2(392, 1206), 40.0, "Use")
-	interact_btn.base_color = Color(0.15, 0.25, 0.18)
+	var bottom_y := get_viewport_rect().size.y - 134.0
+	var centers := [48.0, 137.0, 226.0, 315.0, 404.0, 493.0, 582.0, 671.0]
+	for i in range(8):
+		var slot := _action_btn("hotbar_%d" % (i + 1), Vector2(centers[i], bottom_y), 39.0, "")
+		slot.locked = true
+		_hotbar_slots.append(slot)
 
 
 func _action_btn(action: String, center: Vector2, r: float, caption: String) -> ActionButton:
@@ -327,8 +451,8 @@ func _action_btn(action: String, center: Vector2, r: float, caption: String) -> 
 
 func _build_toasts() -> void:
 	_toast_box = VBoxContainer.new()
-	_toast_box.position = Vector2(60, 500)
-	_toast_box.size = Vector2(600, 200)
+	_toast_box.position = Vector2(70, 690)
+	_toast_box.size = Vector2(580, 180)
 	_toast_box.alignment = BoxContainer.ALIGNMENT_BEGIN
 	_toast_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_toast_box)
@@ -337,28 +461,20 @@ func _build_toasts() -> void:
 func _build_death_panel() -> void:
 	_death_panel = Control.new()
 	_death_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_death_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_death_panel.visible = false
 	add_child(_death_panel)
 	var dim := ColorRect.new()
-	dim.color = Color(0.25, 0, 0, 0.55)
+	dim.color = Color(0, 0, 0, 0)
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_death_panel.add_child(dim)
-	var p := PanelContainer.new()
-	p.position = Vector2(110, 480)
-	p.size = Vector2(500, 260)
-	_death_panel.add_child(p)
-	var v := VBoxContainer.new()
-	v.alignment = BoxContainer.ALIGNMENT_CENTER
-	v.add_theme_constant_override("separation", 12)
-	p.add_child(v)
-	var t := UiTheme.label("You have fallen!", 36, UiTheme.C_BAD)
-	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(t)
-	_death_label = UiTheme.label("", 22)
-	_death_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(_death_label)
-	v.add_child(UiTheme.button("Revive here", _respawn_here))
-	v.add_child(UiTheme.button("Return to town", _respawn_town))
+	_death_button = UiTheme.button("Hồi sinh làng", _respawn_town, Vector2(254, 80))
+	_death_button.position = Vector2(233, 1192)
+	_death_button.size = Vector2(254, 80)
+	_death_button.add_theme_font_size_override("font_size", 34)
+	_death_button.add_theme_color_override("font_color", UiTheme.C_GOLD)
+	_death_panel.add_child(_death_button)
 
 
 # =============================================================================
@@ -366,19 +482,32 @@ func _build_death_panel() -> void:
 # =============================================================================
 
 func _process(delta: float) -> void:
-	var blocked := game_menu.visible or _death_panel.visible or _legacy_overlay_open()
+	_world_info_t -= delta
+	if _world_info_t <= 0.0:
+		_world_info_t = 0.5
+		_refresh_world_info()
+	_hud_collapsed = bool(GameState.settings.get("compact_hud", _hud_collapsed))
+	var blocked := game_menu.visible or _legacy_overlay_open()
+	var dead := _death_panel.visible
 	joystick.enabled = not blocked
 	for c in _controls:
 		c.visible = not blocked
-	joystick.visible = not blocked
+	if not blocked:
+		for c in _foldable_controls:
+			c.visible = not _hud_collapsed and not dead
+	joystick.visible = not blocked and not _hud_collapsed
+	if _quest_tracker:
+		_quest_tracker.visible = not blocked and not _hud_collapsed and not dead
 	if _death_panel.visible:
 		_death_timer -= delta
-		_death_label.text = "Revive available in %d..." % ceili(_death_timer) if _death_timer > 0.0 else "Choose where to revive"
+		_death_button.disabled = _death_timer > 0.0
+		_death_button.text = "Hồi sinh (%d)" % ceili(_death_timer) if _death_timer > 0.0 else "Hồi sinh làng"
 	# Context interact button: highlight when something is in range
 	var im := get_node_or_null("/root/InteractionManager")
 	var areas: Variant = im.get("active_areas") if im != null else null
 	var has_target: bool = areas is Array and not areas.is_empty()
-	interact_btn.locked = not has_target
+	if interact_btn:
+		interact_btn.locked = not has_target
 	_quest_btn_badge_t -= delta
 	if _quest_btn_badge_t <= 0.0:
 		_quest_btn_badge_t = 0.5
@@ -387,10 +516,25 @@ func _process(delta: float) -> void:
 
 func _refresh_card() -> void:
 	var hero: Dictionary = GameContent.HEROES.get(GameState.hero_id, {})
-	_name_label.text = "Lv.%d %s" % [GameState.level, hero.get("name", "")]
 	_portrait.self_modulate = hero.get("tint", Color.WHITE)
 	_xp_bar.max_value = GameState.xp_needed()
 	_xp_bar.value = GameState.xp
+	if player:
+		var stats: CharacterStats = player.get("stats")
+		if stats:
+			_name_label.text = ("%.1f" % float(stats.defense)).replace(".", ",")
+			if _attack_label:
+				_attack_label.text = ("%.1f" % float(stats.attack_damage)).replace(".", ",")
+			if _speed_label:
+				_speed_label.text = ("%.2f" % (stats.move_speed / 60.0)).replace(".", ",")
+
+
+func _refresh_world_info() -> void:
+	if _world_time_label:
+		_world_time_label.text = "%s %s" % [LanSession.short_role_text(), Time.get_time_string_from_system()]
+	if _world_coord_label and player is Node2D:
+		var p := (player as Node2D).global_position / 16.0
+		_world_coord_label.text = "%d,%d" % [roundi(p.x), roundi(p.y)]
 
 
 func _refresh_controls() -> void:
@@ -409,23 +553,37 @@ func _refresh_controls() -> void:
 			if b.locked:
 				b.cooldown_text = "Lv%d" % int(d.get("unlock_level", 1))
 	var sc: SkillComponent = player.get("skill_component")
-	gear_btn.locked = sc == null or sc.available_skills.is_empty()
-	if sc and not sc.available_skills.is_empty():
-		var s0: Dictionary = sc.available_skills[0]
-		var cd0: float = s0.get("current_cooldown", 0.0)
-		gear_btn.cooldown_ratio = cd0 / maxf(float(s0.get("cooldown", 1.0)), 0.01)
-		gear_btn.cooldown_text = str(ceili(cd0)) if cd0 > 0.0 else ""
-	else:
-		gear_btn.cooldown_ratio = 0.0
+	if gear_btn:
+		gear_btn.locked = sc == null or sc.available_skills.is_empty()
+		if sc and not sc.available_skills.is_empty():
+			var s0: Dictionary = sc.available_skills[0]
+			var cd0: float = s0.get("current_cooldown", 0.0)
+			gear_btn.cooldown_ratio = cd0 / maxf(float(s0.get("cooldown", 1.0)), 0.01)
+			gear_btn.cooldown_text = str(ceili(cd0)) if cd0 > 0.0 else ""
+		else:
+			gear_btn.cooldown_ratio = 0.0
 	var inv: InventoryData = player.get_inventory()
 	var potions := inv.get_item_count("health_potion") + inv.get_item_count("large_health_potion") if inv else 0
-	potion_btn.badge = str(potions)
-	potion_btn.locked = potions <= 0
-	mount_btn.locked = GameState.active_mount == ""
-	mount_btn.caption = "Off" if GameState.mounted else "Ride"
-	if GameState.active_mount != "":
-		mount_btn.icon = PixelArt.get_texture(GameContent.MOUNTS[GameState.active_mount]["sprite"], GameState.mount_skin_palette(GameState.active_mount))
-		mount_btn.caption = "Off" if GameState.mounted else ""
+	if potion_btn:
+		potion_btn.badge = str(potions)
+		potion_btn.locked = potions <= 0
+	if mount_btn:
+		mount_btn.locked = GameState.active_mount == ""
+		mount_btn.caption = "Off" if GameState.mounted else "Ride"
+		if GameState.active_mount != "":
+			mount_btn.icon = PixelArt.get_texture(GameContent.MOUNTS[GameState.active_mount]["sprite"], GameState.mount_skin_palette(GameState.active_mount))
+			mount_btn.caption = "Off" if GameState.mounted else ""
+	if auto_farm_btn:
+		var auto_on := bool(player.get("auto_farm_enabled"))
+		auto_farm_btn.base_color = Color(0.33, 0.18, 0.05) if auto_on else Color(0.08, 0.08, 0.09)
+		auto_farm_btn.queue_redraw()
+
+
+func _toggle_auto_farm() -> void:
+	if player == null or not player.has_method("toggle_auto_farm"):
+		return
+	player.toggle_auto_farm()
+	_refresh_controls()
 
 
 func _refresh_quests() -> void:
@@ -442,7 +600,7 @@ func _refresh_quests() -> void:
 		line.flat = true
 		line.focus_mode = Control.FOCUS_NONE
 		line.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		line.add_theme_font_size_override("font_size", 18)
+		line.add_theme_font_size_override("font_size", 15)
 		var prefix := "! " if r["ready"] else ""
 		line.text = "%s%s  %d/%d" % [prefix, r["name"], r["progress"], r["count"]]
 		line.add_theme_color_override("font_color", UiTheme.C_GOOD if r["ready"] else (UiTheme.C_TEXT if not r["daily"] else UiTheme.C_MUTED))
@@ -468,12 +626,19 @@ func _on_menu_button(id: String) -> void:
 	open_menu(id)
 
 
+func _toggle_hud_chrome() -> void:
+	_hud_collapsed = not _hud_collapsed
+	GameState.settings["compact_hud"] = _hud_collapsed
+	_fold_button.tooltip_text = "Show controls" if _hud_collapsed else "Hide controls"
+	_fold_button.modulate = Color(1.0, 0.72, 0.2) if _hud_collapsed else Color.WHITE
+
+
 func open_menu(id: String) -> void:
 	game_menu.open(id)
 
 
 func show_toast(text: String, color: Color = Color.WHITE) -> void:
-	var l := UiTheme.label(text, 26, color)
+	var l := UiTheme.label(text, 22, color)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.custom_minimum_size = Vector2(600, 34)
 	_toast_box.add_child(l)
@@ -492,7 +657,6 @@ func _on_zone_entered(zone_id: String) -> void:
 	_zone_label.text = z.get("name", zone_id)
 	_boss_timer_label.text = ""
 	_boss_panel.visible = false
-	show_toast(z.get("name", zone_id), Color(0.9, 1, 0.9))
 
 
 func _on_world_boss_timer(zone_id: String, seconds_left: float) -> void:
@@ -513,12 +677,15 @@ func _on_boss_state(boss_id: String, hp: int, max_hp: int, phase: int) -> void:
 
 
 func _on_player_died() -> void:
-	_death_timer = 3.0
+	_death_timer = 0.0
 	_death_panel.visible = true
 
 
 func _respawn_here() -> void:
 	if _death_timer > 0.0:
+		return
+	if LanSession.mode == LanSession.Mode.CLIENT:
+		LanSession.request_player_respawn()
 		return
 	if player and player.has_method("respawn"):
 		player.respawn()
@@ -529,6 +696,9 @@ func _respawn_here() -> void:
 
 func _respawn_town() -> void:
 	if _death_timer > 0.0:
+		return
+	if LanSession.mode == LanSession.Mode.CLIENT:
+		LanSession.request_player_respawn()
 		return
 	if player and player.has_method("respawn"):
 		player.respawn()

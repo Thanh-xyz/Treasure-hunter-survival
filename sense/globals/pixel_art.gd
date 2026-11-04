@@ -12,6 +12,8 @@ extends RefCounted
 ##   - rows shorter than the widest row are padded with transparency
 
 static var _cache: Dictionary = {}
+static var _guest_frames: SpriteFrames = null
+static var _guest_portrait: Texture2D = null
 
 
 ## Build (or fetch cached) texture for sprite `sprite_id` with palette `palette_id`.
@@ -45,6 +47,203 @@ static func build(rows: Array, palette: Dictionary) -> ImageTexture:
 			else:
 				img.set_pixel(x, y, Color.MAGENTA)
 	return ImageTexture.create_from_image(img)
+
+
+## Clean-room starter avatar at the source capture's compact world scale.
+## The original 96x80 soldier sheet remains in the project for legacy scenes,
+## but the survival player uses these editable pixel frames at runtime.
+static func make_guest_frames() -> SpriteFrames:
+	if _guest_frames != null:
+		return _guest_frames
+	var frames := SpriteFrames.new()
+	frames.remove_animation("default")
+	var pal := {
+		"#": Color("1f2a22"),
+		"s": Color("f2d8b3"),
+		"h": Color("f2d8b3"),
+		"e": Color("453b38"),
+		"t": Color("d9c2a7"),
+		"d": Color("705947"),
+		"b": Color("453b38"),
+	}
+	var down_a := [
+		".....######.....",
+		"...##hhhhhh##...",
+		"..#hhhhhhhhhh#..",
+		".#hhhhhhhhhhhh#.",
+		"#hhhhhhhhhhhhhh#",
+		"#hhhhehhhhhehhh#",
+		"#hhhhhhhhhhhhhh#",
+		".#hhhhhhhhhhhh#.",
+		"..##hhhhhhhh##..",
+		"....########....",
+		".....#tttt#.....",
+		"....#tttttt#....",
+		"...h#tttttt#h...",
+		"...h#tttttt#h...",
+		"....#tttttt#....",
+		"....#t####t#....",
+		"....#dd##dd#....",
+		"...##d#..#d##...",
+		"...#bb#..#bb#...",
+		"...####..####...",
+	]
+	var down_b := down_a.duplicate()
+	down_b[17] = "....#dd##dd#...."
+	down_b[18] = "....#bb##bb#...."
+	down_b[19] = "....####.####..."
+	var up_a := [
+		".....######.....",
+		"...##hhhhhh##...",
+		"..#hhhhhhhhhh#..",
+		".#hhhhhhhhhhhh#.",
+		"#hhhhhhhhhhhhhh#",
+		"#hhhhhhhhhhhhhh#",
+		"#hhhhhhhhhhhhhh#",
+		".#hhhhhhhhhhhh#.",
+		"..##hhhhhhhh##..",
+		"....########....",
+		".....#tttt#.....",
+		"....#tttttt#....",
+		"...h#tttttt#h...",
+		"...h#tttttt#h...",
+		"....#tttttt#....",
+		"....#t####t#....",
+		"....#dd##dd#....",
+		"...##d#..#d##...",
+		"...#bb#..#bb#...",
+		"...####..####...",
+	]
+	var up_b := up_a.duplicate()
+	up_b[17] = "....#dd##dd#...."
+	up_b[18] = "....#bb##bb#...."
+	up_b[19] = "....####.####..."
+	var side_a := [
+		"......#####.....",
+		"....##hhhhh#....",
+		"...#hhhhhhhh#...",
+		"..#hhhhhhhhhh#..",
+		"..#hhhhhhhehh#..",
+		"..#hhhhhhhhhh#..",
+		"...#hhhhhhhhhh#.",
+		"....##hhhh##....",
+		"......#####.....",
+		"......#ttt#.....",
+		".....#ttttt#....",
+		"....#ttttthh#...",
+		".....#ttttth#...",
+		".....#ttttt#....",
+		"......#tt#......",
+		".....#d##d#.....",
+		".....#d..#d.....",
+		".....#b..#b.....",
+		".....##..##.....",
+	]
+	var side_b := side_a.duplicate()
+	side_b[16] = "......#dd#......"
+	side_b[17] = "......#bb#......"
+	side_b[18] = "......####......"
+	var attack_down := down_a.duplicate()
+	attack_down[11] = "...h#tttttt#h..."
+	attack_down[12] = "..hh#tttttt#hh.."
+	attack_down[13] = "...h#tttttt#h..."
+	var attack_side := side_a.duplicate()
+	attack_side[10] = ".....#ttttthh#.."
+	attack_side[11] = "....#ttttthhhh#."
+	attack_side[12] = ".....#ttttthh#.."
+	var attack_up := up_a.duplicate()
+	attack_up[10] = "...hh#tttt#hh..."
+	attack_up[11] = "..hh#tttttt#hh.."
+	var death := [
+		"......................",
+		"..........####........",
+		"...#######ssss##......",
+		".##ttttttssssssss#....",
+		"#ttttttttssessess#....",
+		"#ttttttttssssssss#....",
+		".##dddddd##ssss##.....",
+		"...######..####.......",
+	]
+	_add_frames(frames, "idle_down", [down_a], pal, 2.0, true)
+	_add_frames(frames, "idle_up", [up_a], pal, 2.0, true)
+	_add_frames(frames, "idle_right", [side_a], pal, 2.0, true)
+	_add_frames(frames, "idle_left", [_mirror_rows(side_a)], pal, 2.0, true)
+	_add_frames(frames, "move_down", [down_a, down_b], pal, 6.0, true)
+	_add_frames(frames, "move_up", [up_a, up_b], pal, 6.0, true)
+	_add_frames(frames, "move_right", [side_a, side_b], pal, 6.0, true)
+	_add_frames(frames, "move_left", [_mirror_rows(side_a), _mirror_rows(side_b)], pal, 6.0, true)
+	for diagonal in ["left_down", "right_down"]:
+		_add_frames(frames, "idle_" + diagonal, [down_a], pal, 2.0, true)
+		_add_frames(frames, "move_" + diagonal, [down_a, down_b], pal, 6.0, true)
+	for diagonal in ["left_up", "right_up"]:
+		_add_frames(frames, "idle_" + diagonal, [up_a], pal, 2.0, true)
+		_add_frames(frames, "move_" + diagonal, [up_a, up_b], pal, 6.0, true)
+	_add_frames(frames, "attack_down", [down_a, attack_down], pal, 8.0, false)
+	_add_frames(frames, "attack_up", [up_a, attack_up], pal, 8.0, false)
+	_add_frames(frames, "attack_right", [side_a, attack_side], pal, 8.0, false)
+	_add_frames(frames, "attack_left", [_mirror_rows(side_a), _mirror_rows(attack_side)], pal, 8.0, false)
+	_add_frames(frames, "death", [death], pal, 1.0, false)
+	_guest_frames = frames
+	return _guest_frames
+
+
+static func make_guest_portrait() -> Texture2D:
+	if _guest_portrait != null:
+		return _guest_portrait
+	var rows := [
+		"........########........",
+		".....###hhhhhhhh###.....",
+		"...##hhhhhhhhhhhhhh##...",
+		"..#hhhhhhhhhhhhhhhhhh#..",
+		".#hhhhhhhhhhhhhhhhhhhh#.",
+		"#hhhhhhhhhhhhhhhhhhhhhh#",
+		"#hhhhhhhhhhhhhhhhhhhhhh#",
+		"#hhhhhehhhhhhhhhehhhhhh#",
+		"#hhhhhhhhhhhhhhhhhhhhhh#",
+		"#hhhhhhhhhhhhhhhhhhhhhh#",
+		".#hhhhhhhhhhhhhhhhhhhh#.",
+		"..#hhhhhhhhhhhhhhhhhh#..",
+		"...##hhhhhhhhhhhhhh##...",
+		".....###hhhhhhhh###.....",
+		"........########........",
+		".........#tttt#.........",
+		".......##tttttt##.......",
+		".....##tttttttttt##.....",
+		"...##tttttttttttttt##...",
+		"..#tttttttttttttttttt#..",
+		".######################.",
+	]
+	var canvas: Array = []
+	for _i in range(3):
+		canvas.append("................................")
+	for row: String in rows:
+		canvas.append("...." + row + "....")
+	while canvas.size() < 32:
+		canvas.append("................................")
+	_guest_portrait = build(canvas, {
+		"#": Color("1f2a22"), "h": Color("f2d8b3"),
+		"e": Color("453b38"), "t": Color("d9c2a7"),
+	})
+	return _guest_portrait
+
+
+static func _add_frames(frames: SpriteFrames, name: String, variants: Array, palette: Dictionary, fps: float, loop: bool) -> void:
+	frames.add_animation(name)
+	frames.set_animation_speed(name, fps)
+	frames.set_animation_loop(name, loop)
+	for rows: Array in variants:
+		frames.add_frame(name, build(rows, palette))
+
+
+static func _mirror_rows(rows: Array) -> Array:
+	var mirrored: Array = []
+	for raw: Variant in rows:
+		var row := String(raw)
+		var reversed := ""
+		for i in range(row.length() - 1, -1, -1):
+			reversed += row[i]
+		mirrored.append(reversed)
+	return mirrored
 
 
 ## Shared palette helpers
@@ -122,6 +321,31 @@ const SPRITES := {
 		"...#bbbbbbbb#...",
 		"...#dbbbbbbd#...",
 		"....########....",
+	],
+	"mosquito": [
+		"..#.........#.....",
+		".#w#.......#w#....",
+		"#www#..#..#www#...",
+		".#ww###b###ww#....",
+		"..###hbbbh###....",
+		"....#bbkbb#.......",
+		"...##bbbbb##......",
+		"..#..#bbb#..#.....",
+		".#...#bdb#...#....",
+		".....#d#d#........",
+		"....#d...d#.......",
+		"...#.......#......",
+	],
+	"snail": [
+		"..........#..#....",
+		".........#w##w#...",
+		".....######bb###..",
+		"...##hhhhhhbbbb##.",
+		"..#hhbbhhbbhbbbb#.",
+		".#hbbhhbbhhbbbbbb#",
+		".#hbbbbbbbbbbbbbb#",
+		"..#ddddddddddbbb#.",
+		"...#############..",
 	],
 	# -------------------------------------------------------------------- pets
 	"pet_fox": [
@@ -255,6 +479,103 @@ const SPRITES := {
 		"................",
 		"#..##..##..##..#",
 	],
+	"field_stump": [
+		".......########.......",
+		".....##hhhhhhhh##.....",
+		"....#hhbbbbbbbbhh#....",
+		"...#hbbddddddddbbh#...",
+		"...#hbddbbbbbbddbh#...",
+		"....#hbbbbbbbbbbh#....",
+		".....############.....",
+		"......#bbbbbbbb#......",
+		".....#bbdbbbdbbb#.....",
+		".....#bbdbbbdbbb#.....",
+		"....#bbbdbbbdbbbb#....",
+		"...#bbbbdbbbdbbbbb#...",
+		"..#bbbbddbbbddbbbbb#..",
+		".##bbbdddbbbdddbbbb##.",
+		"#dddddddbbbbbdddddddd#",
+		"######################",
+	],
+	"hud_helmet": [
+		"....########....",
+		"..##hhhhhhhh##..",
+		".#hbbbbbbbbbbh#.",
+		"#hbbbbbbbbbbbbh#",
+		"#bbbbbbbbbbbbbb#",
+		"#bb#############",
+		"#bb#..........#.",
+		"#bb#..........#.",
+		".###..........#.",
+		"..############..",
+	],
+	"hud_heart": [
+		"..###....###....",
+		".#####..#####...",
+		"##############..",
+		"##############..",
+		".############...",
+		"..##########....",
+		"...########.....",
+		"....######......",
+		".....####.......",
+		"......##........",
+	],
+	"hud_sword": [
+		".............##.",
+		"............#h#.",
+		"...........#hh#.",
+		"..........#hh#..",
+		".........#hh#...",
+		"........#hh#....",
+		".......#hh#.....",
+		"..#...#hh#......",
+		".###.#hh#.......",
+		"..####h#........",
+		"...####.........",
+		"..#b##..........",
+		".#bb#...........",
+		"..##............",
+	],
+	"hud_boot": [
+		"....#####.......",
+		"...#bbbbb#......",
+		"...#bbbbb#......",
+		"...#bbbbb#......",
+		"...#bbbbb#......",
+		"...#bbbbb###....",
+		"...#bbbbbbbb#...",
+		"..#bbbbbbbbbb#..",
+		".#############..",
+	],
+	"hud_world": [
+		".....######.....",
+		"...##hhhhhh##...",
+		"..#hhbbb##hhh#..",
+		".#hbbbbb#hhhh#..",
+		"#hhbbb##hhhhhh#.",
+		"#hhhh##hhhbbb##.",
+		"#hhh##hhhbbbb##.",
+		"#hhhhhbbbbbbbh#.",
+		".#hhhhbbbbbbh#..",
+		"..#hhhhhhhhhh#..",
+		"...##hhhhhh##...",
+		".....######.....",
+	],
+	"hud_coin": [
+		".....######.....",
+		"...##hhhhhh##...",
+		"..#hhbbbbbbhh#..",
+		".#hhbbhbbbbhh#..",
+		"#hhbbhhhbbbbhh#.",
+		"#hhbbbhbbbbbhh#.",
+		"#hhbbbhbbbbbhh#.",
+		"#hhbbbbhhhbbhh#.",
+		".#hhbbbbbbhh#...",
+		"..#hhbbbbhh#....",
+		"...##hhhh##.....",
+		".....####.......",
+	],
 	"bolt": [
 		"..##..",
 		".#hh#.",
@@ -296,6 +617,14 @@ const PALETTES := {
 	"mushroom": {
 		"#": Color("1b1420"), "r": Color("c8413c"), "w": Color("f4f1e8"), "b": Color("e8d7b0"),
 		"d": Color("b39a6e"), "k": Color("1b1420"),
+	},
+	"mosquito": {
+		"#": Color("1b1420"), "b": Color("8d9a86"), "h": Color("d7dcc9"),
+		"d": Color("4b5548"), "w": Color("d8eee7"), "k": Color("c8413c"),
+	},
+	"snail": {
+		"#": Color("1b1420"), "b": Color("8b69a8"), "h": Color("b899cf"),
+		"d": Color("50395f"), "w": Color("e9e3cf"),
 	},
 	# pets (stage palettes are generated by tint in PetFollower)
 	"pet_fox": {
@@ -345,6 +674,16 @@ const PALETTES := {
 		"r": Color("c8413c"),
 	},
 	"plot": {"#": Color(0.95, 0.85, 0.5, 0.8)},
+	"field_stump": {
+		"#": Color("251a18"), "b": Color("7a4d2c"), "h": Color("b47b43"),
+		"d": Color("4a2b20"),
+	},
+	"hud_helmet": {"#": Color("1b1420"), "b": Color("9a4e22"), "h": Color("e3a84d")},
+	"hud_heart": {"#": Color("8a151a")},
+	"hud_sword": {"#": Color("1b1420"), "b": Color("8a4e2e"), "h": Color("d8e1df")},
+	"hud_boot": {"#": Color("1b1420"), "b": Color("d7c9aa")},
+	"hud_world": {"#": Color("1b1420"), "b": Color("55a94e"), "h": Color("58bde0")},
+	"hud_coin": {"#": Color("8a5313"), "b": Color("d99819"), "h": Color("ffd456")},
 	"bolt": {"#": Color("1b1420"), "b": Color("ffffff"), "h": Color("f2c94c")},
 	"bolt_enemy": {"#": Color("1b1420"), "b": Color("ffd0d0"), "h": Color("c8413c")},
 	"bolt_frost": {"#": Color("1b1420"), "b": Color("ffffff"), "h": Color("6ab4e8")},

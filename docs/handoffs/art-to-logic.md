@@ -94,3 +94,15 @@ ownership, integration branch, and feature merge order.
 - Seven supplied Treasure Hunter entries are marked `local_only`.
 - All ten shared workflow Skills passed `quick_validate.py`.
 - No gameplay or shared runtime file is part of Agent A's feature.
+
+## Reference UI Kit Update
+
+Agent A captured 14 runtime states and selected 24 exact source sprites for login,
+HUD, settings tabs, and custom-layout controls. Stable files live under
+`assets/treasure_hunter/ui/reference/`; all are `local_only` and currently marked
+`selected`, not `integrated`.
+
+No runtime consumer or gameplay contract changed. Before Agent A reconstructs the
+HUD or authentication scene, both agents must sequence ownership for the affected
+shared UI files. See `docs/reports/reference-screen-inventory.md` for the observed
+screen graph and recommended order.

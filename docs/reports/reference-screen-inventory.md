@@ -73,6 +73,7 @@ files used for this report.
 | Authentication progress | `9cb8bd13e5a8c05e674b4313a004ff492acc1c64d2c63fa5deb48fd434fdfdf8` |
 | Dead HUD | `cf0b287d1e76534c8ae37f77444972405a3a83d093c1678aac7d4d9aef59c863` |
 | Live HUD | `f1e481756a79bf89a6327818b9c794d8c72007810591ea426a7126e98cb63ef0` |
+| Live HUD recapture, stat evidence | `913e84cfd09c8d483250b5fbfdac0d0854c1bf2f55651b890b7924061a3bc2b6` |
 | Material bag | `1c862f350519db03ce3b376fc8dc77d805bd4566e40960bf920f8e92b61f14f4` |
 | Equipment detail | `be578e2fe764b503c1f86257880764c1d08daf1b67c1206af2b74f5615fe6543` |
 | Main menu | `dfcb5aa3b4bcd491289b8c4f4a446db514db87011f7d7ef161149f7b3cc0908b` |
@@ -96,10 +97,11 @@ files used for this report.
 
 ## Selected Local UI Kit
 
-Twenty-nine source images were copied bit-for-bit into
+Thirty-four source images were copied bit-for-bit into
 `assets/treasure_hunter/ui/reference/`. Ten authentication/startup resources are
 consumed by `sense/ui/mobile/startup_gate.gd`; `panel_stats.png`,
-`joystick_ring.png`, and `icon_weapon.png` are consumed by the mobile HUD. The
+`joystick_ring.png`, `icon_weapon.png`, `icon_power.png`, `icon_health.png`,
+`icon_damage.png`, `icon_speed.png`, and `icon_gold.png` are consumed by the mobile HUD. The
 remaining resources stay selected references for later HUD and settings work,
 except the retained crossed-sword candidate documented below.
 
@@ -110,7 +112,7 @@ except the retained crossed-sword candidate documented below.
 | Authentication background | `login_background_server.png` |
 | Authentication | `login_panel.png`, `login_tab_active.png`, `login_tab_inactive.png`, `login_line.png` |
 | Buttons | `button_blue.png`, `button_orange.png`, `button_close.png`, `button_back.png`, `button_menu.png` |
-| HUD | `joystick.png`, `joystick_ring.png`, `icon_minimize.png`, `icon_chat.png`, `icon_attack.png`, `icon_weapon.png`, `panel_stats.png`, `panel_level.png` |
+| HUD | `joystick.png`, `joystick_ring.png`, `icon_minimize.png`, `icon_chat.png`, `icon_attack.png`, `icon_weapon.png`, `icon_power.png`, `icon_health.png`, `icon_damage.png`, `icon_speed.png`, `icon_gold.png`, `panel_stats.png`, `panel_level.png` |
 | Settings tabs | `icon_settings.png`, `icon_gameplay.png`, `icon_profile.png`, `icon_login.png` |
 | Custom layout | `layout_back.png`, `layout_bag.png`, `layout_mount.png`, `layout_pet.png` |
 
@@ -141,6 +143,13 @@ frame. Pet, mount, hero, village, and bag keep their existing fallback icons
 because the available named export candidates have not been proven against a
 clean runtime crop.
 
+A fresh authorized `720x1600` runtime capture verified exact mappings for the
+first four left stat rows and the right gold row: `Icon_Power__6088.png`,
+`Icon_Health__2.png`, `Icon_Damage__5.png`, `Icon_Speed__25.png`, and
+`Icon_Gold__2.png`. These now replace the inferred procedural icons while keeping
+all stat values and signals unchanged. The globe/coordinate icon remains a
+fallback because no exported source has been proven.
+
 ## Missing Evidence
 
 - Startup and authentication have deterministic Emberfield renders at `720x1600`;
@@ -148,7 +157,7 @@ clean runtime crop.
 - Font asset and exact font metrics are not yet linked to the observed labels.
 - Sliced-border values and Unity pixels-per-unit settings require metadata or
   controlled reconstruction.
-- Some rail icons and stat/currency icons remain unmapped.
+- The globe/coordinate icon and some rail icons remain unmapped.
 
 ## Recommended Integration Order
 

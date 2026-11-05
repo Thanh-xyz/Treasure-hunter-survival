@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-05
-Current feature: verified fixed HUD rail frames and attack icon.
+Current feature: verified fixed HUD stat and currency icons.
 
 ## Completed Before This Feature
 
@@ -76,14 +76,22 @@ Current feature: verified fixed HUD rail frames and attack icon.
 - Preserved every existing rail callback, action ID, position, compact-HUD rule,
   and death-state rule.
 
+## Fixed HUD Stat Icon Feature
+
+- Captured a fresh authorized live HUD at `720x1600` and matched five exported
+  icons directly against the visible power, health, damage, speed, and gold rows.
+- Replaced the five inferred procedural icons with bit-exact Treasure Hunter
+  sources while preserving stat calculations, signals, labels, and panel layout.
+- Retained the procedural globe icon because no exported source has been proven.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
-- Verified 92 assets, 92 unique asset IDs, and 92 unique target paths.
+- Verified 97 assets, 97 unique asset IDs, and 97 unique target paths.
 - Verified every non-null source and target path exists.
-- Verified all 36 supplied Treasure Hunter entries use
+- Verified all 41 supplied Treasure Hunter entries use
   `distribution_scope: local_only`.
-- Verified all 29 curated UI reference targets match their recorded sources
+- Verified all 34 curated UI reference targets match their recorded sources
   bit-for-bit and have the manifest dimensions.
 - Verified the player scene slices its `768x80` sheets into eight `96x80`
   AtlasTexture regions; manifest frame metadata matches the scene.
@@ -103,6 +111,13 @@ Current feature: verified fixed HUD rail frames and attack icon.
 - The HUD render produced `/tmp/emberfield-mobile-hud.png` and
   `/tmp/emberfield-mobile-hud-dead.png` at `720x1600` for direct comparison with
   the verified live and dead ADB captures.
+- Direct visual inspection confirms the five integrated icons use the verified
+  power, health, damage, speed, and gold sources in their existing rows. The
+  globe remains a documented fallback. Pixel parity is not claimed for the full
+  HUD because the map, player, labels, and several controls still differ.
+- Whole-frame HUD hashes are not used as stable evidence because the rendered
+  local-time row changes between runs; fixed visual regions require a masked or
+  cropped comparison.
 
 ## Not Yet Implemented
 

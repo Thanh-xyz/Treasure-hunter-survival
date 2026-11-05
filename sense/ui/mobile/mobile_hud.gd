@@ -17,6 +17,9 @@ const BTN_ICONS := {
 	"quest": "scroll", "map": "gem_green", "village": "wood", "system": "gamepad",
 }
 const HUD_PANEL := preload("res://assets/treasure_hunter/ui/reference/panel_stats.png")
+const PORTRAIT_FRAME := preload("res://assets/treasure_hunter/ui/reference/portrait_frame.png")
+const PORTRAIT_BACKGROUND := preload("res://assets/treasure_hunter/ui/reference/login_panel.png")
+const PORTRAIT_BORDER := preload("res://assets/treasure_hunter/ui/reference/portrait_border.png")
 const MENU_BUTTON := preload("res://assets/treasure_hunter/ui/reference/button_menu.png")
 const MINIMIZE_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_minimize.png")
 const WEAPON_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_weapon.png")
@@ -235,11 +238,32 @@ func _build_player_card() -> void:
 	frame.position = Vector2(18, 18)
 	frame.size = Vector2(98, 98)
 	frame.focus_mode = Control.FOCUS_NONE
-	frame.add_theme_stylebox_override("normal", UiTheme.box(Color(0.08, 0.08, 0.08, 0.96), UiTheme.C_TRIM, 4))
-	frame.add_theme_stylebox_override("hover", UiTheme.box(Color(0.12, 0.12, 0.13, 0.96), UiTheme.C_GOLD, 4))
-	frame.add_theme_stylebox_override("pressed", UiTheme.box(Color(0.20, 0.10, 0.04, 0.96), UiTheme.C_GOLD, 4))
+	frame.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	var frame_style := StyleBoxTexture.new()
+	frame_style.texture = PORTRAIT_FRAME
+	frame_style.texture_margin_left = 15.0
+	frame_style.texture_margin_top = 15.0
+	frame_style.texture_margin_right = 15.0
+	frame_style.texture_margin_bottom = 15.0
+	frame.add_theme_stylebox_override("normal", frame_style)
+	frame.add_theme_stylebox_override("hover", frame_style)
+	frame.add_theme_stylebox_override("pressed", frame_style)
 	frame.pressed.connect(func() -> void: _on_menu_button("bag"))
 	add_child(frame)
+	var portrait_background := NinePatchRect.new()
+	portrait_background.texture = PORTRAIT_BACKGROUND
+	portrait_background.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	portrait_background.set_patch_margin(SIDE_LEFT, 20)
+	portrait_background.set_patch_margin(SIDE_TOP, 20)
+	portrait_background.set_patch_margin(SIDE_RIGHT, 20)
+	portrait_background.set_patch_margin(SIDE_BOTTOM, 20)
+	portrait_background.set_anchors_preset(Control.PRESET_FULL_RECT)
+	portrait_background.offset_left = 7
+	portrait_background.offset_top = 7
+	portrait_background.offset_right = -7
+	portrait_background.offset_bottom = -7
+	portrait_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	frame.add_child(portrait_background)
 	_portrait = TextureRect.new()
 	_portrait.texture = GameMenu.hero_portrait()
 	_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -252,6 +276,16 @@ func _build_player_card() -> void:
 	_portrait.offset_bottom = -8
 	_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	frame.add_child(_portrait)
+	var portrait_border := NinePatchRect.new()
+	portrait_border.texture = PORTRAIT_BORDER
+	portrait_border.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	portrait_border.set_patch_margin(SIDE_LEFT, 15)
+	portrait_border.set_patch_margin(SIDE_TOP, 15)
+	portrait_border.set_patch_margin(SIDE_RIGHT, 15)
+	portrait_border.set_patch_margin(SIDE_BOTTOM, 15)
+	portrait_border.set_anchors_preset(Control.PRESET_FULL_RECT)
+	portrait_border.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	frame.add_child(portrait_border)
 
 	_xp_bar = UiTheme.bar(Color(0.12, 0.62, 0.96), 7)
 	_xp_bar.position = Vector2(28, 124)

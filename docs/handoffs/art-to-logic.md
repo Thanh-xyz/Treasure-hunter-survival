@@ -189,3 +189,13 @@ shared contract migration is required.
 calculation, integer formatting, half-second refresh cadence, and world/resource
 panel layout are unchanged. This is presentation-only; Agent B does not need to
 change gameplay data, state, saves, LAN snapshots, or tests.
+
+## Fixed HUD Portrait Frame Contract
+
+`MobileHUD` now uses `ui.reference.hud.portrait.frame` (`F200_1_41`) with its
+verified 15-pixel nine-slice borders, reuses `ui.reference.login.panel` as the
+nested portrait background with its verified 20-pixel borders, and renders the
+active `ui.reference.hud.portrait.border` (`BorderAvatar`) overlay above the
+dynamic portrait. The hero portrait texture, tint refresh, button position/size,
+and existing bag callback are unchanged. Agent B does not need to change hero
+data, inventory behavior, saves, LAN snapshots, or tests.

@@ -135,3 +135,18 @@ asset metadata.
   item, non-sale item, exact charge and final-state signal visibility.
 - `git diff --check`, focused inventory tests, legacy phases 1–7 and survival tests passed with
   Godot 4.6 and exit code 0. No asset, UI scene, gameplay ID or networking contract changed.
+
+## 2026-11-05 — Equipment and augment transaction integrity
+
+- Branch: `feature/th-logic-equipment-transactions`, based on `origin/develop` at `d6e9d9b`.
+- Unequip now simulates inventory placement or a compatible target-slot swap before committing
+  equipment and inventory together. Full inventory failure preserves equipment and emits no
+  state-change signal.
+- Augment apply/remove now operate on simulated inventory slots and duplicated equipment
+  instances, then publish the final state once. Failed removal on a full inventory keeps the
+  augment attached; successful operations emit one inventory, equipment and augment signal.
+- Focused tests cover rollback, final-state signal visibility, duplicate-signal prevention,
+  target-slot equipment swap and full-inventory augment removal.
+- `git diff --check`, focused inventory tests, legacy phases 1–7 and survival tests passed with
+  Godot `4.6.stable.official.89cea1439`, exit code 0. No asset, UI, ID, save schema or network
+  contract changed.

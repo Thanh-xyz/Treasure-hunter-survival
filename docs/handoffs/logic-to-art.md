@@ -47,6 +47,13 @@ The feature is limited to `sense/components/shop_component.gd`, gameplay tests a
 reports. It does not modify shop visuals, UI scenes, assets, item IDs, animation metadata or
 network contracts, and it does not overlap Agent A's active startup/auth visual files.
 
+## 2026-11-05 Equipment transaction update
+
+Unequip and augment apply/remove now commit inventory plus equipment state atomically and emit
+signals only after final state is visible. The feature changes the gameplay data model, focused
+tests and Agent B reports only. It preserves all equipment slot IDs, item IDs, UI call signatures,
+assets and animation/network contracts, and does not overlap Agent A's integrated HUD files.
+
 ## Ownership boundary
 
 Agent A owns final art, sprites, animation metadata, maps/tilesets, UI visuals, the asset

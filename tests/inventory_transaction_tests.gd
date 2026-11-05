@@ -18,6 +18,7 @@ func _ready() -> void:
 	_test_inventory_transaction()
 	_test_economy_transaction()
 	_test_shop_purchase_transaction()
+	_test_equipment_transactions()
 	_test_inventory_removal_invariants()
 	_test_crafting_transaction()
 	_test_quest_claim_transaction()
@@ -119,6 +120,75 @@ func _test_shop_purchase_transaction() -> void:
 	_check(not shop.process_purchase({"id": "flame_augment_t1", "price": -100}), "shop accepted an item without a catalog price")
 	_check(not shop.process_purchase({"id": "missing_item", "price": -100}), "shop accepted an unknown item")
 	shop.queue_free()
+
+
+func _test_equipment_transactions() -> void:
+	var inventory := InventoryData.new()
+	inventory.add_item(ItemDatabase.get_item("fire_blade"), 1)
+	_check(inventory.equip_item(0), "equipment setup failed")
+	inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	var inventory_signals := {"value": 0}
+	var equipment_signals := {"value": 0}
+	var augment_signals := {"value": 0}
+	var observed := {"inventory_has_weapon": false, "equipment_empty": false, "augment_consumed": false}
+	var on_inventory_changed := func() -> void: inventory_signals["value"] += 1
+	var on_equipment_changed := func(_slot: String) -> void:
+		equipment_signals["value"] += 1
+		observed["inventory_has_weapon"] = inventory.get_item_count("fire_blade") == 1
+		observed["equipment_empty"] = inventory.get_equipped("weapon") == null
+	var on_augments_changed := func(_slot: String) -> void:
+		augment_signals["value"] += 1
+		observed["augment_consumed"] = inventory.get_item_count("flame_augment_t1") == 0
+	inventory.inventory_changed.connect(on_inventory_changed)
+	inventory.equipment_changed.connect(on_equipment_changed)
+	inventory.augments_changed.connect(on_augments_changed)
+
+	_check(not inventory.unequip_item("weapon"), "full inventory accepted unequip")
+	_check(inventory.get_equipped("weapon") != null, "failed unequip lost equipment")
+	_check(int(inventory_signals["value"]) == 0 and int(equipment_signals["value"]) == 0, "failed unequip emitted changes")
+	inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
+	inventory_signals["value"] = 0
+	equipment_signals["value"] = 0
+	_check(inventory.unequip_item("weapon"), "unequip failed after freeing capacity")
+	_check(int(inventory_signals["value"]) == 1 and int(equipment_signals["value"]) == 1, "unequip emitted duplicate or missing signals")
+	_check(bool(observed["inventory_has_weapon"]) and bool(observed["equipment_empty"]), "unequip signal exposed partial state")
+	var swap_inventory := InventoryData.new()
+	swap_inventory.add_item(ItemDatabase.get_item("iron_sword"), 1)
+	swap_inventory.equip_item(0)
+	swap_inventory.add_item(ItemDatabase.get_item("fire_blade"), 1)
+	_check(swap_inventory.unequip_item("weapon", 0), "target-slot equipment swap failed")
+	_check(swap_inventory.get_equipped("weapon").id == "fire_blade", "target-slot swap equipped the wrong item")
+	_check(swap_inventory.get_item_at(0).item.id == "iron_sword", "target-slot swap lost the previous equipment")
+
+	inventory = InventoryData.new()
+	inventory.inventory_changed.connect(on_inventory_changed)
+	inventory.equipment_changed.connect(on_equipment_changed)
+	inventory.augments_changed.connect(on_augments_changed)
+	inventory.add_item(ItemDatabase.get_item("fire_blade"), 1)
+	inventory.equip_item(0)
+	inventory.add_item(ItemDatabase.get_item("flame_augment_t1"), 1)
+	inventory_signals["value"] = 0
+	equipment_signals["value"] = 0
+	augment_signals["value"] = 0
+	observed["augment_consumed"] = false
+	_check(inventory.apply_augment("weapon", 0), "valid augment application failed")
+	_check(int(inventory_signals["value"]) == 1 and int(equipment_signals["value"]) == 1 and int(augment_signals["value"]) == 1, "augment application emitted duplicate or missing signals")
+	_check(bool(observed["augment_consumed"]), "augment signal exposed an unconsumed item")
+
+	inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	inventory_signals["value"] = 0
+	equipment_signals["value"] = 0
+	augment_signals["value"] = 0
+	_check(not inventory.remove_augment("weapon", 0), "full inventory accepted augment removal")
+	_check(inventory.get_equipped("weapon").applied_augments.size() == 1, "failed augment removal changed equipment")
+	_check(int(inventory_signals["value"]) == 0 and int(equipment_signals["value"]) == 0 and int(augment_signals["value"]) == 0, "failed augment removal emitted changes")
+	inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
+	inventory_signals["value"] = 0
+	equipment_signals["value"] = 0
+	augment_signals["value"] = 0
+	_check(inventory.remove_augment("weapon", 0), "augment removal failed after freeing capacity")
+	_check(inventory.get_item_count("flame_augment_t1") == 1 and inventory.get_equipped("weapon").applied_augments.is_empty(), "augment removal did not commit final state")
+	_check(int(inventory_signals["value"]) == 1 and int(equipment_signals["value"]) == 1 and int(augment_signals["value"]) == 1, "augment removal emitted duplicate or missing signals")
 
 
 func _test_inventory_removal_invariants() -> void:

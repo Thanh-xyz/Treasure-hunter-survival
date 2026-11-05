@@ -19,6 +19,7 @@ func _ready() -> void:
 	_test_inventory_add_signals()
 	_test_economy_transaction()
 	_test_shop_purchase_transaction()
+	_test_sale_transaction()
 	_test_equipment_transactions()
 	_test_inventory_removal_invariants()
 	_test_crafting_transaction()
@@ -144,6 +145,45 @@ func _test_shop_purchase_transaction() -> void:
 	_check(not shop.process_purchase({"id": "flame_augment_t1", "price": -100}), "shop accepted an item without a catalog price")
 	_check(not shop.process_purchase({"id": "missing_item", "price": -100}), "shop accepted an unknown item")
 	shop.queue_free()
+
+
+func _test_sale_transaction() -> void:
+	var inventory := InventoryData.new()
+	var wood := ItemDatabase.get_item("wood")
+	var sword := ItemDatabase.get_item("iron_sword")
+	var spoofed_wood := ItemDatabase.get_item_copy("wood")
+	spoofed_wood.sell_price = 999999
+	inventory.add_item(spoofed_wood, 2)
+	var inventory_signals := {"value": 0}
+	var gold_signals := {"value": 0}
+	var observed := {"wood": -1, "gold": -1}
+	inventory.inventory_changed.connect(func() -> void:
+		inventory_signals["value"] += 1
+		observed["wood"] = inventory.get_item_count("wood")
+		observed["gold"] = inventory.gold
+	)
+	inventory.gold_changed.connect(func(amount: int) -> void:
+		gold_signals["value"] += 1
+		observed["wood"] = inventory.get_item_count("wood")
+		observed["gold"] = amount
+	)
+
+	var credited := inventory.sell_item_at(0, "wood")
+	_check(credited == wood.sell_price, "sale did not use the authoritative item price")
+	_check(inventory.gold == wood.sell_price and inventory.get_item_count("wood") == 1, "sale did not commit item and gold together")
+	_check(int(inventory_signals["value"]) == 1 and int(gold_signals["value"]) == 1, "sale emitted duplicate or missing signals")
+	_check(int(observed["wood"]) == 1 and int(observed["gold"]) == wood.sell_price, "sale signal exposed a partial state")
+
+	inventory_signals["value"] = 0
+	gold_signals["value"] = 0
+	_check(inventory.sell_item_at(0, sword.id) == 0, "stale sale confirmation sold a different item")
+	_check(inventory.gold == wood.sell_price and inventory.get_item_count("wood") == 1, "rejected stale sale changed inventory")
+	_check(int(inventory_signals["value"]) == 0 and int(gold_signals["value"]) == 0, "rejected stale sale emitted changes")
+
+	var unsellable := ItemDatabase.get_item_copy("flame_augment_t1")
+	inventory.inventory_slots[1] = {"item": unsellable, "quantity": 1}
+	_check(inventory.sell_item_at(1, unsellable.id) == 0, "unsellable item credited gold")
+	_check(inventory.get_item_at(1).item == unsellable, "failed unsellable sale removed the item")
 
 
 func _test_equipment_transactions() -> void:

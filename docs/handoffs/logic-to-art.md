@@ -221,3 +221,15 @@ No shared contract change should be implemented until these questions are resolv
   LAN impact. Agent A requires no adaptation.
 - A later equipment-enhancement proposal would expose an item level for equipment-detail UI,
   but it remains unimplemented pending approval of the save/item-instance contract.
+
+## 2026-11-05 — Resolved basic combat hits
+
+- Basic player melee and LAN client attacks now produce one authoritative result containing
+  applied damage and critical state. Critical augments affect the roll; lifesteal consumes the
+  confirmed applied amount.
+- Existing item IDs, equipment slots, animation names, art asset IDs and visual layouts are
+  unchanged. Agent A requires no source or scene adaptation.
+- Future critical/lifesteal visuals should react to resolved combat events and must not roll
+  gameplay outcomes independently. The current damage-number presentation remains unchanged.
+- Reference evidence confirms Critical, Critical Bonus and LifeSteal are distinct. Critical
+  Bonus visual/gameplay behavior is not implemented because its exact formula is unknown.

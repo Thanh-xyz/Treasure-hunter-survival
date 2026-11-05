@@ -192,6 +192,7 @@ func _ready() -> void:
 		hurtbox.collision_layer = CollisionLayers.Layer.ENEMY_HURTBOX
 		hurtbox.collision_mask = CollisionLayers.Layer.PLAYER_HITBOX
 		hurtbox.damage_received.connect(_on_damage_received)
+		hurtbox.resolved_damage_received.connect(_on_resolved_damage_received)
 		# print("[SKELETON] Hurtbox - Layer: ", hurtbox.collision_layer, " Mask: ", hurtbox.collision_mask)
 	
 	# Setup health component
@@ -485,6 +486,12 @@ func _on_damage_received(amount: int, _knockback: float, _from_position: Vector2
 		apply_hit(r["amount"], _from_position, r["crit"])
 
 
+func _on_resolved_damage_received(amount: int, crit: bool, _knockback: float, from_position: Vector2) -> void:
+	var applied := apply_hit(amount, from_position, crit)
+	if applied > 0:
+		hurtbox.confirm_resolved_damage(applied, crit)
+
+
 func _on_health_changed(current: int, maximum: int) -> void:
 	_update_health_bar()
 	# Show health bar when damaged
@@ -493,12 +500,17 @@ func _on_health_changed(current: int, maximum: int) -> void:
 
 
 ## Direct damage entry point used by skills, pets and projectiles
-func apply_hit(amount: int, _from_pos: Vector2, crit: bool = false) -> void:
-	if current_state == State.DEATH or health_component == null:
-		return
-	health_component.take_damage(amount)
+func apply_hit(amount: int, _from_pos: Vector2, crit: bool = false) -> int:
+	if amount <= 0 or current_state == State.DEATH or health_component == null:
+		return 0
+	var applied := health_component.take_damage(amount)
 	DamageNumber.spawn(get_tree(), global_position + Vector2(0, -40), ("%d!" % amount) if crit else str(amount), Color(1, 0.85, 0.2) if crit else Color.WHITE, crit)
 	anim.modulate = Color.RED
+	_restore_hit_flash.call_deferred()
+	return applied
+
+
+func _restore_hit_flash() -> void:
 	await get_tree().create_timer(0.1).timeout
 	if is_instance_valid(anim):
 		anim.modulate = Color.WHITE

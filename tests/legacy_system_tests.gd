@@ -145,30 +145,31 @@ func _test_phase2() -> void:
 
 	buff_comp2.queue_free()
 
-	# ── PassiveEffectProcessor: crit calculation ──
+	# ── PassiveEffectProcessor: combat modifier aggregation ──
 	var processor := PassiveEffectProcessor.new()
 	add_child(processor)
 
-	# Without any effects, damage should pass through unchanged
+	# Without any effects, combat modifiers should be zero.
 	var no_effects_func := func() -> Array[Dictionary]:
 		var arr: Array[Dictionary] = []
 		return arr
 	processor.get_passive_effects_func = no_effects_func
-	assert(processor.calculate_crit_damage(50) == 50, "No crit effects = base damage")
+	assert(processor.get_crit_chance_bonus_percent() == 0.0, "No crit effects = zero bonus")
 
-	# With 100% crit chance, should always double
+	# A 100-point bonus forces the existing provisional combat roll to crit.
 	var crit_100_func := func() -> Array[Dictionary]:
 		var arr: Array[Dictionary] = [{"effect": ItemData.PassiveEffect.CRIT_CHANCE, "value": 100.0}]
 		return arr
 	processor.get_passive_effects_func = crit_100_func
-	assert(processor.calculate_crit_damage(50) == 100, "100% crit = 2x damage")
+	assert(processor.get_crit_chance_bonus_percent() == 100.0, "Crit bonuses aggregate")
+	assert(bool(Combat.roll(50.0, processor.get_crit_chance_bonus_percent())["crit"]), "100-point crit bonus always crits")
 
-	# With 0% crit chance, should never crit
+	# Explicit zero remains zero.
 	var crit_0_func := func() -> Array[Dictionary]:
 		var arr: Array[Dictionary] = [{"effect": ItemData.PassiveEffect.CRIT_CHANCE, "value": 0.0}]
 		return arr
 	processor.get_passive_effects_func = crit_0_func
-	assert(processor.calculate_crit_damage(50) == 50, "0% crit = base damage")
+	assert(processor.get_crit_chance_bonus_percent() == 0.0, "0% crit = zero bonus")
 
 	processor.queue_free()
 
@@ -653,8 +654,8 @@ func _test_phase5() -> void:
 	processor.get_passive_effects_func = func() -> Array[Dictionary]:
 		return inv3.get_all_augment_passive_effects()
 
-	# Crit damage should pass through (no crit augment)
-	assert(processor.calculate_crit_damage(50) == 50, "No crit augment = base damage")
+	# No crit augment means no equipment bonus to the base combat roll.
+	assert(processor.get_crit_chance_bonus_percent() == 0.0, "No crit augment = zero bonus")
 
 	# ── Multiple skills from different equipment slots ──
 	var inv4 := InventoryData.new()

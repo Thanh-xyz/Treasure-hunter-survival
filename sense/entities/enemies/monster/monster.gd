@@ -179,6 +179,7 @@ func _build_hurtbox() -> void:
 	hurtbox.add_child(shape)
 	add_child(hurtbox)
 	hurtbox.damage_received.connect(_on_hurtbox_damage)
+	hurtbox.resolved_damage_received.connect(_on_hurtbox_resolved_damage)
 
 
 func _build_nameplate() -> void:
@@ -484,13 +485,20 @@ func _on_hurtbox_damage(amount: int, _knockback: float, from_position: Vector2) 
 	apply_hit(r["amount"], from_position, r["crit"])
 
 
-func apply_hit(amount: int, from_pos: Vector2, crit: bool = false, attacker_peer_id: int = 1) -> void:
-	if _dead:
-		return
+func _on_hurtbox_resolved_damage(amount: int, crit: bool, _knockback: float, from_position: Vector2) -> void:
+	var applied := apply_hit(amount, from_position, crit)
+	if applied > 0:
+		hurtbox.confirm_resolved_damage(applied, crit)
+
+
+func apply_hit(amount: int, from_pos: Vector2, crit: bool = false, attacker_peer_id: int = 1) -> int:
+	if _dead or amount <= 0:
+		return 0
 	if network_replica:
 		LanSession.request_enemy_hit(network_id)
-		return
+		return 0
 	_last_attacker_peer_id = attacker_peer_id
+	var applied := mini(maxi(amount, 0), hp)
 	hp = maxi(0, hp - amount)
 	_flash = 0.1
 	hp_changed.emit(hp, max_hp)
@@ -504,6 +512,7 @@ func apply_hit(amount: int, from_pos: Vector2, crit: bool = false, attacker_peer
 		_set_state("idle")
 	if hp <= 0:
 		_die()
+	return applied
 
 
 func _die() -> void:

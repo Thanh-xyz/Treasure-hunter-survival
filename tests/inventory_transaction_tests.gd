@@ -21,6 +21,7 @@ func _ready() -> void:
 	_test_shop_purchase_transaction()
 	_test_sale_transaction()
 	_test_equipment_transactions()
+	_test_equipment_enhancement()
 	_test_inventory_removal_invariants()
 	_test_recipe_catalog_validation()
 	_test_crafting_transaction()
@@ -254,6 +255,90 @@ func _test_equipment_transactions() -> void:
 	_check(inventory.remove_augment("weapon", 0), "augment removal failed after freeing capacity")
 	_check(inventory.get_item_count("flame_augment_t1") == 1 and inventory.get_equipped("weapon").applied_augments.is_empty(), "augment removal did not commit final state")
 	_check(int(inventory_signals["value"]) == 1 and int(equipment_signals["value"]) == 1 and int(augment_signals["value"]) == 1, "augment removal emitted duplicate or missing signals")
+
+
+func _test_equipment_enhancement() -> void:
+	var inventory := InventoryData.new()
+	var template := ItemDatabase.get_item("fire_blade")
+	inventory.add_item(template, 1)
+	_check(inventory.equip_item(0), "enhancement equipment setup failed")
+	inventory.add_item(ItemDatabase.get_item("flame_augment_t1"), 1)
+	_check(inventory.apply_augment("weapon", 0), "enhancement augment setup failed")
+
+	var weapon := inventory.get_equipped("weapon")
+	var base_attack := weapon.attack_bonus
+	var cost := weapon.get_upgrade_cost()
+	_check(cost == int(weapon.upgrade_base_cost * pow(weapon.upgrade_cost_rate, 1)), "level-1 upgrade cost did not follow configured curve")
+	inventory.gold = cost + 25
+	var stats := CharacterStats.new()
+	stats.apply_equipment_bonuses(inventory)
+	var attack_before := stats.attack_damage
+	var signal_counts := {"gold": 0, "equipment": 0, "upgraded": 0}
+	var observed := {"level": 0, "gold": -1, "augments": 0}
+	inventory.gold_changed.connect(func(amount: int) -> void:
+		signal_counts["gold"] += 1
+		observed["level"] = inventory.get_equipped("weapon").enhancement_level
+		observed["gold"] = amount
+	)
+	inventory.equipment_changed.connect(func(_slot: String) -> void:
+		signal_counts["equipment"] += 1
+		stats.apply_equipment_bonuses(inventory)
+	)
+	inventory.equipment_upgraded.connect(func(_slot: String, _id: String, level: int, _cost: int) -> void:
+		signal_counts["upgraded"] += 1
+		observed["level"] = level
+		observed["augments"] = inventory.get_equipped("weapon").applied_augments.size()
+	)
+
+	_check(inventory.upgrade_equipment("weapon"), "valid equipment upgrade failed")
+	weapon = inventory.get_equipped("weapon")
+	_check(weapon.enhancement_level == 2, "upgrade did not increase displayed level")
+	_check(inventory.gold == 25, "upgrade charged the wrong gold cost")
+	_check(weapon.get_scaled_attack_bonus() == roundi(base_attack * 1.1), "level-2 attack did not follow the provisional growth curve")
+	_check(weapon.get_scaled_attack_bonus() > base_attack and stats.attack_damage > attack_before, "upgrade did not increase character attack")
+	_check(weapon.applied_augments == ["flame_augment_t1"], "upgrade lost applied augments")
+	_check(template.enhancement_level == 1 and template.applied_augments.is_empty(), "upgrade mutated the catalog template")
+	_check(int(signal_counts["gold"]) == 1 and int(signal_counts["equipment"]) == 1 and int(signal_counts["upgraded"]) == 1, "upgrade emitted duplicate or missing signals")
+	_check(int(observed["level"]) == 2 and int(observed["gold"]) == 25 and int(observed["augments"]) == 1, "upgrade signal exposed partial state")
+	_check(inventory.count_equipment_at_or_above_level(2) == 1, "level query missed upgraded equipment")
+	var augment_slot := inventory.get_item_count("flame_augment_t1")
+	_check(inventory.remove_augment("weapon", 0), "upgraded equipment could not remove its augment")
+	_check(inventory.get_equipped("weapon").enhancement_level == 2, "augment removal reset enhancement level")
+	_check(inventory.get_item_count("flame_augment_t1") == augment_slot + 1, "augment removal did not return the augment")
+	var returned_augment_index := -1
+	for i in range(inventory.inventory_slots.size()):
+		var slot: Dictionary = inventory.inventory_slots[i]
+		if slot.item != null and slot.item.id == "flame_augment_t1":
+			returned_augment_index = i
+			break
+	_check(inventory.apply_augment("weapon", returned_augment_index), "upgraded equipment could not reapply its augment")
+	_check(inventory.get_equipped("weapon").enhancement_level == 2, "augment application reset enhancement level")
+
+	weapon = inventory.get_equipped("weapon")
+	inventory.gold = weapon.get_upgrade_cost() - 1
+	var level_before := weapon.enhancement_level
+	var gold_before := inventory.gold
+	signal_counts["gold"] = 0
+	signal_counts["equipment"] = 0
+	signal_counts["upgraded"] = 0
+	_check(not inventory.upgrade_equipment("weapon"), "upgrade ignored insufficient gold")
+	_check(inventory.get_equipped("weapon").enhancement_level == level_before and inventory.gold == gold_before, "failed upgrade changed state")
+	_check(int(signal_counts["gold"]) == 0 and int(signal_counts["equipment"]) == 0 and int(signal_counts["upgraded"]) == 0, "failed upgrade emitted changes")
+	_check(not inventory.upgrade_equipment("missing"), "invalid equipment slot upgraded")
+
+	var capped := weapon.duplicate() as ItemData
+	capped.applied_augments = weapon.applied_augments.duplicate()
+	capped.enhancement_level = capped.max_upgrade_level
+	inventory._set_equipped("weapon", capped)
+	inventory.gold = 999999
+	_check(not inventory.upgrade_equipment("weapon"), "max-level equipment upgraded")
+	_check(capped.enhancement_level == capped.max_upgrade_level, "max-level rejection changed equipment")
+
+	var locked := ItemDatabase.get_item_copy("iron_sword")
+	locked.can_upgrade = false
+	locked.max_upgrade_level = 1
+	inventory._set_equipped("weapon", locked)
+	_check(not inventory.upgrade_equipment("weapon"), "non-upgradeable equipment upgraded")
 
 
 func _test_inventory_removal_invariants() -> void:

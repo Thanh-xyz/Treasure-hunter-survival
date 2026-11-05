@@ -25,6 +25,14 @@ static func create_item(data: Dictionary) -> ItemData:
 	item.defense_bonus = data.get("defense", 0)
 	item.health_bonus = data.get("health", 0)
 	item.speed_bonus = data.get("speed", 0.0)
+
+	# Treasure Hunter exposes item-specific upgrade cost/rate values. Emberfield's
+	# existing catalog has no direct card mapping yet, so these defaults are
+	# provisional and isolated for later replacement with verified card data.
+	item.can_upgrade = data.get("can_upgrade", item.is_equippable())
+	item.upgrade_base_cost = data.get("upgrade_base_cost", 10 if item.can_upgrade else 0)
+	item.upgrade_cost_rate = data.get("upgrade_cost_rate", 1.4 if item.can_upgrade else 1.0)
+	item.max_upgrade_level = data.get("max_upgrade_level", 10 if item.can_upgrade else 1)
 	
 	# Consumable effects
 	item.heal_amount = data.get("heal", 0)

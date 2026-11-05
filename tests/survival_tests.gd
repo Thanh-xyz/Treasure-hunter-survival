@@ -344,6 +344,9 @@ func _test_save_roundtrip() -> void:
 	SaveService.deserialize_inventory(inv, {"gold": 5000, "slots": [], "equipment": {}})
 	inv.add_item(ItemDatabase.get_item("wood"), 42)
 	inv.equip_item(_add_and_find(inv, "iron_sword"))
+	var enhanced_weapon := inv.get_equipped("weapon").duplicate() as ItemData
+	enhanced_weapon.enhancement_level = 3
+	inv._set_equipped("weapon", enhanced_weapon)
 	GameState.level = 7
 	_check(GameState.unlock_pet("lucky_cat"), "adopt lucky cat for save test")
 	inv.gold = 1234
@@ -375,6 +378,8 @@ func _test_save_roundtrip() -> void:
 	_check(inv.gold == 1234, "gold restored")
 	_check(inv.get_item_count("wood") == 42, "items restored")
 	_check(inv.get_equipped("weapon") != null and inv.get_equipped("weapon").id == "iron_sword", "equipment restored")
+	_check(inv.get_equipped("weapon").enhancement_level == 3, "equipment enhancement level restored")
+	_check(inv.get_equipped("weapon") != ItemDatabase.get_item("iron_sword"), "enhanced save reused the catalog template")
 
 	# Corrupt main file -> backup is used
 	SaveService.enabled = true
@@ -412,12 +417,18 @@ func _test_save_roundtrip() -> void:
 	var recovered_inventory := SaveService.read_snapshot()
 	_check(recovered_inventory.get("inventory", {}).get("gold", -1) == 1234, "invalid inventory falls back to backup")
 
-	var legacy := snap.duplicate(true)
-	legacy["version"] = 0
-	f = FileAccess.open(SaveService.SAVE_PATH, FileAccess.WRITE)
-	f.store_string(JSON.stringify(legacy))
-	f.close()
-	_check(int(SaveService.read_snapshot().get("version", 0)) == SaveService.SAVE_VERSION, "legacy save version migrates before validation")
+	for legacy_version in [0, 1]:
+		var legacy := snap.duplicate(true)
+		legacy["version"] = legacy_version
+		legacy["inventory"]["equipment"]["weapon"].erase("level")
+		f = FileAccess.open(SaveService.SAVE_PATH, FileAccess.WRITE)
+		f.store_string(JSON.stringify(legacy))
+		f.close()
+		var migrated := SaveService.read_snapshot()
+		_check(int(migrated.get("version", 0)) == SaveService.SAVE_VERSION, "legacy save version %d did not migrate" % legacy_version)
+		var legacy_inventory := InventoryData.new()
+		_check(SaveService.deserialize_inventory(legacy_inventory, migrated["inventory"]), "migrated inventory hydrates")
+		_check(legacy_inventory.get_equipped("weapon").enhancement_level == 1, "legacy equipment did not default to level 1")
 
 	var invalid_profile := snap.duplicate(true)
 	invalid_profile["profile"]["pets"]["lucky_cat"]["level"] = "max"
@@ -436,6 +447,7 @@ func _test_save_roundtrip() -> void:
 	# Direct inventory hydration rejects malformed data without touching live state.
 	var protected_gold := inv.gold
 	var protected_wood := inv.get_item_count("wood")
+	var protected_weapon_level := inv.get_equipped("weapon").enhancement_level
 	_check(not SaveService.deserialize_inventory(inv, {
 		"gold": 999,
 		"slots": [{"id": "wood", "qty": 1000}],
@@ -446,7 +458,19 @@ func _test_save_roundtrip() -> void:
 		"slots": [{"id": "wood", "qty": 1.5}],
 		"equipment": {},
 	}), "fractional inventory quantity is rejected")
+	for invalid_level: Variant in [0, 11, 1.5, "2"]:
+		_check(not SaveService.deserialize_inventory(inv, {
+			"gold": 999,
+			"slots": [],
+			"equipment": {"weapon": {"id": "iron_sword", "qty": 1, "level": invalid_level}},
+		}), "invalid equipment enhancement level was accepted: %s" % str(invalid_level))
+	_check(not SaveService.deserialize_inventory(inv, {
+		"gold": 999,
+		"slots": [{"id": "wood", "qty": 1, "level": 2}],
+		"equipment": {},
+	}), "non-upgradeable item accepted an enhancement level")
 	_check(inv.gold == protected_gold and inv.get_item_count("wood") == protected_wood, "rejected hydration preserves live inventory")
+	_check(inv.get_equipped("weapon").enhancement_level == protected_weapon_level, "rejected hydration changed enhanced equipment")
 
 	# Invalid live state cannot replace the last known-good save.
 	var valid_zone := GameState.current_zone
@@ -627,4 +651,18 @@ func _test_player_combat_modifiers() -> void:
 	_check(is_equal_approx(float(modifiers["crit_chance"]), 8.0), "equipped crit augment reaches combat resolver")
 	_check(is_equal_approx(float(modifiers["life_steal"]), 5.0), "equipped lifesteal reaches authority profile")
 	_check(is_equal_approx(local_player.attack_hitbox.bonus_crit_chance_percent, 8.0), "melee hitbox refreshes crit chance")
+	var attack_before_upgrade: int = local_player.stats.attack_damage
+	var upgrade_event := {"seen": false, "level": 0, "cost": 0}
+	var on_equipment_upgraded := func(slot_type: String, item_id: String, level: int, cost: int) -> void:
+		if slot_type == "weapon" and item_id == "fire_blade":
+			upgrade_event["seen"] = true
+			upgrade_event["level"] = level
+			upgrade_event["cost"] = cost
+	GameEvent.equipment_upgraded.connect(on_equipment_upgraded)
+	var upgrade_cost: int = local_player.inventory.get_equipped("weapon").get_upgrade_cost()
+	local_player.inventory.gold = upgrade_cost
+	_check(local_player.inventory.upgrade_equipment("weapon"), "player equipment enhancement succeeds")
+	_check(local_player.stats.attack_damage > attack_before_upgrade, "player stats refresh after equipment enhancement")
+	_check(bool(upgrade_event["seen"]) and int(upgrade_event["level"]) == 2 and int(upgrade_event["cost"]) == upgrade_cost, "player did not forward the stable equipment upgrade event")
+	GameEvent.equipment_upgraded.disconnect(on_equipment_upgraded)
 	local_player.queue_free()

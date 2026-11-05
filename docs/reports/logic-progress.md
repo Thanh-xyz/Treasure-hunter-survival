@@ -186,3 +186,26 @@ asset metadata.
   and all three two-process LAN harnesses passed with exit code 0.
 - Active skills, hero projectiles, pets and Critical Bonus damage remain separate follow-up
   slices; this feature does not claim their formulas or complete reference parity.
+
+## 2026-11-05 — Persisted equipment enhancement
+
+- Branch: `feature/th-logic-equipment-enhancement`, based on `origin/develop` at `dbc26c9`.
+- Verified reference evidence includes displayed level 1 with maximum 10, an Upgrade action,
+  664 upgradeable card records with `upgradeCost`/`upgradeLevelRate`, and quest type 39 goals
+  for equipment at levels 2, 3 and 5.
+- `ItemData` now stores enhancement configuration separately from instance level. Upgrade and
+  augment operations duplicate the equipment, preserve both augments and level, and never
+  mutate the `ItemDatabase` template.
+- `InventoryData.upgrade_equipment()` validates slot, configuration, level, cost and gold,
+  commits final item/gold state, refreshes character stats through `equipment_changed`, and
+  emits `equipment_upgraded(slot_type, item_id, level, cost)` for quest/UI adapters.
+- Save schema version 2 round-trips enhanced equipment, migrates v0/v1 equipment to level 1,
+  and rejects zero, over-cap, fractional, string and non-upgradeable enhancement payloads.
+- Tooltip text reads the displayed level and scaled base stats without adding assets or changing
+  layout. A full Treasure Hunter equipment-detail upgrade panel remains Agent A presentation work.
+- Godot `4.6.stable.official.89cea1439` import, focused inventory tests, legacy phases 1-7,
+  survival/save tests, Xvfb live/dead MobileHUD render and all three two-process LAN harnesses
+  passed with exit code 0.
+- The default base cost 10, rate 1.4 and isolated 1.1 stat growth are provisional because the
+  current Emberfield IDs are not yet mapped to exact reference card IDs. No exact numeric parity
+  claim is made.

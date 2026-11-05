@@ -640,14 +640,16 @@ func _get_item_type_string(type: ItemData.ItemType) -> String:
 
 func _get_item_stats_string(item: ItemData) -> String:
 	var stats := []
+	if item.is_equippable() and item.can_upgrade:
+		stats.append("Level %d / %d" % [item.enhancement_level, item.max_upgrade_level])
 	if item.attack_bonus > 0:
-		stats.append("⚔️ +%d ATK" % item.attack_bonus)
+		stats.append("⚔️ +%d ATK" % item.get_scaled_attack_bonus())
 	if item.defense_bonus > 0:
-		stats.append("🛡️ +%d DEF" % item.defense_bonus)
+		stats.append("🛡️ +%d DEF" % item.get_scaled_defense_bonus())
 	if item.health_bonus > 0:
-		stats.append("❤️ +%d HP" % item.health_bonus)
+		stats.append("❤️ +%d HP" % item.get_scaled_health_bonus())
 	if item.speed_bonus > 0:
-		stats.append("👟 +%.1f SPD" % item.speed_bonus)
+		stats.append("👟 +%.1f SPD" % item.get_scaled_speed_bonus())
 	if item.heal_amount > 0:
 		stats.append("💚 Heals %d HP" % item.heal_amount)
 	if item.stamina_restore > 0:

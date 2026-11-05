@@ -55,7 +55,6 @@ var _hotbar_frame: NinePatchRect
 var _hp_bar: ProgressBar
 var _hp_label: Label
 var _en_bar: ProgressBar
-var _xp_bar: ProgressBar
 var _name_label: Label
 var _attack_label: Label
 var _speed_label: Label
@@ -288,11 +287,6 @@ func _build_player_card() -> void:
 	portrait_border.set_anchors_preset(Control.PRESET_FULL_RECT)
 	portrait_border.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	frame.add_child(portrait_border)
-
-	_xp_bar = UiTheme.bar(Color(0.12, 0.62, 0.96), 7)
-	_xp_bar.position = Vector2(28, 124)
-	_xp_bar.size = Vector2(78, 7)
-	add_child(_xp_bar)
 
 	var stats := _panel(Rect2(8, 150, 180, 204))
 	stats.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
@@ -711,8 +705,6 @@ func _process(delta: float) -> void:
 func _refresh_card() -> void:
 	var hero: Dictionary = GameContent.HEROES.get(GameState.hero_id, {})
 	_portrait.self_modulate = hero.get("tint", Color.WHITE)
-	_xp_bar.max_value = GameState.xp_needed()
-	_xp_bar.value = GameState.xp
 	if player:
 		var stats: CharacterStats = player.get("stats")
 		if stats:

@@ -20,6 +20,11 @@ const HUD_PANEL := preload("res://assets/treasure_hunter/ui/reference/panel_stat
 const MENU_BUTTON := preload("res://assets/treasure_hunter/ui/reference/button_menu.png")
 const MINIMIZE_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_minimize.png")
 const WEAPON_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_weapon.png")
+const POWER_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_power.png")
+const HEALTH_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_health.png")
+const DAMAGE_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_damage.png")
+const SPEED_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_speed.png")
+const GOLD_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_gold.png")
 
 var legacy_hud: CanvasLayer = null
 var player: Node = null
@@ -253,7 +258,7 @@ func _build_player_card() -> void:
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 1)
 	stats.add_child(col)
-	var level_row := _hud_value_row("hud_helmet")
+	var level_row := _hud_value_row(POWER_ICON)
 	_name_label = UiTheme.label("2,0", 20, UiTheme.C_GOLD)
 	_name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -262,7 +267,7 @@ func _build_player_card() -> void:
 	var hp_row := Control.new()
 	hp_row.custom_minimum_size = Vector2(0, 49)
 	var hp_icon := TextureRect.new()
-	hp_icon.texture = PixelArt.get_texture("hud_heart")
+	hp_icon.texture = HEALTH_ICON
 	hp_icon.position = Vector2(0, 2)
 	hp_icon.size = Vector2(44, 44)
 	hp_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -280,13 +285,13 @@ func _build_player_card() -> void:
 	_hp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hp_row.add_child(_hp_label)
 	col.add_child(hp_row)
-	var energy_row := _hud_value_row("hud_sword")
+	var energy_row := _hud_value_row(DAMAGE_ICON)
 	_attack_label = UiTheme.label("10,0", 20, UiTheme.C_TEXT)
 	_attack_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_attack_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	energy_row.add_child(_attack_label)
 	col.add_child(energy_row)
-	var speed_row := _hud_value_row("hud_boot")
+	var speed_row := _hud_value_row(SPEED_ICON)
 	_speed_label = UiTheme.label("2,00", 20, UiTheme.C_TEXT)
 	_speed_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_speed_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -294,12 +299,12 @@ func _build_player_card() -> void:
 	col.add_child(speed_row)
 
 
-func _hud_value_row(icon_name: String) -> HBoxContainer:
+func _hud_value_row(icon_texture: Texture2D) -> HBoxContainer:
 	var row := HBoxContainer.new()
 	row.custom_minimum_size = Vector2(0, 49)
 	row.add_theme_constant_override("separation", 4)
 	var icon := TextureRect.new()
-	icon.texture = PixelArt.get_texture(icon_name) if icon_name.begins_with("hud_") else ItemIconAtlas.get_named_icon(icon_name)
+	icon.texture = icon_texture
 	icon.custom_minimum_size = Vector2(44, 44)
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -351,9 +356,9 @@ func _build_menu_rail() -> void:
 	var rv := VBoxContainer.new()
 	rv.add_theme_constant_override("separation", 1)
 	resources.add_child(rv)
-	_world_time_label = _world_info_row(rv, "", "[Local] 00:00:00", UiTheme.C_TEXT)
-	_world_coord_label = _world_info_row(rv, "hud_world", "0,00", UiTheme.C_TEXT)
-	_world_gold_label = _world_info_row(rv, "hud_coin", "0", UiTheme.C_GOLD)
+	_world_time_label = _world_info_row(rv, null, "[Local] 00:00:00", UiTheme.C_TEXT)
+	_world_coord_label = _world_info_row(rv, PixelArt.get_texture("hud_world"), "0,00", UiTheme.C_TEXT)
+	_world_gold_label = _world_info_row(rv, GOLD_ICON, "0", UiTheme.C_GOLD)
 	_refresh_world_info()
 
 	var left_ids := ["hero", "pet", "mount", "village"]
@@ -389,7 +394,7 @@ func _nav_button(id: String, caption: String) -> Button:
 	return _icon_button(BTN_ICONS[id], caption, func() -> void: _on_menu_button(id))
 
 
-func _world_info_row(parent: VBoxContainer, icon_name: String, initial_text: String, color: Color) -> Label:
+func _world_info_row(parent: VBoxContainer, icon_texture: Texture2D, initial_text: String, color: Color) -> Label:
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(0, 49)
 	panel.add_theme_stylebox_override("panel", UiTheme.box(Color(0.035, 0.055, 0.04, 0.88), Color(UiTheme.C_TRIM, 0.8), 1))
@@ -397,9 +402,9 @@ func _world_info_row(parent: VBoxContainer, icon_name: String, initial_text: Str
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 4)
 	panel.add_child(row)
-	if icon_name != "":
+	if icon_texture != null:
 		var icon := TextureRect.new()
-		icon.texture = PixelArt.get_texture(icon_name) if icon_name.begins_with("hud_") else ItemIconAtlas.get_named_icon(icon_name)
+		icon.texture = icon_texture
 		icon.custom_minimum_size = Vector2(46, 46)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED

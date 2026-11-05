@@ -86,9 +86,9 @@ ownership, integration branch, and feature merge order.
 ## Current Feature Validation
 
 - Manifest JSON parsed successfully.
-- 92 asset IDs and target paths are unique; all recorded paths exist.
-- 36 supplied Treasure Hunter entries are marked `local_only`.
-- All 29 UI reference targets match their manifest source files bit-for-bit and
+- 97 asset IDs and target paths are unique; all recorded paths exist.
+- 41 supplied Treasure Hunter entries are marked `local_only`.
+- All 34 UI reference targets match their manifest source files bit-for-bit and
   have the recorded dimensions.
 - Ten startup/authentication assets are marked `integrated`.
 - All ten shared workflow Skills passed `quick_validate.py`.
@@ -162,3 +162,12 @@ The crossed-sword `ui.reference.hud.icon.attack` candidate is explicitly rejecte
 for this control. Other rail icons remain current fallbacks until direct runtime
 evidence proves an exact source mapping; Agent B does not need to change gameplay
 data or tests for this presentation-only feature.
+
+## Fixed HUD Stat Icon Contract
+
+`MobileHUD` now displays verified `ui.reference.hud.icon.power`, `.health`,
+`.damage`, `.speed`, and `.gold` assets in the existing stat/currency rows. The
+underlying defense, health, attack, movement-speed, and inventory-gold values,
+signals, formatting, and update cadence are unchanged. The coordinate globe
+remains the existing fallback pending an exact mapping. Agent B does not need to
+change gameplay data, state, or tests for this presentation-only feature.

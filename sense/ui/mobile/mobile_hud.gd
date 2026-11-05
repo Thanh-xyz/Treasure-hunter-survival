@@ -25,6 +25,7 @@ const HEALTH_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_hea
 const DAMAGE_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_damage.png")
 const SPEED_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_speed.png")
 const GOLD_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_gold.png")
+const MAP_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_map.png")
 const BACK_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_back.png")
 const PET_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_pet.png")
 const SKILL_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_skill.png")
@@ -361,7 +362,7 @@ func _build_menu_rail() -> void:
 	rv.add_theme_constant_override("separation", 1)
 	resources.add_child(rv)
 	_world_time_label = _world_info_row(rv, null, "[Local] 00:00:00", UiTheme.C_TEXT)
-	_world_coord_label = _world_info_row(rv, PixelArt.get_texture("hud_world"), "0,00", UiTheme.C_TEXT)
+	_world_coord_label = _world_info_row(rv, MAP_ICON, "0,00", UiTheme.C_TEXT)
 	_world_gold_label = _world_info_row(rv, GOLD_ICON, "0", UiTheme.C_GOLD)
 	_refresh_world_info()
 

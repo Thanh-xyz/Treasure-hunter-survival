@@ -3070,6 +3070,32 @@
       ]
     },
     {
+      "asset_id": "ui.reference.hud.icon.map",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/F200_389__3015.png",
+      "target_path": "assets/treasure_hunter/ui/reference/icon_map.png",
+      "file_format": "png",
+      "dimensions": [15, 15],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/mobile_hud.gd",
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Unity level1 GameObject 23760 at HUDView/Panel/TopRight/Map/Icon points to sharedassets1.assets Sprite 3015, named F200_389.",
+        "The sprite was decoded directly from the UIOtherIcons atlas because the earlier batch export was transparent.",
+        "Matches the blue-and-green globe in the captured coordinate row; coordinate values and refresh behavior are unchanged."
+      ]
+    },
+    {
       "asset_id": "ui.reference.hud.icon.back",
       "category": "ui_reference",
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/d9e509c5e1ea36648a0ee66b2b200657/IconSlot_Back__1.png",

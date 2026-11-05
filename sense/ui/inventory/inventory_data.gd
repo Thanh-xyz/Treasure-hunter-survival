@@ -212,6 +212,32 @@ func remove_item(item: ItemData, quantity: int = 1) -> bool:
 	return transact_items(removals, [])
 
 
+## Sell one item from an exact slot at its authoritative catalog price.
+## Returns the credited gold, or 0 when the slot is stale or the item is not sellable.
+func sell_item_at(index: int, expected_item_id: String = "") -> int:
+	if index < 0 or index >= inventory_slots.size():
+		return 0
+	var slot: Dictionary = inventory_slots[index]
+	var item := slot.get("item") as ItemData
+	if item == null or int(slot.get("quantity", 0)) <= 0:
+		return 0
+	if not expected_item_id.is_empty() and item.id != expected_item_id:
+		return 0
+	var catalog_item := ItemDatabase.get_item(item.id)
+	if catalog_item == null:
+		return 0
+	var sell_price := catalog_item.sell_price
+	if sell_price <= 0:
+		return 0
+	var simulated := _copy_slots(inventory_slots)
+	if not _remove_at_from_slots(simulated, index, 1):
+		return 0
+	inventory_slots = simulated
+	gold = gold + sell_price
+	inventory_changed.emit()
+	return sell_price
+
+
 ## Get item at index
 func get_item_at(index: int) -> Dictionary:
 	if index < 0 or index >= inventory_slots.size():

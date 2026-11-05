@@ -89,6 +89,16 @@ enum ItemRarity {
 @export var health_bonus: int = 0
 @export var speed_bonus: float = 0.0
 
+@export_category("Equipment Enhancement")
+@export var can_upgrade: bool = false
+@export var upgrade_base_cost: int = 0
+@export var upgrade_cost_rate: float = 1.0
+@export var max_upgrade_level: int = 1
+
+## Displayed equipment level. Catalog templates remain at level 1; upgraded
+## equipment is stored on duplicated item instances.
+@export_storage var enhancement_level: int = 1
+
 @export_category("Consumable Effects")
 @export var heal_amount: int = 0
 @export var stamina_restore: float = 0.0
@@ -104,6 +114,54 @@ enum ItemRarity {
 ## Augments slotted into this equipment instance (array of augment item IDs)
 ## Only populated on duplicated equipment instances, never on ItemDatabase templates
 var applied_augments: Array[String] = []
+
+
+## The extracted client confirms per-item cost/rate data and levels 1-10. The
+## 1.1 stat curve is provisional supporting evidence until server behavior is
+## directly verified.
+const PROVISIONAL_STAT_GROWTH_RATE := 1.1
+
+
+func get_enhancement_multiplier() -> float:
+	var safe_level := clampi(enhancement_level, 1, maxi(max_upgrade_level, 1))
+	return pow(PROVISIONAL_STAT_GROWTH_RATE, safe_level - 1)
+
+
+func get_scaled_attack_bonus() -> int:
+	return roundi(attack_bonus * get_enhancement_multiplier())
+
+
+func get_scaled_defense_bonus() -> int:
+	return roundi(defense_bonus * get_enhancement_multiplier())
+
+
+func get_scaled_health_bonus() -> int:
+	return roundi(health_bonus * get_enhancement_multiplier())
+
+
+func get_scaled_speed_bonus() -> float:
+	return speed_bonus * get_enhancement_multiplier()
+
+
+func has_valid_upgrade_configuration() -> bool:
+	return (
+		can_upgrade
+		and is_equippable()
+		and upgrade_base_cost > 0
+		and is_finite(upgrade_cost_rate)
+		and upgrade_cost_rate >= 1.0
+		and max_upgrade_level > 1
+	)
+
+
+func can_upgrade_further() -> bool:
+	return has_valid_upgrade_configuration() and enhancement_level >= 1 and enhancement_level < max_upgrade_level
+
+
+func get_upgrade_cost() -> int:
+	if not can_upgrade_further():
+		return 0
+	return maxi(1, int(upgrade_base_cost * pow(upgrade_cost_rate, enhancement_level)))
 
 
 ## Get the color associated with item rarity

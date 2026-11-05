@@ -17,6 +17,7 @@ const BTN_ICONS := {
 	"quest": "scroll", "map": "gem_green", "village": "wood", "system": "gamepad",
 }
 const HUD_PANEL := preload("res://assets/treasure_hunter/ui/reference/panel_stats.png")
+const HOTBAR_FRAME := preload("res://assets/treasure_hunter/ui/reference/hotbar_frame.png")
 const PORTRAIT_FRAME := preload("res://assets/treasure_hunter/ui/reference/portrait_frame.png")
 const PORTRAIT_BACKGROUND := preload("res://assets/treasure_hunter/ui/reference/login_panel.png")
 const PORTRAIT_BORDER := preload("res://assets/treasure_hunter/ui/reference/portrait_border.png")
@@ -614,13 +615,13 @@ func _build_controls() -> void:
 	_controls.append(_hotbar_fill)
 
 	_hotbar_frame = NinePatchRect.new()
-	_hotbar_frame.texture = HUD_PANEL
+	_hotbar_frame.texture = HOTBAR_FRAME
 	_hotbar_frame.position = Vector2(4, bottom_y - 54.0)
 	_hotbar_frame.size = Vector2(712, 120)
 	_hotbar_frame.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_hotbar_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
-		_hotbar_frame.set_patch_margin(side, 8)
+		_hotbar_frame.set_patch_margin(side, 20)
 	add_child(_hotbar_frame)
 	_controls.append(_hotbar_frame)
 

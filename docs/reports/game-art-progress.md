@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-05
-Current feature: verified fixed HUD world/resource rows.
+Current feature: verified fixed hotbar outer frame.
 
 ## Completed Before This Feature
 
@@ -138,6 +138,16 @@ Current feature: verified fixed HUD world/resource rows.
   formatting, inventory gold signals, panel placement, and the 0.5-second
   refresh cadence. No new asset or gameplay contract was introduced.
 
+## Fixed Hotbar Outer Frame Feature
+
+- Traced `InventoryView/InventorySlotUI Slot1/BG` to
+  `sharedassets1.assets:6918` (`Button1_0`), a `48x48` sliced source with
+  20-pixel borders.
+- Verified all eight child item slots independently use `Panel_Stats`, so their
+  existing texture remains unchanged.
+- Replaced only the outer frame source and retained the existing black fill,
+  eight action IDs, slot positions, sizes, locking, and input behavior.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
@@ -181,6 +191,10 @@ Current feature: verified fixed HUD world/resource rows.
   independent `Panel_Stats` frames, no separator in the time row, and the exact
   `Line` separator in the Map and Gold rows. Full-frame pixel parity is not
   claimed because fonts, dynamic values, terrain, and other HUD regions differ.
+- Direct hotbar crop comparison confirms the outer frame now uses the verified
+  `Button1_0` border/fill language while all eight `Panel_Stats` slots retain
+  their order and placement. Pixel parity is not claimed because the current
+  Emberfield hotbar height and surrounding terrain still differ.
 
 ## Not Yet Implemented
 

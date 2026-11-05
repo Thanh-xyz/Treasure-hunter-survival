@@ -3096,6 +3096,58 @@
       ]
     },
     {
+      "asset_id": "ui.reference.hud.portrait.frame",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/F200_1_41__3047.png",
+      "target_path": "assets/treasure_hunter/ui/reference/portrait_frame.png",
+      "file_format": "png",
+      "dimensions": [64, 64],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/mobile_hud.gd",
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Unity level1 GameObject 19775 at HUDView/Panel/Avatar points to sharedassets1.assets Sprite 3047, named F200_1_41.",
+        "Unity sprite metadata defines 15-pixel borders on all four sides; MobileHUD preserves those nine-slice margins.",
+        "The existing dynamic hero portrait and bag callback remain unchanged."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.portrait.border",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/BorderAvatar__5893.png",
+      "target_path": "assets/treasure_hunter/ui/reference/portrait_border.png",
+      "file_format": "png",
+      "dimensions": [44, 44],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/mobile_hud.gd",
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Unity level1 HUD AvatarVisualHost/AvatarHolder/Frame_New is active and points to sharedassets1.assets Sprite 5893, named BorderAvatar.",
+        "Unity sprite metadata defines 15-pixel borders on all four sides; MobileHUD renders it above the dynamic portrait.",
+        "The inactive Frame_Default sibling is not used."
+      ]
+    },
+    {
       "asset_id": "ui.reference.hud.icon.back",
       "category": "ui_reference",
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/d9e509c5e1ea36648a0ee66b2b200657/IconSlot_Back__1.png",

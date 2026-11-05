@@ -10,6 +10,7 @@ signal tapped
 @export var base_color: Color = Color(0.08, 0.08, 0.09)
 
 var icon: Texture2D = null
+var icon_color: Color = Color.WHITE
 var radar_icon: bool = false
 var cooldown_ratio: float = 0.0     ## 0 = ready, 1 = full cooldown
 var cooldown_text: String = ""
@@ -81,7 +82,7 @@ func _draw() -> void:
 	draw_style_box(_frame_style, outer)
 	if icon:
 		var isz := Vector2(radius, radius) * 0.95
-		draw_texture_rect(icon, Rect2(c - isz * 0.5, isz), false, Color(1, 1, 1, alpha * (0.4 if locked else 1.0)))
+		draw_texture_rect(icon, Rect2(c - isz * 0.5, isz), false, Color(icon_color, alpha * (0.4 if locked else 1.0)))
 	if radar_icon:
 		var ink := Color(0.72, 0.71, 0.74, alpha * (0.4 if locked else 1.0))
 		for ring_radius in [radius * 0.16, radius * 0.32, radius * 0.48]:

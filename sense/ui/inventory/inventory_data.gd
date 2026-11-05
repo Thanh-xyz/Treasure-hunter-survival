@@ -82,7 +82,8 @@ func add_item(item: ItemData, quantity: int = 1) -> int:
 				if remaining <= 0:
 					break
 	
-	inventory_changed.emit()
+	if remaining < quantity:
+		inventory_changed.emit()
 	return remaining
 
 

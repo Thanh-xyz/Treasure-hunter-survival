@@ -16,6 +16,7 @@ func _ready() -> void:
 	_player.add_to_group("player")
 	add_child(_player)
 	_test_inventory_transaction()
+	_test_inventory_add_signals()
 	_test_economy_transaction()
 	_test_shop_purchase_transaction()
 	_test_equipment_transactions()
@@ -66,6 +67,29 @@ func _test_inventory_transaction() -> void:
 	_check(inventory.transact_items(removals, additions), "transaction failed after freeing a slot")
 	_check(int(signal_count["value"]) == 1, "successful transaction did not emit exactly one change")
 	_check(inventory.get_item_count("flame_augment_t1") == 1, "successful transaction omitted output")
+
+
+func _test_inventory_add_signals() -> void:
+	var inventory := InventoryData.new()
+	var signals := {"value": 0}
+	inventory.inventory_changed.connect(func() -> void: signals["value"] += 1)
+	var sword := ItemDatabase.get_item("iron_sword")
+	var wood := ItemDatabase.get_item("wood")
+
+	_check(inventory.add_item(sword, InventoryData.INVENTORY_SIZE) == 0, "inventory setup did not fill all slots")
+	_check(int(signals["value"]) == 1, "successful multi-slot add did not emit exactly one change")
+	signals["value"] = 0
+	_check(inventory.add_item(wood, 1) == 1, "full inventory accepted an item")
+	_check(int(signals["value"]) == 0, "no-op add emitted an inventory change")
+	_check(inventory.add_item(null, 1) == 1, "null item add returned an unexpected remainder")
+	_check(inventory.add_item(wood, 0) == 0, "zero-quantity add returned an unexpected remainder")
+	_check(int(signals["value"]) == 0, "invalid add emitted an inventory change")
+
+	inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
+	signals["value"] = 0
+	_check(inventory.add_item(wood, wood.max_stack + 1) == 1, "partial add returned the wrong remainder")
+	_check(inventory.get_item_count("wood") == wood.max_stack, "partial add stored the wrong quantity")
+	_check(int(signals["value"]) == 1, "partial add did not emit exactly one change")
 
 
 func _test_economy_transaction() -> void:

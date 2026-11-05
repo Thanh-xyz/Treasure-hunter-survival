@@ -10,6 +10,12 @@ extends Node
 
 var recipes: Dictionary = {}  # recipe_id: String → CraftingRecipe
 
+const PROVISIONAL_RECIPE_EVIDENCE := (
+	"Clean-room Emberfield recipe used for the local vertical slice. Treasure Hunter "
+	+ "confirms crafting, ingredients, equipment/potion outputs, and tiers, but this "
+	+ "recipe's exact item IDs, quantities, and balance values are not yet mapped."
+)
+
 
 func _ready() -> void:
 	_create_recipes()
@@ -29,6 +35,22 @@ func get_recipes_by_category(category: CraftingRecipe.RecipeCategory) -> Array:
 		if recipe.category == category:
 			result.append(recipe)
 	return result
+
+
+func register_recipe(recipe: CraftingRecipe, report_error: bool = true) -> bool:
+	if recipe == null:
+		return false
+	if recipes.has(recipe.id):
+		if report_error:
+			push_error("RecipeDatabase: duplicate recipe id '%s'" % recipe.id)
+		return false
+	var errors := recipe.validate_catalog()
+	if not errors.is_empty():
+		if report_error:
+			push_error("RecipeDatabase: rejected '%s': %s" % [recipe.id, "; ".join(errors)])
+		return false
+	recipes[recipe.id] = recipe
+	return true
 
 
 func _create_recipes() -> void:
@@ -93,5 +115,7 @@ func _add_recipe(id: String, recipe_name: String, desc: String, category: Crafti
 	recipe.recipe_name = recipe_name
 	recipe.description = desc
 	recipe.category = category
+	recipe.evidence_status = CraftingRecipe.EvidenceStatus.PROVISIONAL
+	recipe.evidence_source = PROVISIONAL_RECIPE_EVIDENCE
 	recipe.tiers.assign(tier_data)
-	recipes[id] = recipe
+	register_recipe(recipe)

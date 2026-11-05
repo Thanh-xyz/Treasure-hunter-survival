@@ -20,10 +20,18 @@ enum RecipeCategory {
 	CONSUMABLE_BUFF  ## Output is a timed buff item
 }
 
+enum EvidenceStatus {
+	CONFIRMED,
+	INFERRED,
+	PROVISIONAL,
+}
+
 @export var id: String = ""
 @export var recipe_name: String = ""
 @export var description: String = ""
 @export var category: RecipeCategory = RecipeCategory.AUGMENT
+@export var evidence_status: EvidenceStatus = EvidenceStatus.PROVISIONAL
+@export_multiline var evidence_source: String = ""
 
 ## Array of tier definitions. Each tier is a Dictionary:
 ## {
@@ -33,6 +41,65 @@ enum RecipeCategory {
 ##   "result_quantity": int                              # Usually 1
 ## }
 @export var tiers: Array[Dictionary] = []
+
+
+## Validate structural integrity and catalog references without mutating inventory.
+func validate_catalog() -> PackedStringArray:
+	var errors := PackedStringArray()
+	if id.strip_edges().is_empty():
+		errors.append("recipe id is empty")
+	if recipe_name.strip_edges().is_empty():
+		errors.append("recipe name is empty")
+	if evidence_source.strip_edges().is_empty():
+		errors.append("recipe evidence source is empty")
+	if tiers.is_empty():
+		errors.append("recipe has no tiers")
+		return errors
+
+	var seen_tiers := {}
+	for tier_index in range(tiers.size()):
+		var tier_data: Dictionary = tiers[tier_index]
+		var tier := int(tier_data.get("tier", 0))
+		var prefix := "tier[%d]" % tier_index
+		if tier <= 0:
+			errors.append("%s has a non-positive tier" % prefix)
+		elif seen_tiers.has(tier):
+			errors.append("%s duplicates tier %d" % [prefix, tier])
+		else:
+			seen_tiers[tier] = true
+
+		var ingredients: Variant = tier_data.get("ingredients", [])
+		if not ingredients is Array or ingredients.is_empty():
+			errors.append("%s has no ingredients" % prefix)
+		else:
+			var seen_ingredients := {}
+			for ingredient_index in range(ingredients.size()):
+				var ingredient: Variant = ingredients[ingredient_index]
+				var ingredient_prefix := "%s ingredient[%d]" % [prefix, ingredient_index]
+				if not ingredient is Dictionary:
+					errors.append("%s is not a dictionary" % ingredient_prefix)
+					continue
+				var item_id := str(ingredient.get("item_id", "")).strip_edges()
+				var quantity := int(ingredient.get("quantity", 0))
+				if item_id.is_empty():
+					errors.append("%s has an empty item id" % ingredient_prefix)
+				elif seen_ingredients.has(item_id):
+					errors.append("%s duplicates item %s" % [ingredient_prefix, item_id])
+				elif ItemDatabase.get_item(item_id) == null:
+					errors.append("%s references unknown item %s" % [ingredient_prefix, item_id])
+				else:
+					seen_ingredients[item_id] = true
+				if quantity <= 0:
+					errors.append("%s has a non-positive quantity" % ingredient_prefix)
+
+		var result_item_id := str(tier_data.get("result_item_id", "")).strip_edges()
+		if result_item_id.is_empty():
+			errors.append("%s has an empty result item id" % prefix)
+		elif ItemDatabase.get_item(result_item_id) == null:
+			errors.append("%s references unknown result item %s" % [prefix, result_item_id])
+		if int(tier_data.get("result_quantity", 0)) <= 0:
+			errors.append("%s has a non-positive result quantity" % prefix)
+	return errors
 
 
 ## Check if the player can craft a specific tier

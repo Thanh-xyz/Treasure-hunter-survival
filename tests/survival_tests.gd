@@ -48,6 +48,7 @@ func run_all() -> bool:
 	_test_buildings()
 	_test_quests()
 	await _test_ground_dig()
+	await _test_resource_node_overflow()
 	_test_save_roundtrip()
 	await _test_monster_kill()
 	await _test_menu_keeps_world_running()
@@ -282,6 +283,39 @@ func _test_ground_dig() -> void:
 	_check(spot._depleted, "dig plot depletes after required hits")
 	_check(inv.get_item_count("stone") == before + 2, "dig reward is auto-collected into inventory")
 	spot.queue_free()
+
+
+func _test_resource_node_overflow() -> void:
+	var previous_inventory: InventoryData = _stub_player.inventory
+	var full_inventory := InventoryData.new()
+	full_inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	_stub_player.inventory = full_inventory
+	var gathered := {"quantity": 0}
+	var on_gathered := func(gathered_item_id: String, quantity: int) -> void:
+		if gathered_item_id == "wood":
+			gathered["quantity"] += quantity
+	GameEvent.resource_gathered.connect(on_gathered)
+
+	var node := ResourceNode.create("wood", "tree_3", 0.42, 2)
+	add_child(node)
+	await get_tree().process_frame
+	node.gather_hit()
+	await get_tree().process_frame
+
+	var overflow_drop: GameItem = null
+	for child: Node in get_tree().current_scene.get_children():
+		if child is GameItem and (child as GameItem).item_id == "wood":
+			overflow_drop = child as GameItem
+			break
+	_check(full_inventory.get_item_count("wood") == 0, "full inventory cannot store gathered resources")
+	_check(int(gathered["quantity"]) == 0, "uncollected resource advanced gather progress")
+	_check(overflow_drop != null and overflow_drop.quantity > 0, "resource overflow was not preserved as a ground drop")
+
+	GameEvent.resource_gathered.disconnect(on_gathered)
+	if overflow_drop != null:
+		overflow_drop.queue_free()
+	node.queue_free()
+	_stub_player.inventory = previous_inventory
 
 
 func _test_save_roundtrip() -> void:

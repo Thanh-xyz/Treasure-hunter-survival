@@ -63,9 +63,14 @@ func gather_hit() -> void:
 	var item: ItemData = ItemDatabase.get_item(item_id)
 	var inv := GameState.get_inventory()
 	if item and inv:
-		inv.add_item(item, amount)
-		DamageNumber.spawn(get_tree(), global_position + Vector2(0, -24), "+%d %s" % [amount, item.name], Color(0.95, 0.85, 0.55))
-	GameEvent.resource_gathered.emit(item_id, amount)
+		var remaining := inv.add_item(item, amount)
+		var collected := amount - remaining
+		if collected > 0:
+			DamageNumber.spawn(get_tree(), global_position + Vector2(0, -24), "+%d %s" % [collected, item.name], Color(0.95, 0.85, 0.55))
+			GameEvent.resource_gathered.emit(item_id, collected)
+		if remaining > 0:
+			ItemSpawner.spawn_item(get_tree(), global_position + Vector2(0, -8), item_id, remaining, global_position, GameItem.PickupMode.PROXIMITY)
+			GameEvent.toast.emit("Túi đầy", Color(1.0, 0.55, 0.45))
 	if hits_left <= 0:
 		_deplete()
 

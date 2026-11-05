@@ -231,3 +231,13 @@ verified `ui.reference.hud.panel.stats` source.
 All `hotbar_1` through `hotbar_8` action IDs, slot positions and sizes, locked
 state, input behavior, and gameplay ownership remain unchanged. Agent B does not
 need to change inventory, input, skill, save, or LAN code.
+
+## Fixed HUD XP Bar Removal Contract
+
+The unsupported blue XP bar below the fixed portrait has been removed because
+it is absent from both the decoded Treasure Hunter HUD hierarchy and authorized
+runtime captures. This is presentation-only.
+
+`GameState.xp`, `xp_needed()`, `xp_changed`, level progression, saves, rewards,
+and `_refresh_card()` signal routing remain intact. Agent B does not need to
+change XP, quest, combat, save, or LAN code.

@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-05
-Current feature: verified fixed hotbar outer frame.
+Current feature: remove unsupported fixed-HUD XP bar.
 
 ## Completed Before This Feature
 
@@ -148,6 +148,14 @@ Current feature: verified fixed hotbar outer frame.
 - Replaced only the outer frame source and retained the existing black fill,
   eight action IDs, slot positions, sizes, locking, and input behavior.
 
+## Fixed HUD XP Bar Removal
+
+- Verified that neither the decoded Avatar/TopLeft hierarchy nor authorized
+  live/dead captures contains an XP bar under the portrait.
+- Removed the inferred blue `_xp_bar` node and its visual-only updates.
+- Preserved XP state, `xp_changed` signal handling, level progression, portrait
+  refresh, save data, and all fixed stat rows.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
@@ -195,6 +203,10 @@ Current feature: verified fixed hotbar outer frame.
   `Button1_0` border/fill language while all eight `Panel_Stats` slots retain
   their order and placement. Pixel parity is not claimed because the current
   Emberfield hotbar height and surrounding terrain still differ.
+- Direct top-left crop comparison confirms the unsupported blue XP bar is gone
+  and the portrait-to-stat gap more closely follows the authorized capture.
+  Full-region parity is not claimed because portrait content, font metrics, and
+  dynamic stat values differ.
 
 ## Not Yet Implemented
 

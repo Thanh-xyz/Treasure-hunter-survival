@@ -108,3 +108,16 @@ screenshot, diff, and correction.
   resolves to `sharedassets1.assets:5844` (`Panel_Stats`). The current slot
   texture therefore remains correct; only the outer hotbar frame requires
   replacement.
+
+## Fixed HUD XP Bar Evidence
+
+- The decoded `HUDView/Panel/Avatar` hierarchy contains `AvatarUI`,
+  `EffectStatusHolder`, and `BuffStatusHolder`; it has no experience bar child.
+- The decoded `HUDView/Panel/TopLeft` hierarchy contains health, stat, and
+  protection groups; it has no experience bar or XP progress child.
+- Authorized live/dead HUD captures also show no bar between the portrait and
+  fixed stat stack. Emberfield's blue `_xp_bar` is therefore an inferred visual
+  without reference support and should be removed without changing XP state.
+- The selected `Panel_Level` source appears in the runtime HUD only at
+  `SkillGroup/PotionShortcut/ItemUI/ItemInfo/Level`; it must not be repurposed as
+  a player-level or XP frame.

@@ -2945,6 +2945,131 @@
       ]
     },
     {
+      "asset_id": "ui.reference.hud.icon.power",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Icon_Power__6088.png",
+      "target_path": "assets/treasure_hunter/ui/reference/icon_power.png",
+      "file_format": "png",
+      "dimensions": [24, 24],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/mobile_hud.gd",
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Matches the sword-and-shield power icon in the first captured left stat row.",
+        "Replaces only the inferred presentation icon; the defense value source is unchanged."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.icon.health",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/16fb51c3eb996465993e7aead12d451b/Icon_Health__2.png",
+      "target_path": "assets/treasure_hunter/ui/reference/icon_health.png",
+      "file_format": "png",
+      "dimensions": [15, 15],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/mobile_hud.gd",
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Matches the red heart in the captured health row.",
+        "Health signal, bar, and numeric label behavior are unchanged."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.icon.damage",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/16fb51c3eb996465993e7aead12d451b/Icon_Damage__5.png",
+      "target_path": "assets/treasure_hunter/ui/reference/icon_damage.png",
+      "file_format": "png",
+      "dimensions": [15, 15],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/mobile_hud.gd",
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Matches the diagonal sword in the captured damage row.",
+        "Attack-stat calculation and label behavior are unchanged."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.icon.speed",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/16fb51c3eb996465993e7aead12d451b/Icon_Speed__25.png",
+      "target_path": "assets/treasure_hunter/ui/reference/icon_speed.png",
+      "file_format": "png",
+      "dimensions": [15, 15],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/mobile_hud.gd",
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Matches the running boot in the captured movement-speed row.",
+        "Movement-speed calculation and label behavior are unchanged."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.icon.gold",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/a6ccb581f9b1f7a45804c4fc36a81c80/Icon_Gold__2.png",
+      "target_path": "assets/treasure_hunter/ui/reference/icon_gold.png",
+      "file_format": "png",
+      "dimensions": [16, 16],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/mobile_hud.gd",
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Matches the gold coin in the captured right currency row.",
+        "Inventory gold signal and numeric label behavior are unchanged."
+      ]
+    },
+    {
       "asset_id": "ui.reference.hud.panel.stats",
       "category": "ui_reference",
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Panel_Stats__5844.png",

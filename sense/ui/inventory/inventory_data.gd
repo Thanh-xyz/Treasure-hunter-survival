@@ -25,6 +25,7 @@ signal augments_changed(equip_slot: String)
 signal gold_changed(amount: int)
 
 const INVENTORY_SIZE: int = 32  # 8 columns x 4 rows
+const EQUIPMENT_SLOTS := ["helmet", "armor", "weapon", "shield", "boots", "accessory_1", "accessory_2"]
 
 # Equipment slots
 var equipped_helmet: ItemData = null
@@ -143,6 +144,19 @@ func _remove_from_slots(slots: Array[Dictionary], item_id: String, quantity: int
 			slot.quantity = 0
 		if remaining <= 0:
 			break
+	return true
+
+
+func _remove_at_from_slots(slots: Array[Dictionary], index: int, quantity: int) -> bool:
+	if index < 0 or index >= slots.size() or quantity <= 0:
+		return false
+	var slot: Dictionary = slots[index]
+	if slot.get("item") == null or int(slot.get("quantity", 0)) < quantity:
+		return false
+	slot.quantity = int(slot.get("quantity", 0)) - quantity
+	if int(slot.quantity) <= 0:
+		slot.item = null
+		slot.quantity = 0
 	return true
 
 
@@ -352,61 +366,30 @@ func equip_item(inventory_index: int) -> bool:
 ## Unequip item from equipment slot
 ## If target_index is provided, place item directly in that slot
 func unequip_item(slot_type: String, target_index: int = -1) -> bool:
-	var item: ItemData = null
-	
-	match slot_type:
-		"helmet":
-			item = equipped_helmet
-			equipped_helmet = null
-		"armor":
-			item = equipped_armor
-			equipped_armor = null
-		"weapon":
-			item = equipped_weapon
-			equipped_weapon = null
-		"shield":
-			item = equipped_shield
-			equipped_shield = null
-		"boots":
-			item = equipped_boots
-			equipped_boots = null
-		"accessory_1":
-			item = equipped_accessory_1
-			equipped_accessory_1 = null
-		"accessory_2":
-			item = equipped_accessory_2
-			equipped_accessory_2 = null
-		_:
-			return false
-	
-	if item != null:
-		var success := false
-		
-		# Try to place in specific slot if provided
-		if target_index >= 0 and target_index < inventory_slots.size():
-			var target_slot := inventory_slots[target_index]
-			if target_slot.item == null:
-				target_slot.item = item
-				target_slot.quantity = 1
-				success = true
-			elif target_slot.item.is_equippable() and _item_fits_slot(target_slot.item, slot_type):
-				# Swap with target slot item
-				var swap_item: ItemData = target_slot.item
-				target_slot.item = item
-				target_slot.quantity = 1
-				_set_equipped(slot_type, swap_item)
-				success = true
-		
-		# Fall back to adding to any slot
-		if not success:
-			var remaining := add_item(item, 1)
-			success = remaining == 0
-		
-		if not success:
-			# Inventory full, re-equip item
-			_set_equipped(slot_type, item)
-			return false
-	
+	if not EQUIPMENT_SLOTS.has(slot_type):
+		return false
+	var item := get_equipped(slot_type)
+	if item == null:
+		return false
+	var simulated := _copy_slots(inventory_slots)
+	var replacement: ItemData = null
+	var placed := false
+	if target_index >= 0 and target_index < simulated.size():
+		var target_slot: Dictionary = simulated[target_index]
+		var target_item := target_slot.get("item") as ItemData
+		if target_item == null:
+			target_slot.item = item
+			target_slot.quantity = 1
+			placed = true
+		elif target_item.is_equippable() and _item_fits_slot(target_item, slot_type):
+			replacement = target_item
+			target_slot.item = item
+			target_slot.quantity = 1
+			placed = true
+	if not placed and _add_to_slots(simulated, item, 1) > 0:
+		return false
+	inventory_slots = simulated
+	_set_equipped(slot_type, replacement)
 	equipment_changed.emit(slot_type)
 	inventory_changed.emit()
 	return true
@@ -597,20 +580,14 @@ func apply_augment(equip_slot: String, augment_inventory_index: int) -> bool:
 			if aug and aug.augment_type == ItemData.AugmentType.ACTIVE_SKILL:
 				return false  # Skill slot already occupied
 
-	# Duplicate equipment on first augment to create unique instance
-	# (so we don't mutate the ItemDatabase template)
-	if equipment.applied_augments.size() == 0:
-		var unique_equipment := equipment.duplicate() as ItemData
-		unique_equipment.applied_augments = []
-		_set_equipped(equip_slot, unique_equipment)
-		equipment = unique_equipment
-
-	# Add augment ID to equipment's applied_augments
-	equipment.applied_augments.append(augment_slot.item.id)
-
-	# Remove augment item from inventory
-	remove_item_at(augment_inventory_index, 1)
-
+	var simulated := _copy_slots(inventory_slots)
+	if not _remove_at_from_slots(simulated, augment_inventory_index, 1):
+		return false
+	var updated_equipment := equipment.duplicate() as ItemData
+	updated_equipment.applied_augments = equipment.applied_augments.duplicate()
+	updated_equipment.applied_augments.append(augment_slot.item.id)
+	inventory_slots = simulated
+	_set_equipped(equip_slot, updated_equipment)
 	augments_changed.emit(equip_slot)
 	equipment_changed.emit(equip_slot)
 	inventory_changed.emit()
@@ -632,16 +609,17 @@ func remove_augment(equip_slot: String, augment_index: int) -> bool:
 	if augment_item == null:
 		return false
 
-	# Add augment back to inventory (check for space first)
-	var remaining := add_item(augment_item, 1)
-	if remaining > 0:
-		return false  # Inventory full
-
-	# Remove from equipment's augment list
-	equipment.applied_augments.remove_at(augment_index)
-
+	var simulated := _copy_slots(inventory_slots)
+	if _add_to_slots(simulated, augment_item, 1) > 0:
+		return false
+	var updated_equipment := equipment.duplicate() as ItemData
+	updated_equipment.applied_augments = equipment.applied_augments.duplicate()
+	updated_equipment.applied_augments.remove_at(augment_index)
+	inventory_slots = simulated
+	_set_equipped(equip_slot, updated_equipment)
 	augments_changed.emit(equip_slot)
 	equipment_changed.emit(equip_slot)
+	inventory_changed.emit()
 	return true
 
 

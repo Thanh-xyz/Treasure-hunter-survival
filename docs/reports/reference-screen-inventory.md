@@ -96,11 +96,12 @@ files used for this report.
 
 ## Selected Local UI Kit
 
-Twenty-eight source images were copied bit-for-bit into
+Twenty-nine source images were copied bit-for-bit into
 `assets/treasure_hunter/ui/reference/`. Ten authentication/startup resources are
-consumed by `sense/ui/mobile/startup_gate.gd`; `panel_stats.png` and
-`joystick_ring.png` are consumed by the mobile HUD. The remaining resources stay
-selected references for later HUD and settings work.
+consumed by `sense/ui/mobile/startup_gate.gd`; `panel_stats.png`,
+`joystick_ring.png`, and `icon_weapon.png` are consumed by the mobile HUD. The
+remaining resources stay selected references for later HUD and settings work,
+except the retained crossed-sword candidate documented below.
 
 | Group | Stable targets |
 | --- | --- |
@@ -109,11 +110,11 @@ selected references for later HUD and settings work.
 | Authentication background | `login_background_server.png` |
 | Authentication | `login_panel.png`, `login_tab_active.png`, `login_tab_inactive.png`, `login_line.png` |
 | Buttons | `button_blue.png`, `button_orange.png`, `button_close.png`, `button_back.png`, `button_menu.png` |
-| HUD | `joystick.png`, `joystick_ring.png`, `icon_minimize.png`, `icon_chat.png`, `icon_attack.png`, `panel_stats.png`, `panel_level.png` |
+| HUD | `joystick.png`, `joystick_ring.png`, `icon_minimize.png`, `icon_chat.png`, `icon_attack.png`, `icon_weapon.png`, `panel_stats.png`, `panel_level.png` |
 | Settings tabs | `icon_settings.png`, `icon_gameplay.png`, `icon_profile.png`, `icon_login.png` |
 | Custom layout | `layout_back.png`, `layout_bag.png`, `layout_mount.png`, `layout_pet.png` |
 
-Every selected asset has a `local_only` provenance entry in
+Every curated asset has a `local_only` provenance entry in
 `docs/architecture/asset-manifest.json`.
 
 The original tab filenames did not describe visual state reliably. Runtime visual
@@ -129,6 +130,16 @@ movement thumb. The runtime uses only the verified ring for movement presentatio
 The top-right collapse control uses `Icon_Arrow__5990.png`. The four-direction
 `Button_MinimizeMode 2__6229.png` candidate was rejected because its silhouette
 does not match the captured dot-and-chevron control.
+
+The captured right-rail attack control uses a single diagonal sword silhouette.
+`IconSlot_Weapon__1.png` matches that silhouette and is consumed as
+`icon_weapon.png`. `IconSlot_Attack__6270.png` contains crossed swords, so it is
+retained only as a rejected comparison candidate and is not rendered at runtime.
+
+The fixed navigation rail buttons now reuse the verified sliced `Panel_Stats`
+frame. Pet, mount, hero, village, and bag keep their existing fallback icons
+because the available named export candidates have not been proven against a
+clean runtime crop.
 
 ## Missing Evidence
 

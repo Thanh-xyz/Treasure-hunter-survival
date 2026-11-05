@@ -86,12 +86,13 @@ ownership, integration branch, and feature merge order.
 ## Current Feature Validation
 
 - Manifest JSON parsed successfully.
-- 89 asset IDs and target paths are unique; all recorded paths exist.
-- 33 supplied Treasure Hunter entries are marked `local_only`.
-- All 26 UI reference targets match their manifest source files bit-for-bit.
+- 92 asset IDs and target paths are unique; all recorded paths exist.
+- 36 supplied Treasure Hunter entries are marked `local_only`.
+- All 29 UI reference targets match their manifest source files bit-for-bit and
+  have the recorded dimensions.
 - Ten startup/authentication assets are marked `integrated`.
 - All ten shared workflow Skills passed `quick_validate.py`.
-- Inventory, legacy, and survival Godot suites passed.
+- Inventory, legacy, and survival Godot suites passed after the rail update.
 - Startup and mobile-HUD render scenes passed with Godot 4.6 under Xvfb/OpenGL.
 
 ## Reference UI Kit Update
@@ -148,3 +149,16 @@ as gameplay contracts independent of the visual frame.
 for its existing top-right controls. `_on_menu_button("system")` and
 `_toggle_hud_chrome()` are unchanged; this is presentation-only and introduces no
 new gameplay events or settings keys.
+
+## Fixed HUD Rail Contract
+
+The existing navigation buttons now render through the same verified
+`Panel_Stats` sliced frame as the other fixed HUD controls. The existing
+`character_attack` action uses `ui.reference.hud.icon.weapon`, sourced from the
+single-sword `IconSlot_Weapon__1.png` export. No action ID, callback, menu route,
+position, input behavior, death state, or compact-HUD setting changed.
+
+The crossed-sword `ui.reference.hud.icon.attack` candidate is explicitly rejected
+for this control. Other rail icons remain current fallbacks until direct runtime
+evidence proves an exact source mapping; Agent B does not need to change gameplay
+data or tests for this presentation-only feature.

@@ -2909,11 +2909,39 @@
         "distribution_scope": "local_only",
         "license_status": "not_verified_for_public_redistribution"
       },
-      "evidence_status": "verified_export_file_and_runtime_capture",
-      "integration_status": "selected",
+      "evidence_status": "verified_export_file_rejected_for_captured_attack_control",
+      "integration_status": "rejected",
       "notes": [
-        "Observed in reference state: live HUD and custom layout.",
-        "No runtime consumer in Emberfield yet."
+        "The crossed-sword silhouette does not match the captured single diagonal sword control.",
+        "Retained only as a documented rejected candidate; no runtime consumer in Emberfield."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.icon.weapon",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/fc13304fb369b234cba1750dae86e64d/IconSlot_Weapon__1.png",
+      "target_path": "assets/treasure_hunter/ui/reference/icon_weapon.png",
+      "file_format": "png",
+      "dimensions": [
+        24,
+        24
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/mobile_hud.gd",
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Single diagonal sword silhouette matches the captured right-rail attack control.",
+        "Used by the existing character_attack ActionButton without changing its action ID."
       ]
     },
     {

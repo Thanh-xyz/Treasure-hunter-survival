@@ -1,7 +1,7 @@
 # Game Art Progress
 
-Date: 2026-11-04
-Current feature: verified fixed HUD chrome controls.
+Date: 2026-11-05
+Current feature: verified fixed HUD rail frames and attack icon.
 
 ## Completed Before This Feature
 
@@ -64,13 +64,27 @@ Current feature: verified fixed HUD chrome controls.
 - Rejected `Button_MinimizeMode 2__6229.png` and the selected crossed-sword attack
   icon after direct comparison showed that they do not match those captured states.
 
+## Fixed HUD Rail Feature
+
+- Reused the exact sliced `Panel_Stats` source for the existing navigation rail
+  buttons instead of the generic Godot button frame.
+- Replaced the inferred item-atlas sword with the bit-exact
+  `IconSlot_Weapon__1.png` single-sword source on the existing
+  `character_attack` control.
+- Kept hero, pet, mount, village, and bag fallback icons because current export
+  candidates are not yet proven against a clean runtime crop.
+- Preserved every existing rail callback, action ID, position, compact-HUD rule,
+  and death-state rule.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
-- Verified 91 assets, 91 unique asset IDs, and 91 unique target paths.
+- Verified 92 assets, 92 unique asset IDs, and 92 unique target paths.
 - Verified every non-null source and target path exists.
-- Verified all 35 supplied Treasure Hunter entries use
+- Verified all 36 supplied Treasure Hunter entries use
   `distribution_scope: local_only`.
+- Verified all 29 curated UI reference targets match their recorded sources
+  bit-for-bit and have the manifest dimensions.
 - Verified the player scene slices its `768x80` sheets into eight `96x80`
   AtlasTexture regions; manifest frame metadata matches the scene.
 - Validated all ten project Skills with the Codex `quick_validate.py` script.

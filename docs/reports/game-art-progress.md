@@ -111,14 +111,13 @@ Current feature: verified fixed HUD stat and currency icons.
 - The HUD render produced `/tmp/emberfield-mobile-hud.png` and
   `/tmp/emberfield-mobile-hud-dead.png` at `720x1600` for direct comparison with
   the verified live and dead ADB captures.
-- The current live HUD render SHA-256 is
-  `5539ff265066bdcf00c829f6741e03ae5f00871d9a499eb9fcbb5e950368b106`;
-  the dead HUD render SHA-256 is
-  `0f7831752b2571a436b9b03bebf765cc566f44b364587970eaeaccb608160fe0`.
 - Direct visual inspection confirms the five integrated icons use the verified
   power, health, damage, speed, and gold sources in their existing rows. The
   globe remains a documented fallback. Pixel parity is not claimed for the full
   HUD because the map, player, labels, and several controls still differ.
+- Whole-frame HUD hashes are not used as stable evidence because the rendered
+  local-time row changes between runs; fixed visual regions require a masked or
+  cropped comparison.
 
 ## Not Yet Implemented
 

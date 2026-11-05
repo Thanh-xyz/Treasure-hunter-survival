@@ -92,7 +92,8 @@ ownership, integration branch, and feature merge order.
   have the recorded dimensions.
 - Ten startup/authentication assets are marked `integrated`.
 - All ten shared workflow Skills passed `quick_validate.py`.
-- Inventory, legacy, and survival Godot suites passed after the rail update.
+- Inventory, legacy, and survival Godot suites passed after the stat-icon update
+  and after incorporating Agent B's sale-transaction integration commit.
 - Startup and mobile-HUD render scenes passed with Godot 4.6 under Xvfb/OpenGL.
 
 ## Reference UI Kit Update

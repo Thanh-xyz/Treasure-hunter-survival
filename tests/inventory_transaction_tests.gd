@@ -22,6 +22,7 @@ func _ready() -> void:
 	_test_sale_transaction()
 	_test_equipment_transactions()
 	_test_inventory_removal_invariants()
+	_test_recipe_catalog_validation()
 	_test_crafting_transaction()
 	_test_quest_claim_transaction()
 	_test_building_collection_transaction()
@@ -281,6 +282,45 @@ func _test_inventory_removal_invariants() -> void:
 	_check(inventory.remove_item_at(0, 2), "valid remove_item_at failed")
 	_check(inventory.get_item_count("wood") == 0, "valid remove_item_at did not clear the stack")
 	_check(int(signals["value"]) == 2, "valid remove_item_at did not emit exactly one change")
+
+
+func _test_recipe_catalog_validation() -> void:
+	var all_recipes := RecipeDatabase.get_all_recipes()
+	_check(all_recipes.size() == 10, "recipe catalog changed unexpectedly")
+	for recipe: CraftingRecipe in all_recipes:
+		_check(recipe.evidence_status == CraftingRecipe.EvidenceStatus.PROVISIONAL, "%s is missing its provisional evidence label" % recipe.id)
+		_check(not recipe.evidence_source.is_empty(), "%s is missing its evidence source" % recipe.id)
+		_check(recipe.validate_catalog().is_empty(), "%s failed catalog validation" % recipe.id)
+
+	var invalid := CraftingRecipe.new()
+	invalid.id = "invalid_reference_recipe"
+	invalid.recipe_name = "Invalid Reference Recipe"
+	invalid.evidence_source = "Synthetic invalid recipe used by automated tests."
+	invalid.tiers = [
+		{
+			"tier": 1,
+			"ingredients": [
+				{"item_id": "missing_reference_item", "quantity": 0},
+				{"item_id": "missing_reference_item", "quantity": 1},
+			],
+			"result_item_id": "missing_reference_output",
+			"result_quantity": 0,
+		},
+		{
+			"tier": 1,
+			"ingredients": [],
+			"result_item_id": "health_potion",
+			"result_quantity": 1,
+		},
+	]
+	var errors := invalid.validate_catalog()
+	_check(errors.size() >= 6, "invalid recipe did not report all structural/catalog errors")
+	_check(not RecipeDatabase.register_recipe(invalid, false), "invalid recipe entered the catalog")
+	_check(RecipeDatabase.get_recipe(invalid.id) == null, "rejected recipe remained registered")
+
+	var existing := RecipeDatabase.get_recipe("flame_augment")
+	_check(not RecipeDatabase.register_recipe(existing, false), "duplicate recipe id overwrote the catalog")
+	_check(RecipeDatabase.get_recipe("flame_augment") == existing, "duplicate registration replaced the original recipe")
 
 
 func _test_crafting_transaction() -> void:

@@ -19,6 +19,7 @@ const BTN_ICONS := {
 const HUD_PANEL := preload("res://assets/treasure_hunter/ui/reference/panel_stats.png")
 const MENU_BUTTON := preload("res://assets/treasure_hunter/ui/reference/button_menu.png")
 const MINIMIZE_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_minimize.png")
+const WEAPON_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_weapon.png")
 
 var legacy_hud: CanvasLayer = null
 var player: Node = null
@@ -365,7 +366,7 @@ func _build_menu_rail() -> void:
 	# Direct 4.3.6 capture places combat on the right rail. The starter hotbar
 	# below remains empty instead of carrying an invented ATK slot.
 	attack_btn = _action_btn("character_attack", Vector2(663, 1003), 45.0, "")
-	attack_btn.icon = ItemIconAtlas.get_named_icon("iron_sword")
+	attack_btn.icon = WEAPON_ICON
 	_foldable_controls.append(attack_btn)
 
 	var inventory_button := _nav_button("bag", "Inventory")
@@ -417,12 +418,39 @@ func _icon_button(icon_name: String, caption: String, callback: Callable) -> But
 	b.focus_mode = Control.FOCUS_NONE
 	b.custom_minimum_size = Vector2(72, 72)
 	b.size = Vector2(72, 72)
-	b.icon = ItemIconAtlas.get_named_icon(icon_name)
-	b.expand_icon = true
-	b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	b.text = ""
 	b.tooltip_text = caption
-	b.add_theme_constant_override("icon_max_width", 46)
+	for state in ["normal", "hover", "pressed", "disabled"]:
+		b.add_theme_stylebox_override(state, StyleBoxEmpty.new())
+
+	var background := ColorRect.new()
+	background.color = UiTheme.C_PANEL
+	background.set_anchors_preset(Control.PRESET_FULL_RECT)
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	b.add_child(background)
+
+	var frame := NinePatchRect.new()
+	frame.texture = HUD_PANEL
+	frame.set_anchors_preset(Control.PRESET_FULL_RECT)
+	frame.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
+		frame.set_patch_margin(side, 6)
+	b.add_child(frame)
+
+	var icon := TextureRect.new()
+	icon.texture = ItemIconAtlas.get_named_icon(icon_name)
+	icon.set_anchors_preset(Control.PRESET_FULL_RECT)
+	icon.offset_left = 13
+	icon.offset_top = 13
+	icon.offset_right = -13
+	icon.offset_bottom = -13
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	b.add_child(icon)
+
 	b.pressed.connect(callback)
 	add_child(b)
 	_controls.append(b)

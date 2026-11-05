@@ -150,3 +150,19 @@ asset metadata.
 - `git diff --check`, focused inventory tests, legacy phases 1–7 and survival tests passed with
   Godot `4.6.stable.official.89cea1439`, exit code 0. No asset, UI, ID, save schema or network
   contract changed.
+
+## 2026-11-05 — Reference-evidenced recipe catalog validation
+
+- Runtime/config research confirmed that Treasure Hunter has forge crafting, ingredient
+  inputs, equipment/potion outputs, tiered results and craft-specific quests. The exact ten
+  Emberfield recipe IDs, quantities and balance values are not yet mapped from the reference.
+- Every current recipe is now explicitly marked `PROVISIONAL` with a source note instead of
+  being presented as a confirmed Treasure Hunter formula.
+- Recipe registration validates non-empty IDs/names/evidence, unique positive tiers, valid
+  ingredient/output item IDs, unique ingredients and positive quantities before catalog
+  mutation. Duplicate recipe IDs cannot overwrite an existing definition.
+- Godot `4.6.stable.official.89cea1439` import, focused inventory transactions, legacy phases
+  1–7 and survival suites passed with exit code 0.
+- No recipe/item ID, recipe formula, save schema, LAN contract, scene, UI or asset changed.
+  Equipment enhancement remains a separately proposed feature because it requires an approved
+  persisted item-instance/save contract.

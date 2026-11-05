@@ -86,9 +86,9 @@ ownership, integration branch, and feature merge order.
 ## Current Feature Validation
 
 - Manifest JSON parsed successfully.
-- 97 asset IDs and target paths are unique; all recorded paths exist.
-- 41 supplied Treasure Hunter entries are marked `local_only`.
-- All 34 UI reference targets match their manifest source files bit-for-bit and
+- 100 asset IDs and target paths are unique; all recorded paths exist.
+- 44 supplied Treasure Hunter entries are marked `local_only`.
+- All 37 UI reference targets match their manifest source files bit-for-bit and
   have the recorded dimensions.
 - Ten startup/authentication assets are marked `integrated`.
 - All ten shared workflow Skills passed `quick_validate.py`.
@@ -172,3 +172,12 @@ underlying defense, health, attack, movement-speed, and inventory-gold values,
 signals, formatting, and update cadence are unchanged. The coordinate globe
 remains the existing fallback pending an exact mapping. Agent B does not need to
 change gameplay data, state, or tests for this presentation-only feature.
+
+## Fixed HUD Right Rail Icon Contract
+
+`MobileHUD` now displays verified `ui.reference.hud.icon.back`, `.pet`, and
+`.skill` sources on the existing inventory, pet-menu, and auto-farm controls.
+The visual mapping is verified; the original Treasure Hunter semantics of the
+cape/back control remain unknown. Emberfield callbacks, positions, compact-HUD
+behavior, and auto-farm state color are unchanged. No Agent B gameplay change or
+shared contract migration is required.

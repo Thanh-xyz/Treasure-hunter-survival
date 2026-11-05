@@ -207,3 +207,17 @@ unchanged during SCOUT.
    planned before distribution?
 
 No shared contract change should be implemented until these questions are resolved.
+
+## 2026-11-05 — Recipe evidence and validation
+
+- Agent B confirmed the reference contains forge crafting, ingredient inputs, output tiers,
+  equipment/potion crafting and crafting quests, but the current Emberfield recipe values are
+  not yet proven exact.
+- `CraftingRecipe` now carries an evidence status/source, and all ten current recipes are
+  honestly classified as `PROVISIONAL`.
+- `RecipeDatabase` rejects malformed definitions, missing catalog items and duplicate recipe
+  IDs before registration. Existing recipe IDs and behavior remain unchanged.
+- This feature has no visual, asset, animation, direction, item-ID, equipment-slot, save or
+  LAN impact. Agent A requires no adaptation.
+- A later equipment-enhancement proposal would expose an item level for equipment-detail UI,
+  but it remains unimplemented pending approval of the save/item-instance contract.

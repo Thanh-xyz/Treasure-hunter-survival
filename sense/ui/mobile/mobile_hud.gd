@@ -25,6 +25,10 @@ const HEALTH_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_hea
 const DAMAGE_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_damage.png")
 const SPEED_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_speed.png")
 const GOLD_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_gold.png")
+const BACK_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_back.png")
+const PET_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_pet.png")
+const SKILL_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_skill.png")
+const RAIL_ICON_TINT := Color8(143, 139, 143)
 
 var legacy_hud: CanvasLayer = null
 var player: Node = null
@@ -374,18 +378,19 @@ func _build_menu_rail() -> void:
 	attack_btn.icon = WEAPON_ICON
 	_foldable_controls.append(attack_btn)
 
-	var inventory_button := _nav_button("bag", "Inventory")
+	var inventory_button := _reference_icon_button(BACK_ICON, "Inventory", func() -> void: _on_menu_button("bag"), RAIL_ICON_TINT)
 	inventory_button.position = Vector2(618, 1060)
 	inventory_button.size = Vector2(90, 90)
 	_foldable_controls.append(inventory_button)
 
-	var pet_button := _nav_button("pet", "Pets")
+	var pet_button := _reference_icon_button(PET_ICON, "Pets", func() -> void: _on_menu_button("pet"), RAIL_ICON_TINT)
 	pet_button.position = Vector2(618, 1162)
 	pet_button.size = Vector2(90, 90)
 	_foldable_controls.append(pet_button)
 
 	auto_farm_btn = _action_btn("", Vector2(663, 1309), 45.0, "")
-	auto_farm_btn.radar_icon = true
+	auto_farm_btn.icon = SKILL_ICON
+	auto_farm_btn.icon_color = RAIL_ICON_TINT
 	auto_farm_btn.tapped.connect(_toggle_auto_farm)
 	_foldable_controls.append(auto_farm_btn)
 
@@ -462,7 +467,7 @@ func _icon_button(icon_name: String, caption: String, callback: Callable) -> But
 	return b
 
 
-func _reference_icon_button(texture: Texture2D, caption: String, callback: Callable) -> Button:
+func _reference_icon_button(texture: Texture2D, caption: String, callback: Callable, tint: Color = Color.WHITE) -> Button:
 	var b := Button.new()
 	b.focus_mode = Control.FOCUS_NONE
 	b.custom_minimum_size = Vector2(72, 72)
@@ -488,8 +493,12 @@ func _reference_icon_button(texture: Texture2D, caption: String, callback: Calla
 
 	var icon := TextureRect.new()
 	icon.texture = texture
-	icon.position = Vector2(14, 13)
-	icon.size = Vector2(44, 46)
+	icon.modulate = tint
+	icon.set_anchors_preset(Control.PRESET_FULL_RECT)
+	icon.offset_left = 14
+	icon.offset_top = 13
+	icon.offset_right = -14
+	icon.offset_bottom = -13
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST

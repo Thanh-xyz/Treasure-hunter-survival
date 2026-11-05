@@ -3148,6 +3148,32 @@
       ]
     },
     {
+      "asset_id": "ui.reference.hud.stat.line",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Line__6099.png",
+      "target_path": "assets/treasure_hunter/ui/reference/stat_line.png",
+      "file_format": "png",
+      "dimensions": [16, 48],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/mobile_hud.gd",
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Every active fixed HUD stat row uses sharedassets1.assets Sprite 6099, named Line, between its icon and value.",
+        "Unity sprite metadata defines 20-pixel top and bottom borders.",
+        "The existing stat values, signals, HP bar, and formatting remain unchanged."
+      ]
+    },
+    {
       "asset_id": "ui.reference.hud.icon.back",
       "category": "ui_reference",
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/d9e509c5e1ea36648a0ee66b2b200657/IconSlot_Back__1.png",

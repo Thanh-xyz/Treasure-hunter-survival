@@ -97,13 +97,13 @@ files used for this report.
 
 ## Selected Local UI Kit
 
-Forty source images were copied bit-for-bit into
+Forty-one source images were copied bit-for-bit into
 `assets/treasure_hunter/ui/reference/`. Ten authentication/startup resources are
 consumed by `sense/ui/mobile/startup_gate.gd`; `panel_stats.png`,
 `joystick_ring.png`, `icon_weapon.png`, `icon_power.png`, `icon_health.png`,
 `icon_damage.png`, `icon_speed.png`, `icon_gold.png`, `icon_back.png`,
 `icon_pet.png`, `icon_skill.png`, `icon_map.png`, `portrait_frame.png`, and
-`portrait_border.png` are consumed by the mobile HUD. The remaining
+`portrait_border.png`, and `stat_line.png` are consumed by the mobile HUD. The remaining
 resources stay selected references for later HUD and settings work, except the
 retained crossed-sword candidate documented below.
 
@@ -114,7 +114,7 @@ retained crossed-sword candidate documented below.
 | Authentication background | `login_background_server.png` |
 | Authentication | `login_panel.png`, `login_tab_active.png`, `login_tab_inactive.png`, `login_line.png` |
 | Buttons | `button_blue.png`, `button_orange.png`, `button_close.png`, `button_back.png`, `button_menu.png` |
-| HUD | `joystick.png`, `joystick_ring.png`, `icon_minimize.png`, `icon_chat.png`, `icon_attack.png`, `icon_weapon.png`, `icon_power.png`, `icon_health.png`, `icon_damage.png`, `icon_speed.png`, `icon_gold.png`, `icon_map.png`, `icon_back.png`, `icon_pet.png`, `icon_skill.png`, `portrait_frame.png`, `portrait_border.png`, `panel_stats.png`, `panel_level.png` |
+| HUD | `joystick.png`, `joystick_ring.png`, `icon_minimize.png`, `icon_chat.png`, `icon_attack.png`, `icon_weapon.png`, `icon_power.png`, `icon_health.png`, `icon_damage.png`, `icon_speed.png`, `icon_gold.png`, `icon_map.png`, `icon_back.png`, `icon_pet.png`, `icon_skill.png`, `portrait_frame.png`, `portrait_border.png`, `stat_line.png`, `panel_stats.png`, `panel_level.png` |
 | Settings tabs | `icon_settings.png`, `icon_gameplay.png`, `icon_profile.png`, `icon_login.png` |
 | Custom layout | `layout_back.png`, `layout_bag.png`, `layout_mount.png`, `layout_pet.png` |
 
@@ -158,6 +158,8 @@ traced through the decoded scene to `F200_389` and integrated as `icon_map.png`.
 The portrait frame was likewise traced to `F200_1_41`; its nested background is
 the already integrated `Login_Panel_0` source, and its active foreground overlay
 is `BorderAvatar` rather than the inactive `Frame_Default_0` sibling.
+Every active fixed stat row uses `Panel_Stats` plus the `Line` separator between
+its icon and value; both Unity border definitions are preserved in the HUD.
 
 ## Missing Evidence
 

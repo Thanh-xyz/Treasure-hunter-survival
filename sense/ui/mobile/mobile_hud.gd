@@ -29,6 +29,7 @@ const DAMAGE_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_dam
 const SPEED_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_speed.png")
 const GOLD_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_gold.png")
 const MAP_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_map.png")
+const STAT_LINE := preload("res://assets/treasure_hunter/ui/reference/stat_line.png")
 const BACK_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_back.png")
 const PET_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_pet.png")
 const SKILL_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_skill.png")
@@ -293,55 +294,60 @@ func _build_player_card() -> void:
 	add_child(_xp_bar)
 
 	var stats := _panel(Rect2(8, 150, 180, 204))
-	stats.add_theme_stylebox_override("panel", UiTheme.box(Color(0.04, 0.08, 0.06, 0.92), UiTheme.C_TRIM, 2))
+	stats.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 1)
 	stats.add_child(col)
-	var level_row := _hud_value_row(POWER_ICON)
+	var level_row := _hud_value_row(col, POWER_ICON)
 	_name_label = UiTheme.label("2,0", 20, UiTheme.C_GOLD)
 	_name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	level_row.add_child(_name_label)
-	col.add_child(level_row)
-	var hp_row := Control.new()
-	hp_row.custom_minimum_size = Vector2(0, 49)
-	var hp_icon := TextureRect.new()
-	hp_icon.texture = HEALTH_ICON
-	hp_icon.position = Vector2(0, 2)
-	hp_icon.size = Vector2(44, 44)
-	hp_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	hp_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	hp_icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	hp_row.add_child(hp_icon)
+	var hp_row := _hud_value_row(col, HEALTH_ICON)
+	var hp_value := Control.new()
+	hp_value.custom_minimum_size = Vector2(0, 49)
+	hp_value.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hp_row.add_child(hp_value)
 	_hp_bar = UiTheme.bar(Color(0.72, 0.06, 0.05), 25)
-	_hp_bar.position = Vector2(50, 12)
-	_hp_bar.size = Vector2(116, 25)
-	hp_row.add_child(_hp_bar)
+	_hp_bar.position = Vector2(0, 12)
+	_hp_bar.size = Vector2(110, 25)
+	hp_value.add_child(_hp_bar)
 	_hp_label = UiTheme.label("100/100", 18)
-	_hp_label.position = Vector2(50, 7)
-	_hp_label.size = Vector2(116, 34)
+	_hp_label.position = Vector2(0, 7)
+	_hp_label.size = Vector2(110, 34)
 	_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	hp_row.add_child(_hp_label)
-	col.add_child(hp_row)
-	var energy_row := _hud_value_row(DAMAGE_ICON)
+	hp_value.add_child(_hp_label)
+	var energy_row := _hud_value_row(col, DAMAGE_ICON)
 	_attack_label = UiTheme.label("10,0", 20, UiTheme.C_TEXT)
 	_attack_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_attack_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	energy_row.add_child(_attack_label)
-	col.add_child(energy_row)
-	var speed_row := _hud_value_row(SPEED_ICON)
+	var speed_row := _hud_value_row(col, SPEED_ICON)
 	_speed_label = UiTheme.label("2,00", 20, UiTheme.C_TEXT)
 	_speed_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_speed_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	speed_row.add_child(_speed_label)
-	col.add_child(speed_row)
 
 
-func _hud_value_row(icon_texture: Texture2D) -> HBoxContainer:
+func _hud_value_row(parent: VBoxContainer, icon_texture: Texture2D) -> HBoxContainer:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(0, 49)
+	var panel_style := StyleBoxTexture.new()
+	panel_style.texture = HUD_PANEL
+	panel_style.texture_margin_left = 20.0
+	panel_style.texture_margin_top = 20.0
+	panel_style.texture_margin_right = 20.0
+	panel_style.texture_margin_bottom = 20.0
+	panel_style.content_margin_left = 0.0
+	panel_style.content_margin_top = 0.0
+	panel_style.content_margin_right = 0.0
+	panel_style.content_margin_bottom = 0.0
+	panel.add_theme_stylebox_override("panel", panel_style)
+	parent.add_child(panel)
 	var row := HBoxContainer.new()
-	row.custom_minimum_size = Vector2(0, 49)
-	row.add_theme_constant_override("separation", 4)
+	row.add_theme_constant_override("separation", 0)
+	panel.add_child(row)
 	var icon := TextureRect.new()
 	icon.texture = icon_texture
 	icon.custom_minimum_size = Vector2(44, 44)
@@ -349,6 +355,13 @@ func _hud_value_row(icon_texture: Texture2D) -> HBoxContainer:
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	row.add_child(icon)
+	var line := TextureRect.new()
+	line.texture = STAT_LINE
+	line.custom_minimum_size = Vector2(16, 48)
+	line.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	line.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	line.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	row.add_child(line)
 	return row
 
 

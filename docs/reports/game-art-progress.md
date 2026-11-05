@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-05
-Current feature: verified fixed HUD map icon.
+Current feature: verified fixed HUD portrait frame.
 
 ## Completed Before This Feature
 
@@ -103,14 +103,26 @@ Current feature: verified fixed HUD map icon.
 - Replaced only the procedural coordinate-row globe; coordinate calculation,
   formatting, refresh cadence, and panel layout remain unchanged.
 
+## Fixed HUD Portrait Frame Feature
+
+- Traced `HUDView/Panel/Avatar` to `F200_1_41` (`sharedassets1.assets:3047`),
+  a `64x64` frame with verified 15-pixel Unity nine-slice borders.
+- Verified the nested `AvatarUI/BG` uses the already integrated
+  `Login_Panel_0` source with 20-pixel borders, and reused it behind the portrait.
+- Traced the active `AvatarVisualHost/AvatarHolder/Frame_New` overlay to
+  `BorderAvatar` (`sharedassets1.assets:5893`) with 15-pixel borders; the inactive
+  `Frame_Default` sibling is not used.
+- Preserved the dynamic hero portrait, hero tint updates, bag callback, position,
+  and size while replacing only the inferred Godot frame/background styling.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
-- Verified 101 assets, 101 unique asset IDs, and 101 unique target paths.
+- Verified 103 assets, 103 unique asset IDs, and 103 unique target paths.
 - Verified every non-null source and target path exists.
-- Verified all 45 supplied Treasure Hunter entries use
+- Verified all 47 supplied Treasure Hunter entries use
   `distribution_scope: local_only`.
-- Verified all 38 curated UI reference targets match their recorded sources
+- Verified all 40 curated UI reference targets match their recorded sources
   bit-for-bit and have the manifest dimensions.
 - Verified the player scene slices its `768x80` sheets into eight `96x80`
   AtlasTexture regions; manifest frame metadata matches the scene.

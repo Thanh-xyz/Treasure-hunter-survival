@@ -97,13 +97,14 @@ files used for this report.
 
 ## Selected Local UI Kit
 
-Thirty-four source images were copied bit-for-bit into
+Thirty-seven source images were copied bit-for-bit into
 `assets/treasure_hunter/ui/reference/`. Ten authentication/startup resources are
 consumed by `sense/ui/mobile/startup_gate.gd`; `panel_stats.png`,
 `joystick_ring.png`, `icon_weapon.png`, `icon_power.png`, `icon_health.png`,
-`icon_damage.png`, `icon_speed.png`, and `icon_gold.png` are consumed by the mobile HUD. The
-remaining resources stay selected references for later HUD and settings work,
-except the retained crossed-sword candidate documented below.
+`icon_damage.png`, `icon_speed.png`, `icon_gold.png`, `icon_back.png`,
+`icon_pet.png`, and `icon_skill.png` are consumed by the mobile HUD. The remaining
+resources stay selected references for later HUD and settings work, except the
+retained crossed-sword candidate documented below.
 
 | Group | Stable targets |
 | --- | --- |
@@ -112,7 +113,7 @@ except the retained crossed-sword candidate documented below.
 | Authentication background | `login_background_server.png` |
 | Authentication | `login_panel.png`, `login_tab_active.png`, `login_tab_inactive.png`, `login_line.png` |
 | Buttons | `button_blue.png`, `button_orange.png`, `button_close.png`, `button_back.png`, `button_menu.png` |
-| HUD | `joystick.png`, `joystick_ring.png`, `icon_minimize.png`, `icon_chat.png`, `icon_attack.png`, `icon_weapon.png`, `icon_power.png`, `icon_health.png`, `icon_damage.png`, `icon_speed.png`, `icon_gold.png`, `panel_stats.png`, `panel_level.png` |
+| HUD | `joystick.png`, `joystick_ring.png`, `icon_minimize.png`, `icon_chat.png`, `icon_attack.png`, `icon_weapon.png`, `icon_power.png`, `icon_health.png`, `icon_damage.png`, `icon_speed.png`, `icon_gold.png`, `icon_back.png`, `icon_pet.png`, `icon_skill.png`, `panel_stats.png`, `panel_level.png` |
 | Settings tabs | `icon_settings.png`, `icon_gameplay.png`, `icon_profile.png`, `icon_login.png` |
 | Custom layout | `layout_back.png`, `layout_bag.png`, `layout_mount.png`, `layout_pet.png` |
 
@@ -139,9 +140,13 @@ The captured right-rail attack control uses a single diagonal sword silhouette.
 retained only as a rejected comparison candidate and is not rendered at runtime.
 
 The fixed navigation rail buttons now reuse the verified sliced `Panel_Stats`
-frame. Pet, mount, hero, village, and bag keep their existing fallback icons
-because the available named export candidates have not been proven against a
-clean runtime crop.
+frame. A clean runtime crop directly verifies `IconSlot_Back__1.png`,
+`IconSlot_Pet__1.png`, and `IconSlot_Skill__6658.png` as the second, third, and
+fourth right-rail silhouettes. They now replace the existing inventory, pet, and
+auto-farm presentation while preserving those Emberfield callbacks. The original
+semantic meaning of the cape/back control remains unknown and is not inferred.
+The left rail keeps its current fallbacks because its callback semantics do not
+map cleanly to the observed chat/equipment/movement icons.
 
 A fresh authorized `720x1600` runtime capture verified exact mappings for the
 first four left stat rows and the right gold row: `Icon_Power__6088.png`,
@@ -157,7 +162,7 @@ fallback because no exported source has been proven.
 - Font asset and exact font metrics are not yet linked to the observed labels.
 - Sliced-border values and Unity pixels-per-unit settings require metadata or
   controlled reconstruction.
-- The globe/coordinate icon and some rail icons remain unmapped.
+- The globe/coordinate icon and left-rail icons remain unmapped.
 
 ## Recommended Integration Order
 

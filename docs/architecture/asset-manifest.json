@@ -3070,6 +3070,81 @@
       ]
     },
     {
+      "asset_id": "ui.reference.hud.icon.back",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/d9e509c5e1ea36648a0ee66b2b200657/IconSlot_Back__1.png",
+      "target_path": "assets/treasure_hunter/ui/reference/icon_back.png",
+      "file_format": "png",
+      "dimensions": [26, 20],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/mobile_hud.gd",
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Matches the cape/back silhouette in the captured second right-rail control.",
+        "Used on the existing inventory callback without claiming the original control semantics."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.icon.pet",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/52bff16b0f37e9e43888eae2e4774e71/IconSlot_Pet__1.png",
+      "target_path": "assets/treasure_hunter/ui/reference/icon_pet.png",
+      "file_format": "png",
+      "dimensions": [24, 21],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/mobile_hud.gd",
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Matches the paw silhouette in the captured third right-rail control.",
+        "Used on the existing pet-menu callback."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.icon.skill",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/IconSlot_Skill__6658.png",
+      "target_path": "assets/treasure_hunter/ui/reference/icon_skill.png",
+      "file_format": "png",
+      "dimensions": [24, 24],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/mobile_hud.gd",
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Matches the concentric radar silhouette in the captured fourth right-rail control.",
+        "Replaces only the procedural radar drawing on the existing auto-farm callback."
+      ]
+    },
+    {
       "asset_id": "ui.reference.hud.panel.stats",
       "category": "ui_reference",
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Panel_Stats__5844.png",

@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-05
-Current feature: verified fixed HUD stat and currency icons.
+Current feature: verified fixed HUD right-rail icons.
 
 ## Completed Before This Feature
 
@@ -84,14 +84,23 @@ Current feature: verified fixed HUD stat and currency icons.
   sources while preserving stat calculations, signals, labels, and panel layout.
 - Retained the procedural globe icon because no exported source has been proven.
 
+## Fixed HUD Right Rail Icon Feature
+
+- Matched the captured cape/back, paw, and concentric radar silhouettes to
+  `IconSlot_Back__1.png`, `IconSlot_Pet__1.png`, and `IconSlot_Skill__6658.png`.
+- Replaced the existing inventory, pet, and auto-farm presentation while keeping
+  all three Emberfield callbacks and auto-farm state behavior unchanged.
+- Deferred the left rail because its current callback meanings do not align with
+  the observed Treasure Hunter chat/equipment/movement visuals.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
-- Verified 97 assets, 97 unique asset IDs, and 97 unique target paths.
+- Verified 100 assets, 100 unique asset IDs, and 100 unique target paths.
 - Verified every non-null source and target path exists.
-- Verified all 41 supplied Treasure Hunter entries use
+- Verified all 44 supplied Treasure Hunter entries use
   `distribution_scope: local_only`.
-- Verified all 34 curated UI reference targets match their recorded sources
+- Verified all 37 curated UI reference targets match their recorded sources
   bit-for-bit and have the manifest dimensions.
 - Verified the player scene slices its `768x80` sheets into eight `96x80`
   AtlasTexture regions; manifest frame metadata matches the scene.
@@ -115,6 +124,10 @@ Current feature: verified fixed HUD stat and currency icons.
   power, health, damage, speed, and gold sources in their existing rows. The
   globe remains a documented fallback. Pixel parity is not claimed for the full
   HUD because the map, player, labels, and several controls still differ.
+- Direct visual inspection also confirms the cape/back, paw, and concentric
+  radar silhouettes, scale, placement, and verified gray runtime tint in the
+  three updated right-rail controls. Exact full-region parity is not claimed
+  because the cape control's dynamic `+1` badge and other HUD regions differ.
 - Whole-frame HUD hashes are not used as stable evidence because the rendered
   local-time row changes between runs; fixed visual regions require a masked or
   cropped comparison.

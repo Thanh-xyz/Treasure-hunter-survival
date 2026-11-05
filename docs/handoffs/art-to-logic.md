@@ -181,3 +181,11 @@ The visual mapping is verified; the original Treasure Hunter semantics of the
 cape/back control remain unknown. Emberfield callbacks, positions, compact-HUD
 behavior, and auto-farm state color are unchanged. No Agent B gameplay change or
 shared contract migration is required.
+
+## Fixed HUD Map Icon Contract
+
+`MobileHUD` now displays `ui.reference.hud.icon.map`, the scene-pointer-verified
+`F200_389` globe, beside the existing coordinate label. The player-position
+calculation, integer formatting, half-second refresh cadence, and world/resource
+panel layout are unchanged. This is presentation-only; Agent B does not need to
+change gameplay data, state, saves, LAN snapshots, or tests.

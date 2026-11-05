@@ -3249,6 +3249,34 @@
       ]
     },
     {
+      "asset_id": "ui.reference.hud.hotbar.frame",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Button1_0__6918.png",
+      "target_path": "assets/treasure_hunter/ui/reference/hotbar_frame.png",
+      "file_format": "png",
+      "dimensions": [
+        48,
+        48
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/mobile_hud.gd",
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Decoded InventoryView/InventorySlotUI Slot1/BG points to sharedassets1.assets:6918.",
+        "Rendered only as the fixed eight-slot hotbar outer frame; individual slots continue using Panel_Stats."
+      ]
+    },
+    {
       "asset_id": "ui.reference.hud.panel.stats",
       "category": "ui_reference",
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Panel_Stats__5844.png",

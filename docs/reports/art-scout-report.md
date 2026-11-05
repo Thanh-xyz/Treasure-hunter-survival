@@ -96,3 +96,15 @@ screenshot, diff, and correction.
 - This supports a presentation-only replacement of inferred panel styling. It
   does not support changing coordinate calculation, LAN role text, local time,
   currency state, or refresh cadence.
+
+## Fixed Hotbar Frame Evidence
+
+- Decoded `InventoryView/InventorySlotUI Slot1/BG` GameObject `20660` and its
+  active Unity UI Image component `118143`. The sprite pointer resolves to
+  `sharedassets1.assets:6918` (`Button1_0`), not `Panel_Stats`.
+- Sprite `6918` is `48x48` with verified 20-pixel borders on all sides. Direct
+  UnityPy decoding and the supplied exported PNG are pixel-identical.
+- Each of the eight active `Main/ItemUI_Inventory` child Images separately
+  resolves to `sharedassets1.assets:5844` (`Panel_Stats`). The current slot
+  texture therefore remains correct; only the outer hotbar frame requires
+  replacement.

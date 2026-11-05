@@ -220,3 +220,14 @@ no separator because the decoded reference hierarchy has no such child.
 integer coordinate formatting, inventory gold updates, and the 0.5-second
 refresh cadence are unchanged. No Agent B gameplay, save, LAN, currency, map,
 or test adaptation is required.
+
+## Fixed Hotbar Outer Frame Contract
+
+The outer fixed hotbar frame now uses `ui.reference.hud.hotbar.frame`, traced
+from `InventoryView/InventorySlotUI Slot1/BG` to `Button1_0`
+(`sharedassets1.assets:6918`). The eight individual slots continue using the
+verified `ui.reference.hud.panel.stats` source.
+
+All `hotbar_1` through `hotbar_8` action IDs, slot positions and sizes, locked
+state, input behavior, and gameplay ownership remain unchanged. Agent B does not
+need to change inventory, input, skill, save, or LAN code.

@@ -404,7 +404,7 @@ func _build_menu_rail() -> void:
 	system_button.position = Vector2(622, 18)
 
 	var resources := _panel(Rect2(532, 150, 180, 154))
-	resources.add_theme_stylebox_override("panel", UiTheme.box(Color(0.04, 0.08, 0.06, 0.92), UiTheme.C_TRIM, 2))
+	resources.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	var rv := VBoxContainer.new()
 	rv.add_theme_constant_override("separation", 1)
 	resources.add_child(rv)
@@ -450,21 +450,43 @@ func _nav_button(id: String, caption: String) -> Button:
 func _world_info_row(parent: VBoxContainer, icon_texture: Texture2D, initial_text: String, color: Color) -> Label:
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(0, 49)
-	panel.add_theme_stylebox_override("panel", UiTheme.box(Color(0.035, 0.055, 0.04, 0.88), Color(UiTheme.C_TRIM, 0.8), 1))
+	var panel_style := StyleBoxTexture.new()
+	panel_style.texture = HUD_PANEL
+	panel_style.texture_margin_left = 20.0
+	panel_style.texture_margin_top = 20.0
+	panel_style.texture_margin_right = 20.0
+	panel_style.texture_margin_bottom = 20.0
+	panel_style.content_margin_left = 0.0
+	panel_style.content_margin_top = 0.0
+	panel_style.content_margin_right = 0.0
+	panel_style.content_margin_bottom = 0.0
+	panel.add_theme_stylebox_override("panel", panel_style)
 	parent.add_child(panel)
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 4)
+	var row := Control.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(row)
 	if icon_texture != null:
 		var icon := TextureRect.new()
 		icon.texture = icon_texture
-		icon.custom_minimum_size = Vector2(46, 46)
+		icon.position = Vector2(9, 5)
+		icon.size = Vector2(40, 39)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		row.add_child(icon)
+		var line := NinePatchRect.new()
+		line.texture = STAT_LINE
+		line.position = Vector2(45, 2)
+		line.size = Vector2(18, 45)
+		line.set_patch_margin(SIDE_TOP, 20)
+		line.set_patch_margin(SIDE_BOTTOM, 20)
+		line.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(line)
 	var value := UiTheme.label(initial_text, 18, color)
-	value.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	value.position = Vector2(69, 0) if icon_texture != null else Vector2(7, 0)
+	value.size = Vector2(108, 49) if icon_texture != null else Vector2(166, 49)
 	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	value.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(value)

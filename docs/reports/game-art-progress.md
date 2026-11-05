@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-05
-Current feature: verified fixed HUD stat rows.
+Current feature: verified fixed HUD world/resource rows.
 
 ## Completed Before This Feature
 
@@ -124,6 +124,20 @@ Current feature: verified fixed HUD stat rows.
 - Rebuilt all four existing Emberfield stat rows with those exact sources while
   preserving defense, HP, attack, and movement-speed values and update behavior.
 
+## Fixed HUD World/Resource Row Feature
+
+- Traced the active `RegionTime`, `Map`, and `Gold` background Images to the
+  already integrated `Panel_Stats` source with verified 20-pixel nine-slice
+  borders and `250x70` Unity RectTransforms.
+- Traced the Map and Gold separator Images to the already integrated `Line`
+  source. Verified that RegionTime intentionally has no icon or separator.
+- Rebuilt the three existing Emberfield rows as independent sliced panels,
+  removed the inferred group frame, and scaled icon, separator, and value
+  regions from the decoded Unity layout.
+- Preserved LAN role text, system time, player-coordinate calculation and
+  formatting, inventory gold signals, panel placement, and the 0.5-second
+  refresh cadence. No new asset or gameplay contract was introduced.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
@@ -149,8 +163,8 @@ Current feature: verified fixed HUD stat rows.
 - Godot suites passed with exit code `0`: inventory transactions, legacy systems,
   survival systems, startup render, and mobile-HUD render.
 - The HUD render produced `/tmp/emberfield-mobile-hud.png` and
-  `/tmp/emberfield-mobile-hud-dead.png` at `720x1600` for direct comparison with
-  the verified live and dead ADB captures.
+  `/tmp/emberfield-mobile-hud-dead.png` at the configured `360x800` window size
+  for scaled comparison with the verified `720x1600` live and dead ADB captures.
 - Direct visual inspection confirms the five integrated stat/currency icons use
   the verified power, health, damage, speed, and gold sources in their existing
   rows. The coordinate row now uses the scene-pointer-verified `F200_389` globe.
@@ -163,6 +177,10 @@ Current feature: verified fixed HUD stat rows.
 - Whole-frame HUD hashes are not used as stable evidence because the rendered
   local-time row changes between runs; fixed visual regions require a masked or
   cropped comparison.
+- Direct crop comparison confirms the world/resource stack now has three
+  independent `Panel_Stats` frames, no separator in the time row, and the exact
+  `Line` separator in the Map and Gold rows. Full-frame pixel parity is not
+  claimed because fonts, dynamic values, terrain, and other HUD regions differ.
 
 ## Not Yet Implemented
 

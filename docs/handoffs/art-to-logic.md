@@ -208,3 +208,15 @@ The four existing `MobileHUD` stat rows now render through the scene-verified
 attack, and movement-speed calculations, labels, signals, formatting, and update
 cadence remain unchanged. Agent B does not need to change character stats,
 combat, saves, LAN snapshots, or tests.
+
+## Fixed HUD World/Resource Row Contract
+
+The three existing `MobileHUD` time, coordinate, and gold rows now render as
+scene-verified `ui.reference.hud.panel.stats` panels. Coordinate and gold rows
+also use the verified `ui.reference.hud.stat.line` separator; the time row has
+no separator because the decoded reference hierarchy has no such child.
+
+`LanSession.short_role_text()`, system-time display, player-position conversion,
+integer coordinate formatting, inventory gold updates, and the 0.5-second
+refresh cadence are unchanged. No Agent B gameplay, save, LAN, currency, map,
+or test adaptation is required.

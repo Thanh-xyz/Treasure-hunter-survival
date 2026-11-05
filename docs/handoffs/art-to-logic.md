@@ -199,3 +199,12 @@ active `ui.reference.hud.portrait.border` (`BorderAvatar`) overlay above the
 dynamic portrait. The hero portrait texture, tint refresh, button position/size,
 and existing bag callback are unchanged. Agent B does not need to change hero
 data, inventory behavior, saves, LAN snapshots, or tests.
+
+## Fixed HUD Stat Row Contract
+
+The four existing `MobileHUD` stat rows now render through the scene-verified
+`ui.reference.hud.panel.stats` background and
+`ui.reference.hud.stat.line` icon/value separator. Defense, current/max HP,
+attack, and movement-speed calculations, labels, signals, formatting, and update
+cadence remain unchanged. Agent B does not need to change character stats,
+combat, saves, LAN snapshots, or tests.

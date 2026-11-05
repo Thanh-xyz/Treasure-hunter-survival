@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-05
-Current feature: verified fixed HUD portrait frame.
+Current feature: verified fixed HUD stat rows.
 
 ## Completed Before This Feature
 
@@ -115,14 +115,23 @@ Current feature: verified fixed HUD portrait frame.
 - Preserved the dynamic hero portrait, hero tint updates, bag callback, position,
   and size while replacing only the inferred Godot frame/background styling.
 
+## Fixed HUD Stat Row Feature
+
+- Verified every active fixed stat row points to the already integrated
+  `Panel_Stats` background with 20-pixel borders.
+- Traced the icon/value separator to `Line` (`sharedassets1.assets:6099`), a
+  `16x48` source with verified 20-pixel top and bottom borders.
+- Rebuilt all four existing Emberfield stat rows with those exact sources while
+  preserving defense, HP, attack, and movement-speed values and update behavior.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
-- Verified 103 assets, 103 unique asset IDs, and 103 unique target paths.
+- Verified 104 assets, 104 unique asset IDs, and 104 unique target paths.
 - Verified every non-null source and target path exists.
-- Verified all 47 supplied Treasure Hunter entries use
+- Verified all 48 supplied Treasure Hunter entries use
   `distribution_scope: local_only`.
-- Verified all 40 curated UI reference targets match their recorded sources
+- Verified all 41 curated UI reference targets match their recorded sources
   bit-for-bit and have the manifest dimensions.
 - Verified the player scene slices its `768x80` sheets into eight `96x80`
   AtlasTexture regions; manifest frame metadata matches the scene.

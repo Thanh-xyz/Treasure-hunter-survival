@@ -11,10 +11,12 @@ const CRIT_MULT := 1.6
 const VARIANCE := 0.12
 
 
-## Returns {"amount": int, "crit": bool}
-static func roll(base: float) -> Dictionary:
+## Returns {"amount": int, "crit": bool}. Bonus crit is expressed in percentage
+## points because equipment data exposes values such as 8.0 for +8%.
+static func roll(base: float, bonus_crit_chance_percent: float = 0.0) -> Dictionary:
 	var v := base * randf_range(1.0 - VARIANCE, 1.0 + VARIANCE)
-	var crit := randf() < CRIT_CHANCE
+	var crit_chance := clampf(CRIT_CHANCE + bonus_crit_chance_percent / 100.0, 0.0, 1.0)
+	var crit := randf() < crit_chance
 	if crit:
 		v *= CRIT_MULT
 	return {"amount": maxi(1, int(round(v))), "crit": crit}

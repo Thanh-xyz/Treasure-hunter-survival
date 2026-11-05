@@ -139,6 +139,19 @@ inventory cannot consume ingredients, advance a claim or reset stored production
 incremental adapter-compatible step toward `InventoryState`; it does not change item IDs,
 equipment contracts, assets, save schema or network transport.
 
+## Implemented resolved-hit slice
+
+Basic player attacks now use an additive compatibility path rather than replacing legacy raw
+damage delivery. `HitboxComponent` can resolve one provisional combat roll and emit the result;
+`HurtboxComponent` lets the target confirm the amount actually applied. Existing raw damage
+signals remain available for systems not yet migrated.
+
+The player supplies aggregated critical chance to the hitbox and consumes confirmed damage for
+on-hit passives. LAN clients send bounded combat modifiers in protocol version 5; the host
+resolves enemy damage and lifesteal. This establishes the attack-result boundary needed by the
+larger `CombatResolver` proposal without moving active skills, projectiles or status effects in
+the same feature.
+
 ## Key risks
 
 - `player.gd` and `LanSession` are large cross-layer files, so broad refactors would create

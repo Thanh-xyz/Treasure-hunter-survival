@@ -453,7 +453,7 @@ func _create_augments() -> void:
 	# --- Crit augments ---
 	items["crit_augment_t1"] = ItemHelper.create_item({
 		"id": "crit_augment_t1", "name": "Critical Augment I",
-		"description": "8% chance for 2x damage.",
+		"description": "Increase critical chance by 8 percentage points.",
 		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.UNCOMMON,
 		"stackable": false, "max_stack": 1,
 		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
@@ -462,7 +462,7 @@ func _create_augments() -> void:
 	})
 	items["crit_augment_t2"] = ItemHelper.create_item({
 		"id": "crit_augment_t2", "name": "Critical Augment II",
-		"description": "15% chance for 2x damage.",
+		"description": "Increase critical chance by 15 percentage points.",
 		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.RARE,
 		"stackable": false, "max_stack": 1,
 		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,

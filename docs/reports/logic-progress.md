@@ -166,3 +166,23 @@ asset metadata.
 - No recipe/item ID, recipe formula, save schema, LAN contract, scene, UI or asset changed.
   Equipment enhancement remains a separately proposed feature because it requires an approved
   persisted item-instance/save contract.
+
+## 2026-11-05 — Authoritative resolved basic combat hits
+
+- Reference configs confirm separate Critical (`statType=5`), Critical Bonus (`statType=14`)
+  and LifeSteal (`statType=18`) concepts. Native identifiers expose distinct
+  `RpcCriticalDamage`, `RpcCriticalBonusDamage` and `RpcLifeSteal` paths. Exact server formulas
+  are unavailable, so Emberfield's existing 8% base chance, 1.6 multiplier and variance remain
+  explicitly provisional.
+- Player melee now resolves variance and critical chance once before target delivery. Monsters
+  and skeletons confirm the amount actually removed; rejected iframe hits and LAN replicas do
+  not publish false on-hit events.
+- Critical augments now add their existing percentage-point values to the melee roll.
+  Lifesteal aggregates equipped effects and heals from confirmed damage rather than raw attack.
+- LAN protocol version 5 includes bounded critical and lifesteal modifiers. The host still
+  validates peer/zone/range/cooldown/death, resolves the hit, applies overkill-safe damage, then
+  commits authoritative lifesteal HP.
+- Godot 4.6 import, inventory transactions, legacy phases 1-7, survival tests, MobileHUD render,
+  and all three two-process LAN harnesses passed with exit code 0.
+- Active skills, hero projectiles, pets and Critical Bonus damage remain separate follow-up
+  slices; this feature does not claim their formulas or complete reference parity.

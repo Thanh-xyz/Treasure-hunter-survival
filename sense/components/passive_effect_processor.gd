@@ -31,6 +31,7 @@ func on_hit_landed(hurtbox: Area2D, damage_dealt: int) -> void:
 		return
 
 	var effects: Array[Dictionary] = get_passive_effects_func.call()
+	var life_steal_percent := 0.0
 
 	for entry: Dictionary in effects:
 		var effect: int = entry.get("effect", ItemData.PassiveEffect.NONE)
@@ -38,10 +39,10 @@ func on_hit_landed(hurtbox: Area2D, damage_dealt: int) -> void:
 
 		match effect:
 			ItemData.PassiveEffect.LIFE_STEAL:
-				_apply_life_steal(damage_dealt, value)
+				life_steal_percent += value
 
 			ItemData.PassiveEffect.CRIT_CHANCE:
-				pass  # Crit is handled BEFORE damage in calculate_crit_damage(), not here
+				pass  # Crit is included in the authoritative roll before this callback.
 
 			ItemData.PassiveEffect.BURN_ON_HIT:
 				_apply_dot_to_target(hurtbox, "burn", value)
@@ -51,6 +52,8 @@ func on_hit_landed(hurtbox: Area2D, damage_dealt: int) -> void:
 
 			ItemData.PassiveEffect.POISON_ON_HIT:
 				_apply_dot_to_target(hurtbox, "poison", value)
+
+	_apply_life_steal(damage_dealt, life_steal_percent)
 
 
 ## Called by owner when HurtboxComponent.damage_received fires
@@ -70,23 +73,26 @@ func on_damage_received(amount: int, _knockback: float, from_position: Vector2) 
 				_apply_thorns(amount, value, from_position)
 
 
-## Check if crit should apply, returns modified damage
-## Called by the owner BEFORE dealing damage (inside attack logic)
-func calculate_crit_damage(base_damage: int) -> int:
+## Additive critical chance from equipment/buffs, in percentage points.
+func get_crit_chance_bonus_percent() -> float:
+	return get_effect_total(ItemData.PassiveEffect.CRIT_CHANCE)
+
+
+func get_life_steal_percent() -> float:
+	return get_effect_total(ItemData.PassiveEffect.LIFE_STEAL)
+
+
+func get_effect_total(effect_type: ItemData.PassiveEffect) -> float:
 	if not get_passive_effects_func.is_valid():
-		return base_damage
+		return 0.0
 
 	var effects: Array[Dictionary] = get_passive_effects_func.call()
-	var total_crit_chance := 0.0
+	var total := 0.0
 
 	for entry: Dictionary in effects:
-		if entry.get("effect", 0) == ItemData.PassiveEffect.CRIT_CHANCE:
-			total_crit_chance += entry.get("value", 0.0)
-
-	# Roll crit
-	if total_crit_chance > 0.0 and randf() * 100.0 < total_crit_chance:
-		return base_damage * 2
-	return base_damage
+		if entry.get("effect", ItemData.PassiveEffect.NONE) == effect_type:
+			total += maxf(float(entry.get("value", 0.0)), 0.0)
+	return total
 
 
 func _apply_life_steal(damage_dealt: int, percent: float) -> void:

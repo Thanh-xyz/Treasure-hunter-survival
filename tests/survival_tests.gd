@@ -28,6 +28,23 @@ class StubPlayer:
 		return true
 
 
+class ResolvedHitTarget:
+	extends Node2D
+	var hp: int = 7
+	var hurtbox: HurtboxComponent
+
+	func setup() -> void:
+		hurtbox = HurtboxComponent.new()
+		hurtbox.invincibility_time = 0.05
+		add_child(hurtbox)
+		hurtbox.resolved_damage_received.connect(_on_resolved_damage)
+
+	func _on_resolved_damage(amount: int, critical: bool, _knockback: float, _from_position: Vector2) -> void:
+		var applied := mini(amount, hp)
+		hp -= applied
+		hurtbox.confirm_resolved_damage(applied, critical)
+
+
 func _check(cond: bool, msg: String) -> void:
 	if not cond:
 		_failures.append(msg)
@@ -54,6 +71,8 @@ func run_all() -> bool:
 	await _test_menu_keeps_world_running()
 	await _test_auto_farm_toggle()
 	_test_combat_roll()
+	await _test_resolved_combat_hit()
+	await _test_player_combat_modifiers()
 
 	_stub_player.queue_free()
 	SaveService.delete_save()
@@ -540,3 +559,72 @@ func _test_combat_roll() -> void:
 		var r := Combat.roll(100.0)
 		var amount: int = r["amount"]
 		_check(amount >= 88 and amount <= int(ceil(112.0 * Combat.CRIT_MULT)) + 1, "roll within variance/crit bounds")
+	for i in range(20):
+		_check(bool(Combat.roll(100.0, 100.0)["crit"]), "100-point crit bonus always resolves critical")
+
+
+func _test_resolved_combat_hit() -> void:
+	var target := ResolvedHitTarget.new()
+	target.setup()
+	add_child(target)
+	var attacker := Node2D.new()
+	var hitbox := HitboxComponent.new()
+	hitbox.check_line_of_sight = false
+	hitbox.resolves_damage = true
+	hitbox.damage = 100
+	hitbox.bonus_crit_chance_percent = 100.0
+	attacker.add_child(hitbox)
+	add_child(attacker)
+	await get_tree().process_frame
+	var result := {"count": 0, "amount": 0, "critical": false}
+	hitbox.hit_resolved.connect(func(_hurtbox: Area2D, amount: int, critical: bool) -> void:
+		result["count"] += 1
+		result["amount"] = amount
+		result["critical"] = critical
+	)
+	hitbox._on_area_entered(target.hurtbox)
+	_check(target.hp == 0, "resolved hit applies once")
+	_check(result["count"] == 1, "accepted resolved hit emits once")
+	_check(result["amount"] == 7, "resolved hit reports damage actually applied")
+	_check(result["critical"], "resolved hit preserves critical result")
+	hitbox._on_area_entered(target.hurtbox)
+	_check(result["count"] == 1, "invincibility rejects duplicate hit events")
+
+	var stats := CharacterStats.new()
+	stats.current_health = 50
+	var processor := PassiveEffectProcessor.new()
+	processor.get_owner_stats_func = func() -> CharacterStats: return stats
+	processor.get_passive_effects_func = func() -> Array[Dictionary]:
+		return [
+			{"effect": ItemData.PassiveEffect.LIFE_STEAL, "value": 10.0},
+			{"effect": ItemData.PassiveEffect.LIFE_STEAL, "value": 20.0},
+		]
+	add_child(processor)
+	processor.on_hit_landed(target.hurtbox, 7)
+	_check(stats.current_health == 52, "lifesteal aggregates and uses confirmed damage")
+	processor.queue_free()
+	attacker.queue_free()
+	target.queue_free()
+
+
+func _test_player_combat_modifiers() -> void:
+	var player_scene: PackedScene = preload("res://sense/entities/player/player.tscn")
+	var local_player = player_scene.instantiate()
+	local_player.set_physics_process(false)
+	add_child(local_player)
+	await get_tree().process_frame
+	_check(local_player.attack_hitbox.resolves_damage, "player melee uses resolved-hit path")
+	local_player.inventory.add_item(ItemDatabase.get_item_copy("fire_blade"), 1)
+	local_player.inventory.equip_item(0)
+	local_player.inventory.add_item(ItemDatabase.get_item("crit_augment_t1"), 1)
+	local_player.inventory.add_item(ItemDatabase.get_item("lifesteal_augment_t1"), 1)
+	var crit_slot := _find_slot(local_player.inventory, "crit_augment_t1")
+	var life_slot := _find_slot(local_player.inventory, "lifesteal_augment_t1")
+	_check(local_player.inventory.apply_augment("weapon", crit_slot), "crit augment applies")
+	life_slot = _find_slot(local_player.inventory, "lifesteal_augment_t1")
+	_check(local_player.inventory.apply_augment("weapon", life_slot), "lifesteal augment applies")
+	var modifiers: Dictionary = local_player.get_lan_combat_modifiers()
+	_check(is_equal_approx(float(modifiers["crit_chance"]), 8.0), "equipped crit augment reaches combat resolver")
+	_check(is_equal_approx(float(modifiers["life_steal"]), 5.0), "equipped lifesteal reaches authority profile")
+	_check(is_equal_approx(local_player.attack_hitbox.bonus_crit_chance_percent, 8.0), "melee hitbox refreshes crit chance")
+	local_player.queue_free()

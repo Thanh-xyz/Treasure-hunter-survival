@@ -6,8 +6,16 @@ var _output := "/tmp/emberfield-lan-combat-peer.json"
 class TestPlayer:
 	extends CharacterBody2D
 	var inventory := InventoryData.new()
+	var stats := CharacterStats.new()
+	var crit_chance := 0.0
+	var life_steal := 0.0
 	func get_inventory() -> InventoryData:
 		return inventory
+	func get_lan_combat_modifiers() -> Dictionary:
+		return {"crit_chance": crit_chance, "life_steal": life_steal}
+	func apply_lan_vitals(hp: int, max_hp: int, _dead: bool, _respawned: bool, _pos: Vector2) -> void:
+		stats.base_max_health = max_hp
+		stats.current_health = hp
 
 
 var _player: TestPlayer
@@ -34,6 +42,8 @@ var _reward_restore_seen := false
 var _full_bag_preserved := false
 var _partial_pickup_seen := false
 var _client_loot_phase := 0
+var _critical_hit_seen := false
+var _life_steal_seen := false
 
 
 func _ready() -> void:
@@ -41,6 +51,10 @@ func _ready() -> void:
 	_player = TestPlayer.new()
 	_player.name = "TestPlayer"
 	_player.position = Vector2(100, 200) if _role == "host" else Vector2(900, 900)
+	if _role == "client":
+		_player.stats.current_health = 40
+		_player.crit_chance = 100.0
+		_player.life_steal = 50.0
 	add_child(_player)
 	LanSession.bind(self, _player)
 	LanSession.session_ready.connect(func(_mode: String, _zone: String) -> void: _ready_seen = true)
@@ -86,6 +100,11 @@ func _process(delta: float) -> void:
 	if _role == "host":
 		if _elapsed >= 0.8 and _minimum_hp == _initial_hp:
 			_far_hit_rejected = true
+		_critical_hit_seen = _critical_hit_seen or (_minimum_hp < _initial_hp - 11)
+		for peer_id: int in LanSession.player_states:
+			if peer_id != 1:
+				var state: Dictionary = LanSession.player_states[peer_id]
+				_life_steal_seen = _life_steal_seen or int(state.get("hp", 0)) > 40
 		if _enemy_id > 0 and not LanSession.enemies.has(_enemy_id):
 			_removal_seen = true
 		if _loot_id > 0 and not LanSession.loot.has(_loot_id):
@@ -180,6 +199,8 @@ func _finish_after_delay() -> void:
 		"reward_restore_seen": _reward_restore_seen,
 		"full_bag_preserved": _full_bag_preserved,
 		"partial_pickup_seen": _partial_pickup_seen,
+		"critical_hit_seen": _critical_hit_seen,
+		"life_steal_seen": _life_steal_seen,
 	}
 	var file := FileAccess.open(_output, FileAccess.WRITE)
 	if file == null:
@@ -189,7 +210,7 @@ func _finish_after_delay() -> void:
 	file.close()
 	var ok := _ready_seen and not _failed and _enemy_id > 0 and _hp_change_seen and _removal_seen and _loot_id > 0 and _loot_removed
 	if _role == "host":
-		ok = ok and _far_hit_rejected and _loot_far_rejected and _full_bag_preserved and _partial_pickup_seen
+		ok = ok and _far_hit_rejected and _loot_far_rejected and _full_bag_preserved and _partial_pickup_seen and _critical_hit_seen and _life_steal_seen
 	else:
 		ok = ok and _enemy_seen and _far_request_sent and _loot_seen and _loot_far_request_sent and _loot_granted and _reward_restore_seen and _full_bag_preserved and _partial_pickup_seen
 	LanSession.stop(false)

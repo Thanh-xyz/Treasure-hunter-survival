@@ -28,9 +28,13 @@ extends Area2D
 @export var knockback_force: float = 100.0
 ## Enable line of sight check (raycast to check for walls between attacker and target)
 @export var check_line_of_sight: bool = true
+## Player/authority hitboxes resolve variance and critical chance before delivery.
+@export var resolves_damage: bool = false
+var bonus_crit_chance_percent: float = 0.0
 
 ## Emitted when this hitbox hits a hurtbox
 signal hit_landed(hurtbox: Area2D)
+signal hit_resolved(hurtbox: Area2D, amount: int, critical: bool)
 
 func _ready() -> void:
 	# Layer/Mask should be set in scene inspector based on entity type:
@@ -88,11 +92,22 @@ func _on_area_entered(area: Area2D) -> void:
 		#   - damage: Số damage gây ra
 		#   - knockback_force: Lực đẩy lùi
 		#   - global_position: Vị trí nguồn damage (dùng để tính hướng knockback)
-		area.take_damage(damage, knockback_force, global_position)
-		
-		# Emit signal để parent biết đã hit thành công
-		# Có thể dùng cho: combo counter, sound effects, visual effects...
-		hit_landed.emit(area)
+		var accepted := false
+		if resolves_damage and area.has_method("take_resolved_damage"):
+			var roll := Combat.roll(float(damage), bonus_crit_chance_percent)
+			var result: Dictionary = area.take_resolved_damage(
+				int(roll["amount"]), bool(roll["crit"]), knockback_force, global_position
+			)
+			if not result.is_empty() and int(result.get("amount", 0)) > 0:
+				accepted = true
+				hit_resolved.emit(area, int(result["amount"]), bool(result.get("crit", false)))
+		else:
+			var legacy_result: Variant = area.take_damage(damage, knockback_force, global_position)
+			accepted = legacy_result == null or bool(legacy_result)
+
+		# Passive/combo listeners only observe hits accepted by the hurtbox.
+		if accepted:
+			hit_landed.emit(area)
 
 
 ## ┌─────────────────────────────────────────────────────────────────────────────┐

@@ -65,7 +65,7 @@ Các domain event mới trong `GameEvent`: `enemy_killed`, `resource_gathered`,
 - Đã đồng bộ thật: handshake, kết nối/rời phiên, vị trí/hướng nhân vật, avatar remote, zone và registry/spawn/di chuyển/HP/chết của quái do host quyết định.
 - Client gửi yêu cầu đánh theo ID quái; host kiểm tra peer, zone, khoảng cách và cooldown rồi mới tính damage. Client không tự trừ HP quái.
 - Loot item/vàng từ quái có ID do host cấp. Item được reserve tới khi client ACK sức chứa: túi đầy giữ nguyên loot, nhặt một phần cập nhật số lượng còn lại, ACK lặp không cộng đồ lần hai. Vàng/XP vẫn commit ngay vì không chiếm ô túi.
-- Mỗi peer gửi profile combat được giới hạn; host giữ HP hiện tại, dùng ATK đó cho hit request, áp dụng DEF/iframe khi quái đánh, quyết định chết và xác nhận hồi sinh tại spawn của map.
+- Mỗi peer gửi profile combat được giới hạn; host giữ HP hiện tại, dùng ATK cùng Critical/LifeSteal đã clamp cho hit request, áp dụng DEF/iframe khi quái đánh, quyết định chết và xác nhận hồi sinh tại spawn của map.
 - Health potion của client được host xác nhận theo `item_id`; lượng heal luôn tra từ `ItemDatabase`, sau đó host phát HP authoritative. Request bị từ chối sẽ trả potion về túi.
 - Khi ngắt LAN, client nạp lại snapshot local an toàn rồi replay cả phần thưởng đã nhận và consumable host đã duyệt, nên không mất loot, không hồi lại potion đã dùng và không ghi nhầm zone mô phỏng.
 - Chưa đồng bộ: equipment/crafting/selling, chest/gather/dig, stamina/timed buff, quest theo từng peer, pet/mount và save thế giới.

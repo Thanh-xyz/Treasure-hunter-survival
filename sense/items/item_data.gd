@@ -43,7 +43,7 @@ enum AugmentType {
 enum PassiveEffect {
 	NONE,
 	LIFE_STEAL,     ## Heal % of damage dealt
-	CRIT_CHANCE,    ## % chance for 2× damage
+	CRIT_CHANCE,    ## Percentage-point bonus to critical chance
 	THORNS,         ## Reflect % damage back to attacker on hit received
 	BURN_ON_HIT,    ## Apply burn DoT on hit
 	FREEZE_ON_HIT,  ## Apply slow on hit

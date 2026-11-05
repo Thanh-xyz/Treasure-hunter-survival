@@ -9,7 +9,7 @@ signal host_zone_requested(zone_id: String)
 
 const PORT := 24567
 const MAX_CLIENTS := 3
-const PROTOCOL_VERSION := 4
+const PROTOCOL_VERSION := 5
 const SEND_INTERVAL := 0.05
 const ZONE_INTERVAL := 1.0
 const ENEMY_SEND_INTERVAL := 0.10
@@ -27,6 +27,8 @@ const MIN_PLAYER_HP := 20
 const MAX_PLAYER_HP := 5000
 const MAX_PLAYER_ATTACK := 5000
 const MAX_PLAYER_DEFENSE := 500
+const MAX_PLAYER_CRIT_BONUS := 100.0
+const MAX_PLAYER_LIFE_STEAL := 100.0
 const NETWORK_ITEM_SCENE := preload("res://sense/items/game_item.tscn")
 
 enum Mode { OFFLINE, HOST, CLIENT }
@@ -323,11 +325,19 @@ func _send_local_combat_profile() -> void:
 	if mode != Mode.CLIENT or local_player == null:
 		return
 	var profile := _read_local_combat_profile()
-	_submit_combat_profile.rpc_id(1, int(profile["hp"]), int(profile["max_hp"]), int(profile["attack"]), int(profile["defense"]))
+	_submit_combat_profile.rpc_id(
+		1,
+		int(profile["hp"]),
+		int(profile["max_hp"]),
+		int(profile["attack"]),
+		int(profile["defense"]),
+		float(profile["crit_chance"]),
+		float(profile["life_steal"])
+	)
 
 
 @rpc("any_peer", "call_remote", "reliable", 0)
-func _submit_combat_profile(current_hp: int, max_hp: int, attack: int, defense: int) -> void:
+func _submit_combat_profile(current_hp: int, max_hp: int, attack: int, defense: int, crit_chance: float, life_steal: float) -> void:
 	if mode != Mode.HOST:
 		return
 	var sender := multiplayer.get_remote_sender_id()
@@ -336,6 +346,8 @@ func _submit_combat_profile(current_hp: int, max_hp: int, attack: int, defense: 
 	var accepted_max := clampi(max_hp, MIN_PLAYER_HP, MAX_PLAYER_HP)
 	var accepted_attack := clampi(attack, 1, MAX_PLAYER_ATTACK)
 	var accepted_defense := clampi(defense, 0, MAX_PLAYER_DEFENSE)
+	var accepted_crit := clampf(crit_chance, 0.0, MAX_PLAYER_CRIT_BONUS)
+	var accepted_life_steal := clampf(life_steal, 0.0, MAX_PLAYER_LIFE_STEAL)
 	var existing: Dictionary = player_states.get(sender, {})
 	var accepted_hp := clampi(current_hp, 0, accepted_max)
 	if bool(existing.get("profile_received", false)):
@@ -345,6 +357,8 @@ func _submit_combat_profile(current_hp: int, max_hp: int, attack: int, defense: 
 		"max_hp": accepted_max,
 		"attack": accepted_attack,
 		"defense": accepted_defense,
+		"crit_chance": accepted_crit,
+		"life_steal": accepted_life_steal,
 		"dead": accepted_hp <= 0,
 		"profile_received": true,
 	}
@@ -514,11 +528,24 @@ func _read_local_combat_profile() -> Dictionary:
 		result["attack"] = clampi(stats.attack_damage, 1, MAX_PLAYER_ATTACK)
 		result["defense"] = clampi(stats.defense, 0, MAX_PLAYER_DEFENSE)
 		result["dead"] = stats.current_health <= 0
+	if local_player.has_method("get_lan_combat_modifiers"):
+		var modifiers: Dictionary = local_player.get_lan_combat_modifiers()
+		result["crit_chance"] = clampf(float(modifiers.get("crit_chance", 0.0)), 0.0, MAX_PLAYER_CRIT_BONUS)
+		result["life_steal"] = clampf(float(modifiers.get("life_steal", 0.0)), 0.0, MAX_PLAYER_LIFE_STEAL)
 	return result
 
 
 func _default_player_state() -> Dictionary:
-	return {"hp": 100, "max_hp": 100, "attack": 10, "defense": 0, "dead": false, "profile_received": false}
+	return {
+		"hp": 100,
+		"max_hp": 100,
+		"attack": 10,
+		"defense": 0,
+		"crit_chance": 0.0,
+		"life_steal": 0.0,
+		"dead": false,
+		"profile_received": false,
+	}
 
 
 func _apply_player_state_to_avatar(peer_id: int) -> void:
@@ -562,6 +589,9 @@ func _request_enemy_hit(enemy_id: int) -> void:
 		return
 	if enemy.network_zone_id != GameState.current_zone:
 		return
+	var peer_state: Dictionary = player_states.get(sender, _default_player_state())
+	if bool(peer_state.get("dead", false)):
+		return
 	var peer_pos := peer_positions[sender] as Vector2
 	if peer_pos.distance_to(enemy.global_position) > CLIENT_HIT_RANGE + enemy.body_radius:
 		return
@@ -571,9 +601,37 @@ func _request_enemy_hit(enemy_id: int) -> void:
 	if now - last < CLIENT_HIT_COOLDOWN:
 		return
 	_enemy_hit_times[hit_key] = now
-	var peer_state: Dictionary = player_states.get(sender, _default_player_state())
-	var roll := Combat.roll(float(peer_state.get("attack", CLIENT_BASE_DAMAGE)))
-	enemy.apply_hit(int(roll["amount"]), peer_pos, bool(roll["crit"]), sender)
+	var roll := Combat.roll(
+		float(peer_state.get("attack", CLIENT_BASE_DAMAGE)),
+		float(peer_state.get("crit_chance", 0.0))
+	)
+	var applied := enemy.apply_hit(int(roll["amount"]), peer_pos, bool(roll["crit"]), sender)
+	_apply_peer_life_steal(sender, applied, float(peer_state.get("life_steal", 0.0)))
+
+
+func _apply_peer_life_steal(peer_id: int, damage_dealt: int, percent: float) -> void:
+	if damage_dealt <= 0 or percent <= 0.0 or not player_states.has(peer_id):
+		return
+	var state: Dictionary = player_states[peer_id]
+	if bool(state.get("dead", false)):
+		return
+	var heal_amount := int(float(damage_dealt) * clampf(percent, 0.0, MAX_PLAYER_LIFE_STEAL) / 100.0)
+	if heal_amount <= 0:
+		return
+	var previous_hp := int(state.get("hp", 0))
+	state["hp"] = mini(int(state.get("max_hp", MIN_PLAYER_HP)), previous_hp + heal_amount)
+	if int(state["hp"]) == previous_hp:
+		return
+	player_states[peer_id] = state
+	_apply_player_state_to_avatar(peer_id)
+	_apply_authoritative_vitals.rpc_id(
+		peer_id,
+		int(state["hp"]),
+		int(state["max_hp"]),
+		false,
+		false,
+		peer_positions.get(peer_id, Vector2.ZERO)
+	)
 
 
 func spawn_authoritative_item(pos: Vector2, item_id: String, quantity: int) -> int:

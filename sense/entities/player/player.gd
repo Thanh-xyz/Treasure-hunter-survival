@@ -901,6 +901,7 @@ func _on_equipment_changed(_slot_type: String) -> void:
 		# Update hitbox damage with new attack stat
 		if attack_hitbox != null:
 			attack_hitbox.damage = stats.attack_damage
+		_refresh_combat_modifiers()
 
 
 ## Called when player uses an item from inventory
@@ -978,6 +979,8 @@ func _setup_components() -> void:
 	passive_processor.get_passive_effects_func = _get_all_passive_effects
 	passive_processor.get_owner_stats_func = func() -> CharacterStats: return stats
 	passive_processor.get_owner_node_func = func() -> Node2D: return self
+	attack_hitbox.resolves_damage = true
+	_refresh_combat_modifiers()
 
 	# --- SkillComponent: equipment-bound active skills ---
 	skill_component = SkillComponent.new()
@@ -994,15 +997,20 @@ func _setup_components() -> void:
 	skill_executor.skill_effect_finished.connect(_on_skill_effect_finished)
 
 	# --- Wire existing hitbox/hurtbox to passive processor ---
-	attack_hitbox.hit_landed.connect(func(hurtbox_area: Area2D) -> void:
-		passive_processor.on_hit_landed(hurtbox_area, stats.attack_damage)
+	attack_hitbox.hit_resolved.connect(func(hurtbox_area: Area2D, amount: int, _critical: bool) -> void:
+		var target := hurtbox_area.get_parent()
+		if target != null and target.is_in_group("monster"):
+			passive_processor.on_hit_landed(hurtbox_area, amount)
 	)
 	hurtbox.damage_received.connect(func(amount: int, knockback: float, from_pos: Vector2) -> void:
 		passive_processor.on_damage_received(amount, knockback, from_pos)
 	)
 
 	# --- Wire equipment/augment changes to rebuild skills ---
-	inventory.augments_changed.connect(func(_slot: String) -> void: skill_component.rebuild_skills())
+	inventory.augments_changed.connect(func(_slot: String) -> void:
+		skill_component.rebuild_skills()
+		_refresh_combat_modifiers()
+	)
 	inventory.equipment_changed.connect(func(_slot: String) -> void: skill_component.rebuild_skills())
 
 	# --- Wire buff/skill components to HUD ---
@@ -1039,6 +1047,7 @@ func _connect_components_to_hud() -> void:
 ## Called when BuffComponent.buffs_changed fires — recalculate stats
 func _on_buffs_changed() -> void:
 	stats.apply_buff_bonuses(buff_component)
+	_refresh_combat_modifiers()
 
 
 ## Called when SkillComponent.skill_activated fires — enter SKILL state + execute
@@ -1068,6 +1077,21 @@ func _get_all_passive_effects() -> Array[Dictionary]:
 	if buff_component:
 		effects.append_array(buff_component.get_active_passive_effects())
 	return effects
+
+
+func _refresh_combat_modifiers() -> void:
+	if attack_hitbox == null or passive_processor == null:
+		return
+	attack_hitbox.bonus_crit_chance_percent = passive_processor.get_crit_chance_bonus_percent()
+
+
+func get_lan_combat_modifiers() -> Dictionary:
+	if passive_processor == null:
+		return {"crit_chance": 0.0, "life_steal": 0.0}
+	return {
+		"crit_chance": passive_processor.get_crit_chance_bonus_percent(),
+		"life_steal": passive_processor.get_life_steal_percent(),
+	}
 
 
 ## Called when player uses an item from the Hotbar (keys 1-8)

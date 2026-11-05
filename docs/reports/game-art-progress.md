@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-05
-Current feature: verified fixed HUD right-rail icons.
+Current feature: verified fixed HUD map icon.
 
 ## Completed Before This Feature
 
@@ -93,14 +93,24 @@ Current feature: verified fixed HUD right-rail icons.
 - Deferred the left rail because its current callback meanings do not align with
   the observed Treasure Hunter chat/equipment/movement visuals.
 
+## Fixed HUD Map Icon Feature
+
+- Traced `UIManager/MainCanvas - Camera/HUDView/Panel/TopRight/Map/Icon` in the
+  decoded `level1` scene to GameObject `23760`, its Unity UI Image component, and
+  `sharedassets1.assets` Sprite `3015` (`F200_389`).
+- Recovered the exact `15x15` blue-and-green globe directly from the
+  `UIOtherIcons` atlas because the earlier batch-exported PNG was transparent.
+- Replaced only the procedural coordinate-row globe; coordinate calculation,
+  formatting, refresh cadence, and panel layout remain unchanged.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
-- Verified 100 assets, 100 unique asset IDs, and 100 unique target paths.
+- Verified 101 assets, 101 unique asset IDs, and 101 unique target paths.
 - Verified every non-null source and target path exists.
-- Verified all 44 supplied Treasure Hunter entries use
+- Verified all 45 supplied Treasure Hunter entries use
   `distribution_scope: local_only`.
-- Verified all 37 curated UI reference targets match their recorded sources
+- Verified all 38 curated UI reference targets match their recorded sources
   bit-for-bit and have the manifest dimensions.
 - Verified the player scene slices its `768x80` sheets into eight `96x80`
   AtlasTexture regions; manifest frame metadata matches the scene.
@@ -120,10 +130,11 @@ Current feature: verified fixed HUD right-rail icons.
 - The HUD render produced `/tmp/emberfield-mobile-hud.png` and
   `/tmp/emberfield-mobile-hud-dead.png` at `720x1600` for direct comparison with
   the verified live and dead ADB captures.
-- Direct visual inspection confirms the five integrated icons use the verified
-  power, health, damage, speed, and gold sources in their existing rows. The
-  globe remains a documented fallback. Pixel parity is not claimed for the full
-  HUD because the map, player, labels, and several controls still differ.
+- Direct visual inspection confirms the five integrated stat/currency icons use
+  the verified power, health, damage, speed, and gold sources in their existing
+  rows. The coordinate row now uses the scene-pointer-verified `F200_389` globe.
+  Pixel parity is not claimed for the full HUD because the map, player, labels,
+  and several controls still differ.
 - Direct visual inspection also confirms the cape/back, paw, and concentric
   radar silhouettes, scale, placement, and verified gray runtime tint in the
   three updated right-rail controls. Exact full-region parity is not claimed

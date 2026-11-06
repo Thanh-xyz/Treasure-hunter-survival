@@ -1,8 +1,25 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: establish the exact Treasure Hunter Stone_1 Health ingredient
-identity for quest 317.
+Current feature: establish the exact Treasure Hunter Stone_6 Defense ingredient
+identity for quest 318.
+
+## Stone_6 Defense Ingredient Feature
+
+- Selected the exact `25x30` addressable Stone_6 sprite for card `69` and copied
+  it byte-for-byte to
+  `assets/treasure_hunter/items/ingredients/card_69_stone_6.png`.
+- Added stable art ID `item.ingredient.card_69.icon` with Quest 318, Card 69,
+  Box 464-467, Box 153, CAB/path ID, alpha, dimensions, hash, and `local_only`
+  evidence.
+- Together with integrated card 66 Stone_3 art, this completes the known Box
+  153 art identities. It does not register Box 153 or imply gameplay items,
+  rewards, quests, drops, upgrades, saves, or UI.
+- Exact live scale/frame and Unity pivot/PPU remain unknown; no rendered
+  pixel-parity claim is made.
+- Exact byte/hash/dimension/alpha, manifest uniqueness/path, lossless Godot 4.6
+  import, Inventory Transaction, Legacy, Survival/save, and `git diff --check`
+  pass. No visual diff applies until an approved runtime consumer exists.
 
 ## Stone_1 Health Ingredient Feature
 

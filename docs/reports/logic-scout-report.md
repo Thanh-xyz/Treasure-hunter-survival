@@ -321,3 +321,15 @@ observed examples alone.
   retry formula. The implementation therefore claims offline durability, not server parity.
 - Agent A's Turtle contract adds stable art IDs only and has no overlap with the save, quest,
   reward resolver or gameplay-test files in this feature.
+
+## 2026-11-06 — Exact equipment reward payload scout
+
+- `ClaimQuestResponse` contains separate `EquipmentsReward` and `CurrenciesReward` identities,
+  supporting equipment instances as a distinct reward domain rather than item quantities.
+- Current `ReferenceEquipmentCatalog` can validate/materialize exact card 28/29/30 stat payloads,
+  `InventoryData.transact()` can commit instance objects atomically, and save schema v3+ preserves
+  their card, stable asset ID and decimal stats.
+- The missing boundary is the canonical reward/journal shape: it supports only XP, currencies and
+  item-ID quantities, so exact equipment data would currently be discarded by `GameState.grant()`.
+- Initial stat RNG, rounding, rarity transformation, Box 149 registration and quest 305 remain
+  unknown and are not implied by this prerequisite.

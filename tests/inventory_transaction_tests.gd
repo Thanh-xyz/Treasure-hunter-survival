@@ -35,6 +35,7 @@ func _ready() -> void:
 	_test_crafting_transaction()
 	_test_quest_claim_transaction()
 	_test_daily_claim_recovery()
+	_test_exact_equipment_reward_transaction()
 	_test_building_collection_transaction()
 	_test_building_upgrade_transaction()
 	SaveService.delete_save()
@@ -143,6 +144,18 @@ func _test_reward_box_resolver() -> void:
 	(normalized["items"] as Dictionary)["wood"] = 999
 	_check(source_reward == {"xp": 0, "gold": 5.0, "items": {"wood": 2.0}}, "resolved reward shared source state")
 
+	var source_stats := {"health": 13.9, "damage": 29.8, "speed": 0.08}
+	var equipment_reward := {"equipment": [{"card_id": 28, "stats": source_stats}]}
+	var normalized_equipment := RewardBoxResolver.normalize_reward(equipment_reward)
+	_check(normalized_equipment == {"equipment": [{"card_id": 28, "stats": source_stats}]}, "exact equipment reward normalization drifted")
+	((normalized_equipment["equipment"] as Array)[0]["stats"] as Dictionary)["damage"] = 49.0
+	_check(is_equal_approx(float(source_stats["damage"]), 29.8), "normalized equipment reward shared source stats")
+	_check(
+		RewardBoxResolver.resolve_roll([{"weight": 1, "reward": equipment_reward}], 1)
+		== {"equipment": [{"card_id": 28, "stats": source_stats}]},
+		"weighted reward did not preserve exact equipment",
+	)
+
 	var invalid_cases: Array = [
 		[],
 		[null],
@@ -153,6 +166,10 @@ func _test_reward_box_resolver() -> void:
 		[{"weight": 1, "reward": {"unknown": 1}}],
 		[{"weight": 1, "reward": {"items": {"missing_item": 1}}}],
 		[{"weight": 1, "reward": {"items": {"wood": 0}}}],
+		[{"weight": 1, "reward": {"equipment": "card_28"}}],
+		[{"weight": 1, "reward": {"equipment": [{"card_id": 999, "stats": source_stats}]}}],
+		[{"weight": 1, "reward": {"equipment": [{"card_id": 28, "stats": {"health": 13.9, "damage": 29.8}}]}}],
+		[{"weight": 1, "reward": {"equipment": [{"card_id": 28, "stats": source_stats, "asset_id": "spoofed"}]}}],
 		[entries[0], {"weight": 1, "reward": {"items": {"missing_item": 1}}}],
 	]
 	for invalid: Array in invalid_cases:
@@ -160,6 +177,10 @@ func _test_reward_box_resolver() -> void:
 		invalid_rng.seed = 1
 		_check(RewardBoxResolver.resolve(invalid, invalid_rng).is_empty(), "invalid reward box resolved: %s" % [invalid])
 	_check(RewardBoxResolver.resolve(entries, null).is_empty(), "reward box accepted a missing RNG")
+	var too_many_equipment: Array = []
+	for _index in range(InventoryData.INVENTORY_SIZE + 1):
+		too_many_equipment.append({"card_id": 28, "stats": source_stats})
+	_check(RewardBoxResolver.normalize_reward({"equipment": too_many_equipment}).is_empty(), "reward accepted more equipment than inventory capacity")
 
 
 func _test_reward_box_checkbox_resolver() -> void:
@@ -210,6 +231,12 @@ func _test_reward_box_checkbox_resolver() -> void:
 	normalized["gold"] = 999
 	(normalized["items"] as Dictionary)["wood"] = 999
 	_check(source_reward == {"gold": 10.0, "items": {"wood": 2.0}}, "checkbox reward shared source state")
+	var equipment_stats := {"health": 13.9, "damage": 29.8, "speed": 0.08}
+	var merged_equipment := RewardBoxResolver.resolve_checkbox_rolls([
+		{"chance": 100, "reward": {"equipment": [{"card_id": 28, "stats": equipment_stats}]}},
+		{"chance": 100, "reward": {"equipment": [{"card_id": 30, "stats": {"health": 12.0, "damage": 20.0, "speed": 1.25}}]}},
+	], [100, 100])
+	_check((merged_equipment.get("equipment", []) as Array).size() == 2, "checkbox reward did not merge exact equipment instances")
 
 	var invalid_cases: Array = [
 		[],
@@ -815,6 +842,54 @@ func _test_daily_claim_recovery() -> void:
 	_check(QuestService.daily_date != stale_date, "completed stale daily state did not reset")
 	_check(not QuestService.claim("d_boss"), "completed daily journal granted twice after reset")
 	_check(_player.inventory.get_item_count("hero_shard") == 3, "duplicate daily claim changed the reward")
+
+
+func _test_exact_equipment_reward_transaction() -> void:
+	SaveService.delete_save()
+	GameState.reset_profile()
+	QuestService.reset()
+	_player.inventory = InventoryData.new()
+	var valid_stats := {"health": 13.9, "damage": 29.8, "speed": 0.08}
+	_check(not GameState.grant({"equipment": [{"card_id": "28", "stats": valid_stats}]}), "direct grant accepted a string equipment card ID")
+	_check(not GameState.grant({"equipment": [{"card_id": 28, "stats": valid_stats, "level": 10}]}), "direct grant accepted an unapproved equipment field")
+	_check(_player.inventory.get_item_count("th_weapon_28") == 0, "invalid direct equipment grant changed inventory")
+	_player.inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	QuestService.main_index = 1
+	QuestService.main_progress = int(GameContent.MAIN_QUESTS[1]["obj"]["count"])
+	QuestService.main_ready = true
+	var source_stats := valid_stats.duplicate(true)
+	var exact_reward := {"gold": 25, "equipment": [{"card_id": 28, "stats": source_stats}]}
+	var record := {
+		"version": 1,
+		"claim_id": "main:q02",
+		"source_kind": "main",
+		"source_id": "q02",
+		"reward": exact_reward,
+	}
+	_check(SaveService.prepare_pending_claim(record), "exact equipment claim did not prepare")
+	source_stats["damage"] = 49.0
+	_check(
+		is_equal_approx(float(SaveService.get_pending_claim()["reward"]["equipment"][0]["stats"]["damage"]), 29.8),
+		"prepared equipment claim retained caller stats",
+	)
+	_check(not QuestService.retry_pending_claim(), "full inventory accepted exact equipment claim")
+	_check(_player.inventory.gold == 0 and QuestService.main_index == 1, "failed equipment claim partially changed state")
+
+	_player.inventory = InventoryData.new()
+	QuestService.reset()
+	_check(SaveService.load_game(), "exact equipment journal did not reload")
+	_check(not SaveService.get_pending_claim().is_empty(), "failed automatic equipment retry lost its journal")
+	_player.inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
+	_check(QuestService.claim("q02"), "exact equipment journal did not retry")
+	_check(_player.inventory.gold == 25 and QuestService.main_index == 2, "exact equipment retry did not commit final state")
+	var rewarded := _player.inventory.get_item_at(InventoryData.INVENTORY_SIZE - 1).get("item") as ItemData
+	_check(rewarded != null and rewarded.id == "th_weapon_28", "exact equipment retry granted the wrong runtime item")
+	_check(rewarded != null and rewarded.source_card_id == 28, "exact equipment retry lost source card identity")
+	_check(rewarded != null and rewarded.source_asset_id == "item.weapon.card_28.icon", "exact equipment retry lost stable asset identity")
+	_check(rewarded != null and is_equal_approx(float(rewarded.get_reference_stats().get("damage", 0.0)), 29.8), "exact equipment retry changed decimal stats")
+	_check(SaveService.get_pending_claim().is_empty(), "exact equipment retry did not clear its journal")
+	_check(not QuestService.claim("q02") and _player.inventory.get_item_count("th_weapon_28") == 1, "exact equipment claim granted twice")
+	_check(not ItemDatabase.get_item("th_weapon_28").has_reference_instance_data(), "exact equipment reward mutated its catalog template")
 
 
 func _test_building_collection_transaction() -> void:

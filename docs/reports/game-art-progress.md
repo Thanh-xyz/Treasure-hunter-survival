@@ -1,8 +1,27 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: establish the exact Treasure Hunter Stone_6 Defense ingredient
-identity for quest 318.
+Current feature: establish the evidence and ownership contract for Treasure
+Hunter quest 319's ingredient Level 2 presentation.
+
+## Quest 319 Ingredient Level 2 Visual Contract
+
+- Documented the verified disabled Quest 319 sequence, Vietnamese text,
+  `levelRequire: 1`, and Box 98 reward without activating or implementing it.
+- Distinguished the source `IngredientView` detail/upgrade panel from the
+  separate `MergeIngredientView`; the latter must not be used as a visual or
+  behavioral substitute for Quest 319.
+- Recorded the verified IngredientView composition: ingredient grid, selected
+  rarity/level/icon, stat rows, description, Sell, and Hold Upgrade with
+  Gold/cost. Exact geometry, colors, live values, hold duration, and transitions
+  remain unverified without a direct runtime capture.
+- Preserved the integrated exact icon IDs for cards 64, 66, and 69 as
+  metadata-only. Static 10 Gold/card rate evidence does not create an Emberfield
+  ingredient instance, upgrade transaction, save field, quest event, or UI
+  consumer.
+- Future runtime work is gated on an Agent B-owned authoritative ingredient
+  model and event plus exact IngredientView capture evidence. No project source,
+  asset, manifest, or gameplay contract is changed by this documentation slice.
 
 ## Stone_6 Defense Ingredient Feature
 

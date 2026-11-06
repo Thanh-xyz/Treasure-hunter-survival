@@ -3,6 +3,27 @@
 Date: 2026-11-04
 Status: startup/auth presentation integrated; broader asset registry remains proposed.
 
+## Quest 319 Ingredient Level 2 Visual And Ownership Contract
+
+- Quest `319` requires any ingredient to reach Level 2. Source config records
+  `levelRequire: 1`, Box `98`, and disabled status; it does not establish an
+  Emberfield runtime contract by itself.
+- Agent A's integrated stable icon IDs are `item.ingredient.card_64.icon`,
+  `item.ingredient.card_66.icon`, and `item.ingredient.card_69.icon`. They remain
+  metadata-only and must not be used as gameplay item IDs or hard-coded paths.
+- Static cards 64/66/69 record `canUpgrade: true`, a 10 Gold cost, and rate 1.5.
+  Agent B retains ownership of ingredient instances, level/stat calculation,
+  economy authority, atomic mutation, save/reload, quest progress events, and
+  multiplayer/retry behavior. None is implemented or approved by this evidence.
+- Verified presentation hierarchy is a dedicated `IngredientView`: ingredient
+  grid, selected rarity/level/icon, stat rows, description, Sell, and a Gold/cost
+  Hold Upgrade action. `MergeIngredientView` is a different flow and is not a
+  valid Quest 319 substitute.
+- A future Agent A runtime panel requires both an authoritative Agent B API/event
+  contract and a direct Treasure Hunter IngredientView capture. Until then,
+  exact geometry, color, hold duration, live values, transitions, and pixel
+  parity remain unknown; no shared UI hook or consumer is proposed.
+
 ## Stone_6 Defense Ingredient Asset Contract
 
 - Stable art ID `item.ingredient.card_69.icon` maps to card `69` / `Stone_6`,

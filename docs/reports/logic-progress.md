@@ -1,5 +1,22 @@
 # Logic Progress
 
+## 2026-11-06 — Independent CheckBox reward resolution
+
+- Decoded Unity 6 IL2CPP metadata confirms `RandomType.Option = 0` and
+  `RandomType.CheckBox = 1`; reference CheckBox definitions use independent whole-number chances
+  of 50 or 100.
+- Added `RewardBoxResolver.resolve_checkbox(entries, rng)` and
+  `resolve_checkbox_rolls(entries, rolls)`. They validate the entire table before RNG use, roll
+  every entry independently, merge duplicate currency/item quantities, reject invalid definitions
+  and reject integer-overflowing aggregate rewards.
+- Seeded replay, exact 50/100 boundaries, no-hit results, additive merges, deep-copy isolation,
+  invalid rolls/payloads and overflow are covered in the focused gameplay suite.
+- Box 153 is not registered yet: its verified result is Stone_3 x2 plus Stone_6 x2, but those
+  source cards still need canonical gameplay and asset identities. Quest, save, LAN, UI and Agent
+  A-owned files remain unchanged.
+- Godot 4.6 import, focused inventory tests, Legacy + Survival/save suites and Xvfb live/dead HUD
+  rendering passed with exit code 0. Corrupt-save warnings are expected negative fixtures.
+
 ## 2026-11-06 — Verified currency reward-box catalog
 
 - Added exact source Box IDs 98, 150, 151 and 152 as isolated gameplay content: Diamond 1 and

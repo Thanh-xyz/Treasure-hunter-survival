@@ -307,6 +307,17 @@ No shared contract change should be implemented until these questions are resolv
 - Box 149 is not registered and no existing weapon is aliased to cards 28/29/30. Agent B still
   needs three approved stable art IDs before proposing the matching additive gameplay items.
 
+## 2026-11-06 — CheckBox reward resolver contract
+
+- Source metadata confirms `RandomType.Option = 0` and `RandomType.CheckBox = 1`. Gameplay now
+  exposes mutation-free independent resolution through `RewardBoxResolver.resolve_checkbox()` and
+  deterministic replay through `resolve_checkbox_rolls()`.
+- This adds no asset, UI, animation, direction, quest, save or LAN contract; Agent A requires no
+  adaptation.
+- Reference Box 153 is confirmed as both Stone_3 x2 and Stone_6 x2 because both CheckBox entries
+  have chance 100. It remains unregistered until those cards receive canonical gameplay and asset
+  identities; no existing Emberfield material is treated as an alias.
+
 ## 2026-11-06 — Verified currency reward-box catalog
 
 - Gameplay contains exact source definitions for boxes 98/150/151/152 only: Diamond 1 and Gold

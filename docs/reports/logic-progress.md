@@ -1,5 +1,18 @@
 # Logic Progress
 
+## 2026-11-06 — Deterministic reward box prerequisite
+
+- Added `RewardBoxResolver` for one guaranteed weighted selection using caller-owned seeded RNG.
+- Reward entries are rejected unless weights are positive whole numbers and payloads contain only
+  non-negative XP/Gold/Diamond values or positive quantities of known item IDs.
+- The resolver returns a deep normalized reward compatible with `GameState.grant()` and does not
+  mutate inventory, quest state or networking state.
+- Godot 4.6 import, focused transaction tests, legacy/survival/save suites and Xvfb live/dead HUD
+  rendering passed with exit code 0. Focused tests cover exact 34/33/33 roll boundaries, seeded
+  replay, deep-copy isolation and malformed or unknown reward data.
+- This feature deliberately does not add box 149 or cards 28/29/30; their three distinct weapon
+  identities still depend on the proposed Agent A asset contract.
+
 Date: 2026-11-04
 Current stage: REVIEW complete for the first approved gameplay feature.
 

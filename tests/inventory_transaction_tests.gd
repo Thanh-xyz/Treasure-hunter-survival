@@ -25,6 +25,7 @@ func _ready() -> void:
 	_test_equipment_quest_objectives()
 	_test_inventory_removal_invariants()
 	_test_recipe_catalog_validation()
+	_test_reward_box_resolver()
 	_test_crafting_transaction()
 	_test_quest_claim_transaction()
 	_test_building_collection_transaction()
@@ -94,6 +95,63 @@ func _test_inventory_add_signals() -> void:
 	_check(inventory.add_item(wood, wood.max_stack + 1) == 1, "partial add returned the wrong remainder")
 	_check(inventory.get_item_count("wood") == wood.max_stack, "partial add stored the wrong quantity")
 	_check(int(signals["value"]) == 1, "partial add did not emit exactly one change")
+
+
+func _test_reward_box_resolver() -> void:
+	var entries: Array[Dictionary] = [
+		{"weight": 34.0, "reward": {"gold": 100}},
+		{"weight": 33.0, "reward": {"diamonds": 1}},
+		{"weight": 33.0, "reward": {"xp": 5, "items": {"wood": 2}}},
+	]
+	var first_rng := RandomNumberGenerator.new()
+	var replay_rng := RandomNumberGenerator.new()
+	first_rng.seed = 149
+	replay_rng.seed = 149
+	var seen := {}
+	for index in range(100):
+		var reward := RewardBoxResolver.resolve(entries, first_rng)
+		var replay := RewardBoxResolver.resolve(entries, replay_rng)
+		_check(reward == replay, "same reward-box seed diverged at roll %d" % index)
+		_check(not reward.is_empty(), "valid reward box returned no reward")
+		seen[JSON.stringify(reward)] = true
+	_check(seen.size() == 3, "weighted reward box did not reach every valid entry")
+	_check(RewardBoxResolver.resolve_roll(entries, 1) == {"gold": 100}, "roll 1 missed first reward")
+	_check(RewardBoxResolver.resolve_roll(entries, 34) == {"gold": 100}, "roll 34 missed first reward boundary")
+	_check(RewardBoxResolver.resolve_roll(entries, 35) == {"diamonds": 1}, "roll 35 missed second reward boundary")
+	_check(RewardBoxResolver.resolve_roll(entries, 67) == {"diamonds": 1}, "roll 67 missed second reward boundary")
+	_check(RewardBoxResolver.resolve_roll(entries, 68) == {"xp": 5, "items": {"wood": 2}}, "roll 68 missed third reward boundary")
+	_check(RewardBoxResolver.resolve_roll(entries, 100) == {"xp": 5, "items": {"wood": 2}}, "roll 100 missed third reward boundary")
+	_check(RewardBoxResolver.resolve_roll(entries, 0).is_empty(), "reward box accepted roll zero")
+	_check(RewardBoxResolver.resolve_roll(entries, 101).is_empty(), "reward box accepted roll above total")
+
+	var normalized_rng := RandomNumberGenerator.new()
+	normalized_rng.seed = 1
+	var source_reward := {"xp": 0, "gold": 5.0, "items": {"wood": 2.0}}
+	var normalized := RewardBoxResolver.resolve([
+		{"weight": 1, "reward": source_reward},
+	], normalized_rng)
+	_check(normalized == {"gold": 5, "items": {"wood": 2}}, "reward normalization changed the payload")
+	normalized["gold"] = 999
+	(normalized["items"] as Dictionary)["wood"] = 999
+	_check(source_reward == {"xp": 0, "gold": 5.0, "items": {"wood": 2.0}}, "resolved reward shared source state")
+
+	var invalid_cases: Array = [
+		[],
+		[null],
+		[{"weight": 0, "reward": {"gold": 1}}],
+		[{"weight": 1.5, "reward": {"gold": 1}}],
+		[{"weight": 1, "reward": {}}],
+		[{"weight": 1, "reward": {"gold": -1}}],
+		[{"weight": 1, "reward": {"unknown": 1}}],
+		[{"weight": 1, "reward": {"items": {"missing_item": 1}}}],
+		[{"weight": 1, "reward": {"items": {"wood": 0}}}],
+		[entries[0], {"weight": 1, "reward": {"items": {"missing_item": 1}}}],
+	]
+	for invalid: Array in invalid_cases:
+		var invalid_rng := RandomNumberGenerator.new()
+		invalid_rng.seed = 1
+		_check(RewardBoxResolver.resolve(invalid, invalid_rng).is_empty(), "invalid reward box resolved: %s" % [invalid])
+	_check(RewardBoxResolver.resolve(entries, null).is_empty(), "reward box accepted a missing RNG")
 
 
 func _test_economy_transaction() -> void:

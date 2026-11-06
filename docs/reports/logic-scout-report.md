@@ -1,5 +1,17 @@
 # Logic Scout Report
 
+## 2026-11-06 — Weighted reward box resolver scout
+
+- Reference box 149 is a guaranteed single selection across card IDs 28/29/30 with whole
+  weights 34/33/33. It is not an enemy drop table and has no no-drop outcome.
+- Existing `LootTable` is item-only, uses global RNG, supports repeated rolls and includes a
+  no-drop weight. Reusing it would conflate enemy loot with quest reward-box semantics.
+- `DigSpot` demonstrates the correct seeded `RandomNumberGenerator` ownership pattern, but its
+  selector is coupled to field rewards, quantity ranges and fallback stone.
+- The safe prerequisite is a standalone resolver that validates normalized reward dictionaries
+  and accepts caller-owned RNG. Box 149 content remains blocked on canonical identities for its
+  three distinct Common weapon cards.
+
 ## 2026-11-06 — Diamond wallet scout
 
 - Authorized reference configs define Gold as currency ID 1, Diamond as currency ID 2, and

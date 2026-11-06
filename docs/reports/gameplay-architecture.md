@@ -39,6 +39,17 @@ Offline mode should execute commands locally through the authority interface. LA
 should submit the same command DTOs to the host; the host validates and executes them, then
 replicates events/snapshots. No rule should depend on ENet RPC annotations.
 
+## Deterministic reward boxes
+
+`RewardBoxResolver` is a pure selection boundary for guaranteed reward containers. Callers pass
+an owned `RandomNumberGenerator`; the resolver validates every positive-weight entry and returns
+one normalized `xp`/`gold`/`diamonds`/`items` dictionary without mutating quest, inventory or
+player state. Application services then commit that result through `GameState.grant()`.
+
+This remains separate from `LootTable`, whose no-drop, repeated-roll and enemy-drop semantics are
+different. Offline callers may seed locally; a future LAN host must own the seed/roll and replicate
+only the committed outcome. Box/card registries remain content adapters layered above this rule.
+
 ## Domain model proposal
 
 Use typed Resources/RefCounted value objects where Godot supports them, with dictionaries only

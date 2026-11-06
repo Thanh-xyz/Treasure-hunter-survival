@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: match the active Treasure Hunter fixed hotbar geometry.
+Current feature: match the default Treasure Hunter fixed joystick placement.
 
 ## Completed Before This Feature
 
@@ -202,6 +202,18 @@ Current feature: match the active Treasure Hunter fixed hotbar geometry.
 - Preserved `hotbar_1` through `hotbar_8`, ordering, locked state, input
   behavior, assets, callbacks, inventory data, saves, and gameplay ownership.
 
+## Fixed Joystick Placement Feature
+
+- Rejected the connected-device joystick coordinate as a canonical default
+  after confirming that Treasure Hunter exposes a saved custom HUD editor with
+  explicit `Reset` and `Save` actions.
+- Mapped the decoded default `1080x1920` CanvasScaler and bottom-centered
+  `(0,542)` RectTransform to the verified `720x1516` Android game surface.
+- Moved the existing joystick control so its rest center is `(360,1123)`, the
+  rounded scene-derived default. Preserved the `238x300` touch area, exact
+  background and handle assets, visual sizes, radius, dead zone, floating-center
+  behavior, input strengths, action IDs, opacity, and release behavior.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
@@ -296,6 +308,18 @@ Current feature: match the active Treasure Hunter fixed hotbar geometry.
 - The frame top, bottom, width, and height match the captured rectangle. Small
   corner-pixel differences remain because Unity and Godot round sliced borders
   differently; full pixel parity is not claimed.
+- Godot `4.6.stable.official.89cea1439` imported the joystick-placement change
+  with exit code `0`.
+- Inventory transaction, legacy, and survival suites completed with exit code
+  `0`; the intentional invalid-input and corrupt-save fixture warnings remain.
+- Live and dead MobileHUD render gates completed with exit code `0`. The live
+  capture is preserved as `/tmp/emberfield-mobile-hud-joystick-new.png`.
+- The rendered center is `(180,561.5)` at the test's `360x800` half scale,
+  corresponding to the planned `(360,1123)` logical center. A clean
+  `origin/develop` comparison confirms the prior center was `(196.5,572.5)`.
+- The fixed-image comparison differs in the joystick movement region as
+  expected. Pixel parity against the connected-device runtime coordinate is not
+  claimed because that reference coordinate belongs to a saved custom layout.
 
 ## Not Yet Implemented
 

@@ -286,3 +286,15 @@ Unity RectTransform evidence.
 All `hotbar_1` through `hotbar_8` action IDs, ordering, locked state, touch/input
 behavior, inventory data, save data, and gameplay ownership remain unchanged.
 Agent B does not need to adapt gameplay code or tests.
+
+## Fixed Joystick Placement Contract
+
+The existing `VirtualJoystick` control now rests at the decoded Treasure Hunter
+default center `(360,1123)` for the verified `720x1516` game surface. The
+connected-device runtime coordinate was not copied because the reference game
+exposes a persistent custom HUD editor and that coordinate is user-specific.
+
+The touch area remains `238x300`; exact background/handle assets, visual sizes,
+radius, dead zone, floating-center behavior, `ui_left/right/up/down` strengths,
+opacity, release handling, player movement, saves, and LAN contracts are
+unchanged. Agent B requires no adaptation.

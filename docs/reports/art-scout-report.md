@@ -145,3 +145,19 @@ screenshot, diff, and correction.
 - No Android device was connected during this feature SCOUT, so the existing
   authorized capture and decoded scene/assets remain the available runtime
   evidence.
+
+## Fixed Joystick Evidence
+
+- No Android device was connected during this SCOUT, so no new runtime capture
+  was created or claimed.
+- Decoded active GameObject `30170` (`Fixed Joystick`) has a `256x256`
+  RectTransform and centered child `30169` (`Handle`) with `128x128` size.
+- The active background Image component `130484` resolves through external file
+  ID `2` to `sharedassets1.assets:3600`, `F200_Circle_10` (`79x79`), with Image
+  tint `Color8(181, 130, 107, 255)`.
+- The Handle Image component `130482` resolves to
+  `sharedassets1.assets:8030`, `F200_Circle_11` (`34x34`), with opaque white
+  tint.
+- Direct UnityPy decode is pixel-identical to both supplied exports.
+- `Icon_Joystick` (`sharedassets1.assets:5652`) belongs to a separate help/custom
+  layout hierarchy and is not the active gameplay joystick background.

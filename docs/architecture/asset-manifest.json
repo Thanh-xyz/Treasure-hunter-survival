@@ -2702,12 +2702,12 @@
     {
       "asset_id": "ui.reference.hud.joystick.ring",
       "category": "ui_reference",
-      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Icon_Joystick__5652.png",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/F200_Circle_10__3600.png",
       "target_path": "assets/treasure_hunter/ui/reference/joystick_ring.png",
       "file_format": "png",
       "dimensions": [
-        78,
-        78
+        79,
+        79
       ],
       "transparency": "transparent_or_partial",
       "animation": null,
@@ -2720,11 +2720,42 @@
         "distribution_scope": "local_only",
         "license_status": "not_verified_for_public_redistribution"
       },
-      "evidence_status": "verified_export_file_and_runtime_capture",
+      "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
       "integration_status": "integrated",
       "notes": [
-        "Circular directional ring observed around the movement thumb in live and dead HUD captures.",
-        "Rendered by VirtualJoystick with nearest-neighbor sampling."
+        "Active level1 Fixed Joystick Image component 130484 resolves to sharedassets1.assets path ID 3600, F200_Circle_10.",
+        "Unity Image tint is Color8(181, 130, 107, 255); RectTransform is 256x256.",
+        "Rendered by VirtualJoystick with nearest-neighbor sampling and the existing user opacity setting.",
+        "SHA-256: 0a211f2a696b9eca6849dc6b3ed3ba53ac22dedad9669ea7104dfd420d3f2fbb."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.hud.joystick.handle",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/F200_Circle_11__8030.png",
+      "target_path": "assets/treasure_hunter/ui/reference/joystick_handle.png",
+      "file_format": "png",
+      "dimensions": [
+        34,
+        34
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/virtual_joystick.gd",
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Active level1 Fixed Joystick/Handle Image component 130482 resolves to sharedassets1.assets path ID 8030, F200_Circle_11.",
+        "Unity Image tint is opaque white; RectTransform is 128x128 inside the 256x256 background.",
+        "SHA-256: 72e6cc12078e4f0821082a4c8808f06af4f66bd1b3b4099a7b81cde7697d8959."
       ]
     },
     {

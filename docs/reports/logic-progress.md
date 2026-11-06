@@ -209,3 +209,21 @@ asset metadata.
 - The default base cost 10, rate 1.4 and isolated 1.1 stat growth are provisional because the
   current Emberfield IDs are not yet mapped to exact reference card IDs. No exact numeric parity
   claim is made.
+
+## 2026-11-06 — State-based equipment quest objectives
+
+- Branch: `feature/th-logic-equipment-quest-objectives`, based on `origin/develop` at
+  `acb97f3`.
+- Authorized reference quests 307, 308, 311, 312, 314 and 315 confirm that beginner equipment
+  goals are current-state checks for equipped count, rarity and displayed enhancement level.
+- `InventoryData` now exposes aggregate equipped-count, minimum-rarity and minimum-level
+  queries over the existing seven stable slots.
+- `QuestService` evaluates `equipped_count`, `equipped_rarity` and `equipment_level` without
+  accumulating clicks. `Player` refreshes the active state objective after successful equipment
+  mutation, including equip, unequip, augment replacement, upgrade and save hydration signals.
+- The current quest chain, quest IDs, rewards, save schema, monster IDs, LAN protocol and Agent
+  A's now-integrated `mobile_hud.gd` feature are unchanged by this logic slice. Full reference-chain migration remains
+  blocked on a canonical Turtle mapping and a quest save migration away from index-only meaning.
+- Godot 4.6 headless import, focused inventory transactions, legacy phases 1-7 and survival/save
+  tests passed with exit code 0. Expected negative-path warnings remain visible in the existing
+  shop/save tests.

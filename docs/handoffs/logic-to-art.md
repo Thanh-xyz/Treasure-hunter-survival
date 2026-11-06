@@ -251,3 +251,20 @@ No shared contract change should be implemented until these questions are resolv
 - Current default cost/rate/stat growth is explicitly provisional pending exact card-ID mapping.
   Presentation should display values returned by gameplay and must not imply confirmed numeric
   parity with the original server.
+
+## 2026-11-06 — Beginner equipment quest objective contract
+
+- Gameplay now supports state-derived `equipped_count`, `equipped_rarity` and
+  `equipment_level` objective values. These count occupied equipment slots, items at or above an
+  Emberfield rarity target, and items at or above a displayed enhancement level.
+- The active quest remains exposed through the existing `QuestService.get_main_quest()`,
+  `main_progress`, `main_ready` and `quests_changed` contract. Agent A's suggestion HUD requires
+  no new callback, asset ID or layout change.
+- Upgrade quests must display current state rather than the number of upgrade button presses.
+  Verified reference examples are one item at levels 2/5 and three items at level 3.
+- This feature does not insert those quests into `GameContent.MAIN_QUESTS`. Agent A should keep
+  the current active-quest presentation generic until Agent B proposes a separate chain/save
+  migration and the Turtle monster mapping is approved.
+- No art-owned file, asset manifest, animation state, direction, gameplay ID or equipment-slot
+  ID changed. Agent A's Beginner Quest HUD was integrated independently through PR #53 and
+  consumes the unchanged QuestService presentation contract.

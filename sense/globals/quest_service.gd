@@ -152,14 +152,12 @@ func _advance(type: String, target: String, amount: int) -> void:
 		quests_changed.emit()
 
 
-## Objectives that reflect current state rather than accumulating events
-func _refresh_state_objectives() -> void:
-	var main := get_main_quest()
-	if main.is_empty() or main_ready:
-		return
-	var obj: Dictionary = main["obj"]
+## Query one state objective against the current profile and equipped inventory.
+## Equipment targets use Emberfield's displayed level and ItemData rarity values,
+## not the reference client's zero-based/raw enum fields.
+func get_state_objective_value(obj: Dictionary, inventory: InventoryData = null) -> int:
 	var value := -1
-	match obj["type"]:
+	match obj.get("type", ""):
 		"level":
 			value = GameState.level
 		"own_pet":
@@ -171,7 +169,31 @@ func _refresh_state_objectives() -> void:
 		"hero_star":
 			value = GameState.max_hero_stars()
 		"build":
-			value = 1 if GameState.building_level(obj["target"]) > 0 else 0
+			value = 1 if GameState.building_level(str(obj.get("target", ""))) > 0 else 0
+		"equipped_count":
+			var equipped_inventory := inventory if inventory != null else GameState.get_inventory()
+			value = equipped_inventory.count_equipped_items() if equipped_inventory != null else 0
+		"equipped_rarity":
+			var rarity_target: Variant = obj.get("target", null)
+			if rarity_target is int and int(rarity_target) >= ItemData.ItemRarity.COMMON and int(rarity_target) <= ItemData.ItemRarity.LEGENDARY:
+				var rarity_inventory := inventory if inventory != null else GameState.get_inventory()
+				value = rarity_inventory.count_equipment_at_or_above_rarity(int(rarity_target)) if rarity_inventory != null else 0
+		"equipment_level":
+			var level_target: Variant = obj.get("target", null)
+			if level_target is int and int(level_target) >= 1:
+				var level_inventory := inventory if inventory != null else GameState.get_inventory()
+				value = level_inventory.count_equipment_at_or_above_level(int(level_target)) if level_inventory != null else 0
+	return value
+
+
+## Objectives that reflect current state rather than accumulating events.
+## Public so gameplay adapters can refresh after inventory-owned mutations.
+func refresh_state_objectives(inventory: InventoryData = null) -> void:
+	var main := get_main_quest()
+	if main.is_empty() or main_ready:
+		return
+	var obj: Dictionary = main["obj"]
+	var value := get_state_objective_value(obj, inventory)
 	if value < 0:
 		return
 	main_progress = mini(value, int(obj["count"]))
@@ -179,6 +201,10 @@ func _refresh_state_objectives() -> void:
 		main_ready = true
 		GameEvent.toast.emit("Quest complete: %s" % main["name"], Color(1, 0.85, 0.3))
 	quests_changed.emit()
+
+
+func _refresh_state_objectives() -> void:
+	refresh_state_objectives()
 
 
 func _on_enemy_killed(monster_id: String, _pos: Vector2, is_boss: bool) -> void:

@@ -897,12 +897,17 @@ func add_gold(amount: int) -> void:
 
 ## Called when equipment changes - update player stats
 func _on_equipment_changed(_slot_type: String) -> void:
-	if stats != null and inventory != null:
+	if inventory == null:
+		return
+	if stats != null:
 		stats.apply_equipment_bonuses(inventory)
 		# Update hitbox damage with new attack stat
 		if attack_hitbox != null:
 			attack_hitbox.damage = stats.attack_damage
 		_refresh_combat_modifiers()
+	# Save hydration emits one signal per slot; defer so quests only inspect the
+	# final equipment snapshot instead of a partially replaced load state.
+	QuestService.refresh_state_objectives.call_deferred(inventory)
 
 
 func _on_equipment_upgraded(slot_type: String, item_id: String, level: int, cost: int) -> void:

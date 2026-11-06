@@ -33,8 +33,10 @@ func _ready() -> void:
 	_test_reward_box_catalog()
 	_test_reference_equipment_reward_resolver()
 	_test_reference_equipment_stat_generator()
+	_test_quest_reward_resolver()
 	_test_reference_equipment_catalog()
 	_test_crafting_transaction()
+	_test_quest305_claim_transaction()
 	_test_quest_claim_transaction()
 	_test_daily_claim_recovery()
 	_test_exact_equipment_reward_transaction()
@@ -504,6 +506,35 @@ func _test_reference_equipment_stat_generator() -> void:
 		)
 
 
+func _test_quest_reward_resolver() -> void:
+	var direct := {"id": "direct", "reward": {"gold": 100}}
+	var direct_rng := RandomNumberGenerator.new()
+	direct_rng.seed = 305
+	var direct_state := direct_rng.state
+	_check(QuestRewardResolver.resolve(direct, direct_rng) == {"gold": 100}, "direct quest reward did not normalize")
+	_check(direct_rng.state == direct_state, "direct quest reward consumed RNG")
+	var first_rng := RandomNumberGenerator.new()
+	var second_rng := RandomNumberGenerator.new()
+	first_rng.seed = 305
+	second_rng.seed = 305
+	var box_quest := {"id": "q305", "reward_box_id": 149}
+	var first := QuestRewardResolver.resolve(box_quest, first_rng)
+	_check(not first.is_empty() and first == QuestRewardResolver.resolve(box_quest, second_rng), "quest Box 149 reward was not deterministic")
+	_check(RewardBoxResolver.normalize_reward(first) == first, "quest Box 149 reward was not canonical")
+	var invalid: Array[Dictionary] = [
+		{},
+		{"reward": [], "reward_box_id": 149},
+		{"reward": {"gold": 1}, "reward_box_id": 149},
+		{"reward_box_id": 999},
+		{"reward_box_id": "149"},
+	]
+	for quest: Dictionary in invalid:
+		var invalid_rng := RandomNumberGenerator.new()
+		invalid_rng.seed = 305
+		_check(QuestRewardResolver.resolve(quest, invalid_rng).is_empty(), "invalid quest reward resolved: %s" % [quest])
+	_check(QuestRewardResolver.resolve(box_quest, null).is_empty(), "random quest reward accepted a missing RNG")
+
+
 func _test_economy_transaction() -> void:
 	_player.inventory = InventoryData.new()
 	_player.inventory.gold = 100
@@ -897,17 +928,65 @@ func _test_crafting_transaction() -> void:
 	panel.free()
 
 
+func _test_quest305_claim_transaction() -> void:
+	SaveService.delete_save()
+	GameState.reset_profile()
+	QuestService.reset()
+	var quest_index := GameContent.get_main_quest_index("q305")
+	var next_index := GameContent.get_main_quest_index("q02")
+	_check(quest_index == 1 and next_index == 2, "quest 305 chain position drifted")
+	_player.inventory = InventoryData.new()
+	_player.inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	QuestService.main_index = quest_index
+	QuestService.main_progress = 10
+	QuestService.main_ready = true
+	var authority_rng := RandomNumberGenerator.new()
+	authority_rng.seed = 305
+	var expected_rng := RandomNumberGenerator.new()
+	expected_rng.seed = 305
+	var expected_reward := RewardBoxCatalog.resolve_common_equipment(149, expected_rng)
+	_check(QuestService.set_reward_authority_rng(authority_rng), "quest reward authority RNG injection failed")
+	GameState.current_zone = "invalid_zone"
+	var state_before_failed_prepare := authority_rng.state
+	_check(not QuestService.claim("q305"), "invalid snapshot prepared quest 305")
+	_check(authority_rng.state == state_before_failed_prepare, "failed quest 305 prepare consumed RNG")
+	_check(SaveService.get_pending_claim().is_empty(), "failed quest 305 prepare left a journal")
+	GameState.current_zone = "town"
+	_check(not QuestService.claim("q305"), "full inventory accepted quest 305 equipment")
+	var pending := SaveService.get_pending_claim()
+	_check(pending.get("claim_id", "") == "main:q305", "quest 305 did not prepare its journal")
+	_check(pending.get("reward", {}) == expected_reward, "quest 305 journal did not preserve the resolved Box 149 reward")
+	var state_after_prepare := authority_rng.state
+	_check(not QuestService.claim("q305"), "full inventory retried quest 305 successfully")
+	_check(authority_rng.state == state_after_prepare, "quest 305 retry rerolled its reward")
+
+	_player.inventory = InventoryData.new()
+	QuestService.reset()
+	_check(SaveService.load_game(), "quest 305 pending claim did not reload")
+	_check(QuestService.main_index == quest_index and QuestService.main_ready, "quest 305 state did not recover")
+	_check(SaveService.get_pending_claim().get("reward", {}) == expected_reward, "quest 305 reward changed after reload")
+	_player.inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
+	_check(QuestService.claim("q305"), "quest 305 did not retry after freeing capacity")
+	_check(QuestService.main_index == next_index and SaveService.get_pending_claim().is_empty(), "quest 305 did not advance to q02")
+	var expected_entry := (expected_reward["equipment"] as Array)[0] as Dictionary
+	var rewarded := _player.inventory.get_item_at(InventoryData.INVENTORY_SIZE - 1).get("item") as ItemData
+	_check(rewarded != null and rewarded.source_card_id == int(expected_entry["card_id"]), "quest 305 granted the wrong card")
+	_check(rewarded != null and rewarded.get_reference_stats() == expected_entry["stats"], "quest 305 rerolled exact stats")
+	_check(not QuestService.claim("q305"), "completed quest 305 granted twice")
+
+
 func _test_quest_claim_transaction() -> void:
 	GameState.reset_profile()
 	QuestService.reset()
 	_player.inventory = InventoryData.new()
 	_player.inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
-	QuestService.main_index = 1
-	QuestService.main_progress = int(GameContent.MAIN_QUESTS[1]["obj"]["count"])
+	var q02_index := GameContent.get_main_quest_index("q02")
+	QuestService.main_index = q02_index
+	QuestService.main_progress = int(GameContent.MAIN_QUESTS[q02_index]["obj"]["count"])
 	QuestService.main_ready = true
 	var xp_before := GameState.xp
 	_check(not QuestService.claim("q02"), "quest advanced without reward capacity")
-	_check(QuestService.main_index == 1 and QuestService.main_ready, "failed quest claim changed state")
+	_check(QuestService.main_index == q02_index and QuestService.main_ready, "failed quest claim changed state")
 	_check(GameState.xp == xp_before, "failed quest claim granted partial XP")
 	_check(SaveService.get_pending_claim().get("claim_id", "") == "main:q02", "failed claim did not persist its resolved journal")
 
@@ -916,9 +995,9 @@ func _test_quest_claim_transaction() -> void:
 	_player.inventory = InventoryData.new()
 	QuestService.reset()
 	_check(SaveService.load_game(), "prepared quest claim did not reload")
-	_check(QuestService.main_index == 1 and QuestService.main_ready, "prepared quest state did not recover")
+	_check(QuestService.main_index == q02_index and QuestService.main_ready, "prepared quest state did not recover")
 	_check(
-		SaveService.get_pending_claim().get("reward", {}) == RewardBoxResolver.normalize_reward(GameContent.MAIN_QUESTS[1]["reward"]),
+		SaveService.get_pending_claim().get("reward", {}) == RewardBoxResolver.normalize_reward(GameContent.MAIN_QUESTS[q02_index]["reward"]),
 		"prepared reward changed during recovery",
 	)
 
@@ -930,13 +1009,13 @@ func _test_quest_claim_transaction() -> void:
 			GameState.current_zone = "invalid_zone"
 	)
 	_check(not QuestService.claim("q02"), "invalid final snapshot committed a quest claim")
-	_check(GameState.current_zone == "town" and QuestService.main_index == 1 and QuestService.main_ready, "failed final checkpoint did not restore prepared state")
+	_check(GameState.current_zone == "town" and QuestService.main_index == q02_index and QuestService.main_ready, "failed final checkpoint did not restore prepared state")
 	_check(_player.inventory.get_item_count("health_potion") == 0, "failed final checkpoint retained a granted reward")
 	_check(not SaveService.get_pending_claim().is_empty(), "failed final checkpoint lost the retry journal")
 
 	_check(QuestService.claim("q02"), "quest failed after freeing reward capacity")
 	_check(_player.inventory.get_item_count("health_potion") == 3, "quest did not grant full item reward")
-	_check(QuestService.main_index == 2 and SaveService.get_pending_claim().is_empty(), "successful claim did not advance and clear its journal")
+	_check(QuestService.main_index == q02_index + 1 and SaveService.get_pending_claim().is_empty(), "successful claim did not advance and clear its journal")
 	_check(not QuestService.claim("q02") and _player.inventory.get_item_count("health_potion") == 3, "completed claim granted twice")
 
 
@@ -999,8 +1078,9 @@ func _test_exact_equipment_reward_transaction() -> void:
 	_check(not GameState.grant({"equipment": [{"card_id": 28, "stats": valid_stats, "level": 10}]}), "direct grant accepted an unapproved equipment field")
 	_check(_player.inventory.get_item_count("th_weapon_28") == 0, "invalid direct equipment grant changed inventory")
 	_player.inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
-	QuestService.main_index = 1
-	QuestService.main_progress = int(GameContent.MAIN_QUESTS[1]["obj"]["count"])
+	var q02_index := GameContent.get_main_quest_index("q02")
+	QuestService.main_index = q02_index
+	QuestService.main_progress = int(GameContent.MAIN_QUESTS[q02_index]["obj"]["count"])
 	QuestService.main_ready = true
 	var source_stats := valid_stats.duplicate(true)
 	var exact_reward := {"gold": 25, "equipment": [{"card_id": 28, "stats": source_stats}]}
@@ -1018,7 +1098,7 @@ func _test_exact_equipment_reward_transaction() -> void:
 		"prepared equipment claim retained caller stats",
 	)
 	_check(not QuestService.retry_pending_claim(), "full inventory accepted exact equipment claim")
-	_check(_player.inventory.gold == 0 and QuestService.main_index == 1, "failed equipment claim partially changed state")
+	_check(_player.inventory.gold == 0 and QuestService.main_index == q02_index, "failed equipment claim partially changed state")
 
 	_player.inventory = InventoryData.new()
 	QuestService.reset()
@@ -1026,7 +1106,7 @@ func _test_exact_equipment_reward_transaction() -> void:
 	_check(not SaveService.get_pending_claim().is_empty(), "failed automatic equipment retry lost its journal")
 	_player.inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
 	_check(QuestService.claim("q02"), "exact equipment journal did not retry")
-	_check(_player.inventory.gold == 25 and QuestService.main_index == 2, "exact equipment retry did not commit final state")
+	_check(_player.inventory.gold == 25 and QuestService.main_index == q02_index + 1, "exact equipment retry did not commit final state")
 	var rewarded := _player.inventory.get_item_at(InventoryData.INVENTORY_SIZE - 1).get("item") as ItemData
 	_check(rewarded != null and rewarded.id == "th_weapon_28", "exact equipment retry granted the wrong runtime item")
 	_check(rewarded != null and rewarded.source_card_id == 28, "exact equipment retry lost source card identity")

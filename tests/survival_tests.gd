@@ -263,7 +263,23 @@ func _test_quests() -> void:
 	_check(QuestService.claim("q01"), "claim q01")
 	_check(GameState.xp == q01_xp_before, "q01 granted XP absent from box 150")
 	_check(_stub_player.inventory.gold == q01_gold_before + 100, "q01 did not grant exactly 100 gold")
-	_check(QuestService.get_main_quest()["id"] == "q02", "advances to q02")
+	_check(QuestService.get_main_quest()["id"] == "q305", "q01 did not advance to source quest 305")
+	for i in range(9):
+		GameEvent.ground_dug.emit("stone", 1)
+	_check(QuestService.main_progress == 9 and not QuestService.main_ready, "q305 completed before ten digs")
+	GameEvent.ground_dug.emit("stone", 1)
+	_check(QuestService.main_ready, "ten digs did not complete q305")
+	var q305_rng := RandomNumberGenerator.new()
+	q305_rng.seed = 305
+	QuestService.set_reward_authority_rng(q305_rng)
+	_check(QuestService.claim("q305"), "claim q305")
+	_check(QuestService.get_main_quest()["id"] == "q02", "q305 did not advance to q02")
+	_check(
+		_stub_player.inventory.get_item_count("th_weapon_28")
+		+ _stub_player.inventory.get_item_count("th_weapon_29")
+		+ _stub_player.inventory.get_item_count("th_weapon_30") == 1,
+		"q305 did not grant exactly one Box 149 weapon",
+	)
 	for i in range(8):
 		GameEvent.enemy_killed.emit("slime", Vector2.ZERO, false)
 	_check(QuestService.main_ready, "kill 8 slimes completes q02")
@@ -275,8 +291,9 @@ func _test_quests() -> void:
 
 	# q02 has an item reward; a full bag must keep the quest claimable.
 	QuestService.reset()
-	QuestService.main_index = 1
-	QuestService.main_progress = int(GameContent.MAIN_QUESTS[1]["obj"]["count"])
+	var q02_index := GameContent.get_main_quest_index("q02")
+	QuestService.main_index = q02_index
+	QuestService.main_progress = int(GameContent.MAIN_QUESTS[q02_index]["obj"]["count"])
 	QuestService.main_ready = true
 	var full_inv := InventoryData.new()
 	full_inv.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
@@ -284,11 +301,11 @@ func _test_quests() -> void:
 	var xp_before := GameState.xp
 	var gold_before := full_inv.gold
 	_check(not QuestService.claim("q02"), "full inventory rejects quest item reward")
-	_check(QuestService.main_index == 1 and QuestService.main_ready, "failed claim preserves quest state")
+	_check(QuestService.main_index == q02_index and QuestService.main_ready, "failed claim preserves quest state")
 	_check(GameState.xp == xp_before and full_inv.gold == gold_before, "failed claim grants no partial XP or gold")
 	full_inv.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
 	_check(QuestService.claim("q02"), "quest claim succeeds after freeing a slot")
-	_check(QuestService.main_index == 2, "successful claim advances quest")
+	_check(QuestService.main_index == q02_index + 1, "successful claim advances quest")
 	_check(full_inv.get_item_count("health_potion") == 3, "successful claim grants full item reward")
 	_stub_player.inventory = InventoryData.new()
 
@@ -365,7 +382,8 @@ func _test_save_roundtrip() -> void:
 	GameState.plots[2] = {"id": "stable", "level": 2, "last_collect": 100.0}
 	GameState.settings["compact_hud"] = true
 	GameState.settings["max_fps"] = 30
-	QuestService.main_index = 3
+	var saved_quest_index := GameContent.get_main_quest_index("q04")
+	QuestService.main_index = saved_quest_index
 	SaveService.enabled = true
 	_check(SaveService.save_game(), "save writes file")
 	SaveService.enabled = false
@@ -401,7 +419,7 @@ func _test_save_roundtrip() -> void:
 	_check(GameState.plots[2].get("id", "") == "stable", "buildings restored")
 	_check(bool(GameState.settings.get("compact_hud", false)), "compact HUD setting restored")
 	_check(int(GameState.settings.get("max_fps", 0)) == 30 and Engine.max_fps == 30, "FPS setting restored and applied")
-	_check(QuestService.main_index == 3, "quest progress restored")
+	_check(QuestService.main_index == saved_quest_index, "quest progress restored")
 	_check(QuestService.get_main_quest().get("id", "") == "q04", "stable quest id restored the active quest")
 	_check(inv.gold == 1234, "gold restored")
 	_check(inv.diamonds == 17, "diamonds restored")
@@ -530,11 +548,11 @@ func _test_save_roundtrip() -> void:
 	_check(SaveService.read_snapshot().get("inventory", {}).get("gold", -1) == 1234, "invalid pending equipment falls back to backup")
 
 	QuestService.from_dict({"main_index": 0, "main_quest_id": "q04", "main_progress": 0, "main_ready": false})
-	_check(QuestService.main_index == 3, "stable quest id takes precedence over stale index")
+	_check(QuestService.main_index == GameContent.get_main_quest_index("q04"), "stable quest id takes precedence over stale index")
 	QuestService.from_dict({"main_index": 2, "main_progress": 0, "main_ready": false})
-	_check(QuestService.main_index == 2, "legacy quest save falls back to main index")
+	_check(QuestService.main_index == 3, "legacy quest save did not shift across inserted q305")
 	QuestService.from_dict({"main_index": 1, "main_quest_id": "removed_quest", "main_progress": 0, "main_ready": false})
-	_check(QuestService.main_index == 1, "unknown quest id falls back to saved index")
+	_check(QuestService.main_index == 1, "unknown stable quest id did not preserve explicit fallback index")
 
 	# Direct inventory hydration rejects malformed data without touching live state.
 	var protected_gold := inv.gold

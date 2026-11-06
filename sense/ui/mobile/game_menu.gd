@@ -514,7 +514,7 @@ func _quest_card(row_data: Dictionary, quest: Dictionary, interactive: bool) -> 
 	var footer := HBoxContainer.new()
 	footer.add_theme_constant_override("separation", 10)
 	content.add_child(footer)
-	var reward := UiTheme.label(_reward_text(quest.get("reward", {})), 19, UiTheme.C_GOLD)
+	var reward := UiTheme.label(_reward_text(quest), 19, UiTheme.C_GOLD)
 	reward.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	footer.add_child(reward)
 	footer.add_child(UiTheme.label("%d/%d" % [row_data["progress"], row_data["count"]], 23, UiTheme.C_GOLD))
@@ -539,7 +539,11 @@ func _quest_texture_style(texture: Texture2D, margin: float, tint: Color = Color
 	return style
 
 
-func _reward_text(r: Dictionary) -> String:
+func _reward_text(quest: Dictionary) -> String:
+	var preview := str(quest.get("reward_preview", ""))
+	if not preview.is_empty():
+		return preview
+	var r := quest.get("reward", {}) as Dictionary
 	var parts: Array[String] = []
 	if r.has("xp"):
 		parts.append("%d XP" % int(r["xp"]))

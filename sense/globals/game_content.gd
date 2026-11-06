@@ -308,12 +308,17 @@ const BUILDING_STORAGE_HOURS := 8.0
 
 # =============================================================================
 # QUESTS — main chain (sequential) + daily repeatables
-# objective types: kill, boss, have_item, gather, level, visit, craft, build,
+# objective types: dig, kill, boss, have_item, gather, level, visit, craft, build,
 #                  own_pet, own_mount, pet_level, hero_star, mount_ride
 # =============================================================================
 const MAIN_QUESTS := [
 	{"id": "q01", "name": "Đào đất", "desc": "Đứng trên một ô đất để tự động đào.",
+		"source_quest_id": 335,
 		"obj": {"type": "dig", "target": "any", "count": 1}, "reward": {"gold": 100}},
+	{"id": "q305", "name": "Đào đất", "desc": "Di chuyển đến bất kỳ ô nào và đứng yên để đào.",
+		"source_quest_id": 305,
+		"obj": {"type": "dig", "target": "any", "count": 10},
+		"reward_box_id": 149, "reward_preview": "1 trang bị Common"},
 	{"id": "q02", "name": "Slime Cleanup", "desc": "Defeat Meadow Slimes.",
 		"obj": {"type": "kill", "target": "slime", "count": 8}, "reward": {"xp": 60, "gold": 80, "items": {"health_potion": 3}}},
 	{"id": "q03", "name": "Timber!", "desc": "Chop trees for wood. Hit a tree to gather.",

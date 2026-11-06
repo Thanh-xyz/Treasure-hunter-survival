@@ -1,5 +1,16 @@
 # Logic-to-Art Contract Proposal
 
+## 2026-11-06 — Quest 305 Box 149 activation
+
+- Main quest `q305` now appears after `q01` with progress `0/10` and an explicit preview string
+  `1 trang bị Common`. Its claim is resolved and journaled entirely by gameplay authority.
+- Game Menu only reads `reward_preview`; it does not choose a card, generate stats or inspect Box
+  149 internals. Presentation must continue showing the committed instance after claim rather than
+  rerolling or substituting a fixed card.
+- The only presentation edit is the small reward-text fallback in `game_menu.gd`. No layout,
+  texture, asset ID, rarity field, equipment-detail panel or Agent A-owned file changed.
+- Quest 306, a dedicated reward popup and exact reference reward-icon composition remain deferred.
+
 ## 2026-11-06 — Box 149 Common stat generator
 
 - Gameplay now owns deterministic initial Common stat generation for source cards 28/29/30 and

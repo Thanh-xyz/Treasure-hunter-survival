@@ -1,5 +1,16 @@
 # Logic Scout Report
 
+## 2026-11-06 — Verified currency reward-box catalog
+
+- The beginner chain is strictly ordered from active quest 335 to quest 305 and then Turtle quest
+  306. Quest 305 cannot be skipped, and its Box 149 cannot be migrated until card IDs 28/29/30
+  receive canonical weapon identities.
+- Reference boxes 98, 150, 151 and 152 are independently complete: one Diamond, 100 Gold, 200
+  Gold and 300 Gold respectively, each with a single 100-percent entry.
+- These four definitions can safely enter an isolated gameplay catalog without changing the active
+  quest chain. Moving quests to random box IDs remains deferred until claim retries persist a
+  materialized reward instead of allowing rerolls.
+
 ## 2026-11-06 — Weighted reward box resolver scout
 
 - Reference box 149 is a guaranteed single selection across card IDs 28/29/30 with whole

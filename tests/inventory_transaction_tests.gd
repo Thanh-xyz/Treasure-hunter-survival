@@ -26,6 +26,7 @@ func _ready() -> void:
 	_test_inventory_removal_invariants()
 	_test_recipe_catalog_validation()
 	_test_reward_box_resolver()
+	_test_reward_box_checkbox_resolver()
 	_test_reward_box_catalog()
 	_test_crafting_transaction()
 	_test_quest_claim_transaction()
@@ -153,6 +154,85 @@ func _test_reward_box_resolver() -> void:
 		invalid_rng.seed = 1
 		_check(RewardBoxResolver.resolve(invalid, invalid_rng).is_empty(), "invalid reward box resolved: %s" % [invalid])
 	_check(RewardBoxResolver.resolve(entries, null).is_empty(), "reward box accepted a missing RNG")
+
+
+func _test_reward_box_checkbox_resolver() -> void:
+	var entries: Array[Dictionary] = [
+		{"chance": 100.0, "reward": {"gold": 100, "items": {"wood": 1}}},
+		{"chance": 50.0, "reward": {"gold": 25, "items": {"wood": 2}}},
+		{"chance": 50.0, "reward": {"diamonds": 1, "items": {"stone": 3}}},
+	]
+	_check(
+		RewardBoxResolver.resolve_checkbox_rolls(entries, [100, 50, 51])
+		== {"gold": 125, "items": {"wood": 3}},
+		"checkbox reward did not merge successful entries",
+	)
+	_check(
+		RewardBoxResolver.resolve_checkbox_rolls(entries, [1, 51, 50])
+		== {"gold": 100, "diamonds": 1, "items": {"wood": 1, "stone": 3}},
+		"checkbox reward used incorrect inclusive boundaries",
+	)
+	_check(
+		RewardBoxResolver.resolve_checkbox_rolls(entries, [100, 100, 100])
+		== {"gold": 100, "items": {"wood": 1}},
+		"guaranteed checkbox entry did not resolve independently",
+	)
+	_check(
+		RewardBoxResolver.resolve_checkbox_rolls([
+			{"chance": 50, "reward": {"gold": 1}},
+		], [51]).is_empty(),
+		"missed checkbox entry returned a reward",
+	)
+
+	var first_rng := RandomNumberGenerator.new()
+	var replay_rng := RandomNumberGenerator.new()
+	first_rng.seed = 153
+	replay_rng.seed = 153
+	for index in range(100):
+		_check(
+			RewardBoxResolver.resolve_checkbox(entries, first_rng)
+			== RewardBoxResolver.resolve_checkbox(entries, replay_rng),
+			"same checkbox seed diverged at roll %d" % index,
+		)
+
+	var source_reward := {"gold": 10.0, "items": {"wood": 2.0}}
+	var normalized := RewardBoxResolver.resolve_checkbox_rolls([
+		{"chance": 100.0, "reward": source_reward},
+		{"chance": 100, "reward": {"gold": 5, "items": {"wood": 1}}},
+	], [100, 100])
+	_check(normalized == {"gold": 15, "items": {"wood": 3}}, "checkbox reward normalization drifted")
+	normalized["gold"] = 999
+	(normalized["items"] as Dictionary)["wood"] = 999
+	_check(source_reward == {"gold": 10.0, "items": {"wood": 2.0}}, "checkbox reward shared source state")
+
+	var invalid_cases: Array = [
+		[],
+		[null],
+		[{"chance": 0, "reward": {"gold": 1}}],
+		[{"chance": 101, "reward": {"gold": 1}}],
+		[{"chance": 50.5, "reward": {"gold": 1}}],
+		[{"chance": 50, "reward": {}}],
+		[{"chance": 50, "reward": {"unknown": 1}}],
+		[{"chance": 50, "reward": {"items": {"missing_item": 1}}}],
+	]
+	for invalid: Array in invalid_cases:
+		var invalid_rng := RandomNumberGenerator.new()
+		invalid_rng.seed = 1
+		var initial_state := invalid_rng.state
+		_check(
+			RewardBoxResolver.resolve_checkbox(invalid, invalid_rng).is_empty(),
+			"invalid checkbox reward box resolved: %s" % [invalid],
+		)
+		_check(invalid_rng.state == initial_state, "invalid checkbox reward consumed RNG state")
+	_check(RewardBoxResolver.resolve_checkbox(entries, null).is_empty(), "checkbox reward accepted a missing RNG")
+	_check(RewardBoxResolver.resolve_checkbox_rolls(entries, [1, 1]).is_empty(), "checkbox reward accepted too few rolls")
+	_check(RewardBoxResolver.resolve_checkbox_rolls(entries, [1, 1, 1, 1]).is_empty(), "checkbox reward accepted too many rolls")
+	_check(RewardBoxResolver.resolve_checkbox_rolls(entries, [0, 1, 1]).is_empty(), "checkbox reward accepted roll zero")
+	_check(RewardBoxResolver.resolve_checkbox_rolls(entries, [101, 1, 1]).is_empty(), "checkbox reward accepted roll above 100")
+	_check(RewardBoxResolver.resolve_checkbox_rolls([
+		{"chance": 100, "reward": {"gold": 9223372036854775807}},
+		{"chance": 100, "reward": {"gold": 1}},
+	], [1, 1]).is_empty(), "checkbox reward accepted an overflowing total")
 
 
 func _test_reward_box_catalog() -> void:

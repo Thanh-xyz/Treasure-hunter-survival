@@ -9,13 +9,16 @@ extends Node
 signal saved
 signal loaded
 
-const SAVE_VERSION := 3
+const SAVE_VERSION := 4
 const SAVE_DIR := "user://saves"
 var SAVE_PATH: String = "user://saves/profile.json"  ## tests point this elsewhere
 const AUTOSAVE_INTERVAL := 60.0
 
 var _timer: float = 0.0
 var enabled: bool = true   ## tests disable autosave
+var _pending_claim: Dictionary = {}
+var _pending_claim_checkpoint: Dictionary = {}
+var _last_written_snapshot: Dictionary = {}
 
 
 func _ready() -> void:
@@ -54,6 +57,7 @@ func build_snapshot() -> Dictionary:
 		"quests": QuestService.to_dict(),
 		"inventory": {},
 		"hp": -1,
+		"pending_claim": _pending_claim.duplicate(true),
 	}
 	var player := GameState.get_player()
 	if player != null:
@@ -69,6 +73,10 @@ func build_snapshot() -> Dictionary:
 func save_game() -> bool:
 	if not enabled:
 		return false
+	return _write_live_snapshot()
+
+
+func _write_live_snapshot() -> bool:
 	var data := build_snapshot()
 	if not _validate_snapshot(data):
 		push_warning("[SaveService] Refusing to write an invalid snapshot")
@@ -118,8 +126,65 @@ func save_game() -> bool:
 			if restore_err != OK:
 				push_warning("[SaveService] backup restore failed: %d" % restore_err)
 		return false
+	_last_written_snapshot = data.duplicate(true)
 	saved.emit()
 	return true
+
+
+func get_pending_claim() -> Dictionary:
+	return _pending_claim.duplicate(true)
+
+
+## Persist a resolved claim before any reward or quest state is mutated.
+func prepare_pending_claim(record: Dictionary) -> bool:
+	if not _pending_claim.is_empty():
+		return false
+	var normalized := _normalize_pending_claim(record)
+	if normalized.is_empty():
+		return false
+	_pending_claim = normalized
+	if _write_live_snapshot():
+		_pending_claim_checkpoint = _last_written_snapshot.duplicate(true)
+		return true
+	_pending_claim = {}
+	_pending_claim_checkpoint = {}
+	return false
+
+
+func checkpoint_pending_claim() -> bool:
+	if _pending_claim.is_empty():
+		return false
+	if not _write_live_snapshot():
+		return false
+	_pending_claim_checkpoint = _last_written_snapshot.duplicate(true)
+	return true
+
+
+## Persist the already-applied reward and quest transition without the journal.
+func finalize_pending_claim() -> bool:
+	if _pending_claim.is_empty():
+		return false
+	var prepared := _pending_claim
+	_pending_claim = {}
+	if _write_live_snapshot():
+		_pending_claim_checkpoint = {}
+		return true
+	_pending_claim = prepared
+	return false
+
+
+## Restore the durable pre-grant snapshot after a failed final checkpoint.
+func restore_pending_claim_checkpoint() -> bool:
+	if _pending_claim_checkpoint.is_empty():
+		return false
+	_apply_snapshot(_pending_claim_checkpoint)
+	return true
+
+
+func discard_pending_claim() -> void:
+	_pending_claim = {}
+	_pending_claim_checkpoint = {}
+	_last_written_snapshot = {}
 
 
 # =============================================================================
@@ -160,6 +225,11 @@ func _migrate(data: Dictionary) -> Dictionary:
 		# Version 3 adds optional source identity and exact rolled stat payloads
 		# for duplicated reference equipment instances.
 		data["version"] = 3
+		v = 3
+	if v < 4:
+		# Version 4 journals one resolved quest claim before applying its reward.
+		data["pending_claim"] = {}
+		data["version"] = 4
 	return data
 
 
@@ -187,7 +257,42 @@ func _validate_snapshot(data: Dictionary) -> bool:
 		return false
 	if data.has("saved_at") and (not _is_number(data["saved_at"]) or float(data["saved_at"]) < 0.0):
 		return false
-	return _validate_profile(data["profile"]) and _validate_quests(data.get("quests", {}))
+	if not data.get("pending_claim", {}) is Dictionary:
+		return false
+	var quests := data.get("quests", {}) as Dictionary
+	if not _validate_profile(data["profile"]) or not _validate_quests(quests):
+		return false
+	var pending_claim := data.get("pending_claim", {}) as Dictionary
+	if not pending_claim.is_empty():
+		var normalized_pending := _normalize_pending_claim(pending_claim)
+		if normalized_pending.is_empty() or not QuestService.validate_pending_claim(normalized_pending, quests):
+			return false
+	return true
+
+
+func _normalize_pending_claim(record: Dictionary) -> Dictionary:
+	if record.size() != 5:
+		return {}
+	if not _is_integer(record.get("version", -1)) or int(record.get("version", -1)) != 1:
+		return {}
+	if not record.get("claim_id") is String or str(record.get("claim_id", "")).is_empty():
+		return {}
+	if not record.get("source_kind") is String or str(record.get("source_kind", "")) not in ["main", "daily"]:
+		return {}
+	if not record.get("source_id") is String or str(record.get("source_id", "")).is_empty():
+		return {}
+	if not record.get("reward") is Dictionary:
+		return {}
+	var reward := RewardBoxResolver.normalize_reward(record["reward"])
+	if reward.is_empty():
+		return {}
+	return {
+		"version": 1,
+		"claim_id": str(record["claim_id"]),
+		"source_kind": str(record["source_kind"]),
+		"source_id": str(record["source_id"]),
+		"reward": reward,
+	}
 
 
 func _validate_profile(profile: Dictionary) -> bool:
@@ -417,6 +522,15 @@ func load_game() -> bool:
 	var data := read_snapshot()
 	if data.is_empty():
 		return false
+	_apply_snapshot(data, true)
+	loaded.emit()
+	return true
+
+
+func _apply_snapshot(data: Dictionary, recover_pending: bool = false) -> void:
+	var raw_pending := data.get("pending_claim", {}) as Dictionary
+	_pending_claim = _normalize_pending_claim(raw_pending) if not raw_pending.is_empty() else {}
+	_pending_claim_checkpoint = data.duplicate(true) if not _pending_claim.is_empty() else {}
 	GameState.from_dict(data.get("profile", {}))
 	QuestService.from_dict(data.get("quests", {}))
 	var player := GameState.get_player()
@@ -430,14 +544,15 @@ func load_game() -> bool:
 		var hp := int(data.get("hp", -1))
 		if stats != null and hp > 0:
 			stats.current_health = hp
-	loaded.emit()
-	return true
+	if recover_pending and not _pending_claim.is_empty():
+		QuestService.retry_pending_claim()
 
 
 func delete_save() -> void:
 	for path in [SAVE_PATH, SAVE_PATH + ".bak", SAVE_PATH + ".tmp"]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	discard_pending_claim()
 
 
 # =============================================================================

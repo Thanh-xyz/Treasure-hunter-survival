@@ -308,3 +308,16 @@ Therefore the next safe boundary is deterministic validation/materialization of 
 payload supplied by an authority or replay record. Generating random values, applying rarity/tier
 transforms and displaying rounded values remain unknown behavior and must not be derived from the
 observed examples alone.
+
+## 2026-11-06 — Pending quest-claim durability scout
+
+- Current quest rewards are committed through `GameState.grant()`, but claim completion was not
+  durably saved at the mutation boundary. A process exit before the next autosave could lose both
+  reward and quest transition.
+- Box 149 will eventually create one exact equipment instance. Resolving it again after a failed
+  save would permit a reroll, so the resolved payload must be persisted before inventory mutation.
+- Extracted client identifiers confirm request/response quest claiming (`CmdClaimRequest`,
+  `RpcClaimQuest`, `ClaimQuestResponse`) but do not reveal the original server's idempotency or
+  retry formula. The implementation therefore claims offline durability, not server parity.
+- Agent A's Turtle contract adds stable art IDs only and has no overlap with the save, quest,
+  reward resolver or gameplay-test files in this feature.

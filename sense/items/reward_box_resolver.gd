@@ -8,6 +8,11 @@ const REWARD_KEYS := [&"xp", &"gold", &"diamonds", &"items"]
 const MAX_REWARD_AMOUNT := 9223372036854775807
 
 
+## Returns the canonical persisted reward shape used by claim journals.
+static func normalize_reward(reward: Dictionary) -> Dictionary:
+	return _normalize_reward(reward)
+
+
 static func resolve(entries: Array, rng: RandomNumberGenerator) -> Dictionary:
 	if rng == null or entries.is_empty():
 		return {}

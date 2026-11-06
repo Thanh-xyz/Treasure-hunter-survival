@@ -933,8 +933,8 @@ func _test_quest305_claim_transaction() -> void:
 	GameState.reset_profile()
 	QuestService.reset()
 	var quest_index := GameContent.get_main_quest_index("q305")
-	var next_index := GameContent.get_main_quest_index("q02")
-	_check(quest_index == 1 and next_index == 2, "quest 305 chain position drifted")
+	var next_index := GameContent.get_main_quest_index("q306")
+	_check(quest_index == 1 and next_index == 2, "quest 305/306 chain position drifted")
 	_player.inventory = InventoryData.new()
 	_player.inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
 	QuestService.main_index = quest_index
@@ -967,7 +967,7 @@ func _test_quest305_claim_transaction() -> void:
 	_check(SaveService.get_pending_claim().get("reward", {}) == expected_reward, "quest 305 reward changed after reload")
 	_player.inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
 	_check(QuestService.claim("q305"), "quest 305 did not retry after freeing capacity")
-	_check(QuestService.main_index == next_index and SaveService.get_pending_claim().is_empty(), "quest 305 did not advance to q02")
+	_check(QuestService.main_index == next_index and SaveService.get_pending_claim().is_empty(), "quest 305 did not advance to q306")
 	var expected_entry := (expected_reward["equipment"] as Array)[0] as Dictionary
 	var rewarded := _player.inventory.get_item_at(InventoryData.INVENTORY_SIZE - 1).get("item") as ItemData
 	_check(rewarded != null and rewarded.source_card_id == int(expected_entry["card_id"]), "quest 305 granted the wrong card")

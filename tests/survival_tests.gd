@@ -68,6 +68,7 @@ func run_all() -> bool:
 	await _test_resource_node_overflow()
 	_test_save_roundtrip()
 	await _test_monster_kill()
+	await _test_turtle_runtime()
 	await _test_menu_keeps_world_running()
 	await _test_auto_farm_toggle()
 	_test_combat_roll()
@@ -273,17 +274,26 @@ func _test_quests() -> void:
 	q305_rng.seed = 305
 	QuestService.set_reward_authority_rng(q305_rng)
 	_check(QuestService.claim("q305"), "claim q305")
-	_check(QuestService.get_main_quest()["id"] == "q02", "q305 did not advance to q02")
+	_check(QuestService.get_main_quest()["id"] == "q306", "q305 did not advance to q306")
 	_check(
 		_stub_player.inventory.get_item_count("th_weapon_28")
 		+ _stub_player.inventory.get_item_count("th_weapon_29")
 		+ _stub_player.inventory.get_item_count("th_weapon_30") == 1,
 		"q305 did not grant exactly one Box 149 weapon",
 	)
+	GameEvent.enemy_killed.emit("slime", Vector2.ZERO, false)
+	_check(QuestService.main_progress == 0 and not QuestService.main_ready, "wrong monster completed q306")
+	GameEvent.enemy_killed.emit("turtle", Vector2.ZERO, false)
+	_check(QuestService.main_progress == 1 and QuestService.main_ready, "Turtle kill did not complete q306")
+	var diamonds_before: int = _stub_player.inventory.diamonds
+	_check(QuestService.claim("q306"), "claim q306")
+	_check(_stub_player.inventory.diamonds == diamonds_before + 1, "q306 did not grant exactly one Diamond")
+	_check(QuestService.get_main_quest()["id"] == "q02", "q306 did not advance to q02")
+	_check(not QuestService.claim("q306") and _stub_player.inventory.diamonds == diamonds_before + 1, "q306 granted twice")
 	for i in range(8):
 		GameEvent.enemy_killed.emit("slime", Vector2.ZERO, false)
 	_check(QuestService.main_ready, "kill 8 slimes completes q02")
-	_check(QuestService.dailies["d_hunt"]["progress"] == 8, "daily hunt counts kills")
+	_check(QuestService.dailies["d_hunt"]["progress"] == 10, "daily hunt counts all monster kills")
 	GameEvent.enemy_killed.emit("slime_king", Vector2.ZERO, true)
 	_check(QuestService.dailies["d_boss"]["progress"] == 1, "daily boss counts boss kill")
 	_check(QuestService.claim("d_boss"), "claim daily boss")
@@ -550,7 +560,7 @@ func _test_save_roundtrip() -> void:
 	QuestService.from_dict({"main_index": 0, "main_quest_id": "q04", "main_progress": 0, "main_ready": false})
 	_check(QuestService.main_index == GameContent.get_main_quest_index("q04"), "stable quest id takes precedence over stale index")
 	QuestService.from_dict({"main_index": 2, "main_progress": 0, "main_ready": false})
-	_check(QuestService.main_index == 3, "legacy quest save did not shift across inserted q305")
+	_check(QuestService.main_index == 4, "legacy quest save did not shift across inserted q305 and q306")
 	QuestService.from_dict({"main_index": 1, "main_quest_id": "removed_quest", "main_progress": 0, "main_ready": false})
 	_check(QuestService.main_index == 1, "unknown stable quest id did not preserve explicit fallback index")
 
@@ -701,6 +711,78 @@ func _test_monster_kill() -> void:
 	boss.apply_hit(boss.max_hp / 2 + 1, Vector2.ZERO)
 	_check((boss as Boss).phase == 2, "boss enters phase 2 at half HP")
 	boss.queue_free()
+
+
+func _test_turtle_runtime() -> void:
+	var asset_id := "actor.monster.turtle.default"
+	_check(MonsterVisualCatalog.has_asset(asset_id), "Turtle stable art ID is not registered")
+	var definition := MonsterVisualCatalog.get_definition(asset_id)
+	_check(definition.get("frame_size", Vector2i.ZERO) == Vector2i(64, 64), "Turtle frame size drifted")
+	var frames := MonsterVisualCatalog.get_frames(asset_id)
+	_check(frames != null, "Turtle atlas did not build SpriteFrames")
+	var expected := {
+		"idle": {"row": 0, "frames": [0, 1, 2, 3, 0], "duration": 0.7083333731, "loop": true},
+		"move": {"row": 1, "frames": [0, 1, 2, 3, 4, 5], "duration": 0.4583333135, "loop": true},
+		"attack": {"row": 2, "frames": [0, 1, 2, 4, 4, 5], "duration": 0.6666666865, "loop": true},
+		"death": {"row": 3, "frames": [0, 1, 2, 3, 4, 5], "duration": 0.75, "loop": false},
+	}
+	for animation_name: String in expected:
+		var expected_animation: Dictionary = expected[animation_name]
+		var sequence: Array = expected_animation["frames"]
+		_check(frames.has_animation(animation_name), "Turtle animation missing: %s" % animation_name)
+		_check(frames.get_frame_count(animation_name) == sequence.size(), "Turtle frame count drifted: %s" % animation_name)
+		_check(frames.get_animation_loop(animation_name) == bool(expected_animation["loop"]), "Turtle loop flag drifted: %s" % animation_name)
+		_check(is_equal_approx(frames.get_animation_speed(animation_name), float(sequence.size()) / float(expected_animation["duration"])), "Turtle clip duration drifted: %s" % animation_name)
+		for frame_index in range(sequence.size()):
+			var atlas := frames.get_frame_texture(animation_name, frame_index) as AtlasTexture
+			var expected_region := Rect2(float(int(sequence[frame_index]) * 64), float(int(expected_animation["row"]) * 64), 64.0, 64.0)
+			_check(atlas != null and atlas.region == expected_region, "Turtle atlas region drifted: %s[%d]" % [animation_name, frame_index])
+
+	var turtle_def: Dictionary = GameContent.MONSTERS["turtle"]
+	_check(int(turtle_def.get("source_card_id", 0)) == 33, "Turtle source Card ID drifted")
+	_check(int(turtle_def["hp"]) == 100 and int(turtle_def["dmg"]) == 20, "Turtle source stats drifted")
+	_check(float(turtle_def["spd"]) == 0.0, "Turtle must remain stationary")
+	_check(float(turtle_def["range"]) == 70.0 and float(turtle_def["aggro"]) == 200.0, "Turtle source-scaled ranges drifted")
+	_check(is_equal_approx(float(turtle_def["attack_interval"]), 1.0), "Turtle attack gate drifted")
+
+	var turtle := Monster.create("turtle")
+	turtle.position = Vector2(300, 300)
+	turtle.set_physics_process(false)
+	add_child(turtle)
+	_check(turtle.visual is AnimatedSprite2D, "Turtle does not use the atlas visual")
+	_check((turtle.visual as AnimatedSprite2D).sprite_frames == frames, "Turtle visual did not consume the stable catalog")
+	_check(turtle.max_hp == 100 and turtle.damage == 20 and turtle.speed == 0.0, "Turtle runtime stats drifted")
+	_check(is_equal_approx(turtle.attack_cooldown, 1.0), "Turtle initial attack gate drifted")
+
+	_stub_player.damage_taken = 0
+	_stub_player.global_position = turtle.global_position + Vector2(71, 0)
+	turtle.target = _stub_player
+	turtle.attack_cooldown = 0.0
+	turtle._think_stationary_melee(0.0)
+	_check(_stub_player.damage_taken == 0 and turtle.state == "idle", "Turtle attacked outside its range")
+	_check(turtle.velocity == Vector2.ZERO and turtle.global_position == Vector2(300, 300), "Turtle moved while targeting")
+
+	_stub_player.global_position = turtle.global_position + Vector2(70, 0)
+	turtle._think_stationary_melee(0.0)
+	_check(_stub_player.damage_taken == 20 and turtle.state == "windup", "Turtle did not attack when its 1.0s gate opened")
+	turtle._think_stationary_melee(0.0)
+	_check(_stub_player.damage_taken == 20, "Turtle attacked twice during one attack clip")
+	turtle.state_time = float(turtle_def["attack_duration"])
+	turtle._think_stationary_melee(0.0)
+	_check(turtle.state == "idle", "Turtle attack state did not end after one verified clip")
+
+	var turtle_position := turtle.global_position
+	turtle.apply_hit(1, turtle.global_position - Vector2(20, 0))
+	_check(turtle._knock == Vector2.ZERO and turtle.global_position == turtle_position, "Turtle accepted knockback")
+	var killed: Array[String] = []
+	var cb := func(id: String, _position: Vector2, _is_boss: bool) -> void: killed.append(id)
+	GameEvent.enemy_killed.connect(cb)
+	var xp_before := GameState.xp
+	turtle.apply_hit(turtle.hp, Vector2.ZERO)
+	_check(turtle.is_dead() and killed.has("turtle"), "Turtle death did not emit its stable gameplay ID")
+	_check(GameState.xp == xp_before, "Turtle granted unverified XP")
+	GameEvent.enemy_killed.disconnect(cb)
+	await get_tree().create_timer(float(turtle_def["death_duration"]) + 0.05).timeout
 
 
 func _test_menu_keeps_world_running() -> void:

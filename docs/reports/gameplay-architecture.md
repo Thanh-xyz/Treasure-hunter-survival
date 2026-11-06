@@ -4,6 +4,24 @@ Status: approved as the incremental direction on 2026-11-04. The first implement
 adds atomic inventory transactions behind the existing APIs; broader service extraction is
 still deferred until reference parity and Agent A contracts are available.
 
+## Quest 306 / Turtle vertical slice
+
+- `MonsterVisualCatalog` is a logic-owned runtime adapter from stable art IDs to cached
+  `SpriteFrames`. Gameplay data consumes `actor.monster.turtle.default`; it does not duplicate
+  the atlas path in monster AI or modify Agent A's manifest.
+- Turtle uses the existing data-driven `Monster` runtime with a new `stationary_melee` profile.
+  Target acquisition, attack range, cadence, attack-clip duration, knockback immunity, death
+  duration, rewards, and network identity remain content fields rather than Turtle-only branches.
+- Source-backed damage occurs when the recovered logical attack gate opens. The attack animation
+  remains active for its verified clip duration, but no unknown visual hit frame is invented.
+- Quest `q306` remains on the existing event and pending-claim boundaries: `enemy_killed(turtle)`
+  advances the objective and Box `98` is materialized before the atomic claim. Save schema and LAN
+  transport are unchanged.
+- Legacy saves without stable quest IDs translate old post-`q01` indices across both inserted
+  quests. Saves carrying a stable quest ID continue resolving by ID first.
+- Offline remains authoritative. The same stable `turtle` ID and data definition can be spawned by
+  a LAN host and represented by current snapshots without coupling rules to ENet transport.
+
 ## Goals
 
 - Preserve the current Godot 4.6 project, scenes and public gameplay behavior.

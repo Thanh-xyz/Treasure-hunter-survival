@@ -7,6 +7,7 @@ extends CharacterBody2D
 ##   flyer   — like melee, wobbly flight, ignores walls
 ##   ranged  — keeps distance, fires projectiles
 ##   charger — telegraphs a line, then dashes through the target
+##   stationary_melee — scans and attacks without moving or chasing
 ##   boss_*  — handled by Boss (subclass)
 ##
 ## Damage in:  player hitbox -> HurtboxComponent -> apply_hit()
@@ -107,7 +108,7 @@ func _ready() -> void:
 	_build_body()
 	_build_hurtbox()
 	_build_nameplate()
-	attack_cooldown = randf_range(0.2, 1.0)
+	attack_cooldown = float(def["attack_interval"]) if def.has("attack_interval") else randf_range(0.2, 1.0)
 	network_target_position = global_position
 	if network_replica:
 		collision_layer = 0
@@ -122,7 +123,8 @@ func _ready() -> void:
 
 func _build_visual() -> void:
 	var s: float = float(def.get("scale", 1.0)) * (1.25 if elite else 1.0)
-	if def.get("visual", "pixel") == "skeleton":
+	var visual_kind := String(def.get("visual", "pixel"))
+	if visual_kind == "skeleton":
 		var anim := AnimatedSprite2D.new()
 		anim.sprite_frames = _get_skeleton_frames()
 		anim.scale = Vector2(s, s)
@@ -135,6 +137,22 @@ func _build_visual() -> void:
 		visual = anim
 		visual_height = 70.0 * s
 		body_radius = 14.0 * s
+	elif visual_kind == "atlas":
+		var anim := AnimatedSprite2D.new()
+		anim.sprite_frames = MonsterVisualCatalog.get_frames(String(def.get("asset_id", "")))
+		anim.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		anim.scale = Vector2(s, s)
+		var frame_size := Vector2i(64, 64)
+		var asset_definition := MonsterVisualCatalog.get_definition(String(def.get("asset_id", "")))
+		if not asset_definition.is_empty():
+			frame_size = asset_definition.get("frame_size", frame_size)
+		anim.position = Vector2(0, -float(frame_size.y) * s * 0.5)
+		anim.self_modulate = def.get("tint", Color.WHITE)
+		if anim.sprite_frames != null and anim.sprite_frames.has_animation("idle"):
+			anim.play("idle")
+		visual = anim
+		visual_height = float(frame_size.y) * s
+		body_radius = maxf(6.0, float(frame_size.x) * s * 0.4)
 	else:
 		var spr := Sprite2D.new()
 		var texture_path := String(def.get("texture", ""))
@@ -251,7 +269,8 @@ func _physics_process(delta: float) -> void:
 
 
 func _update_target() -> void:
-	if target != null and (not Combat.is_alive_target(target) or global_position.distance_to(target.global_position) > aggro_range * 1.8):
+	var drop_range := aggro_range if def.get("ai", "") == "stationary_melee" else aggro_range * 1.8
+	if target != null and (not Combat.is_alive_target(target) or global_position.distance_to(target.global_position) > drop_range):
 		target = null
 	if target == null:
 		target = Combat.nearest_in_group(get_tree(), "player", global_position, aggro_range)
@@ -266,6 +285,8 @@ func _think(delta: float) -> void:
 		_set_state("return")
 		return
 	match def.get("ai", "melee"):
+		"stationary_melee":
+			_think_stationary_melee(delta)
 		"ranged":
 			_think_ranged(delta)
 		"charger":
@@ -345,6 +366,20 @@ func _think_melee(_delta: float) -> void:
 				_play_anim("attack")
 			else:
 				_move_toward_target()
+
+
+func _think_stationary_melee(_delta: float) -> void:
+	if state == "windup":
+		if state_time >= float(def.get("attack_duration", 0.6666666865)):
+			_set_state("idle")
+		return
+	if target == null or _dist_to_target() > attack_range or attack_cooldown > 0.0:
+		return
+	facing = _dir_to_target()
+	attack_cooldown = float(def.get("attack_interval", 1.0))
+	target.take_damage(damage)
+	_set_state("windup")
+	_play_anim("attack")
 
 
 # --- ranged -------------------------------------------------------------------
@@ -503,7 +538,7 @@ func apply_hit(amount: int, from_pos: Vector2, crit: bool = false, attacker_peer
 	_flash = 0.1
 	hp_changed.emit(hp, max_hp)
 	DamageNumber.spawn(get_tree(), global_position + Vector2(0, -visual_height), ("%d!" % amount) if crit else str(amount), Color(1, 0.85, 0.2) if crit else Color.WHITE, crit)
-	if not is_boss:
+	if not is_boss and not bool(def.get("knockback_immune", false)):
 		var away := (global_position - from_pos).normalized()
 		_knock = away * (140.0 if crit else 90.0)
 	if target == null:
@@ -534,7 +569,7 @@ func _die() -> void:
 	monster_died.emit(self)
 	if visual is AnimatedSprite2D and (visual as AnimatedSprite2D).sprite_frames.has_animation("death"):
 		(visual as AnimatedSprite2D).play("death")
-		await get_tree().create_timer(0.9).timeout
+		await get_tree().create_timer(float(def.get("death_duration", 0.9))).timeout
 	else:
 		var tw := create_tween()
 		tw.tween_property(visual, "scale", visual.scale * Vector2(1.4, 0.2), 0.25)
@@ -573,7 +608,7 @@ func apply_network_death() -> void:
 	queue_redraw()
 	if visual is AnimatedSprite2D and (visual as AnimatedSprite2D).sprite_frames.has_animation("death"):
 		(visual as AnimatedSprite2D).play("death")
-		await get_tree().create_timer(0.9).timeout
+		await get_tree().create_timer(float(def.get("death_duration", 0.9))).timeout
 	else:
 		var tw := create_tween()
 		tw.tween_property(visual, "scale", visual.scale * Vector2(1.4, 0.2), 0.25)
@@ -584,11 +619,12 @@ func apply_network_death() -> void:
 
 func _grant_rewards(killer_peer_id: int = 1) -> void:
 	var pos := global_position
-	if LanSession.is_host() and killer_peer_id != 1:
-		LanSession.grant_peer_xp(killer_peer_id, xp_reward)
-	else:
-		GameState.add_xp(xp_reward)
-		DamageNumber.spawn(get_tree(), pos + Vector2(0, -visual_height - 10), "+%d XP" % xp_reward, Color(0.75, 0.55, 1.0))
+	if xp_reward > 0:
+		if LanSession.is_host() and killer_peer_id != 1:
+			LanSession.grant_peer_xp(killer_peer_id, xp_reward)
+		else:
+			GameState.add_xp(xp_reward)
+			DamageNumber.spawn(get_tree(), pos + Vector2(0, -visual_height - 10), "+%d XP" % xp_reward, Color(0.75, 0.55, 1.0))
 	# Gold
 	var bonus: Dictionary = GameState.compute_base_stats()
 	var g: Vector2i = def.get("gold", Vector2i(0, 0))

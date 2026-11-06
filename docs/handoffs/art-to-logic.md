@@ -3,6 +3,30 @@
 Date: 2026-11-04
 Status: startup/auth presentation integrated; broader asset registry remains proposed.
 
+## Quest 323 Craft Tutorial Asset Contract
+
+- Stable art ID `ui.reference.tutorial.craft_equipment` maps to
+  `assets/treasure_hunter/ui/reference/tutorial_craft_equipment.png`, the exact
+  local-only `512x240` `CraftView_1` illustration with SHA-256
+  `50a3aae2181ec61cc2697724e04a355b2e76067141d1f8fa07208730669ba43e`.
+- Source Sprite path ID `6161` uses Texture2D path ID `777`, centered pivot, and
+  `80 PPU`. Sprite and texture exports are byte-identical.
+- This ID is metadata-only tutorial/help art. Its 3x3 ingredient illustration
+  does not define a runtime input count; the extracted CraftView hierarchy has
+  twelve ingredient UI slots and an alternate panel variant.
+- Verified presentation structure includes equipment/ingredient inventory,
+  detail/stats, one equipment input, displayed chance, craft level/progress,
+  currencies, help, and a cost-bearing craft action. Exact layout, bindings,
+  values, states, transitions, and the active variant remain unverified without
+  a direct capture.
+- Agent B retains ownership of eligible equipment/ingredients, recipes, chance,
+  costs, consumption/result authority, Box 98, Quest 323 completion, save/retry,
+  and multiplayer behavior. Existing generic Emberfield crafting must not be
+  relabeled as Treasure Hunter parity from this reference asset.
+- `Forge Craft` and `Craft Level 1/2` are not part of this contract. No runtime
+  consumer should be added until their roles and the full crafting interface are
+  separately evidenced and approved.
+
 ## Quest 322 Craft Icon Asset Contract
 
 - Stable art ID `ui.reference.hud.icon.craft` maps to

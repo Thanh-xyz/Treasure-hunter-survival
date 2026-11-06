@@ -1,8 +1,47 @@
 # Agent A Art Scout Report
 
 Date: 2026-11-04; updated 2026-11-06
-Branch/worktree: `feature/th-game-art-workflow` in the Agent A worktree
+Branch/worktree: `feature/th-art-q323-craft-tutorial` in the Agent A worktree
 Stage: SCOUT complete; no project implementation occurred during SCOUT.
+
+## Quest 323 Craft Equipment Art Evidence
+
+- Source quest `323` follows `322`, precedes `324`, uses raw quest type `5`,
+  `equipmentType: 10`, count `1`, `rareRequire: 0`, NPC requirement `4`, awards
+  Box `98`, and remains disabled. Vietnamese text is `Chế tạo trang bị`: the
+  player needs equipment and ingredient stones, then uses the campfire craft
+  icon to begin crafting.
+- Box `98` is an available non-stackable `Beginner Diamond` box with one raw
+  `100%` pack (`itemClass: 4`, `itemId: 2`, count `1`). Reward resolution and
+  Quest 323 behavior remain gameplay-owned.
+- The extracted `CraftView` scene hierarchy verifies inventory and ingredient
+  tabs, item detail/stats, one equipment input with Craft Chance, twelve
+  ingredient UI slots, craft level/progress, Gold/Diamond/Shard displays, help,
+  and a cost-bearing Craft button. A second panel variant additionally exposes
+  craft points, step, PushToCraft, notify, and raycast blocking.
+- Exact tutorial art is available as Sprite path ID `6161`, `CraftView_1`, backed
+  by Texture2D path ID `777`. It is `512x240`, centered-pivot, `80 PPU`, opaque,
+  and the Sprite/Texture exports are byte-identical with SHA-256
+  `50a3aae2181ec61cc2697724e04a355b2e76067141d1f8fa07208730669ba43e`.
+  The image depicts one equipment subject plus a 3x3 ingredient-stone group
+  leading to a transformed result. This is tutorial evidence, not a verified
+  nine-input runtime rule; the hierarchy itself exposes twelve ingredient slots.
+- `Forge Craft` and `Craft Level 1/2` assets also exist, but no current pointer
+  establishes their exact Quest 323 screen role. They remain excluded rather
+  than being assigned by name alone.
+- Emberfield's current crafting recipes, panel, and transactions are provisional
+  generic systems. They are not evidence-backed Treasure Hunter Quest 323
+  equivalents and must not consume this reference asset as a runtime contract.
+- ADB confirms device `SM-A047F` and Treasure Hunter `4.3.7` build `1390`, but
+  the game remains at a dim server-selection screen even after a server tap. No
+  live CraftView layout, scale, typography, state, animation, or interaction was
+  observed, and no account resource was changed.
+
+Unknowns remain the active panel variant, exact eligible inputs, ingredient
+count/rules, craft chance/level/points, costs, failure behavior, output equipment,
+button states, animation, Quest 323 event, and runtime geometry. Full panel
+reconstruction remains gated on direct captures and Agent B-owned gameplay
+contracts.
 
 ## Quest 322 Locate Campfire Art Evidence
 

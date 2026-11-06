@@ -290,3 +290,21 @@ carrier is a duplicated equipment instance containing its source card ID, stable
 and exact rolled stat payload. The observed values are preserved as evidence only: their random
 distribution, rarity transformation, rounding and contribution to Emberfield combat remain
 unknown and are not inferred by this feature.
+
+## 2026-11-06 — Reference weapon materialization scout
+
+Card records 28/29/30 confirm three distinct Common weapons named `Weapons_0`, `Weapons_1` and
+`Weapons_2`. Each has exact Health/Damage/Speed ranges, cost and upgrade cost of 10 Gold, upgrade
+rate 1.4, equipment type Weapons and a distinct integrated stable icon ID. Box 149 selects one
+of them with weights 34/33/33.
+
+The official Treasure Hunter equipment guide documents a chance to add 20-100% of all stats when
+upgrading to a new tier, but neither that guide nor the extracted client data exposes the initial
+stat-roll distribution or rounding rule. The client contains server-facing equipment models and
+identifiers such as `BoxToEquipmentFromRandompack`, `rawStatData` and `EquipmentState`, while the
+authoritative implementation remains absent.
+
+Therefore the next safe boundary is deterministic validation/materialization of an exact stat
+payload supplied by an authority or replay record. Generating random values, applying rarity/tier
+transforms and displaying rounded values remain unknown behavior and must not be derived from the
+observed examples alone.

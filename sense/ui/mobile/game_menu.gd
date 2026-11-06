@@ -11,12 +11,27 @@ const TAB_TITLES := {
 	"hero": "Heroes", "pet": "Pets", "mount": "Mounts", "quest": "Quests",
 	"map": "World Map", "village": "Homestead", "system": "System",
 }
+const QUEST_PANEL_NORMAL := preload("res://assets/treasure_hunter/ui/reference/quest_panel_normal.png")
+const QUEST_PANEL_CLAIM := preload("res://assets/treasure_hunter/ui/reference/quest_panel_claim.png")
+const QUEST_LIST_PANEL := preload("res://assets/treasure_hunter/ui/reference/quest_list_panel.png")
+const QUEST_SECTION_LABEL := preload("res://assets/treasure_hunter/ui/reference/quest_section_label.png")
+const QUEST_TAB_ACTIVE := preload("res://assets/treasure_hunter/ui/reference/quest_tab_active.png")
+const QUEST_TAB_INACTIVE := preload("res://assets/treasure_hunter/ui/reference/quest_tab_inactive.png")
+const QUEST_ICON_MAIN := preload("res://assets/treasure_hunter/ui/reference/quest_icon_main.png")
+const QUEST_ICON_DAILY := preload("res://assets/treasure_hunter/ui/reference/quest_icon_daily.png")
+const QUEST_ICON_LOGIN := preload("res://assets/treasure_hunter/ui/reference/icon_login.png")
+const QUEST_ICON_ACHIEVEMENT := preload("res://assets/treasure_hunter/ui/reference/quest_icon_achievement.png")
+const QUEST_BUTTON_BACK := preload("res://assets/treasure_hunter/ui/reference/button_back.png")
+
 var current_tab: String = "hero"
 var _content: VBoxContainer
 var _title: Label
 var _gold_label: Label
 var _tab_buttons: Dictionary = {}
 var _dirty: bool = false
+var _generic_header: HBoxContainer
+var _generic_tabs: GridContainer
+var _quest_category: String = "main"
 
 
 func _ready() -> void:
@@ -54,25 +69,25 @@ func _ready() -> void:
 	root.add_theme_constant_override("separation", 10)
 	panel.add_child(root)
 
-	var header := HBoxContainer.new()
-	root.add_child(header)
+	_generic_header = HBoxContainer.new()
+	root.add_child(_generic_header)
 	_title = UiTheme.label("Menu", 34, UiTheme.C_GOLD)
 	_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(_title)
+	_generic_header.add_child(_title)
 	_gold_label = UiTheme.label("", 24, UiTheme.C_GOLD)
-	header.add_child(_gold_label)
-	header.add_child(UiTheme.button("  X  ", close, Vector2(64, 56)))
+	_generic_header.add_child(_gold_label)
+	_generic_header.add_child(UiTheme.button("  X  ", close, Vector2(64, 56)))
 
-	var tabs := GridContainer.new()
-	tabs.columns = 4
-	tabs.add_theme_constant_override("h_separation", 6)
-	tabs.add_theme_constant_override("v_separation", 6)
-	root.add_child(tabs)
+	_generic_tabs = GridContainer.new()
+	_generic_tabs.columns = 4
+	_generic_tabs.add_theme_constant_override("h_separation", 6)
+	_generic_tabs.add_theme_constant_override("v_separation", 6)
+	root.add_child(_generic_tabs)
 	for id in TABS:
 		var b := UiTheme.button(TAB_TITLES[id], open_tab.bind(id), Vector2(0, 50))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.add_theme_font_size_override("font_size", 20)
-		tabs.add_child(b)
+		_generic_tabs.add_child(b)
 		_tab_buttons[id] = b
 
 	var scroll := ScrollContainer.new()
@@ -131,6 +146,9 @@ func _unhandled_input(event: InputEvent) -> void:
 # =============================================================================
 
 func _rebuild() -> void:
+	var quest_mode := current_tab == "quest"
+	_generic_header.visible = not quest_mode
+	_generic_tabs.visible = not quest_mode
 	_title.text = TAB_TITLES.get(current_tab, "Menu")
 	_gold_label.text = "Gold %d  " % GameState.get_gold()
 	for id in _tab_buttons:
@@ -317,28 +335,208 @@ func _build_mounts() -> void:
 
 # --- Quests -------------------------------------------------------------------
 func _build_quests() -> void:
-	if QuestService.is_main_chain_done():
-		_content.add_child(UiTheme.label("Main story complete! Dailies refresh every day.", 22, UiTheme.C_GOOD))
-	for row_data in QuestService.get_tracker_rows():
-		var v := _card()
-		var title := ("[Daily] " if row_data["daily"] else "[Main] ") + String(row_data["name"])
-		v.add_child(UiTheme.label(title, 26, UiTheme.C_GOLD))
-		var desc := UiTheme.label(row_data["desc"], 20, UiTheme.C_MUTED)
-		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		v.add_child(desc)
-		var q := QuestService.get_quest_def(row_data["id"])
-		v.add_child(UiTheme.label("Reward: " + _reward_text(q.get("reward", {})), 18, Color(0.75, 0.85, 1)))
-		var pb := UiTheme.bar(UiTheme.C_GOOD, 16)
-		pb.max_value = row_data["count"]
-		pb.value = row_data["progress"]
-		v.add_child(pb)
-		var actions := _row(v)
-		actions.add_child(UiTheme.label("%d / %d" % [row_data["progress"], row_data["count"]], 20))
-		if row_data["claimed"]:
-			actions.add_child(UiTheme.label("  Claimed", 20, UiTheme.C_MUTED))
-		elif row_data["ready"]:
-			var qid: String = row_data["id"]
-			actions.add_child(UiTheme.button("Claim reward", func() -> void: _act(QuestService.claim(qid), "")))
+	_build_quest_tabs()
+	var heading := "NHIỆM VỤ CHÍNH" if _quest_category == "main" else "NHIỆM VỤ HẰNG NGÀY"
+	_content.add_child(_quest_heading(heading))
+	if _quest_category == "main":
+		_build_main_quest_page()
+	else:
+		_build_daily_quest_page()
+
+
+func _build_quest_tabs() -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	_content.add_child(row)
+	row.add_child(_quest_back_button())
+	row.add_child(_quest_tab_button(QUEST_ICON_MAIN, "main", true))
+	row.add_child(_quest_tab_button(QUEST_ICON_DAILY, "daily", true))
+	row.add_child(_quest_tab_button(QUEST_ICON_LOGIN, "login", false))
+	row.add_child(_quest_tab_button(QUEST_ICON_ACHIEVEMENT, "achievement", false))
+
+
+func _quest_back_button() -> Button:
+	var button := Button.new()
+	button.custom_minimum_size = Vector2(76, 76)
+	button.focus_mode = Control.FOCUS_NONE
+	button.tooltip_text = "Back"
+	var style := _quest_texture_style(QUEST_BUTTON_BACK, 12)
+	for state in ["normal", "hover", "pressed", "hover_pressed"]:
+		button.add_theme_stylebox_override(state, style)
+	button.pressed.connect(close)
+	return button
+
+
+func _quest_tab_button(icon: Texture2D, category: String, enabled: bool) -> Button:
+	var button := Button.new()
+	button.custom_minimum_size = Vector2(140, 76)
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.focus_mode = Control.FOCUS_NONE
+	button.icon = icon
+	button.expand_icon = false
+	button.disabled = not enabled
+	var active := category == _quest_category
+	var normal_style := _quest_texture_style(QUEST_TAB_ACTIVE if active else QUEST_TAB_INACTIVE, 13)
+	var pressed_style := _quest_texture_style(QUEST_TAB_ACTIVE, 13)
+	button.add_theme_stylebox_override("normal", normal_style)
+	button.add_theme_stylebox_override("hover", pressed_style if enabled else normal_style)
+	button.add_theme_stylebox_override("pressed", pressed_style)
+	button.add_theme_stylebox_override("hover_pressed", pressed_style)
+	button.add_theme_stylebox_override("disabled", normal_style)
+	button.add_theme_color_override("icon_normal_color", Color.WHITE)
+	button.add_theme_color_override("icon_disabled_color", Color(0.55, 0.55, 0.55, 0.7))
+	if enabled:
+		button.pressed.connect(_set_quest_category.bind(category))
+	return button
+
+
+func _set_quest_category(category: String) -> void:
+	if category != "main" and category != "daily":
+		return
+	_quest_category = category
+	_rebuild()
+
+
+func _quest_heading(text: String) -> PanelContainer:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(0, 62)
+	panel.add_theme_stylebox_override("panel", UiTheme.box(Color(0.10, 0.09, 0.12, 0.98), Color(0.05, 0.05, 0.06), 3, 10))
+	var label := UiTheme.label(text, 30, Color(0.82, 0.80, 0.76))
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	panel.add_child(label)
+	return panel
+
+
+func _build_main_quest_page() -> void:
+	var main := QuestService.get_main_quest()
+	if main.is_empty():
+		_content.add_child(UiTheme.label("Đã hoàn thành toàn bộ nhiệm vụ chính.", 24, UiTheme.C_GOOD))
+		_build_completed_quest_list()
+		return
+	var main_row := {
+		"id": main["id"],
+		"name": main["name"],
+		"desc": main["desc"],
+		"progress": QuestService.main_progress,
+		"count": int(main["obj"]["count"]),
+		"ready": QuestService.main_ready,
+		"claimed": false,
+	}
+	_content.add_child(_quest_card(main_row, main, true))
+
+	var next_quests: Array = []
+	for i in range(QuestService.main_index + 1, min(QuestService.main_index + 3, GameContent.MAIN_QUESTS.size())):
+		next_quests.append(GameContent.MAIN_QUESTS[i])
+	if not next_quests.is_empty():
+		_content.add_child(_quest_section("Nhiệm vụ tiếp theo"))
+		var list := _quest_list()
+		_content.add_child(list["panel"])
+		for quest in next_quests:
+			list["content"].add_child(_quest_card({
+				"id": quest["id"], "name": quest["name"], "desc": quest["desc"],
+				"progress": 0, "count": int(quest["obj"]["count"]),
+				"ready": false, "claimed": false,
+			}, quest, false))
+
+	_build_completed_quest_list()
+
+
+func _build_completed_quest_list() -> void:
+	if QuestService.main_index <= 0:
+		return
+	_content.add_child(_quest_section("Nhiệm vụ đã hoàn thành"))
+	var completed_list := _quest_list()
+	_content.add_child(completed_list["panel"])
+	var completed_count: int = min(QuestService.main_index, GameContent.MAIN_QUESTS.size())
+	var first_completed: int = max(0, completed_count - 2)
+	for i in range(first_completed, completed_count):
+		var quest: Dictionary = GameContent.MAIN_QUESTS[i]
+		completed_list["content"].add_child(_quest_card({
+			"id": quest["id"], "name": quest["name"], "desc": quest["desc"],
+			"progress": int(quest["obj"]["count"]), "count": int(quest["obj"]["count"]),
+			"ready": false, "claimed": true,
+		}, quest, false))
+
+
+func _build_daily_quest_page() -> void:
+	var rows := QuestService.get_tracker_rows().filter(func(row: Dictionary) -> bool: return bool(row["daily"]))
+	if rows.is_empty():
+		_content.add_child(UiTheme.label("Không có nhiệm vụ hằng ngày.", 24, UiTheme.C_MUTED))
+		return
+	for row_data in rows:
+		var quest := QuestService.get_quest_def(row_data["id"])
+		_content.add_child(_quest_card(row_data, quest, true))
+
+
+func _quest_section(text: String) -> PanelContainer:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(0, 72)
+	var style := _quest_texture_style(QUEST_SECTION_LABEL, 0, Color(0.0588, 0.0588, 0.0588))
+	panel.add_theme_stylebox_override("panel", style)
+	var label := UiTheme.label(text, 28, UiTheme.C_GOLD)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_color_override("font_color", UiTheme.C_GOLD)
+	panel.add_child(label)
+	return panel
+
+
+func _quest_list() -> Dictionary:
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", _quest_texture_style(QUEST_LIST_PANEL, 20, Color(1, 1, 1, 0.784)))
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 8)
+	panel.add_child(content)
+	return {"panel": panel, "content": content}
+
+
+func _quest_card(row_data: Dictionary, quest: Dictionary, interactive: bool) -> PanelContainer:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(0, 176)
+	var texture: Texture2D = QUEST_PANEL_CLAIM if bool(row_data["ready"]) else QUEST_PANEL_NORMAL
+	panel.add_theme_stylebox_override("panel", _quest_texture_style(texture, 20))
+	panel.modulate = Color(1, 1, 1, 0.58) if bool(row_data["claimed"]) else Color.WHITE
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 6)
+	panel.add_child(content)
+	var title := UiTheme.label(String(row_data["name"]), 27, UiTheme.C_TEXT)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	content.add_child(title)
+	var desc := UiTheme.label(String(row_data["desc"]), 19, Color(0.82, 0.80, 0.78))
+	desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content.add_child(desc)
+	var progress := UiTheme.bar(Color(0.08, 0.48, 0.65), 15)
+	progress.max_value = max(1, int(row_data["count"]))
+	progress.value = int(row_data["progress"])
+	progress.add_theme_stylebox_override("background", UiTheme.box(Color(0.03, 0.03, 0.03), Color(0.02, 0.02, 0.02), 2))
+	content.add_child(progress)
+	var footer := HBoxContainer.new()
+	footer.add_theme_constant_override("separation", 10)
+	content.add_child(footer)
+	var reward := UiTheme.label(_reward_text(quest.get("reward", {})), 19, UiTheme.C_GOLD)
+	reward.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	footer.add_child(reward)
+	footer.add_child(UiTheme.label("%d/%d" % [row_data["progress"], row_data["count"]], 23, UiTheme.C_GOLD))
+	if interactive and bool(row_data["ready"]) and not bool(row_data["claimed"]):
+		var quest_id: String = row_data["id"]
+		footer.add_child(UiTheme.button("Nhận", func() -> void: _act(QuestService.claim(quest_id), ""), Vector2(92, 44)))
+	return panel
+
+
+func _quest_texture_style(texture: Texture2D, margin: float, tint: Color = Color.WHITE) -> StyleBoxTexture:
+	var style := StyleBoxTexture.new()
+	style.texture = texture
+	style.texture_margin_left = margin
+	style.texture_margin_top = margin
+	style.texture_margin_right = margin
+	style.texture_margin_bottom = margin
+	style.content_margin_left = 12
+	style.content_margin_top = 10
+	style.content_margin_right = 12
+	style.content_margin_bottom = 10
+	style.modulate_color = tint
+	return style
 
 
 func _reward_text(r: Dictionary) -> String:

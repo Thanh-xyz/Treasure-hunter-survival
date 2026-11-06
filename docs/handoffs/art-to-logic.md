@@ -3,6 +3,22 @@
 Date: 2026-11-04
 Status: startup/auth presentation integrated; broader asset registry remains proposed.
 
+## Quest Menu Runtime Contract
+
+- `GameMenu.open("quest")` remains the stable entry point. The feature changes
+  only quest presentation inside the existing menu and adds no new gameplay API.
+- Main and daily cards continue to read `QuestService`; the existing
+  `QuestService.claim(quest_id)` call remains the sole claim action.
+- The main page derives read-only next/completed rows from
+  `GameContent.MAIN_QUESTS` plus `QuestService.main_index`; it does not mutate
+  progression or expose a new save field.
+- Login-reward and achievement tabs use exact reference icons but are disabled.
+  Agent B should not enable them until their gameplay domains, rewards, save
+  behavior, and tests are separately approved.
+- Nine `ui.reference.quest.menu.*` assets plus the existing back/login sources
+  are runtime consumers in `sense/ui/mobile/game_menu.gd`; all remain
+  `local_only`.
+
 ## Ownership
 
 Agent A owns the Art Bible, asset manifest, final art selection, animation

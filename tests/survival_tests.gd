@@ -342,6 +342,7 @@ func _test_save_roundtrip() -> void:
 	QuestService.reset()
 	var inv: InventoryData = _stub_player.inventory
 	SaveService.deserialize_inventory(inv, {"gold": 5000, "slots": [], "equipment": {}})
+	_check(inv.diamonds == 0, "legacy inventory without diamonds did not default to zero")
 	inv.add_item(ItemDatabase.get_item("wood"), 42)
 	inv.equip_item(_add_and_find(inv, "iron_sword"))
 	var enhanced_weapon := inv.get_equipped("weapon").duplicate() as ItemData
@@ -350,6 +351,7 @@ func _test_save_roundtrip() -> void:
 	GameState.level = 7
 	_check(GameState.unlock_pet("lucky_cat"), "adopt lucky cat for save test")
 	inv.gold = 1234
+	inv.diamonds = 17
 	GameState.plots[2] = {"id": "stable", "level": 2, "last_collect": 100.0}
 	GameState.settings["compact_hud"] = true
 	GameState.settings["max_fps"] = 30
@@ -368,6 +370,7 @@ func _test_save_roundtrip() -> void:
 	GameState.settings["max_fps"] = 120
 	Engine.max_fps = 120
 	inv.gold = 0
+	inv.diamonds = 0
 	SaveService.deserialize_inventory(inv, {"gold": 0, "slots": [], "equipment": {}})
 	_check(SaveService.load_game(), "load succeeds")
 	_check(GameState.level == 7, "level restored")
@@ -378,6 +381,7 @@ func _test_save_roundtrip() -> void:
 	_check(QuestService.main_index == 3, "quest progress restored")
 	_check(QuestService.get_main_quest().get("id", "") == "q04", "stable quest id restored the active quest")
 	_check(inv.gold == 1234, "gold restored")
+	_check(inv.diamonds == 17, "diamonds restored")
 	_check(inv.get_item_count("wood") == 42, "items restored")
 	_check(inv.get_equipped("weapon") != null and inv.get_equipped("weapon").id == "iron_sword", "equipment restored")
 	_check(inv.get_equipped("weapon").enhancement_level == 3, "equipment enhancement level restored")
@@ -418,6 +422,13 @@ func _test_save_roundtrip() -> void:
 	f.close()
 	var recovered_inventory := SaveService.read_snapshot()
 	_check(recovered_inventory.get("inventory", {}).get("gold", -1) == 1234, "invalid inventory falls back to backup")
+
+	var invalid_diamonds := snap.duplicate(true)
+	invalid_diamonds["inventory"]["diamonds"] = -1
+	f = FileAccess.open(SaveService.SAVE_PATH, FileAccess.WRITE)
+	f.store_string(JSON.stringify(invalid_diamonds))
+	f.close()
+	_check(SaveService.read_snapshot().get("inventory", {}).get("diamonds", -1) == 17, "invalid diamonds fall back to backup")
 
 	for legacy_version in [0, 1]:
 		var legacy := snap.duplicate(true)
@@ -461,8 +472,21 @@ func _test_save_roundtrip() -> void:
 
 	# Direct inventory hydration rejects malformed data without touching live state.
 	var protected_gold := inv.gold
+	var protected_diamonds := inv.diamonds
 	var protected_wood := inv.get_item_count("wood")
 	var protected_weapon_level := inv.get_equipped("weapon").enhancement_level
+	_check(not SaveService.deserialize_inventory(inv, {
+		"gold": 999,
+		"diamonds": -1,
+		"slots": [],
+		"equipment": {},
+	}), "negative diamond wallet is rejected")
+	_check(not SaveService.deserialize_inventory(inv, {
+		"gold": 999,
+		"diamonds": 1.5,
+		"slots": [],
+		"equipment": {},
+	}), "fractional diamond wallet is rejected")
 	_check(not SaveService.deserialize_inventory(inv, {
 		"gold": 999,
 		"slots": [{"id": "wood", "qty": 1000}],
@@ -484,7 +508,7 @@ func _test_save_roundtrip() -> void:
 		"slots": [{"id": "wood", "qty": 1, "level": 2}],
 		"equipment": {},
 	}), "non-upgradeable item accepted an enhancement level")
-	_check(inv.gold == protected_gold and inv.get_item_count("wood") == protected_wood, "rejected hydration preserves live inventory")
+	_check(inv.gold == protected_gold and inv.diamonds == protected_diamonds and inv.get_item_count("wood") == protected_wood, "rejected hydration preserves live inventory")
 	_check(inv.get_equipped("weapon").enhancement_level == protected_weapon_level, "rejected hydration changed enhanced equipment")
 
 	# Invalid live state cannot replace the last known-good save.

@@ -306,6 +306,8 @@ func _validate_quests(quests: Dictionary) -> bool:
 func _validate_inventory(data: Dictionary) -> bool:
 	if data.has("gold") and (not _is_integer(data["gold"]) or int(data["gold"]) < 0):
 		return false
+	if data.has("diamonds") and (not _is_integer(data["diamonds"]) or int(data["diamonds"]) < 0):
+		return false
 	var slots: Variant = data.get("slots", [])
 	if not slots is Array or slots.size() > InventoryData.INVENTORY_SIZE:
 		return false
@@ -450,13 +452,14 @@ func serialize_inventory(inv: InventoryData) -> Dictionary:
 		var item := inv.get_equipped(slot_type)
 		if item != null:
 			equipment[slot_type] = _item_to_dict(item, 1)
-	return {"gold": inv.gold, "slots": slots, "equipment": equipment}
+	return {"gold": inv.gold, "diamonds": inv.diamonds, "slots": slots, "equipment": equipment}
 
 
 func deserialize_inventory(inv: InventoryData, d: Dictionary) -> bool:
 	if inv == null or not _validate_inventory(d):
 		return false
 	inv.gold = int(d.get("gold", 0))
+	inv.diamonds = int(d.get("diamonds", 0))
 	var slots: Array = d.get("slots", [])
 	for i in range(inv.inventory_slots.size()):
 		var slot: Dictionary = inv.inventory_slots[i]

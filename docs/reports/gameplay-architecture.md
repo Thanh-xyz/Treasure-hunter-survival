@@ -199,6 +199,22 @@ profile to another quest. Old snapshots and snapshots whose quest was deliberate
 the bounded index as a compatibility fallback. The optional field does not require a save
 version bump and keeps current version-0/1/2 migration behavior intact.
 
+## Diamond wallet boundary
+
+Treasure Hunter's authorized `Currency.json` identifies Gold as currency ID 1 and Diamond as
+currency ID 2; reward box 98 grants exactly one Diamond. Emberfield therefore models Diamond
+as currency rather than an inventory item.
+
+`InventoryData` owns Gold, Diamond and item slots behind one transaction boundary. A mixed
+item/Gold/Diamond operation validates capacity and balances first, commits every domain, then
+publishes signals so observers cannot see partial state. `GameState` accepts the normalized
+reward/cost key `diamonds`, while persistence stores an optional non-negative `diamonds` value.
+Older saves default to zero, so save version 2 remains compatible.
+
+This slice is deliberately offline-first. Fixed-HUD presentation and LAN reward replication do
+not yet consume Diamond; those require separate UI and protocol plans rather than coupling the
+domain wallet to transport or art.
+
 ## Key risks
 
 - `player.gd` and `LanSession` are large cross-layer files, so broad refactors would create

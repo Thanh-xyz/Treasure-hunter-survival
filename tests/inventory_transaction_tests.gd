@@ -99,26 +99,60 @@ func _test_inventory_add_signals() -> void:
 func _test_economy_transaction() -> void:
 	_player.inventory = InventoryData.new()
 	_player.inventory.gold = 100
+	_player.inventory.diamonds = 3
 	_player.inventory.add_item(ItemDatabase.get_item("wood"), 10)
 	var inventory_signals := {"value": 0}
 	var gold_signals := {"value": 0}
+	var diamond_signals := {"value": 0}
+	var observed := {"gold": -1, "diamonds": -1, "wood": -1}
 	_player.inventory.inventory_changed.connect(func() -> void: inventory_signals["value"] += 1)
-	_player.inventory.gold_changed.connect(func(_amount: int) -> void: gold_signals["value"] += 1)
+	_player.inventory.gold_changed.connect(func(_amount: int) -> void:
+		gold_signals["value"] += 1
+		observed["gold"] = _player.inventory.gold
+		observed["diamonds"] = _player.inventory.diamonds
+		observed["wood"] = _player.inventory.get_item_count("wood")
+	)
+	_player.inventory.diamonds_changed.connect(func(_amount: int) -> void:
+		diamond_signals["value"] += 1
+		observed["gold"] = _player.inventory.gold
+		observed["diamonds"] = _player.inventory.diamonds
+		observed["wood"] = _player.inventory.get_item_count("wood")
+	)
 	inventory_signals["value"] = 0
 	gold_signals["value"] = 0
+	diamond_signals["value"] = 0
 
-	_check(not GameState.spend({"gold": 50, "wood": 11}), "mixed cost succeeded without enough items")
+	_check(not GameState.spend({"gold": 50, "diamonds": 2, "wood": 11}), "mixed cost succeeded without enough items")
 	_check(_player.inventory.gold == 100, "failed mixed cost consumed gold")
+	_check(_player.inventory.diamonds == 3, "failed mixed cost consumed diamonds")
 	_check(_player.inventory.get_item_count("wood") == 10, "failed mixed cost consumed items")
-	_check(int(inventory_signals["value"]) == 0 and int(gold_signals["value"]) == 0, "failed mixed cost emitted changes")
+	_check(int(inventory_signals["value"]) == 0 and int(gold_signals["value"]) == 0 and int(diamond_signals["value"]) == 0, "failed mixed cost emitted changes")
+	_check(not GameState.spend({"diamonds": 4}), "diamond cost succeeded without enough currency")
+	_check(_player.inventory.diamonds == 3, "failed diamond cost changed the wallet")
+	_check(not GameState.grant({"diamonds": -1}), "negative diamond reward was accepted")
+	_check(_player.inventory.diamonds == 3, "negative diamond reward changed the wallet")
 
 	_check(not GameState.spend({"gold": 50, "missing_item": 1}), "unknown cost item was accepted")
-	_check(_player.inventory.gold == 100 and _player.inventory.get_item_count("wood") == 10, "invalid cost changed economy state")
+	_check(_player.inventory.gold == 100 and _player.inventory.diamonds == 3 and _player.inventory.get_item_count("wood") == 10, "invalid cost changed economy state")
 
-	_check(GameState.spend({"gold": 50, "wood": 4}), "valid mixed cost failed")
+	_check(GameState.spend({"gold": 50, "diamonds": 2, "wood": 4}), "valid mixed cost failed")
 	_check(_player.inventory.gold == 50, "valid mixed cost charged incorrect gold")
+	_check(_player.inventory.diamonds == 1, "valid mixed cost charged incorrect diamonds")
 	_check(_player.inventory.get_item_count("wood") == 6, "valid mixed cost charged incorrect item quantity")
-	_check(int(inventory_signals["value"]) == 1 and int(gold_signals["value"]) == 1, "mixed cost did not emit one final-state signal per domain")
+	_check(int(inventory_signals["value"]) == 1 and int(gold_signals["value"]) == 1 and int(diamond_signals["value"]) == 1, "mixed cost did not emit one final-state signal per domain")
+	_check(observed == {"gold": 50, "diamonds": 1, "wood": 6}, "currency signals exposed a partial economy state")
+	_check(GameState.can_afford({"diamonds": 1}) and not GameState.can_afford({"diamonds": 2}), "diamond affordability is incorrect")
+	_check(GameState.format_cost({"diamonds": 2}) == "2 diamonds", "diamond cost formatting is incorrect")
+
+	var full_inventory := InventoryData.new()
+	full_inventory.diamonds = 5
+	full_inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	_player.inventory = full_inventory
+	_check(not GameState.grant({"gold": 10, "diamonds": 1, "items": {"wood": 1}}), "full inventory accepted a mixed reward")
+	_check(full_inventory.gold == 0 and full_inventory.diamonds == 5, "failed mixed reward partially changed currencies")
+	full_inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
+	_check(GameState.grant({"gold": 10, "diamonds": 1, "items": {"wood": 1}}), "valid mixed reward failed")
+	_check(full_inventory.gold == 10 and full_inventory.diamonds == 6 and full_inventory.get_item_count("wood") == 1, "mixed reward committed incorrect state")
 
 
 func _test_shop_purchase_transaction() -> void:

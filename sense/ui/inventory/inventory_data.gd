@@ -24,6 +24,7 @@ signal equipment_changed(slot_type: String)
 signal equipment_upgraded(slot_type: String, item_id: String, level: int, cost: int)
 signal augments_changed(equip_slot: String)
 signal gold_changed(amount: int)
+signal diamonds_changed(amount: int)
 
 const INVENTORY_SIZE: int = 32  # 8 columns x 4 rows
 const EQUIPMENT_SLOTS := ["helmet", "armor", "weapon", "shield", "boots", "accessory_1", "accessory_2"]
@@ -41,10 +42,21 @@ var equipped_accessory_2: ItemData = null
 var inventory_slots: Array[Dictionary] = []
 
 # Currency
-var gold: int = 0:
+var _gold: int = 0
+var gold: int:
+	get:
+		return _gold
 	set(value):
-		gold = maxi(value, 0)
-		gold_changed.emit(gold)
+		_gold = maxi(value, 0)
+		gold_changed.emit(_gold)
+
+var _diamonds: int = 0
+var diamonds: int:
+	get:
+		return _diamonds
+	set(value):
+		_diamonds = maxi(value, 0)
+		diamonds_changed.emit(_diamonds)
 
 
 func _init() -> void:
@@ -94,10 +106,11 @@ func transact_items(removals: Array[Dictionary], additions: Array[Dictionary]) -
 	return transact(removals, additions, 0)
 
 
-## Commit item and gold changes together. Signals observe the final combined state.
-func transact(removals: Array[Dictionary], additions: Array[Dictionary], gold_delta: int = 0) -> bool:
+## Commit item and currency changes together. Signals observe the final combined state.
+func transact(removals: Array[Dictionary], additions: Array[Dictionary], gold_delta: int = 0, diamond_delta: int = 0) -> bool:
 	var resulting_gold := gold + gold_delta
-	if resulting_gold < 0:
+	var resulting_diamonds := diamonds + diamond_delta
+	if resulting_gold < 0 or resulting_diamonds < 0:
 		return false
 	var simulated := _copy_slots(inventory_slots)
 	for entry: Dictionary in removals:
@@ -111,8 +124,16 @@ func transact(removals: Array[Dictionary], additions: Array[Dictionary], gold_de
 		if item == null or quantity <= 0 or _add_to_slots(simulated, item, quantity) > 0:
 			return false
 	inventory_slots = simulated
+	# Commit every domain before publishing signals so observers never see a
+	# partially applied item/currency transaction.
 	if gold_delta != 0:
-		gold = resulting_gold
+		_gold = resulting_gold
+	if diamond_delta != 0:
+		_diamonds = resulting_diamonds
+	if gold_delta != 0:
+		gold_changed.emit(_gold)
+	if diamond_delta != 0:
+		diamonds_changed.emit(_diamonds)
 	if not removals.is_empty() or not additions.is_empty():
 		inventory_changed.emit()
 	return true

@@ -262,7 +262,7 @@ func apply_to_stats(stats: CharacterStats) -> void:
 
 
 # =============================================================================
-# ECONOMY HELPERS (gold + items live in player's inventory)
+# ECONOMY HELPERS (currencies + items live in player's inventory)
 # =============================================================================
 
 func get_player() -> Node:
@@ -281,7 +281,12 @@ func get_gold() -> int:
 	return inv.gold if inv else 0
 
 
-## cost: {"gold": int, "<item_id>": int, ...}
+func get_diamonds() -> int:
+	var inv := get_inventory()
+	return inv.diamonds if inv else 0
+
+
+## cost: {"gold": int, "diamonds": int, "<item_id>": int, ...}
 func can_afford(cost: Dictionary) -> bool:
 	var inv := get_inventory()
 	if inv == null:
@@ -292,6 +297,9 @@ func can_afford(cost: Dictionary) -> bool:
 			continue
 		if key == "gold":
 			if inv.gold < amount:
+				return false
+		elif key == "diamonds":
+			if inv.diamonds < amount:
 				return false
 		elif inv.get_item_count(key) < amount:
 			return false
@@ -304,29 +312,33 @@ func spend(cost: Dictionary) -> bool:
 		return false
 	var removals: Array[Dictionary] = []
 	var gold_cost := 0
+	var diamond_cost := 0
 	for key in cost:
 		var amount: int = cost[key]
 		if amount <= 0:
 			continue
 		if key == "gold":
 			gold_cost += amount
+		elif key == "diamonds":
+			diamond_cost += amount
 		else:
 			var item: ItemData = ItemDatabase.get_item(key)
 			if item == null:
 				return false
 			removals.append({"item": item, "quantity": amount})
-	return inv.transact(removals, [], -gold_cost)
+	return inv.transact(removals, [], -gold_cost, -diamond_cost)
 
 
-## rewards: {"xp": int, "gold": int, "items": {id: qty}}
+## rewards: {"xp": int, "gold": int, "diamonds": int, "items": {id: qty}}
 ## Item rewards are all-or-nothing so progression cannot consume a claim silently.
 func grant(rewards: Dictionary) -> bool:
 	var inv := get_inventory()
 	var items: Dictionary = rewards.get("items", {})
-	if inv == null and (not items.is_empty() or rewards.has("gold")):
+	if inv == null and (not items.is_empty() or rewards.has("gold") or rewards.has("diamonds")):
 		return false
 	var gold_reward := int(rewards.get("gold", 0))
-	if gold_reward < 0:
+	var diamond_reward := int(rewards.get("diamonds", 0))
+	if gold_reward < 0 or diamond_reward < 0:
 		return false
 	var additions: Array[Dictionary] = []
 	for item_id in items:
@@ -335,7 +347,7 @@ func grant(rewards: Dictionary) -> bool:
 		if item == null or quantity <= 0:
 			return false
 		additions.append({"item": item, "quantity": quantity})
-	if inv != null and not inv.transact([], additions, gold_reward):
+	if inv != null and not inv.transact([], additions, gold_reward, diamond_reward):
 		return false
 	if rewards.has("xp"):
 		add_xp(int(rewards["xp"]))
@@ -350,6 +362,8 @@ func format_cost(cost: Dictionary) -> String:
 			continue
 		if key == "gold":
 			parts.append("%d gold" % amount)
+		elif key == "diamonds":
+			parts.append("%d diamonds" % amount)
 		else:
 			var item: ItemData = ItemDatabase.get_item(key)
 			parts.append("%d %s" % [amount, item.name if item else key])

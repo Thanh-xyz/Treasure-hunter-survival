@@ -29,6 +29,7 @@ Evidence source: authorized ADB observation of
 | Village HUD | Alive | `/tmp/ths-agent-a-respawned.png` | Four stat rows left, three currency/server rows right, five-button left rail, four-button right rail, two consumable buttons |
 | Material bag | Empty/locked | `/tmp/ths-agent-a-panel-left-bag.png` | Eight columns, two unlocked rows, three locked rows, title bar and close button |
 | Equipment detail | Equipped armor | `/tmp/ths-agent-a-equipment-panel.png` | Cyan item field, orange level badge, HP/speed modifiers, remove/upgrade/sell actions |
+| Equipment detail | Equipped pet accessory, live recapture | `/tmp/th-quest315-equipment-detail-live.png` | `Cấp 1 (Tối đa 10)`, property markers, item field, timed modifiers, description, and `Tháo`/`Nâng cấp`/`Bán`; no action invoked |
 | Main menu | Expanded | `/tmp/ths-agent-a-main-menu.png` | Six stacked rows: mail, automation, friends, settings, help, safe exit |
 | Settings | Device | `/tmp/ths-agent-a-settings.png` | Music/sound sliders, 60 FPS, movement mode, language, mail |
 | Settings | Gameplay | `/tmp/ths-agent-a-settings-controls.png` | Alternating rows of square toggles for name and interaction filtering |
@@ -96,6 +97,7 @@ files used for this report.
 | Live HUD recapture, stat evidence | `913e84cfd09c8d483250b5fbfdac0d0854c1bf2f55651b890b7924061a3bc2b6` |
 | Material bag | `1c862f350519db03ce3b376fc8dc77d805bd4566e40960bf920f8e92b61f14f4` |
 | Equipment detail | `be578e2fe764b503c1f86257880764c1d08daf1b67c1206af2b74f5615fe6543` |
+| Equipment detail, live recapture | `61bcddaddf7ae747970449b3fe2a845a75669258cdbeecd61a862205a4b0af14` |
 | Main menu | `dfcb5aa3b4bcd491289b8c4f4a446db514db87011f7d7ef161149f7b3cc0908b` |
 | Device settings | `cce39dab7fcdcb56098ad674c990c95f444ff0e3b63594266fe3fb1cdefe50f9` |
 | Gameplay settings | `060c1285856599d41a04c70976d645438c6c0c37128adf4720ef796dbd496996` |
@@ -155,6 +157,12 @@ Every curated asset has a `local_only` provenance entry in
 The post-tutorial quest session was captured from the user's existing account.
 Its progress, unlocked systems, inventory and currencies are account-state
 evidence only; they are not treated as the default new-player profile.
+
+The 2026-11-06 equipment-detail recapture used the same saved account after an
+authorized login. It confirms the item-detail composition and visible `100`
+upgrade cost for that one selected live item. No Remove, Upgrade, Sell, Claim,
+settings, or account action was invoked. The selected item identity, exact cost
+derivation, currency binding, and `HoldButton` behavior remain unknown.
 
 ## Quest Menu Visual Contract
 

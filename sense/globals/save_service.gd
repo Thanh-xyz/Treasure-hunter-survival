@@ -9,7 +9,7 @@ extends Node
 signal saved
 signal loaded
 
-const SAVE_VERSION := 2
+const SAVE_VERSION := 3
 const SAVE_DIR := "user://saves"
 var SAVE_PATH: String = "user://saves/profile.json"  ## tests point this elsewhere
 const AUTOSAVE_INTERVAL := 60.0
@@ -155,6 +155,11 @@ func _migrate(data: Dictionary) -> Dictionary:
 		# Version 2 adds optional per-item enhancement levels. Missing levels are
 		# intentionally interpreted as the catalog default (display level 1).
 		data["version"] = 2
+		v = 2
+	if v < 3:
+		# Version 3 adds optional source identity and exact rolled stat payloads
+		# for duplicated reference equipment instances.
+		data["version"] = 3
 	return data
 
 
@@ -345,6 +350,18 @@ func _validate_item_entry(entry: Dictionary, equipment_slot: String = "") -> boo
 		return false
 	if level > 1 and not item.has_valid_upgrade_configuration():
 		return false
+	var reference: Variant = entry.get("reference", {})
+	if not reference is Dictionary:
+		return false
+	if not reference.is_empty():
+		if not item.is_equippable():
+			return false
+		if not _is_integer(reference.get("card_id", -1)) or int(reference.get("card_id", -1)) <= 0:
+			return false
+		if not reference.get("asset_id") is String or str(reference.get("asset_id", "")).is_empty():
+			return false
+		if not reference.get("stats") is Dictionary or not ItemData.is_valid_reference_stats(reference.get("stats", {})):
+			return false
 	var augments: Variant = entry.get("augments", [])
 	if not augments is Array or augments.size() > item.get_augment_slot_count():
 		return false
@@ -422,6 +439,12 @@ func _item_to_dict(item: ItemData, qty: int) -> Dictionary:
 		d["level"] = item.enhancement_level
 	if not item.applied_augments.is_empty():
 		d["augments"] = item.applied_augments.duplicate()
+	if item.has_reference_instance_data():
+		d["reference"] = {
+			"card_id": item.source_card_id,
+			"asset_id": item.source_asset_id,
+			"stats": item.get_reference_stats(),
+		}
 	return d
 
 
@@ -429,7 +452,8 @@ func _item_from_dict(d: Dictionary) -> ItemData:
 	var id := str(d.get("id", ""))
 	var augments: Array = d.get("augments", [])
 	var level := int(d.get("level", 1))
-	if augments.is_empty() and level == 1:
+	var reference: Dictionary = d.get("reference", {})
+	if augments.is_empty() and level == 1 and reference.is_empty():
 		return ItemDatabase.get_item(id)
 	var item: ItemData = ItemDatabase.get_item_copy(id)
 	if item != null:
@@ -437,6 +461,12 @@ func _item_from_dict(d: Dictionary) -> ItemData:
 		item.applied_augments.clear()
 		for a in augments:
 			item.applied_augments.append(str(a))
+		if not reference.is_empty():
+			item.set_reference_instance_data(
+				int(reference.get("card_id", -1)),
+				str(reference.get("asset_id", "")),
+				reference.get("stats", {})
+			)
 	return item
 
 

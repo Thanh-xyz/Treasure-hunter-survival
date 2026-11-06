@@ -324,3 +324,16 @@ No shared contract change should be implemented until these questions are resolv
   100/200/300. No presentation change is required.
 - Box 149 is intentionally absent. Agent A's proposed three weapon asset IDs remain the dependency
   for its future registration and the ten-dig follow-up quest.
+
+## 2026-11-06 — Reference equipment instance persistence
+
+- Gameplay accepts the integrated stable art IDs `item.weapon.card_28.icon`,
+  `item.weapon.card_29.icon` and `item.weapon.card_30.icon` as source identity metadata.
+- Duplicated equipment instances can now persist a source card ID, asset ID and exact decimal
+  Health/Damage/Speed payload through save schema version 3. The existing catalog templates remain
+  immutable and do not receive reference instance data.
+- These fields are not yet a presentation contract: gameplay does not resolve the asset ID to a
+  texture, register cards 28-30 as runtime item IDs, display reference stats or apply them to
+  character attributes. Agent A requires no adaptation in this slice.
+- A later materialization/UI feature must display values supplied by the instance and must not
+  independently roll, round or derive rarity modifiers. Those rules are still unknown.

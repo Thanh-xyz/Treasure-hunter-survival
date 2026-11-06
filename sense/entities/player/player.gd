@@ -905,7 +905,9 @@ func _on_equipment_changed(_slot_type: String) -> void:
 		if attack_hitbox != null:
 			attack_hitbox.damage = stats.attack_damage
 		_refresh_combat_modifiers()
-	QuestService.refresh_state_objectives(inventory)
+	# Save hydration emits one signal per slot; defer so quests only inspect the
+	# final equipment snapshot instead of a partially replaced load state.
+	QuestService.refresh_state_objectives.call_deferred(inventory)
 
 
 func _on_equipment_upgraded(slot_type: String, item_id: String, level: int, cost: int) -> void:

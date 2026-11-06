@@ -240,3 +240,20 @@ asset metadata.
   removed-ID fallback and malformed-ID recovery through the known-good backup.
 - No quest definition, objective, reward, HUD, monster ID, asset, LAN protocol or art-owned file
   changed. This prepares an index-safe future migration to the verified reference chain.
+
+## 2026-11-06 — Treasure Hunter Diamond wallet
+
+- Branch: `feature/th-logic-diamond-wallet`, based on `origin/develop` at `d5c1a57`.
+- Direct reference data confirms Gold (`Currency.json` ID 1), Diamond (ID 2), and reward box 98
+  as exactly one Diamond. Diamond is implemented as currency, not an inventory item.
+- `InventoryData.transact()` now atomically commits item slots, Gold and Diamond before emitting
+  `gold_changed`, `diamonds_changed` or `inventory_changed`. Existing three-argument callers
+  remain source-compatible.
+- `GameState` supports `diamonds` in affordability, spending, grants and cost formatting.
+  Failed mixed rewards/costs preserve every domain.
+- Save version 2 persists optional non-negative `diamonds`; old saves default to zero and
+  malformed Diamond balances are rejected before live-state mutation.
+- Godot 4.6 import, focused transaction tests, legacy phases 1-7, survival/save tests and Xvfb
+  live/dead MobileHUD render passed with exit code 0.
+- UI display, quest-content insertion and LAN Diamond reward replication are intentionally
+  excluded and require separate presentation/content/protocol features.

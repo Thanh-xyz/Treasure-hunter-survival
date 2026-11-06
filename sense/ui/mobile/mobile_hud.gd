@@ -31,6 +31,9 @@ const SPEED_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_spee
 const GOLD_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_gold.png")
 const MAP_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_map.png")
 const STAT_LINE := preload("res://assets/treasure_hunter/ui/reference/stat_line.png")
+const QUEST_SUGGESTION_FRAME := preload("res://assets/treasure_hunter/ui/reference/quest_suggestion_frame.png")
+const QUEST_DIG_ICON := preload("res://assets/treasure_hunter/ui/reference/quest_dig_icon.png")
+const QUEST_GUIDE_WINBEE := preload("res://assets/treasure_hunter/ui/reference/quest_guide_winbee.png")
 const BACK_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_back.png")
 const PET_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_pet.png")
 const SKILL_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_skill.png")
@@ -62,8 +65,6 @@ var _world_time_label: Label
 var _world_coord_label: Label
 var _world_gold_label: Label
 var _portrait: TextureRect
-var _zone_label: Label
-var _quest_box: VBoxContainer
 var _boss_timer_label: Label
 var _boss_panel: PanelContainer
 var _boss_bar: ProgressBar
@@ -72,6 +73,12 @@ var _toast_box: VBoxContainer
 var _death_panel: Control
 var _death_button: Button
 var _quest_tracker: Control
+var _quest_title_label: Label
+var _quest_progress_label: Label
+var _quest_icon: TextureRect
+var _tracked_quest_id: String = ""
+var _tracked_quest_ready: bool = false
+var _quest_available: bool = false
 var _fold_button: Button
 var _hud_collapsed: bool = false
 var _death_timer: float = 0.0
@@ -361,23 +368,91 @@ func _hud_value_row(parent: VBoxContainer, icon_texture: Texture2D) -> HBoxConta
 
 
 func _build_left_panel() -> void:
-	var box := VBoxContainer.new()
-	box.position = Vector2(488, 472)
-	box.size = Vector2(224, 190)
-	box.add_theme_constant_override("separation", 4)
-	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(box)
-	_quest_tracker = box
-	_zone_label = UiTheme.label("", 16, UiTheme.C_GOOD)
-	box.add_child(_zone_label)
+	_quest_tracker = Control.new()
+	_quest_tracker.position = Vector2(488, 490)
+	_quest_tracker.size = Vector2(232, 292)
+	_quest_tracker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_quest_tracker.visible = false
+	add_child(_quest_tracker)
+
 	_boss_timer_label = UiTheme.label("", 14, Color(1, 0.64, 0.3))
-	box.add_child(_boss_timer_label)
-	var qp := PanelContainer.new()
-	qp.add_theme_stylebox_override("panel", UiTheme.box(Color(0.06, 0.045, 0.035, 0.72), Color(UiTheme.C_TRIM, 0.65), 1))
-	box.add_child(qp)
-	_quest_box = VBoxContainer.new()
-	_quest_box.add_theme_constant_override("separation", 2)
-	qp.add_child(_quest_box)
+	_boss_timer_label.size = Vector2(232, 24)
+	_boss_timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_boss_timer_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_boss_timer_label.position = Vector2(488, 464)
+	_boss_timer_label.visible = false
+	add_child(_boss_timer_label)
+
+	var popup := NinePatchRect.new()
+	popup.texture = QUEST_SUGGESTION_FRAME
+	popup.position = Vector2(0, 12)
+	popup.size = Vector2(176, 70)
+	popup.set_patch_margin(SIDE_LEFT, 7)
+	popup.set_patch_margin(SIDE_TOP, 4)
+	popup.set_patch_margin(SIDE_RIGHT, 6)
+	popup.set_patch_margin(SIDE_BOTTOM, 8)
+	popup.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	popup.self_modulate = Color(0, 0, 0, 0.470588)
+	popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	popup.z_index = 0
+	_quest_tracker.add_child(popup)
+
+	_quest_icon = TextureRect.new()
+	_quest_icon.texture = QUEST_DIG_ICON
+	_quest_icon.position = Vector2(7, 19)
+	_quest_icon.size = Vector2(52, 52)
+	_quest_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_quest_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_quest_icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_quest_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_quest_icon.z_index = 2
+	_quest_tracker.add_child(_quest_icon)
+
+	_quest_title_label = UiTheme.label("", 22, UiTheme.C_TEXT)
+	_quest_title_label.position = Vector2(66, 18)
+	_quest_title_label.size = Vector2(106, 30)
+	_quest_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_quest_title_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_quest_title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_quest_title_label.z_index = 2
+	_quest_tracker.add_child(_quest_title_label)
+
+	_quest_progress_label = UiTheme.label("", 22, UiTheme.C_TEXT)
+	_quest_progress_label.position = Vector2(9, 50)
+	_quest_progress_label.size = Vector2(82, 30)
+	_quest_progress_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_quest_progress_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_quest_progress_label.z_index = 2
+	_quest_tracker.add_child(_quest_progress_label)
+
+	var guide := TextureRect.new()
+	guide.texture = QUEST_GUIDE_WINBEE
+	guide.position = Vector2(101, 49)
+	guide.size = Vector2(154, 232)
+	guide.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	guide.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	guide.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	guide.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	guide.z_index = 1
+	_quest_tracker.add_child(guide)
+
+	var guide_name := UiTheme.label("Winbee", 21, Color(1.0, 0.22, 0.08))
+	guide_name.position = Vector2(132, 263)
+	guide_name.size = Vector2(98, 27)
+	guide_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	guide_name.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	guide_name.z_index = 2
+	_quest_tracker.add_child(guide_name)
+
+	var open_button := Button.new()
+	open_button.position = Vector2(0, 12)
+	open_button.size = Vector2(176, 70)
+	open_button.focus_mode = Control.FOCUS_NONE
+	open_button.tooltip_text = "Quest"
+	for state in ["normal", "hover", "pressed", "disabled", "focus"]:
+		open_button.add_theme_stylebox_override(state, StyleBoxEmpty.new())
+	open_button.pressed.connect(_on_tracked_quest_pressed)
+	_quest_tracker.add_child(open_button)
 
 
 func _build_boss_bar() -> void:
@@ -685,7 +760,9 @@ func _process(delta: float) -> void:
 			c.visible = not _hud_collapsed and not dead
 	joystick.visible = not blocked and not _hud_collapsed
 	if _quest_tracker:
-		_quest_tracker.visible = not blocked and not _hud_collapsed and not dead
+		_quest_tracker.visible = _quest_available and not blocked and not _hud_collapsed and not dead
+	if _boss_timer_label:
+		_boss_timer_label.visible = not _boss_timer_label.text.is_empty() and not blocked and not _hud_collapsed and not dead
 	if _death_panel.visible:
 		_death_timer -= delta
 		_death_button.disabled = _death_timer > 0.0
@@ -773,33 +850,24 @@ func _toggle_auto_farm() -> void:
 
 
 func _refresh_quests() -> void:
-	for c in _quest_box.get_children():
-		c.queue_free()
-	var rows := QuestService.get_tracker_rows()
-	var shown := 0
-	for r in rows:
-		if r["claimed"]:
-			continue
-		if r["daily"] and shown >= 2:
-			continue
-		var line := Button.new()
-		line.flat = true
-		line.focus_mode = Control.FOCUS_NONE
-		line.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		line.add_theme_font_size_override("font_size", 15)
-		var prefix := "! " if r["ready"] else ""
-		line.text = "%s%s  %d/%d" % [prefix, r["name"], r["progress"], r["count"]]
-		line.add_theme_color_override("font_color", UiTheme.C_GOOD if r["ready"] else (UiTheme.C_TEXT if not r["daily"] else UiTheme.C_MUTED))
-		line.pressed.connect(_on_quest_line.bind(String(r["id"]), bool(r["ready"])))
-		_quest_box.add_child(line)
-		shown += 1
-		if shown >= 3:
-			break
+	var quest := QuestService.get_main_quest()
+	_quest_available = not quest.is_empty()
+	if not _quest_available:
+		_tracked_quest_id = ""
+		_tracked_quest_ready = false
+		_quest_tracker.visible = false
+		return
+	_tracked_quest_id = String(quest["id"])
+	_tracked_quest_ready = QuestService.main_ready
+	_quest_title_label.text = String(quest["name"])
+	_quest_progress_label.text = "%d/%d" % [QuestService.main_progress, int(quest["obj"]["count"])]
+	_quest_icon.visible = _tracked_quest_id == "q01"
+	_quest_title_label.position.x = 66 if _quest_icon.visible else 9
 
 
-func _on_quest_line(qid: String, ready: bool) -> void:
-	if ready:
-		QuestService.claim(qid)
+func _on_tracked_quest_pressed() -> void:
+	if _tracked_quest_ready:
+		QuestService.claim(_tracked_quest_id)
 	else:
 		open_menu("quest")
 
@@ -838,9 +906,7 @@ func show_toast(text: String, color: Color = Color.WHITE) -> void:
 	tw.tween_callback(l.queue_free)
 
 
-func _on_zone_entered(zone_id: String) -> void:
-	var z: Dictionary = GameContent.ZONES.get(zone_id, {})
-	_zone_label.text = z.get("name", zone_id)
+func _on_zone_entered(_zone_id: String) -> void:
 	_boss_timer_label.text = ""
 	_boss_panel.visible = false
 
@@ -865,6 +931,8 @@ func _on_boss_state(boss_id: String, hp: int, max_hp: int, phase: int) -> void:
 func _on_player_died() -> void:
 	_death_timer = 0.0
 	_death_panel.visible = true
+	_quest_tracker.visible = false
+	_boss_timer_label.visible = false
 
 
 func _respawn_here() -> void:

@@ -283,6 +283,8 @@ func _validate_quests(quests: Dictionary) -> bool:
 			return false
 	if quests.has("main_index") and int(quests["main_index"]) > GameContent.MAIN_QUESTS.size():
 		return false
+	if quests.has("main_quest_id") and not quests["main_quest_id"] is String:
+		return false
 	if quests.has("main_ready") and not quests["main_ready"] is bool:
 		return false
 	if quests.has("daily_date") and not quests["daily_date"] is String:

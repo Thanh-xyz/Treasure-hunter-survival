@@ -268,3 +268,12 @@ No shared contract change should be implemented until these questions are resolv
 - No art-owned file, asset manifest, animation state, direction, gameplay ID or equipment-slot
   ID changed. Agent A's Beginner Quest HUD was integrated independently through PR #53 and
   consumes the unchanged QuestService presentation contract.
+
+## 2026-11-06 — Stable quest save identity
+
+- Gameplay saves now carry `main_quest_id` as an additive stable identity while retaining
+  `main_index` for legacy/removed-content fallback.
+- The active HUD contract is unchanged: continue reading `get_main_quest()`, `main_progress`,
+  `main_ready` and `quests_changed`. Presentation must not read raw save fields.
+- No quest/art/asset ID changed in this slice. The change only prevents a future chain reorder
+  from silently displaying a different active quest for an existing profile.

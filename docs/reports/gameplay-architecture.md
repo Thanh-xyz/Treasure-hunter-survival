@@ -191,6 +191,14 @@ directly equal Emberfield's rarity enum, and `levelRequire` is one lower than th
 level in the verified beginner quests. This boundary is transport-independent and can later be
 reused by a host-authoritative quest snapshot without coupling quest rules to LAN RPCs.
 
+## Stable quest save identity
+
+Quest snapshots persist both the current `main_quest_id` and the legacy `main_index`. Load
+prefers a recognized stable ID so content insertion or reordering does not silently redirect a
+profile to another quest. Old snapshots and snapshots whose quest was deliberately removed use
+the bounded index as a compatibility fallback. The optional field does not require a save
+version bump and keeps current version-0/1/2 migration behavior intact.
+
 ## Key risks
 
 - `player.gd` and `LanSession` are large cross-layer files, so broad refactors would create

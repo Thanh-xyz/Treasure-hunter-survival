@@ -322,3 +322,24 @@ asset metadata.
   1-7, survival/save tests and Xvfb live/dead MobileHUD rendering passed with exit code 0.
 - No item ID, quest, reward-box registration, combat formula, UI, LAN protocol, asset manifest or
   Agent A-owned file changed. Box 149 and quest 305 remain unimplemented.
+
+## 2026-11-06 — Reference weapon catalog and exact-payload materializer
+
+- Branch: `feature/th-logic-reference-equipment-catalog`, based on `origin/develop` at `697b8ca`.
+- Added stable runtime IDs `th_weapon_28`, `th_weapon_29` and `th_weapon_30` without aliasing any
+  existing Emberfield item. Exact names, Common rarity, cost 10 Gold, upgrade rate 1.4 and source
+  Health/Damage/Speed ranges come from Card.json.
+- `ReferenceEquipmentCatalog.materialize(card_id, stats)` accepts only a complete finite payload
+  inside inclusive source ranges and returns an isolated save-compatible equipment instance with
+  source card and stable asset metadata.
+- Reference templates remain outside the public shop registry, preventing incomplete zero-stat
+  content from appearing at the blacksmith. They remain resolvable for save validation/hydration.
+- Initial stat RNG, rounding, rarity/tier transforms, combat application, Box 149, quest 305, UI,
+  LAN and runtime icon resolution remain excluded because the authoritative rules are not proven.
+- Source `canUpgrade`, base cost 10 Gold and rate 1.4 remain catalog evidence; runtime upgrade is
+  disabled so the current provisional command cannot charge Gold without affecting reference stats.
+- Godot `4.6.stable.official.89cea1439` import, focused inventory/catalog tests, legacy phases
+  1-7, survival/save tests and Xvfb live/dead MobileHUD rendering passed with exit code 0. The
+  blacksmith render still reports exactly 29 public equipment items, proving no template leak.
+  Focused coverage also proves rejected reference upgrades spend no Gold, change no level and emit
+  no economy/equipment signal.

@@ -350,19 +350,13 @@ func _test_save_roundtrip() -> void:
 	SaveService.deserialize_inventory(inv, {"gold": 5000, "slots": [], "equipment": {}})
 	_check(inv.diamonds == 0, "legacy inventory without diamonds did not default to zero")
 	inv.add_item(ItemDatabase.get_item("wood"), 42)
-	inv.equip_item(_add_and_find(inv, "iron_sword"))
-	var enhanced_weapon := inv.get_equipped("weapon").duplicate() as ItemData
-	enhanced_weapon.enhancement_level = 3
-	# This exercises the generic persistence carrier only; it does not map card
-	# 28 to Emberfield's iron_sword gameplay identity.
-	var rolled_stats := {"health": 13.9, "damage": 29.8, "speed": 0.08}
-	_check(enhanced_weapon.set_reference_instance_data(
+	var enhanced_weapon := ReferenceEquipmentCatalog.materialize(
 		28,
-		"item.weapon.card_28.icon",
-		rolled_stats
-	), "reference equipment payload is accepted")
-	rolled_stats["damage"] = 999.0
-	_check(is_equal_approx(float(enhanced_weapon.get_reference_stats().get("damage", 0.0)), 29.8), "reference payload retained caller-owned dictionary")
+		{"health": 13.9, "damage": 29.8, "speed": 0.08}
+	)
+	_check(enhanced_weapon != null and inv.add_item(enhanced_weapon, 1) == 0, "reference equipment setup failed")
+	inv.equip_item(_find_slot(inv, "th_weapon_28"))
+	enhanced_weapon = inv.get_equipped("weapon").duplicate() as ItemData
 	inv._set_equipped("weapon", enhanced_weapon)
 	GameState.level = 7
 	_check(GameState.unlock_pet("lucky_cat"), "adopt lucky cat for save test")
@@ -381,7 +375,7 @@ func _test_save_roundtrip() -> void:
 	var level_one_inventory := InventoryData.new()
 	_check(SaveService.deserialize_inventory(level_one_inventory, {
 		"gold": 0,
-		"slots": [{"id": "iron_sword", "qty": 1, "reference": {
+		"slots": [{"id": "th_weapon_28", "qty": 1, "reference": {
 			"card_id": 28,
 			"asset_id": "item.weapon.card_28.icon",
 			"stats": {"health": 13.9, "damage": 29.8, "speed": 0.08},
@@ -389,7 +383,7 @@ func _test_save_roundtrip() -> void:
 		"equipment": {},
 	}), "level-one reference equipment payload hydrates")
 	var level_one_item := level_one_inventory.get_item_at(0).get("item") as ItemData
-	_check(level_one_item != null and level_one_item != ItemDatabase.get_item("iron_sword"), "level-one reference equipment reused catalog template")
+	_check(level_one_item != null and level_one_item != ItemDatabase.get_item("th_weapon_28"), "level-one reference equipment reused catalog template")
 	_check(level_one_item != null and level_one_item.source_card_id == 28, "level-one reference equipment lost source identity")
 
 	# Wipe live state then load
@@ -412,9 +406,9 @@ func _test_save_roundtrip() -> void:
 	_check(inv.gold == 1234, "gold restored")
 	_check(inv.diamonds == 17, "diamonds restored")
 	_check(inv.get_item_count("wood") == 42, "items restored")
-	_check(inv.get_equipped("weapon") != null and inv.get_equipped("weapon").id == "iron_sword", "equipment restored")
-	_check(inv.get_equipped("weapon").enhancement_level == 3, "equipment enhancement level restored")
-	_check(inv.get_equipped("weapon") != ItemDatabase.get_item("iron_sword"), "enhanced save reused the catalog template")
+	_check(inv.get_equipped("weapon") != null and inv.get_equipped("weapon").id == "th_weapon_28", "equipment restored")
+	_check(inv.get_equipped("weapon").enhancement_level == 1, "equipment enhancement level restored")
+	_check(inv.get_equipped("weapon") != ItemDatabase.get_item("th_weapon_28"), "enhanced save reused the catalog template")
 	_check(inv.get_equipped("weapon").source_card_id == 28, "reference card identity restored")
 	_check(inv.get_equipped("weapon").source_asset_id == "item.weapon.card_28.icon", "reference asset identity restored")
 	_check(inv.get_equipped("weapon").get_reference_stats() == {
@@ -422,7 +416,7 @@ func _test_save_roundtrip() -> void:
 		"damage": 29.8,
 		"speed": 0.08,
 	}, "reference decimal stat payload restored")
-	_check(ItemDatabase.get_item("iron_sword").source_card_id == -1, "reference payload mutated catalog template")
+	_check(ItemDatabase.get_item("th_weapon_28").source_card_id == -1, "reference payload mutated catalog template")
 
 	# Corrupt main file -> backup is used
 	SaveService.enabled = true
@@ -558,6 +552,24 @@ func _test_save_roundtrip() -> void:
 			"slots": [],
 			"equipment": {"weapon": {"id": "iron_sword", "qty": 1, "reference": invalid_reference}},
 		}), "invalid reference equipment payload was accepted: %s" % str(invalid_reference))
+	var mismatched_reference_items: Array[Dictionary] = [
+		{"id": "iron_sword", "reference": {"card_id": 28, "asset_id": "item.weapon.card_28.icon", "stats": {"health": 13.9, "damage": 29.8, "speed": 0.08}}},
+		{"id": "th_weapon_28", "reference": {"card_id": 999, "asset_id": "item.weapon.card_28.icon", "stats": {"health": 13.9, "damage": 29.8, "speed": 0.08}}},
+		{"id": "th_weapon_28", "reference": {"card_id": 29, "asset_id": "item.weapon.card_29.icon", "stats": {"health": 20, "damage": 3, "speed": 0.05}}},
+		{"id": "th_weapon_28", "reference": {"card_id": 28, "asset_id": "item.weapon.card_29.icon", "stats": {"health": 13.9, "damage": 29.8, "speed": 0.08}}},
+		{"id": "th_weapon_28", "reference": {"card_id": 28, "asset_id": "item.weapon.card_28.icon", "stats": {"health": 20.1, "damage": 29.8, "speed": 0.08}}},
+	]
+	for mismatched: Dictionary in mismatched_reference_items:
+		_check(not SaveService.deserialize_inventory(inv, {
+			"gold": 999,
+			"slots": [{"id": mismatched["id"], "qty": 1, "reference": mismatched["reference"]}],
+			"equipment": {},
+		}), "mismatched reference identity was accepted: %s" % str(mismatched))
+	_check(not SaveService.deserialize_inventory(inv, {
+		"gold": 999,
+		"slots": [{"id": "th_weapon_28", "qty": 1}],
+		"equipment": {},
+	}), "reference runtime item was accepted without instance data")
 	_check(not SaveService.deserialize_inventory(inv, {
 		"gold": 999,
 		"slots": [{"id": "wood", "qty": 1, "reference": {

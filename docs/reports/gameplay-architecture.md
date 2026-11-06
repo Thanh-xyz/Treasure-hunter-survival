@@ -264,3 +264,24 @@ Versions 0, 1 and 2 migrate additively because the new field is optional.
 The payload deliberately does not alter existing attack, health or movement calculations.
 Materialization ranges, RNG ownership, rarity effects, display rounding, reward commitment and
 LAN replication remain separate features requiring their own evidence and approval.
+
+## Reference equipment catalog boundary
+
+`ReferenceEquipmentCatalog` isolates exact Treasure Hunter card metadata from Emberfield's
+existing clean-room items. Cards 28/29/30 map to additive runtime IDs `th_weapon_28`,
+`th_weapon_29` and `th_weapon_30`; no existing sword or axe identity is reused.
+
+The templates live in a private `ItemDatabase` registry. `get_item()` and `get_item_copy()` can
+resolve them for save validation and hydration, but current shop enumeration over public `items`
+does not expose incomplete reference content for purchase. Materialization validates all three
+exact stats against inclusive source ranges, copies the matching template and attaches source
+card/asset metadata through the existing instance carrier.
+
+The catalog deliberately accepts resolved values instead of owning RNG. A later offline/host
+authority can commit exact payloads and replay them without coupling transport, quest claims or
+presentation to an unverified random distribution.
+
+Although the source definitions are upgradeable with cost 10 Gold and rate 1.4, the runtime
+templates keep upgrade commands disabled in this slice. Enabling the existing provisional upgrade
+path before reference stats participate would spend currency without changing the authoritative
+payload, so source upgrade metadata remains catalog evidence until a complete rule is approved.

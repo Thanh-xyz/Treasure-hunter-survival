@@ -1,5 +1,24 @@
 # Logic Scout Report
 
+## 2026-11-06 — Quest 306 / Turtle
+
+- Source quest `306` follows `305`, uses `KillMobSpecific`, targets Card/Mob `33` once, and
+  awards Box `98`. The verified Vietnamese objective is `Đánh bại Turtle` / `Đánh bại Rùa`.
+- Card `33` and recovered behavior verify Health `100`, Damage `20`, Speed `0`, no movement or
+  chase, melee attack enabled, effective attack gate `1.0s`, source attack range `1.75`, and
+  target radius `5`. The approved `40 PPU` art contract converts the radii to `70px` and `200px`.
+- Agent A already integrated stable ID `actor.monster.turtle.default` with a `384x256` atlas,
+  `64x64` frames, and verified `idle`, `move`, `attack`, and `death` sequences. Turtle has no
+  directional animation set.
+- Emberfield already supports stable kill-target quests, retry-safe Box `98`, monster IDs in LAN
+  snapshots, and death-event progression. It lacked a generic non-directional atlas adapter and
+  a stationary melee profile.
+- Exact source spawn coordinates, collision footprint, hit-frame event, XP, loot, and the prefab's
+  `120s` lifetime semantics remain unknown. One Greenwood spawn is therefore a documented local
+  playability assumption, not a parity claim.
+- Agent A's concurrent Quest 319 work is documentation-only. No active Agent A diff overlaps the
+  gameplay files in this feature.
+
 ## 2026-11-06 — Quest 305 Box 149 activation
 
 - Source quest 305 is a main-chain type-29 objective after 335 and before 306. It requires exactly

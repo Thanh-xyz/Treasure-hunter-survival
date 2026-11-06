@@ -1,5 +1,58 @@
 # Logic Progress
 
+## 2026-11-06 — Quest 306 / Turtle
+
+- Added stable gameplay monster ID `turtle` for source Card `33`: 100 HP, 20 damage, zero speed,
+  `70px` attack range, `200px` target radius, `1.0s` attack gate, no XP/Gold/loot, and knockback
+  immunity. One provisional Greenwood spawn makes the approved quest playable offline.
+- Added a cached atlas adapter for stable art ID `actor.monster.turtle.default`, preserving all
+  21 ordered frame references, repeated attack frame, loop flags, and total clip durations.
+- Extended `Monster` with generic atlas rendering and `stationary_melee` behavior while preserving
+  existing skeleton/pixel actors and other AI profiles. Death duration and zero-XP handling are
+  data-driven.
+- Inserted `q306` between `q305` and `q02`, targeting only `turtle` and granting exactly one
+  Diamond through the existing retry-safe Box `98` authority. Index-only legacy saves now shift
+  across both inserted source quests.
+- Added focused catalog/runtime/quest regression coverage and a deterministic Turtle render scene.
+  Formal TEST results will be recorded after COOK closes; Godot 4.6 editor import and
+  `git diff --check` already pass as implementation preflight.
+- No Agent A-owned file, save schema, public quest API, LAN transport schema, loot definition, or
+  unverified source lifetime behavior changed.
+
+### Test evidence
+
+- Godot `4.6.stable.official.89cea1439` headless editor import: exit `0`.
+- `InventoryTransactionTests.tscn`: exit `0`, all focused transaction tests passed.
+- `SurvivalTests.tscn`: exit `0`, including Turtle atlas regions, clip totals, source stats,
+  stationary range/cadence, knockback immunity, stable death ID, zero XP, quest targeting,
+  one-Diamond claim, no double grant, and save migration.
+- `LegacySystemTests.tscn`: exit `0`, phases 1-7 and the Survival/save runner passed.
+- Two-process `LanCombatPeerRunner.tscn`: host exit `0`, client exit `0`; authoritative enemy HP,
+  removal, range rejection, loot, critical hit, and life steal regression remained intact.
+- `RenderTurtle.tscn` under Xvfb: exit `0`; `/tmp/emberfield-turtle.png` is a `360x800` RGBA PNG
+  and manual inspection confirms the expected idle Turtle atlas frame is rendered. No pixel-parity
+  claim is made because a direct reference runtime capture is unavailable.
+- `git diff --check`: exit `0`. Expected negative-save fixture warnings, headless HUD warnings,
+  and existing exit-time resource leak warnings remain visible but do not fail the suites.
+- TEST initially exposed two fixture issues (an inferred integer type and a physics frame consumed
+  before measuring initial cooldown); both were corrected, then the affected suites were rerun to
+  successful completion.
+
+### Review closeout
+
+- No high/medium correctness, regression, ownership, fidelity, performance, or validation finding
+  remains. The final diff matches the approved Quest 306/Turtle plan.
+- Code inspection confirms LAN enemy registration/replication carries `enemy.def_id`, validates it
+  against `GameContent.MONSTERS`, and reconstructs replicas with `Monster.create(def_id)`, so the
+  stable `turtle` identity needs no transport-schema change.
+- Existing pixel/skeleton visuals and melee/flyer/ranged/charger AI keep their prior fallbacks.
+  Per-monster atlas construction is cached and occurs only at actor creation, not in gameplay loops.
+- Ownership review finds only Agent B gameplay/tests/reports plus the previously approved shared
+  runtime files. Agent A's branch is clean and its Quest 320 SCOUT is read-only with no overlap.
+- Residual risks are accepted/documented rather than hidden: provisional spawn, inferred local
+  collision, equal per-key timing from verified total durations, missing direct Turtle capture,
+  and excluded XP/loot/lifetime behavior. The branch is PR-ready.
+
 ## 2026-11-06 — Quest 305 Box 149 activation
 
 - Inserted stable runtime quest `q305` after `q01`, matching source quest 305's ten-dig objective,

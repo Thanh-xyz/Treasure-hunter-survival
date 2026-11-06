@@ -139,7 +139,7 @@ const MOUNTS := {
 
 # =============================================================================
 # MONSTERS — data for Monster.gd. visual "skeleton" reuses the existing sheet.
-# ai: melee | ranged | charger | flyer
+# ai: melee | ranged | charger | flyer | stationary_melee
 # =============================================================================
 const MONSTERS := {
 	"slime": {
@@ -168,6 +168,14 @@ const MONSTERS := {
 		"ai": "charger", "hp": 60, "dmg": 12, "spd": 34.0, "xp": 16, "level": 4,
 		"range": 90.0, "aggro": 140.0, "scale": 0.78, "gold": Vector2i(3, 8),
 		"loot": [["leather_armor", 3, 1, 1], ["pet_treat", 15, 1, 2], ["iron_ore", 20, 1, 2]],
+	},
+	"turtle": {
+		"name": "Turtle", "source_card_id": 33,
+		"visual": "atlas", "asset_id": "actor.monster.turtle.default",
+		"ai": "stationary_melee", "hp": 100, "dmg": 20, "spd": 0.0, "xp": 0, "level": 1,
+		"range": 70.0, "aggro": 200.0, "scale": 1.0, "gold": Vector2i.ZERO, "loot": [],
+		"attack_interval": 1.0, "attack_duration": 0.6666666865,
+		"death_duration": 0.75, "knockback_immune": true,
 	},
 	"skeleton_grunt": {
 		"name": "Bone Grunt", "visual": "skeleton", "tint": Color(1, 1, 1),
@@ -246,7 +254,7 @@ const ZONES := {
 	"greenwood": {
 		"name": "Greenwood Meadow", "level": 1, "scene": "res://sense/maps/field/greenwood.tscn",
 		"size": Vector2i(60, 90), "ground_tint": Color(1, 1, 1), "seed": 1101,
-		"spawns": [["slime", 9], ["bat", 5], ["shroom", 4], ["boar", 3]],
+		"spawns": [["slime", 9], ["bat", 5], ["shroom", 4], ["boar", 3], ["turtle", 1]],
 		"trees": 34, "rocks": 18, "lumber": 9, "dig_spots": 42,
 		"world_boss": "slime_king", "boss_interval": 180.0,
 	},
@@ -319,6 +327,10 @@ const MAIN_QUESTS := [
 		"source_quest_id": 305,
 		"obj": {"type": "dig", "target": "any", "count": 10},
 		"reward_box_id": 149, "reward_preview": "1 trang bị Common"},
+	{"id": "q306", "name": "Đánh bại Turtle", "desc": "Đánh bại Rùa.",
+		"source_quest_id": 306,
+		"obj": {"type": "kill", "target": "turtle", "count": 1},
+		"reward_box_id": 98, "reward_preview": "1 Kim cương"},
 	{"id": "q02", "name": "Slime Cleanup", "desc": "Defeat Meadow Slimes.",
 		"obj": {"type": "kill", "target": "slime", "count": 8}, "reward": {"xp": 60, "gold": 80, "items": {"health_potion": 3}}},
 	{"id": "q03", "name": "Timber!", "desc": "Chop trees for wood. Hit a tree to gather.",

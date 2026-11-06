@@ -3555,6 +3555,90 @@
         "The batch-exported Winbee__6001.png is fully transparent; the integrated target was decoded directly with its texture dependency loaded.",
         "SHA-256: aed57a4fb6ba632927943382097576b4abd761bed5a1f21268bd2d6b7e67fc48."
       ]
+    },
+    {
+      "asset_id": "item.weapon.card_28.icon",
+      "category": "item_icon",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/f12b282c6f8114427b25c083a7b06ae6/Weapons_0__2.png",
+      "target_path": "assets/treasure_hunter/items/weapons/card_28_weapons_0.png",
+      "file_format": "png",
+      "dimensions": [
+        13,
+        21
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_card_config_and_direct_unity_decode",
+      "integration_status": "selected",
+      "notes": [
+        "Card.json ID 28 has iconUrl Icons/Items/6_Weapons/Weapons_0 and equipmentType 6.",
+        "Unity asset f12b282c6f8114427b25c083a7b06ae6: Sprite path ID 2, Texture2D path ID 1, 32 pixels per unit.",
+        "Normalized Unity pivot: (0.6538461447, 0.1904761791).",
+        "SHA-256: 31c9b103f647dd576b220d68b54dbf76ae5ce3a43b3f5a160abf37fa54aa1bc5.",
+        "No existing Emberfield gameplay item ID is approved as an alias."
+      ]
+    },
+    {
+      "asset_id": "item.weapon.card_29.icon",
+      "category": "item_icon",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/5fad2197f28434ea184bc586080b8f51/Weapons_1__2.png",
+      "target_path": "assets/treasure_hunter/items/weapons/card_29_weapons_1.png",
+      "file_format": "png",
+      "dimensions": [
+        9,
+        20
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_card_config_and_direct_unity_decode",
+      "integration_status": "selected",
+      "notes": [
+        "Card.json ID 29 has iconUrl Icons/Items/6_Weapons/Weapons_1 and equipmentType 6.",
+        "Unity asset 5fad2197f28434ea184bc586080b8f51: Sprite path ID 2, Texture2D path ID 1, 32 pixels per unit.",
+        "Normalized Unity pivot: (0.5, 0.1830308288).",
+        "SHA-256: 3c794338954b91e25d289270bd72161dcacd2d3989fb0695abd4e568fe575197.",
+        "No existing Emberfield gameplay item ID is approved as an alias."
+      ]
+    },
+    {
+      "asset_id": "item.weapon.card_30.icon",
+      "category": "item_icon",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/e4413bcbcf7024a99b15760a98718778/Weapons_2__2.png",
+      "target_path": "assets/treasure_hunter/items/weapons/card_30_weapons_2.png",
+      "file_format": "png",
+      "dimensions": [
+        7,
+        15
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_card_config_and_direct_unity_decode",
+      "integration_status": "selected",
+      "notes": [
+        "Card.json ID 30 has iconUrl Icons/Items/6_Weapons/Weapons_2 and equipmentType 6.",
+        "Unity asset e4413bcbcf7024a99b15760a98718778: Sprite path ID 2, Texture2D path ID 1, 32 pixels per unit.",
+        "Normalized Unity pivot: (0.4166666567, 0.1999999881).",
+        "SHA-256: f16424065f8d12bc1450ca51604376aeccb33da2ff17df704d46df6b85bbf520.",
+        "No existing Emberfield gameplay item ID is approved as an alias."
+      ]
     }
   ]
 }

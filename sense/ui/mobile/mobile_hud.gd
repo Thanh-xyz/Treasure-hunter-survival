@@ -18,6 +18,7 @@ const BTN_ICONS := {
 }
 const HUD_PANEL := preload("res://assets/treasure_hunter/ui/reference/panel_stats.png")
 const HOTBAR_FRAME := preload("res://assets/treasure_hunter/ui/reference/hotbar_frame.png")
+const REVIVE_BUTTON := preload("res://assets/treasure_hunter/ui/reference/button_orange.png")
 const PORTRAIT_FRAME := preload("res://assets/treasure_hunter/ui/reference/portrait_frame.png")
 const PORTRAIT_BACKGROUND := preload("res://assets/treasure_hunter/ui/reference/login_panel.png")
 const PORTRAIT_BORDER := preload("res://assets/treasure_hunter/ui/reference/portrait_border.png")
@@ -735,9 +736,30 @@ func _build_death_panel() -> void:
 	_death_button = UiTheme.button("Hồi sinh làng", _respawn_town, Vector2(254, 80))
 	_death_button.position = Vector2(233, 1192)
 	_death_button.size = Vector2(254, 80)
+	_death_button.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_death_button.add_theme_stylebox_override("normal", _revive_button_style(Color.WHITE))
+	_death_button.add_theme_stylebox_override("hover", _revive_button_style(Color8(245, 245, 245)))
+	_death_button.add_theme_stylebox_override("pressed", _revive_button_style(Color8(200, 200, 200)))
+	_death_button.add_theme_stylebox_override("hover_pressed", _revive_button_style(Color8(200, 200, 200)))
+	_death_button.add_theme_stylebox_override("disabled", _revive_button_style(Color8(200, 200, 200, 128)))
 	_death_button.add_theme_font_size_override("font_size", 34)
 	_death_button.add_theme_color_override("font_color", UiTheme.C_GOLD)
+	_death_button.add_theme_color_override("font_hover_color", UiTheme.C_GOLD)
+	_death_button.add_theme_color_override("font_pressed_color", UiTheme.C_GOLD)
+	_death_button.add_theme_color_override("font_hover_pressed_color", UiTheme.C_GOLD)
+	_death_button.add_theme_color_override("font_disabled_color", UiTheme.C_GOLD)
 	_death_panel.add_child(_death_button)
+
+
+func _revive_button_style(tint: Color) -> StyleBoxTexture:
+	var style := StyleBoxTexture.new()
+	style.texture = REVIVE_BUTTON
+	style.texture_margin_left = 20.0
+	style.texture_margin_top = 20.0
+	style.texture_margin_right = 20.0
+	style.texture_margin_bottom = 20.0
+	style.modulate_color = tint
+	return style
 
 
 # =============================================================================

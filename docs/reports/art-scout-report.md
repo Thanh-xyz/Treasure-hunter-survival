@@ -161,3 +161,21 @@ screenshot, diff, and correction.
 - Direct UnityPy decode is pixel-identical to both supplied exports.
 - `Icon_Joystick` (`sharedassets1.assets:5652`) belongs to a separate help/custom
   layout hierarchy and is not the active gameplay joystick background.
+
+## Revive Button Evidence
+
+- Decoded active GameObject `6089` at
+  `UIManager/MainCanvas - Camera/HUDView/Panel/Bot/ReviveButton` has a
+  `349.1254x111.2323` RectTransform. The established HUD scale maps this to the
+  existing Emberfield `254x80` rectangle, so the layout remains unchanged.
+- Image component `99195` resolves through external file ID `2` to
+  `sharedassets1.assets:6916`, `Button1_0`, a `48x48` sprite with 20-pixel
+  borders on every side. The same verified image is already integrated as
+  `assets/treasure_hunter/ui/reference/button_orange.png`; the similarly named
+  hotbar frame is a visually different `Button1_0` variant at path ID `6918`.
+- Button component `99196` uses Unity color transitions over that image: opaque
+  white normal, `245/255` highlighted, `200/255` pressed, and `200/255` with
+  `128/255` alpha when disabled.
+- Runtime localization evidence is insufficient to replace Emberfield's current
+  Vietnamese label. Position, size, countdown text, disabled timer, and
+  `_respawn_town` callback therefore remain unchanged.

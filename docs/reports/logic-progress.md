@@ -366,3 +366,20 @@ asset metadata.
   repository files are gameplay-owned tests/logic or Agent B reports/handoff.
 - Residual risks: offline JSON saves are validated but not signed against deliberate local
   tampering, and the journal intentionally serializes one claim at a time.
+
+## 2026-11-06 — Exact equipment reward payload
+
+- Branch: `feature/th-logic-exact-equipment-rewards`, based on `origin/develop` at `8f8ef6d` with
+  Agent A's integrated Snailu atlas.
+- Canonical rewards now accept bounded exact equipment entries containing only card ID and validated
+  reference stats. Runtime item/asset identities remain catalog-derived and templates stay immutable.
+- `GameState.grant()` materializes all instances before the existing atomic inventory/currency
+  transaction. Save schema v5 lets pending claim journals round-trip and retry exact decimal payloads.
+- Focused tests pass for normalization, deep copies, merge behavior, invalid payloads, capacity
+  rollback, reload/retry, duplicate prevention, migration and catalog immutability.
+- Godot 4.6 import, focused inventory transactions, Legacy phases 1-7, Survival/save, four quest
+  menu renders and live/dead HUD renders pass with exit code 0; blacksmith remains at 29 public
+  items.
+- Box 149, quest 305, RNG/rounding, combat stat application, UI and LAN remain excluded.
+- REVIEW found no high/medium issue. `git diff --check` passes; reward identity remains catalog-
+  derived, mixed grants are atomic, migrations preserve old saves and the diff has no Agent A file.

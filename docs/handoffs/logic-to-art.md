@@ -364,3 +364,12 @@ No shared contract change should be implemented until these questions are resolv
   Agent A requires no adaptation for this feature.
 - Box 149 and quest 305 remain excluded. Their later UI may display only the exact materialized
   instance supplied by gameplay; presentation must never reroll card/stat values.
+
+## 2026-11-06 — Exact equipment reward carrier
+
+- Gameplay reward payloads may now preserve card 28/29/30 exact stat instances through save/retry.
+  Their stable icon IDs are derived from the existing reference catalog and are not caller fields.
+- No asset ID, icon resolver, UI callback, animation, direction or manifest entry changed. Agent A
+  requires no adaptation in this feature.
+- Future reward presentation must read the materialized instance's source asset ID and exact stats;
+  it must not roll, round, recolor or substitute presentation-side values.

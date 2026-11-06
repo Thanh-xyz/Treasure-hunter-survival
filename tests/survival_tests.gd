@@ -461,7 +461,7 @@ func _test_save_roundtrip() -> void:
 	f.close()
 	_check(SaveService.read_snapshot().get("inventory", {}).get("diamonds", -1) == 17, "invalid diamonds fall back to backup")
 
-	for legacy_version in [0, 1, 2, 3]:
+	for legacy_version in [0, 1, 2, 3, 4]:
 		var legacy := snap.duplicate(true)
 		legacy["version"] = legacy_version
 		legacy["inventory"]["equipment"]["weapon"].erase("level")
@@ -519,6 +519,15 @@ func _test_save_roundtrip() -> void:
 	f.store_string(JSON.stringify(tampered_pending_reward))
 	f.close()
 	_check(SaveService.read_snapshot().get("inventory", {}).get("gold", -1) == 1234, "tampered pending reward falls back to backup")
+	var tampered_pending_equipment := invalid_pending_state.duplicate(true)
+	tampered_pending_equipment["quests"]["main_ready"] = true
+	tampered_pending_equipment["pending_claim"]["reward"] = {
+		"equipment": [{"card_id": 28, "stats": {"health": 13.9, "damage": 29.8}}],
+	}
+	f = FileAccess.open(SaveService.SAVE_PATH, FileAccess.WRITE)
+	f.store_string(JSON.stringify(tampered_pending_equipment))
+	f.close()
+	_check(SaveService.read_snapshot().get("inventory", {}).get("gold", -1) == 1234, "invalid pending equipment falls back to backup")
 
 	QuestService.from_dict({"main_index": 0, "main_quest_id": "q04", "main_progress": 0, "main_ready": false})
 	_check(QuestService.main_index == 3, "stable quest id takes precedence over stale index")

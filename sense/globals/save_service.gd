@@ -9,7 +9,7 @@ extends Node
 signal saved
 signal loaded
 
-const SAVE_VERSION := 4
+const SAVE_VERSION := 5
 const SAVE_DIR := "user://saves"
 var SAVE_PATH: String = "user://saves/profile.json"  ## tests point this elsewhere
 const AUTOSAVE_INTERVAL := 60.0
@@ -230,6 +230,10 @@ func _migrate(data: Dictionary) -> Dictionary:
 		# Version 4 journals one resolved quest claim before applying its reward.
 		data["pending_claim"] = {}
 		data["version"] = 4
+		v = 4
+	if v < 5:
+		# Version 5 permits exact reference-equipment instances in reward journals.
+		data["version"] = 5
 	return data
 
 

@@ -285,3 +285,20 @@ Although the source definitions are upgradeable with cost 10 Gold and rate 1.4, 
 templates keep upgrade commands disabled in this slice. Enabling the existing provisional upgrade
 path before reference stats participate would spend currency without changing the authoritative
 payload, so source upgrade metadata remains catalog evidence until a complete rule is approved.
+
+## Durable pending-claim journal
+
+Save schema version 4 owns one optional `pending_claim` record containing a stable claim ID,
+source kind, source quest ID and canonical resolved reward. `QuestService` prepares this record
+before grant, checkpoints the latest pre-grant state, applies the reward and quest transition,
+then clears the journal in the final atomic snapshot.
+
+Loading a valid pending record retries the exact persisted payload. A capacity failure leaves the
+journal intact; a final-save failure restores the last pre-grant snapshot in memory. Completion
+signals publish only after the final snapshot succeeds, preventing presentation from observing a
+claim that persistence rejected.
+
+The journal belongs to persistence while claim orchestration belongs to the quest application
+service. It is independent of transport and can later carry an authority-resolved equipment
+instance without coupling gameplay rules to ENet. Only one claim may be pending, deliberately
+serializing offline mutations until a broader command ledger is justified.

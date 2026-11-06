@@ -343,3 +343,26 @@ asset metadata.
   blacksmith render still reports exactly 29 public equipment items, proving no template leak.
   Focused coverage also proves rejected reference upgrades spend no Gold, change no level and emit
   no economy/equipment signal.
+
+## 2026-11-06 — Durable pending quest claims
+
+- Branch: `feature/th-logic-pending-claim-journal`, based on `origin/develop` at `09067fb` before
+  the disjoint Turtle asset integration.
+- Save schema version 4 persists one canonical resolved claim before reward mutation and migrates
+  versions 0-3 with an empty journal.
+- Main and daily claims checkpoint pre-grant state, finalize reward plus quest transition in one
+  snapshot, and restore the checkpoint when final validation/write fails.
+- Load automatically retries the exact saved reward. Stale-date daily state is retained only while
+  its dated journal is pending, then resets normally after successful completion.
+- Focused coverage passes for full-inventory prepare/reload, final-save rollback, exact retry,
+  duplicate prevention, stale daily recovery and invalid journal validation.
+- Godot `4.6.stable.official.89cea1439` import, focused inventory transactions, Legacy phases
+  1-7, Survival/save validation, four quest-menu renders and live/dead HUD renders passed with
+  exit code 0. Negative-path corrupt-save, invalid-snapshot and unknown-shop-item warnings are
+  deliberate fixtures.
+- Box 149, quest 305, equipment RNG/stat generation, UI, LAN and all Agent A-owned files remain
+  excluded.
+- REVIEW found no high- or medium-severity issue. `git diff --check` passes and all nine changed
+  repository files are gameplay-owned tests/logic or Agent B reports/handoff.
+- Residual risks: offline JSON saves are validated but not signed against deliberate local
+  tampering, and the journal intentionally serializes one claim at a time.

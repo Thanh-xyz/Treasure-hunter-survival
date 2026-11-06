@@ -4,6 +4,20 @@ Date: 2026-11-04; updated 2026-11-06
 Branch/worktree: `feature/th-game-art-workflow` in the Agent A worktree
 Stage: SCOUT complete; no project implementation occurred during SCOUT.
 
+## Quest 317 Health Ingredient Evidence
+
+- Source quest `317` follows `316` and requires one stat-type-0 Health
+  ingredient. It awards Box `98`, remains disabled, and uses Vietnamese text
+  `Đào đá Health` / `Nguyên liệu rơi ngẫu nhiên khi đào ô`.
+- Card `64` is `Stone_1`, described as adding Health to equipment; Vietnamese
+  description is `Thêm Sinh Mệnh cho trang bị của bạn`. Boxes `444`-`447` bind
+  this card to the four source rarities.
+- The exact addressable sprite is `28x31`, transparent/partial alpha, with
+  SHA-256
+  `1aae2b48e70a9591d0977e4c56e0f83049f1e7d4fcb9ddb4fae8d5422ad32a88`.
+  Pivot, PPU, live scale/frame, drop behavior, and runtime presentation remain
+  unknown; Samsung Game Booster touch lock prevented a direct capture.
+
 ## Quest 316 Damage Ingredient Evidence
 
 - Source quest `316` is a disabled beginner-chain objective after `315` and

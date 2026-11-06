@@ -3,6 +3,19 @@
 Date: 2026-11-04
 Status: startup/auth presentation integrated; broader asset registry remains proposed.
 
+## Stone_1 Health Ingredient Asset Contract
+
+- Stable art ID `item.ingredient.card_64.icon` maps to card `64` / `Stone_1`,
+  the verified Health ingredient used by Quest 317 and Box 444-447.
+- Target texture is
+  `assets/treasure_hunter/items/ingredients/card_64_stone_1.png`, an exact
+  `28x31` local-only source copy with SHA-256
+  `1aae2b48e70a9591d0977e4c56e0f83049f1e7d4fcb9ddb4fae8d5422ad32a88`.
+- It has no runtime consumer or gameplay item ID. Quest 317, drops, rarity/stat
+  generation, upgrading, persistence, and UI require separate gameplay plans.
+- Executed validation covers exact bytes/hash/dimensions/alpha, manifest
+  uniqueness/paths, Godot import, Inventory Transaction, Legacy, and Survival/save.
+
 ## Stone_3 Damage Ingredient Asset Contract
 
 - Stable art ID `item.ingredient.card_66.icon` maps to source card `66` /

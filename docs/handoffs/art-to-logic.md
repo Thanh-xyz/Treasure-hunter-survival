@@ -276,3 +276,13 @@ reuses `ui.reference.button.orange`; it adds no asset or manifest entry.
 Button position, size, Vietnamese label/countdown, `_death_timer`, disabled
 behavior, `_respawn_town` callback, respawn state, save data, and LAN behavior
 are unchanged. Agent B does not need to adapt gameplay code or tests.
+
+## Fixed Hotbar Geometry Contract
+
+The existing `ui.reference.hud.hotbar.frame` and eight `Panel_Stats` slots now
+use geometry measured from an authorized `720x1600` gameplay capture and decoded
+Unity RectTransform evidence.
+
+All `hotbar_1` through `hotbar_8` action IDs, ordering, locked state, touch/input
+behavior, inventory data, save data, and gameplay ownership remain unchanged.
+Agent B does not need to adapt gameplay code or tests.

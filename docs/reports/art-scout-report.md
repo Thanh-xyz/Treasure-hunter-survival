@@ -179,3 +179,22 @@ screenshot, diff, and correction.
 - Runtime localization evidence is insufficient to replace Emberfield's current
   Vietnamese label. Position, size, countdown text, disabled timer, and
   `_respawn_town` callback therefore remain unchanged.
+
+## Fixed Hotbar Geometry Evidence
+
+- Authorized ADB capture `/tmp/ths-hotbar-scout-after-login.png` records the
+  active gameplay HUD at the device's native `720x1600` resolution. The Android
+  navigation region begins at y=1516 and is external to the game UI.
+- Direct pixel inspection places the fixed hotbar frame at x=0, y=1400, with a
+  720-pixel width and approximately 116-pixel height. Decoded
+  `InventoryView/InventorySlotUI Slot1` independently reports a bottom-anchored
+  `1080x166` RectTransform, consistent with a 2/3 width-based CanvasScaler.
+- The eight captured slot centers are approximately x=`66+84*i`, y=1458. Each
+  framed control is about `78x78`, with a `72x72` near-black interior.
+- Before this feature Emberfield rendered the frame at x=4, y=1412 with size
+  `712x120`, and rendered `80x80` slots at x centers `68+84*i`, y=1471. The
+  source asset and slot order were correct, but the complete group was visibly
+  low and slightly oversized.
+- ADB UI hierarchy does not expose Unity's internal controls, so the capture and
+  decoded RectTransform evidence are used together. No gameplay behavior is
+  inferred from these measurements.

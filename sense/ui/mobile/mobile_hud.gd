@@ -675,29 +675,29 @@ func _build_controls() -> void:
 	joystick.size = Vector2(238, 300)
 	add_child(joystick)
 
-	var bottom_y := get_viewport_rect().size.y - 134.0
+	var hotbar_top := get_viewport_rect().size.y - 200.0
 	_hotbar_fill = ColorRect.new()
 	_hotbar_fill.color = Color(0.025, 0.025, 0.03, 0.96)
-	_hotbar_fill.position = Vector2(10, bottom_y - 48.0)
-	_hotbar_fill.size = Vector2(700, 108)
+	_hotbar_fill.position = Vector2(10, hotbar_top + 10.0)
+	_hotbar_fill.size = Vector2(700, 96)
 	_hotbar_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_hotbar_fill)
 	_controls.append(_hotbar_fill)
 
 	_hotbar_frame = NinePatchRect.new()
 	_hotbar_frame.texture = HOTBAR_FRAME
-	_hotbar_frame.position = Vector2(4, bottom_y - 54.0)
-	_hotbar_frame.size = Vector2(712, 120)
+	_hotbar_frame.position = Vector2(0, hotbar_top)
+	_hotbar_frame.size = Vector2(720, 116)
 	_hotbar_frame.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_hotbar_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
-		_hotbar_frame.set_patch_margin(side, 20)
+		_hotbar_frame.set_patch_margin(side, 13)
 	add_child(_hotbar_frame)
 	_controls.append(_hotbar_frame)
 
-	var centers := [68.0, 152.0, 236.0, 320.0, 404.0, 488.0, 572.0, 656.0]
+	var centers := [66.0, 150.0, 234.0, 318.0, 402.0, 486.0, 570.0, 654.0]
 	for i in range(8):
-		var slot := _action_btn("hotbar_%d" % (i + 1), Vector2(centers[i], bottom_y + 5.0), 40.0, "")
+		var slot := _action_btn("hotbar_%d" % (i + 1), Vector2(centers[i], hotbar_top + 58.0), 37.0, "")
 		slot.locked = true
 		_hotbar_slots.append(slot)
 

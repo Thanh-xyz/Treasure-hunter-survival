@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: match the active Treasure Hunter revive button visuals.
+Current feature: match the active Treasure Hunter fixed hotbar geometry.
 
 ## Completed Before This Feature
 
@@ -192,6 +192,16 @@ Current feature: match the active Treasure Hunter revive button visuals.
 - Preserved button position, size, Vietnamese label/countdown, disabled timer,
   `_respawn_town` callback, death state, and all gameplay contracts.
 
+## Fixed Hotbar Geometry Feature
+
+- Aligned the existing exact hotbar frame to the verified full-width
+  `720x116` presentation at y=1400 and used the observed 2/3 CanvasScaler ratio
+  to map its 20-source-pixel slice borders to 13 screen pixels.
+- Aligned all eight existing slots to the captured 84-pixel center spacing,
+  approximately 74-pixel control size, and y=1458 center.
+- Preserved `hotbar_1` through `hotbar_8`, ordering, locked state, input
+  behavior, assets, callbacks, inventory data, saves, and gameplay ownership.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
@@ -275,6 +285,17 @@ Current feature: match the active Treasure Hunter revive button visuals.
 - The integrated `button_orange.png` target matches the verified path ID `6916`
   export bit-for-bit. Hover, pressed, and disabled colors are metadata-verified
   but were not separately captured as runtime screenshots.
+- Captured the active reference gameplay HUD from authorized device `SM_A047F`
+  at `720x1600` as `/tmp/ths-hotbar-scout-after-login.png`.
+- Godot 4.6 imported the hotbar-geometry change; inventory, legacy, survival,
+  startup render, and live/dead HUD render gates completed with exit code `0`.
+- At the shared `360x800` comparison scale, the first six slot interiors match
+  the reference bounding boxes exactly; the final two differ by one horizontal
+  raster pixel from accumulated half-scale rounding. All eight centers preserve
+  the verified 84-pixel source cadence.
+- The frame top, bottom, width, and height match the captured rectangle. Small
+  corner-pixel differences remain because Unity and Godot round sliced borders
+  differently; full pixel parity is not claimed.
 
 ## Not Yet Implemented
 

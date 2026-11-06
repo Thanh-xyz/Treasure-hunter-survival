@@ -315,3 +315,20 @@ materializes every equipment object before mutation, then commits equipment, ord
 currencies through the existing single inventory transaction before applying XP. A pending claim
 therefore persists and retries the same exact instances without coupling reward logic to save-item
 serialization or to a network transport.
+
+## Reference equipment reward authority
+
+Equipment box selection is a separate phase from exact instance creation.
+`ReferenceEquipmentRewardResolver` validates immutable weighted card options and supports either a
+caller-owned RNG or a recorded 1-based roll. It returns a selection record containing the roll and
+source card ID; it never derives stats from the card's min/max ranges.
+
+An offline authority or future LAN host must then provide exact stats for that card. Finalization
+validates the payload through `ReferenceEquipmentCatalog` and emits the existing canonical
+`equipment: [{card_id, stats}]` reward. Only the finalized payload is eligible for pending-claim
+journaling and grant, so retries never reroll either the card or its stats.
+
+`RewardBoxCatalog` keeps these equipment options outside its direct canonical reward registry.
+This prevents callers from resolving Box 149 through the ordinary reward API before an exact stat
+authority exists, while preserving the source `34/33/33` selection evidence for offline and later
+host-authoritative consumers.

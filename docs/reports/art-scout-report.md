@@ -223,3 +223,22 @@ screenshot, diff, and correction.
   is `238x300`; only the control origin needs to move from `(274,980)` to
   `(241,958)` to place its rest center at `(360,1123)`. Input semantics and the
   established source scaling remain outside this placement correction.
+
+## Box 149 Beginner Weapon Icon Evidence
+
+- `Box.json` ID `149` (`Box Beginner Weapon Common`) is an Option reward with
+  card IDs `28`, `29`, and `30` at exact chances `34`, `33`, and `33` percent.
+- `Card.json` independently maps these three Common `equipmentType=6` cards to
+  `Icons/Items/6_Weapons/Weapons_0`, `Weapons_1`, and `Weapons_2`. Their stat
+  ranges are distinct, so one generic icon or existing gameplay alias would
+  collapse three separate identities.
+- Direct Unity files `f12b282c6f8114427b25c083a7b06ae6`,
+  `5fad2197f28434ea184bc586080b8f51`, and
+  `e4413bcbcf7024a99b15760a98718778` each contain one Texture2D at path ID `1`
+  and one Sprite at path ID `2`. Sprite and texture exports are bit-identical.
+- Verified dimensions are `13x21`, `9x20`, and `7x15`; each source has alpha,
+  one mip level, 32 pixels per unit, and a distinct normalized pivot recorded in
+  the asset manifest.
+- Existing Emberfield `wooden_sword`, `iron_sword`, and `battle_axe` IDs and
+  atlas icons have no proven one-to-one mapping to cards `28/29/30`. They remain
+  separate gameplay identities.

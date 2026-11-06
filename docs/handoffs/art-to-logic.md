@@ -298,3 +298,19 @@ The touch area remains `238x300`; exact background/handle assets, visual sizes,
 radius, dead zone, floating-center behavior, `ui_left/right/up/down` strengths,
 opacity, release handling, player movement, saves, and LAN contracts are
 unchanged. Agent B requires no adaptation.
+
+## Box 149 Beginner Weapon Asset Contract
+
+The three exact local-only icon identities requested for Box 149 are now:
+
+| Reference card | Reference icon | Stable asset ID | Target |
+| ---: | --- | --- | --- |
+| `28` | `Weapons_0` | `item.weapon.card_28.icon` | `assets/treasure_hunter/items/weapons/card_28_weapons_0.png` |
+| `29` | `Weapons_1` | `item.weapon.card_29.icon` | `assets/treasure_hunter/items/weapons/card_29_weapons_1.png` |
+| `30` | `Weapons_2` | `item.weapon.card_30.icon` | `assets/treasure_hunter/items/weapons/card_30_weapons_2.png` |
+
+These IDs identify art only. Agent B may propose additive gameplay item IDs that
+retain source card IDs as metadata, but must not alias the cards to existing
+`wooden_sword`, `iron_sword`, or `battle_axe` identities without separate
+evidence. Box 149 registration, item names, stats, reward materialization, saves,
+LAN, quests, and runtime consumers remain outside this feature.

@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: match the default Treasure Hunter fixed joystick placement.
+Current feature: establish exact Box 149 beginner weapon icon identities.
 
 ## Completed Before This Feature
 
@@ -214,6 +214,17 @@ Current feature: match the default Treasure Hunter fixed joystick placement.
   background and handle assets, visual sizes, radius, dead zone, floating-center
   behavior, input strengths, action IDs, opacity, and release behavior.
 
+## Box 149 Weapon Icon Contract Feature
+
+- Added exact local-only source images for Treasure Hunter card IDs `28`, `29`,
+  and `30` without assigning them to provisional Emberfield item IDs.
+- Registered stable art IDs `item.weapon.card_28.icon`,
+  `item.weapon.card_29.icon`, and `item.weapon.card_30.icon` with verified source
+  paths, dimensions, alpha, pivots, pixels-per-unit values, and hashes.
+- Kept all three entries at `selected`: this feature provides the art identity
+  contract but does not create gameplay items, register Box 149, alter quests,
+  or choose names/stats outside Agent B ownership.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
@@ -320,6 +331,15 @@ Current feature: match the default Treasure Hunter fixed joystick placement.
 - The fixed-image comparison differs in the joystick movement region as
   expected. Pixel parity against the connected-device runtime coordinate is not
   claimed because that reference coordinate belongs to a saved custom layout.
+- Godot 4.6 imported all three Box 149 icon PNGs with lossless compression and
+  mipmap generation disabled.
+- Manifest validation passed with `112` assets, unique asset IDs and unique
+  target paths; all `56` supplied/extracted entries remain `local_only`.
+- Source-to-target SHA-256 checks pass for all three icons, and their imported
+  dimensions remain exactly `13x21`, `9x20`, and `7x15`.
+- Inventory, legacy, survival, and live/dead MobileHUD render gates completed
+  with exit code `0`. The icons have no runtime consumer in this feature, so no
+  in-game Box 149 visual parity is claimed yet.
 
 ## Not Yet Implemented
 

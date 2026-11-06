@@ -4,6 +4,19 @@ Date: 2026-11-04; updated 2026-11-06
 Branch/worktree: `feature/th-game-art-workflow` in the Agent A worktree
 Stage: SCOUT complete; no project implementation occurred during SCOUT.
 
+## Quest 318 Defense Ingredient Evidence
+
+- Source quest `318` follows `317`, requires one stat-type-4 Defense ingredient,
+  awards Box `98`, remains disabled, and uses Vietnamese text `Đào đá Defense` /
+  `Nguyên liệu rơi ngẫu nhiên khi đào ô`.
+- Card `69` is `Stone_6`, described as adding Defense to equipment; boxes
+  `464`-`467` bind it across four source rarities. Box `153` also contains Rare
+  Stone_3 x2 and Rare Stone_6 x2 as independent 100-percent CheckBox entries.
+- Exact addressable sprite is `25x30`, transparent/partial alpha, SHA-256
+  `0c34590bdb5c3d87a633ca09d7701bba8303094b37c9e24558cef624ec30dc06`.
+  Pivot, PPU, live scale/frame and gameplay behavior remain unknown; Game
+  Booster touch lock prevented direct runtime capture.
+
 ## Quest 317 Health Ingredient Evidence
 
 - Source quest `317` follows `316` and requires one stat-type-0 Health

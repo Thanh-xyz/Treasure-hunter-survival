@@ -337,3 +337,18 @@ No shared contract change should be implemented until these questions are resolv
   character attributes. Agent A requires no adaptation in this slice.
 - A later materialization/UI feature must display values supplied by the instance and must not
   independently roll, round or derive rarity modifiers. Those rules are still unknown.
+
+## 2026-11-06 — Reference weapon catalog runtime IDs
+
+- Additive gameplay identities are `th_weapon_28`, `th_weapon_29` and `th_weapon_30`; they map to
+  source card IDs 28/29/30 and the already-integrated stable icon metadata IDs.
+- These templates are intentionally hidden from the current blacksmith enumeration and have no
+  runtime icon resolver. Agent A requires no adaptation and should not add presentation-side aliases.
+- Materialized instances preserve exact validated Health/Damage/Speed payloads. Future UI must read
+  the instance values and source asset ID; it must not independently roll or infer stat values.
+- Box 149 and quest 305 remain unavailable until a separately approved pending-reward/claim flow
+  can commit the exact materialized instance atomically and retry safely.
+- Runtime upgrade is intentionally disabled until reference stats participate in the authoritative
+  upgrade rule. Presentation must not expose an Upgrade action for these IDs yet.
+- Godot import, gameplay/save suites and live/dead HUD rendering pass; the blacksmith remains at
+  its pre-feature 29 public items. Agent A's presentation requires no change.

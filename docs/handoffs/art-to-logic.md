@@ -42,6 +42,27 @@ right is implied.
 Hero, zone, item, equipment-slot, quest, save, and LAN identifiers remain stable
 until an approved migration covers all consumers.
 
+## Turtle Asset Contract
+
+The exact reference Turtle now has two selected local-only art identities:
+
+| Stable asset ID | Target | Intended role |
+| --- | --- | --- |
+| `actor.monster.turtle.default` | `assets/treasure_hunter/monsters/turtle_atlas.png` | Animated actor source atlas |
+| `actor.monster.turtle.icon` | `assets/treasure_hunter/monsters/turtle_icon.png` | Padded UI/card/quest icon |
+
+The atlas is `384x256`, sliced into `64x64` source rectangles with center pivots
+at 40 PPU. Verified source clips are `idle`, `walk`, `attack`, and `dead`; the
+manifest canonical names are `idle`, `move`, `attack`, and `death`. Clip order,
+loop flags and durations are recorded in the manifest. No direction set, hit
+frame, collision footprint, stats, AI, drops, gameplay ID, quest registration,
+save/LAN mapping or runtime consumer is included.
+
+Agent B must not alias this identity to GreenTortoise, PurpleTortoise,
+`moss_turtle`, `shell_tortoise`, `slime`, `shroom`, or `boar`. Card ID 33 and
+quest 306 are provenance evidence only until a separate gameplay proposal is
+approved.
+
 ## Asset Contract
 
 Gameplay should eventually reference a stable `asset_id`, resolved by an

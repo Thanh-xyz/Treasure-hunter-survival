@@ -34,6 +34,16 @@ Evidence source: authorized ADB observation of
 | Settings | Gameplay | `/tmp/ths-agent-a-settings-controls.png` | Alternating rows of square toggles for name and interaction filtering |
 | Settings | Profile | `/tmp/ths-agent-a-settings-account.png` | Account-link form plus destructive and identity actions |
 | Settings | Custom HUD layout | `/tmp/ths-agent-a-settings-advanced.png` | Full-screen draggable HUD editor with reset/save and visibility checkboxes |
+| Village HUD | Post-tutorial account, alive | `/tmp/th-post-tutorial-live-hud.png` | Mounted character, pet, eight-slot hotbar, expanded currencies and high-level equipment; this is not a default-account state |
+| Quests | Main | `/tmp/th-post-tutorial-quest-tab-1.png` | One active quest, queued next quests and completed section; captured account state is PvP `0/2` |
+| Quests | Daily | `/tmp/th-post-tutorial-quest-panel.png` | Daily-point reward rail, rerollable objective cards and reset timer; no reroll or claim was performed |
+| Quests | Login rewards | `/tmp/th-post-tutorial-quest-tab-3.png` | Day milestone rail, free/paid tracks and locked rows; no reward was claimed |
+| Quests | Achievements | `/tmp/th-post-tutorial-quest-tab-4.png` | Achievement-point milestones and boss objective cards; no reward was claimed |
+| Character | Overview and inventory | `/tmp/th-post-tutorial-character-panel.png` | Eight equipment positions, character preview, wallets, stats, skin row and eight-column inventory |
+| Character | Inventory item detail | `/tmp/th-post-tutorial-inventory-item-detail.png` | Item rarity field, level, class restrictions, stat modifiers and equip/upgrade/sell actions; no action was invoked |
+| Character | VIP progress | `/tmp/th-post-tutorial-character-tab-2.png` | Tier cards, benefits, monthly/daily reward rows and locked state |
+| Character | Equipment-set editor | `/tmp/th-post-tutorial-character-tab-3.png` | Three presets, visual-effect slots, equipment loadout and Save action; no preset or Save action was invoked |
+| Collection | Effect preview | `/tmp/th-post-tutorial-collection.png` | Central character preview, attack/run/idle selectors, category tabs, rarity/cost and eight-column grid |
 
 ## Navigation Graph
 
@@ -48,7 +58,17 @@ startup loading
 village HUD alive
   -> material bag
   -> equipment detail
+  -> character overview
+       <-> VIP progress
+       <-> equipment-set editor
+       -> inventory item detail
+  -> collection effect preview
   -> main menu
+       -> quests
+            <-> main
+            <-> daily
+            <-> login rewards
+            <-> achievements
        -> settings
             <-> device
             <-> gameplay
@@ -81,6 +101,16 @@ files used for this report.
 | Gameplay settings | `060c1285856599d41a04c70976d645438c6c0c37128adf4720ef796dbd496996` |
 | Profile settings | `a4e3b946301b21bcdec48e5688ba60d37f7ff6a8fe26cc1eed852c0956f5a47a` |
 | Custom HUD layout | `43cd2b6baf1a5076515c2e15baba74d5b5f80c4659bddbe5c19826b8963a5b71` |
+| Post-tutorial live HUD | `005075ff0326e34867e26aa62fc4c9ee1cf3d805a6478240d66e4013ba47cddc` |
+| Main quest tab | `4bdcdc90b63b3fcd66b1561bfd236271a97c640351d430ecf9f44178827ec437` |
+| Daily quest tab | `0258849d3a85239d42d8d43cbb3355f17fb752bda38d4111508e26ef9b3e6691` |
+| Login-reward tab | `6c3755b757dafab56f77ebf76ea4371f32c79d037f3f46f01e94a087e5986493` |
+| Achievement tab | `00a89d2d55116d12380b04496a21d1f184574b19d87ebe9705a598797ef5503f` |
+| Character overview | `4b5b00e012ab045f098f9cfd015e51f9ed9540ee2eb03e41b9e066807b62881e` |
+| Inventory item detail | `df3e179b9027389e734f20bf1fed86246ed5b932740113464da23ee7f4e53763` |
+| VIP progress | `f920d936386b32e5e5c53e5c49880ac28f32cb14c180f817621e5141c1faedfc` |
+| Equipment-set editor | `43371f9e28741e08d56af0ae30bf1b910fda2057846279529c222f76304dc22d` |
+| Collection preview | `fd20e96fdaaf57337bce6b7d31bf5dd7438b472e91a07252a48035ff22e76e0c` |
 
 ## Verified Visual System
 
@@ -97,7 +127,7 @@ files used for this report.
 
 ## Selected Local UI Kit
 
-Forty-one source images were copied bit-for-bit into
+Fifty-five source images were copied bit-for-bit into
 `assets/treasure_hunter/ui/reference/`. Ten authentication/startup resources are
 consumed by `sense/ui/mobile/startup_gate.gd`; `panel_stats.png`,
 `joystick_ring.png`, `icon_weapon.png`, `icon_power.png`, `icon_health.png`,
@@ -117,9 +147,36 @@ retained crossed-sword candidate documented below.
 | HUD | `joystick.png`, `joystick_ring.png`, `icon_minimize.png`, `icon_chat.png`, `icon_attack.png`, `icon_weapon.png`, `icon_power.png`, `icon_health.png`, `icon_damage.png`, `icon_speed.png`, `icon_gold.png`, `icon_map.png`, `icon_back.png`, `icon_pet.png`, `icon_skill.png`, `portrait_frame.png`, `portrait_border.png`, `stat_line.png`, `panel_stats.png`, `panel_level.png` |
 | Settings tabs | `icon_settings.png`, `icon_gameplay.png`, `icon_profile.png`, `icon_login.png` |
 | Custom layout | `layout_back.png`, `layout_bag.png`, `layout_mount.png`, `layout_pet.png` |
+| Quest menu | `quest_panel_normal.png`, `quest_panel_claim.png`, `quest_section_label.png`, `quest_list_panel.png`, `quest_tab_active.png`, `quest_tab_inactive.png`, `quest_icon_main.png`, `quest_icon_daily.png`, `quest_icon_achievement.png` |
 
 Every curated asset has a `local_only` provenance entry in
 `docs/architecture/asset-manifest.json`.
+
+The post-tutorial quest session was captured from the user's existing account.
+Its progress, unlocked systems, inventory and currencies are account-state
+evidence only; they are not treated as the default new-player profile.
+
+## Quest Menu Visual Contract
+
+The decoded `level1` hierarchy places the captured screen under
+`DailyQuestsView/Panel`. Its tab group contains `MainQuestPanel`,
+`DailyQuestPanelV2`, `LoginGiftPanelV2`, and `AchievementPanelV2`; the observed
+main/daily/login/achievement states correspond to those four panels.
+
+- The selected and unselected tab frames resolve to `UITab1_0` and `UITab2_0`.
+- Main, daily and achievement icons resolve to `IconSlot_MainQuest`,
+  `IconSlot_DailyQuest`, and `IconSlot_Achievement`. The login tab reuses the
+  already selected `IconSlot_Login` asset.
+- The active main-quest card frame resolves to `Panel_Nomal`; its claim-ready
+  sibling resolves to `Panel_Claim`. The claim-ready state was not activated on
+  the observed account, so only its scene identity is verified.
+- Both queued-next and completed-list containers resolve to `Panel2_0` with
+  20-pixel Unity slice borders. Their section headers reuse `panel_1`, tinted
+  near-black by the runtime Image components.
+- `BG_1` is referenced by internal quest/reward fill Images but its exported
+  file is an opaque white `8x8` region whose final appearance depends on runtime
+  context. It is intentionally excluded from the selected kit rather than
+  assigned unsupported final colors.
 
 The original tab filenames did not describe visual state reliably. Runtime visual
 comparison verified that `Login_Tab_0__6356.png` is the yellow active state and

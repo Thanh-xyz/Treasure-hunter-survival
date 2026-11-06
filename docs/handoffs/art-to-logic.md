@@ -314,3 +314,19 @@ retain source card IDs as metadata, but must not alias the cards to existing
 `wooden_sword`, `iron_sword`, or `battle_axe` identities without separate
 evidence. Box 149 registration, item names, stats, reward materialization, saves,
 LAN, quests, and runtime consumers remain outside this feature.
+
+# Post-Tutorial Quest Menu Visual Kit
+
+- Authorized runtime captures now cover main, daily, login-reward and
+  achievement quest tabs on an already-onboarded account. Captured progress,
+  unlocks and currencies are account-specific and must not seed default content.
+- Nine exact local-only quest-menu assets are selected under stable
+  `ui.reference.quest.menu.*` IDs. They have no runtime consumer yet.
+- Existing assets cover the back button and login tab icon; do not introduce
+  duplicate copies for those roles.
+- A future presentation feature may consume the kit through the existing
+  `QuestService` interface, but this feature does not add or change quest IDs,
+  objective math, daily reset, login rewards, achievements, claim semantics,
+  saves or LAN replication.
+- `BG_1` was intentionally excluded because its exported white `8x8` region is
+  insufficient to prove the final tinted/material appearance.

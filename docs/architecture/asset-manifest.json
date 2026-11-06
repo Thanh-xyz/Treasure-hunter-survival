@@ -4215,6 +4215,63 @@
         "SHA-256: 0c34590bdb5c3d87a633ca09d7701bba8303094b37c9e24558cef624ec30dc06.",
         "No existing Emberfield gameplay item ID is approved as an alias, and no runtime consumer or Box 153 gameplay registration is integrated."
       ]
+    },
+    {
+      "asset_id": "actor.npc.donx.portrait",
+      "category": "npc_portrait",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/textures/ac0f051d3b0aa479497c61e373cd98d7/sactx-0-2048x2048-ETC2-UINPC-7f03c724__1.png",
+      "target_path": "assets/treasure_hunter/npcs/donx/donx_portrait.png",
+      "file_format": "png",
+      "dimensions": [
+        256,
+        256
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_spriteatlas_metadata_and_texture",
+      "integration_status": "selected",
+      "notes": [
+        "Quest.json ID 320 requires NPC 7 Donx after Quest 319; Quest 321 owns the later ingredient-merge action.",
+        "Unity Sprite path ID 5441 is named Donx and uses the UINPC atlas texture with SHA-256 8d28832bfe609fea976358b4b4b24021fb748c44d6a39ee000d7e5c34881e420.",
+        "The packed 247x196 integer pixel region begins at atlas bottom-left (1238, 451) and is restored at logical bottom-left offset (5, 28) inside the original 256x256 canvas.",
+        "Unity metadata records pivot (0.5, 0.5) and 100 pixels per unit.",
+        "Recovered PNG SHA-256: 60343b9fc30f4d9e00388ae5d260af1a7f309bfdb534939a4b1c59f67542d5f6.",
+        "This is a metadata-only UI portrait. The world NPC uses the separate composite Donx Body RoyalKnight hierarchy and must not consume this image as a map sprite."
+      ]
+    },
+    {
+      "asset_id": "actor.npc.donx.icon",
+      "category": "npc_icon",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/textures/ac0f051d3b0aa479497c61e373cd98d7/sactx-0-2048x2048-ETC2-UINPC-7f03c724__1.png",
+      "target_path": "assets/treasure_hunter/npcs/donx/donx_icon.png",
+      "file_format": "png",
+      "dimensions": [
+        256,
+        256
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_spriteatlas_metadata_and_texture",
+      "integration_status": "selected",
+      "notes": [
+        "Unity Sprite path ID 5668 is named Donx Icon and uses the same verified UINPC atlas texture.",
+        "Its full 256x256 rect begins at atlas bottom-left (0, 388), with no texture-rect offset.",
+        "Unity metadata records pivot (0.5, 0.5) and 83.11688232421875 pixels per unit.",
+        "Recovered PNG SHA-256: 782bc268ed49f4c832cf37b22db00caddf17fde2f846b789ed66f865413ab465.",
+        "This is a metadata-only UI icon, not a world sprite, gameplay NPC ID, interaction contract, or Quest 320 implementation."
+      ]
     }
   ]
 }

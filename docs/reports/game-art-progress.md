@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: integrate the verified quest-menu visual kit at runtime.
+Current feature: establish the exact Turtle atlas and icon asset contract.
 
 ## Quest Menu Runtime Feature
 
@@ -29,6 +29,31 @@ Current feature: integrate the verified quest-menu visual kit at runtime.
 - Added field visual-pass specification and device-capture workflow.
 - Collected extensive `720x1600` runtime screenshots and recordings.
 - Exported and validated 23,505 reference images from the supplied Unity build.
+
+## Turtle Asset Contract Feature
+
+- Verified that the reference Turtle actor uses Unity Texture2D `Mob_0` path ID
+  `347`, not the separate GreenTortoise or PurpleTortoise sheets.
+- Added the exact `384x256` local-only atlas as
+  `actor.monster.turtle.default` and its exact `20x21` padded UI icon as
+  `actor.monster.turtle.icon`.
+- Recorded the 21 `64x64` sprites, center pivot, 40 PPU, and Unity-proven
+  `idle`, `walk`, `attack`, and `dead` clip sequences. Canonical manifest states
+  map `walk` to `move` and `dead` to `death`.
+- Kept the feature asset-only: no gameplay ID, monster registration, stats, AI,
+  drops, collision, quest 306, save/LAN contract, runtime consumer, or alias to
+  an existing Emberfield actor was added.
+- A connected ADB device remained on the saved-account login surface; automated
+  taps did not advance it, so no runtime spawn, scale, collision, direction, or
+  behavior observation is claimed.
+- Godot `4.6.stable.official.89cea1439` imported both PNGs with lossless
+  compression and mipmap generation disabled. Inventory Transaction, Legacy and
+  Survival/save suites completed with exit code `0`; corrupt-save and resource
+  leak warnings are existing test fixtures/known warnings.
+- Independent UnityPy validation matched Texture2D path ID `347`, all 21 sprite
+  rects/pivots/PPU values, four clip sequences, loop flags and durations.
+  Source-target byte/hash checks and pixel comparison passed. The manifest now
+  has 123 unique asset IDs/targets and 67 `local_only` entries.
 
 ## Completed In This Feature
 

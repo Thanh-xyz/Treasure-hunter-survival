@@ -2308,6 +2308,63 @@
       "notes": []
     },
     {
+      "asset_id": "actor.monster.snailu.atlas",
+      "category": "monster_sprite",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/textures/sharedassets1.assets/Mob_1__410.png",
+      "target_path": "assets/treasure_hunter/monsters/snailu_atlas.png",
+      "file_format": "png",
+      "dimensions": [
+        384,
+        256
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "idle",
+          "move",
+          "attack",
+          "death"
+        ],
+        "directions": [],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          64,
+          64
+        ],
+        "frame_count": 21,
+        "fps": null,
+        "loop": null,
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "Unity Texture2D, Sprite and AnimationClip metadata"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_unity_runtime_pointer_and_clip_metadata",
+      "integration_status": "selected",
+      "notes": [
+        "Snailu GameObject path ID 12019 uses body child Mob_1; SpriteRenderer path ID 84641 starts on Sprite Idle_0 path ID 4811.",
+        "Texture2D path ID 410 is named Mob_1 and contains 21 Sprite objects in 64x64 source rectangles at 40 pixels per unit.",
+        "All four Unity AnimationClips record a sample rate of 24; fps remains null because the clips have different key spacing and durations.",
+        "Unity clip idle loops Idle_0, Idle_1, Idle_2, Idle_3, Idle_0 and stops at 0.7083333731 seconds.",
+        "Unity clip walk loops Run_0, Idle_1, Run_2, Run_3, Run_4, Run_5 and stops at 0.4583333135 seconds; the unexpected Idle_1 key is verified source data and manifest canonical state is move.",
+        "Unity clip attack loops Attack_0 through Attack_5 and stops at 0.6666666865 seconds.",
+        "Unity clip dead plays Death_0 through Death_5, stops at 0.75 seconds and does not loop; manifest canonical state is death.",
+        "Existing actor.monster.snailu.default remains the integrated static icon/runtime consumer and is not repointed in this additive feature.",
+        "No directional set, collision footprint, gameplay ID, stats, AI, drops or runtime consumer is approved for this atlas.",
+        "SHA-256: fa8c1bcded46dd86ae6fe3315e1c8d3e41e4026d9a929b967956481f313f178f."
+      ]
+    },
+    {
       "asset_id": "actor.monster.turtle.default",
       "category": "monster_sprite",
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/textures/sharedassets1.assets/Mob_0__347.png",

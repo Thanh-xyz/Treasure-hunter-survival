@@ -1,8 +1,42 @@
 # Agent A Art Scout Report
 
 Date: 2026-11-04; updated 2026-11-06
-Branch/worktree: `feature/th-art-q323-craft-tutorial` in the Agent A worktree
+Branch/worktree: `feature/th-art-q324-elixir-icons` in the Agent A worktree
 Stage: SCOUT complete; no project implementation occurred during SCOUT.
+
+## Quest 324 Craft Potion Art Evidence
+
+- Source quest `324` follows `323`, precedes `325`, uses raw quest type `32`,
+  count `1`, `equipmentType: 10`, `rareRequire: 0`, NPC requirement `4`, Box
+  `98`, and remains disabled. Native identifiers explicitly include
+  `BEGINNER_QUEST_CRAFT_POTION`, `CheckQuestCraftedPotion`, and `CraftedPotion`.
+- Vietnamese text is `Chế tạo thuốc`: a potion and ingredient stone are needed,
+  then the campfire craft icon begins crafting. The quest does not specify an
+  Elixir card/tier, ingredients, chance, cost, result stats, or failure behavior.
+- Card IDs `900..905` are the source `Elixir_1..6` sequence. Native identifiers
+  include `ELIXIR_1..6` and `IsElixir`. All six use raw `equipmentType: 10` and
+  have exact addressable Sprite exports with independently pixel-identical
+  Unity-data exports.
+- UnityPy verifies original `32x32` rects, centered pivots, and `100 PPU` for
+  every Elixir. Trimmed crop/restore placements are: Cards 900/901 `22x30` at
+  `(5,1)`, 902 `20x32` at `(6,0)`, 903 `32x26` at `(0,3)`, and 904/905 `32x30`
+  at `(0,1)`. Reconstructing these transparent logical canvases preserves source
+  alignment without scaling, filtering, recoloring, or invention.
+- The integrated IDs `item.potion.card_900.icon` through
+  `item.potion.card_905.icon` are metadata-only art identities. They are not
+  aliases for Emberfield `health_potion`, `large_health_potion`, stamina potion,
+  or provisional speed-elixir items/recipes.
+- Quest 324 reuses the verified CraftView and Box 98 boundaries. The existing
+  Quest 323 `CraftView_1` tutorial is not relabeled potion-specific because no
+  available pointer ties its pictured result to Quest 324.
+- ADB remains blocked at server selection, so potion inventory scale, selected
+  state, output/result state, HUD shortcut, and live CraftView presentation are
+  unverified. No account resource was changed.
+
+Unknowns remain the Quest 324 output tier/card, eligible base potion and stones,
+formula/chance/cost/failure, effects/stats, instance semantics, shortcut binding,
+completion event, saves, and multiplayer authority. These require Agent B-owned
+contracts before runtime consumption.
 
 ## Quest 323 Craft Equipment Art Evidence
 

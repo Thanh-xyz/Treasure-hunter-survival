@@ -3,6 +3,27 @@
 Date: 2026-11-04
 Status: startup/auth presentation integrated; broader asset registry remains proposed.
 
+## Quest 324 Elixir Icon Asset Contract
+
+- Stable metadata-only IDs `item.potion.card_900.icon` through
+  `item.potion.card_905.icon` map to exact reconstructed `32x32` logical canvases
+  under `assets/treasure_hunter/items/potions/`.
+- Source Cards `900..905` are named `Elixir_1..6`. Their Sprite metadata is
+  centered pivot and `100 PPU`; each target preserves the verified trim crop at
+  its original offset. Independent addressable and Unity-data crops are
+  pixel-identical.
+- Quest 324 verifies a generic `CraftedPotion` objective but does not identify
+  which Elixir card/tier is produced. These art IDs must not be interpreted as a
+  recipe order, tier unlock sequence, result guarantee, or Quest 324 mapping.
+- Do not alias these assets to existing Emberfield `health_potion`,
+  `large_health_potion`, stamina potion, or provisional speed-elixir IDs from
+  names/appearance alone. No runtime consumer is integrated.
+- Agent B retains ownership of stable gameplay item IDs, eligible inputs,
+  recipes, chance/cost/failure, output stats/effects, Box 98, Quest 324 event,
+  inventory/save/retry, HUD shortcut, and multiplayer authority.
+- Direct live capture is still required before claiming inventory/CraftView/HUD
+  scale, layout, selected/result states, transitions, or visual parity.
+
 ## Quest 323 Craft Tutorial Asset Contract
 
 - Stable art ID `ui.reference.tutorial.craft_equipment` maps to

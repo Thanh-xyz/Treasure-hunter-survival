@@ -313,7 +313,7 @@ const BUILDING_STORAGE_HOURS := 8.0
 # =============================================================================
 const MAIN_QUESTS := [
 	{"id": "q01", "name": "Đào đất", "desc": "Đứng trên một ô đất để tự động đào.",
-		"obj": {"type": "dig", "target": "any", "count": 1}, "reward": {"xp": 30, "gold": 50}},
+		"obj": {"type": "dig", "target": "any", "count": 1}, "reward": {"gold": 100}},
 	{"id": "q02", "name": "Slime Cleanup", "desc": "Defeat Meadow Slimes.",
 		"obj": {"type": "kill", "target": "slime", "count": 8}, "reward": {"xp": 60, "gold": 80, "items": {"health_potion": 3}}},
 	{"id": "q03", "name": "Timber!", "desc": "Chop trees for wood. Hit a tree to gather.",

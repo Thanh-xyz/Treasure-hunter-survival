@@ -257,3 +257,13 @@ asset metadata.
   live/dead MobileHUD render passed with exit code 0.
 - UI display, quest-content insertion and LAN Diamond reward replication are intentionally
   excluded and require separate presentation/content/protocol features.
+
+## 2026-11-06 — Active dig tutorial reward
+
+- Runtime `0/1` and active quest ID 335 prove q01 remains a one-dig tutorial; inactive ID 305
+  is a separate ten-dig follow-up and is not inserted in this slice.
+- Box 150 grants exactly 100 Gold. Q01 now grants that payload instead of the provisional
+  30 XP + 50 Gold reward.
+- Regression coverage locks the count, reward dictionary, exact Gold delta, absence of XP and
+  normal progression to q02.
+- No quest ID, UI, asset, save field, LAN protocol or later quest definition changed.

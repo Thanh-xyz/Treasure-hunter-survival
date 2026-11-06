@@ -289,3 +289,12 @@ No shared contract change should be implemented until these questions are resolv
 - LAN Diamond rewards are not implemented in this slice. Presentation must not imply that
   clients receive Diamond over the current `item`/`gold`/`xp` protocol.
 - Godot import, gameplay/save suites and live/dead MobileHUD render passed.
+
+## 2026-11-06 — Active q01 evidence correction
+
+- Q01 remains one dig, matching the captured `0/1` state and active reference quest ID 335.
+- Its authoritative reward is box 150: exactly 100 Gold. No XP or item is included.
+- The existing HUD continues to consume `QuestService` dynamically; no visual callback, asset,
+  layout or quest icon change is required.
+- Inactive ID 305 is the separate ten-dig/box-149 quest and remains unmigrated until its Common
+  weapon card IDs have an approved gameplay mapping.

@@ -4129,6 +4129,35 @@
       ]
     },
     {
+      "asset_id": "item.ingredient.card_64.icon",
+      "category": "item_icon",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-973d8086f1996513b06114d69c2cb5d2/Stone_1__-6194617164597298872.png",
+      "target_path": "assets/treasure_hunter/items/ingredients/card_64_stone_1.png",
+      "file_format": "png",
+      "dimensions": [
+        28,
+        31
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_quest_card_box_config_and_addressable_export",
+      "integration_status": "selected",
+      "notes": [
+        "Quest.json ID 317 requires one stat-type-0 Health ingredient after quest 316.",
+        "Card.json ID 64 is Stone_1, describes adding Health to equipment, and has Vietnamese description 'Thêm Sinh Mệnh cho trang bị của bạn'.",
+        "Box.json IDs 444-447 independently bind card 64 to Common, Rare, Epic, and Legendary Health ingredient rewards.",
+        "Unity addressable CAB-973d8086f1996513b06114d69c2cb5d2 Sprite path ID -6194617164597298872 exports at 28x31; exact pivot and pixels per unit remain unknown.",
+        "SHA-256: 1aae2b48e70a9591d0977e4c56e0f83049f1e7d4fcb9ddb4fae8d5422ad32a88.",
+        "No existing Emberfield gameplay item ID is approved as an alias, and no runtime consumer is integrated."
+      ]
+    },
+    {
       "asset_id": "item.ingredient.card_66.icon",
       "category": "item_icon",
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-55e812578eafcc090b2aa395a93ea527/Stone_3__-6727630107612017795.png",

@@ -1,8 +1,22 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: establish the exact Treasure Hunter Stone_3 Damage ingredient
-identity for quest 316.
+Current feature: establish the exact Treasure Hunter Stone_1 Health ingredient
+identity for quest 317.
+
+## Stone_1 Health Ingredient Feature
+
+- Selected the exact `28x31` addressable Stone_1 sprite for card `64` and copied
+  it byte-for-byte to
+  `assets/treasure_hunter/items/ingredients/card_64_stone_1.png`.
+- Added stable art ID `item.ingredient.card_64.icon` with Quest 317, Card 64,
+  Box 444-447, CAB/path ID, alpha, dimensions, hash, and `local_only` evidence.
+- The asset remains additive and metadata-only. No gameplay alias, quest,
+  dig/drop, rarity/stat generation, upgrade, save, or runtime UI is implied.
+- Exact live scale/frame and Unity pivot/PPU remain unknown; no rendered
+  pixel-parity claim is made.
+- Byte/hash/dimension/alpha, manifest uniqueness/path, Godot 4.6 import,
+  Inventory Transaction, Legacy, Survival/save, and `git diff --check` pass.
 
 ## Stone_3 Damage Ingredient Feature
 

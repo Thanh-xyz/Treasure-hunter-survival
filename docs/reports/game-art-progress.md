@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: establish the exact Snailu animated atlas contract.
+Current feature: establish the exact Mosqui animated atlas contract.
 
 ## Quest Menu Runtime Feature
 
@@ -77,6 +77,38 @@ Current feature: establish the exact Snailu animated atlas contract.
   rects/pivots/PPU values, four clip sequences, sample rates, loop flags and
   durations. Source-target byte/hash checks pass. The manifest now has 124
   unique asset IDs/targets and 68 `local_only` entries.
+
+## Mosqui Animated Atlas Feature
+
+- Verified the exact Unity object chain from Mosqui GameObject `12016` through
+  body `40226`, child `Mob_2`, SpriteRenderer `77014`, Animator `71317`,
+  AnimatorController `2950`, and Texture2D path ID `699`.
+- Added the exact `384x256` RGBA atlas as selected local-only asset
+  `actor.monster.mosqui.atlas` while preserving the integrated static icon ID
+  `actor.monster.mosqui.default` and every current runtime consumer.
+- Recorded all 22 centered `64x64` sprites at 40 PPU and the source-specific
+  timing for looping `idle`, `walk`, and `attack` plus non-looping `dead`.
+- Recorded the source death presentation detail: its SpriteRenderer alpha stays
+  at 1 through `0.5` seconds and reaches 0 at `0.75` seconds. No replacement
+  fade, hit event, direction, or scale was inferred.
+- Verified that the current `31x33` Mosqui icon contains the visible Idle_0
+  pixels with a two-pixel transparent pad on every side; the existing icon
+  contract remains unchanged.
+- Kept the feature asset-only: no gameplay ID, current `slime` alias, monster
+  registration, stats, AI, drops, collision, quest 313, save/LAN contract or
+  runtime animation consumer changed.
+- ADB authentication reproduced the 4.3.7 Mirror deserialize mismatch, so no
+  live-world Mosqui scale, direction, collision, or attack timing is claimed.
+- Independent UnityPy validation passed for the runtime object chain, all 22
+  sprite rects/pivots/PPU values, controller/clip pointers, exact key sequences,
+  sample rates, loop flags, durations and the death alpha binding.
+- Source-target byte/SHA-256 and Idle_0-to-padded-icon pixel checks pass. Godot
+  `4.6.stable.official.89cea1439` imports the atlas losslessly with mipmaps
+  disabled.
+- Inventory Transaction, Legacy and Survival/save suites completed with exit
+  code `0`; existing invalid/corrupt-save fixture and resource-leak warnings
+  remain visible. The manifest has 125 unique asset IDs/targets and 69
+  `local_only` entries.
 
 ## Completed In This Feature
 

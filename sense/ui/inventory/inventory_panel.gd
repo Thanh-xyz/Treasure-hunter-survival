@@ -9,6 +9,7 @@ signal item_used(result: Dictionary)
 
 const GRID_COLUMNS := 8
 const INVENTORY_SIZE := 32
+const EQUIPMENT_DETAIL_SCENE := preload("res://sense/ui/inventory/EquipmentDetailPanel.tscn")
 
 ## Tab filter types
 enum TabFilter { ALL, EQUIP, MATERIAL }
@@ -60,6 +61,7 @@ var equipment_slots: Dictionary = {}
 var selected_slot_index: int = -1
 var current_tab: TabFilter = TabFilter.ALL
 var tab_buttons: Array[Button] = []
+var equipment_detail_panel: EquipmentDetailPanel
 
 
 func _ready() -> void:
@@ -69,7 +71,14 @@ func _ready() -> void:
 	_setup_equipment_slots()
 	_setup_tabs()
 	_setup_character_preview()
+	_setup_equipment_detail_panel()
 	_add_touch_close_button()
+
+
+func _setup_equipment_detail_panel() -> void:
+	equipment_detail_panel = EQUIPMENT_DETAIL_SCENE.instantiate() as EquipmentDetailPanel
+	equipment_detail_panel.name = "EquipmentDetailPanel"
+	add_child(equipment_detail_panel)
 
 
 func _add_touch_close_button() -> void:
@@ -262,6 +271,7 @@ func _setup_equipment_slots() -> void:
 		
 		# Connect signals
 		slot.slot_right_clicked.connect(_on_equipment_slot_right_clicked.bind(slot_type))
+		slot.gui_input.connect(_on_equipment_slot_gui_input.bind(slot_type))
 		slot.slot_hovered.connect(_on_equipment_slot_hovered.bind(slot_type))
 		slot.inventory_to_equipment_dropped.connect(_on_inventory_to_equipment_dropped)
 		slot.equipment_dropped.connect(_on_equipment_swap_dropped)
@@ -304,6 +314,8 @@ func open_inventory() -> void:
 func close_inventory() -> void:
 	visible = false
 	tooltip_panel.visible = false
+	if equipment_detail_panel:
+		equipment_detail_panel.close_panel()
 	inventory_closed.emit()
 
 
@@ -575,6 +587,25 @@ func _on_equipment_slot_right_clicked(_index: int, slot_type: String) -> void:
 		_open_augment_panel(slot_type)
 	else:
 		inventory_data.unequip_item(slot_type)
+
+
+func _on_equipment_slot_gui_input(event: InputEvent, slot_type: String) -> void:
+	var released_click: bool = (
+		event is InputEventMouseButton
+		and event.button_index == MOUSE_BUTTON_LEFT
+		and not event.pressed
+	)
+	var released_touch: bool = event is InputEventScreenTouch and not event.pressed
+	if not released_click and not released_touch:
+		return
+	if get_viewport().gui_get_drag_data() != null:
+		return
+	if inventory_data == null:
+		return
+	if inventory_data.get_equipped(slot_type) == null:
+		return
+	tooltip_panel.visible = false
+	equipment_detail_panel.setup(inventory_data, slot_type)
 
 
 ## Handle hover on equipment slot

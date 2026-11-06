@@ -1,7 +1,39 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: match Treasure Hunter equipment rarity fields for quest 314.
+Current feature: recreate the Treasure Hunter equipped-item detail panel for
+quest 315 presentation.
+
+## Equipment Detail Panel Feature
+
+- Added a dedicated portrait item-detail modal for equipped slots, following
+  the live Treasure Hunter 4.3.7 composition: centered grey-purple panel,
+  equipment name and level, rarity-colored item field, stat rows, description,
+  and Remove/Upgrade/Sell action positions.
+- The panel consumes the existing stable slot IDs and authoritative
+  `InventoryData` commands. Remove calls `unequip_item(slot_type)` and Upgrade
+  calls `upgrade_equipment(slot_type)` without submitting a cost, level, or stat
+  value from presentation.
+- Upgrade cost, enabled state, displayed level, and scaled stats are refreshed
+  from final gameplay state. Reference cards 28-30 remain visibly unavailable
+  because their runtime upgrade contract is intentionally disabled.
+- The Sell action is present but disabled because Emberfield does not have an
+  authoritative atomic equipped-sale transaction. The observed live `100` cost
+  and Unity `HoldButton` component are evidence only; neither is hard-coded or
+  treated as a verified economy/interaction rule.
+- Reused the integrated local-only blue button, Gold/health/damage/speed icons,
+  theme, and rarity field resolver. No binary asset or manifest entry was added;
+  neutral and disabled-red action styling is capture-derived pending exact Unity
+  sprite binding.
+- Added a deterministic portrait render harness with a logical `720x1600`
+  viewport. The project's 2x stretch transform captures a `360x800` PNG while
+  exercising upgrade, insufficient-Gold, locked-reference, and remove states;
+  it saves `/tmp/emberfield-equipment-detail.png` for visual comparison.
+- Review made modal closure idempotent, removed duplicate post-transaction
+  refresh/close calls, and localized presentation tooltips. Godot 4.6 import,
+  focused equipment-detail and rarity renders, Inventory Transaction, Legacy,
+  Survival/save, and `git diff --check` all pass. The focused capture remains
+  `44d661c8c9cc0d27bf797bef161504b93347624395e032502690e3bd4c1fb032`.
 
 ## Quest Menu Runtime Feature
 

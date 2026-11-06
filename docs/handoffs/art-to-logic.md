@@ -3,6 +3,28 @@
 Date: 2026-11-04
 Status: startup/auth presentation integrated; broader asset registry remains proposed.
 
+## Equipment Detail Presentation Contract
+
+- Equipped-slot taps open a dedicated Treasure Hunter-style item-detail modal.
+  Presentation passes only the existing stable equipment slot ID to gameplay.
+- The Upgrade action calls `InventoryData.upgrade_equipment(slot_type)` and then
+  reads final level, stats, Gold, cost, and availability from the equipped item.
+  It never calculates or submits an upgrade payload.
+- Items without `can_upgrade_further()` remain disabled, including reference
+  cards 28-30 under the current Agent B contract. The live reference cost `100`
+  is not a shared constant and does not change gameplay authority.
+- Remove uses the existing atomic `unequip_item(slot_type)` path. Sell is shown
+  disabled to preserve the verified three-action layout without inventing an
+  equipped-sale transaction.
+- No quest 315 registration, reward, item ID, rarity mapping, save field,
+  currency, Box 149 generator, stat formula, or gameplay signal changed. Agent B
+  requires no adaptation for this presentation slice.
+- The focused render test verifies the real inventory-slot tap path, final-state
+  upgrade refresh, insufficient-Gold rejection, locked reference equipment,
+  authoritative removal, disabled sale, and exactly one modal-close signal.
+  Import, rarity render, Inventory Transaction, Legacy, and Survival/save gates
+  pass on Godot `4.6.stable.official.89cea1439`.
+
 ## Quest Menu Runtime Contract
 
 - `GameMenu.open("quest")` remains the stable entry point. The feature changes

@@ -2,7 +2,7 @@ class_name ReferenceEquipmentCatalog
 extends RefCounted
 
 ## Evidence-backed Treasure Hunter equipment definitions. Materialization accepts
-## exact authoritative/replayed stats; it does not guess the server's roll distribution.
+## exact authoritative/replayed stats, including verified zero-valued suppressed stats.
 
 const STAT_KEYS := [&"health", &"damage", &"speed"]
 const _CARDS := {
@@ -97,13 +97,18 @@ static func normalize_payload(card_id: int, stats: Dictionary) -> Dictionary:
 		return {}
 	var ranges: Dictionary = (_CARDS[card_id] as Dictionary)["ranges"]
 	var normalized := {}
+	var non_zero_count := 0
 	for key: StringName in STAT_KEYS:
 		var value := float(stats.get(key, stats.get(String(key))))
+		if value == 0.0:
+			normalized[String(key)] = 0.0
+			continue
 		var allowed := ranges[String(key)] as Dictionary
 		if value < float(allowed["min"]) or value > float(allowed["max"]):
 			return {}
 		normalized[String(key)] = value
-	return normalized
+		non_zero_count += 1
+	return normalized if non_zero_count > 0 else {}
 
 
 static func materialize(card_id: int, stats: Dictionary) -> ItemData:

@@ -19,8 +19,8 @@ const _BOXES := {
 	],
 }
 
-## Equipment boxes keep selection separate because exact instance stats are
-## supplied by an offline/host authority, not guessed from Card.json ranges.
+## Equipment boxes keep selection separate from materialization. Verified local
+## generators may act as the offline/host authority for a specific box and rarity.
 const _EQUIPMENT_BOXES := {
 	149: [
 		{"weight": 34, "card_id": 28},
@@ -87,3 +87,13 @@ static func finalize_equipment_reward(selection: Dictionary, stats: Dictionary) 
 		resolver_selection,
 		stats,
 	)
+
+
+static func resolve_common_equipment(box_id: int, rng: RandomNumberGenerator) -> Dictionary:
+	var selection := select_equipment(box_id, rng)
+	if selection.is_empty():
+		return {}
+	var stats := ReferenceEquipmentStatGenerator.generate_common(int(selection["card_id"]), rng)
+	if stats.is_empty():
+		return {}
+	return finalize_equipment_reward(selection, stats)

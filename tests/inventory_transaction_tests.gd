@@ -22,6 +22,7 @@ func _ready() -> void:
 	_test_sale_transaction()
 	_test_equipment_transactions()
 	_test_equipment_enhancement()
+	_test_equipment_quest_objectives()
 	_test_inventory_removal_invariants()
 	_test_recipe_catalog_validation()
 	_test_crafting_transaction()
@@ -340,6 +341,37 @@ func _test_equipment_enhancement() -> void:
 	inventory._set_equipped("weapon", locked)
 	_check(not inventory.upgrade_equipment("weapon"), "non-upgradeable equipment upgraded")
 
+
+func _test_equipment_quest_objectives() -> void:
+	var inventory := InventoryData.new()
+	var rare_weapon := ItemDatabase.get_item_copy("fire_blade")
+	rare_weapon.rarity = ItemData.ItemRarity.RARE
+	rare_weapon.enhancement_level = 5
+	var epic_armor := ItemDatabase.get_item_copy("leather_armor")
+	epic_armor.rarity = ItemData.ItemRarity.EPIC
+	epic_armor.enhancement_level = 3
+	var common_helmet := ItemDatabase.get_item_copy("iron_helmet")
+	common_helmet.rarity = ItemData.ItemRarity.COMMON
+	common_helmet.enhancement_level = 2
+	inventory._set_equipped("weapon", rare_weapon)
+	inventory._set_equipped("armor", epic_armor)
+	inventory._set_equipped("helmet", common_helmet)
+
+	_check(inventory.count_equipped_items() == 3, "equipped-count query returned the wrong total")
+	_check(inventory.count_equipment_at_or_above_rarity(ItemData.ItemRarity.RARE) == 2, "rare equipment query missed rare-or-better items")
+	_check(inventory.count_equipment_at_or_above_rarity(ItemData.ItemRarity.EPIC) == 1, "epic equipment query returned the wrong total")
+	_check(inventory.count_equipment_at_or_above_rarity(-1) == 0, "invalid rarity query was accepted")
+	_check(inventory.count_equipment_at_or_above_level(3) == 2, "level-3 equipment query returned the wrong total")
+	_check(inventory.count_equipment_at_or_above_level(5) == 1, "level-5 equipment query returned the wrong total")
+	_check(inventory.count_equipment_at_or_above_level(0) == 0, "invalid equipment-level query was accepted")
+
+	_check(QuestService.get_state_objective_value({"type": "equipped_count", "target": "any"}, inventory) == 3, "equipped-count quest objective returned the wrong value")
+	_check(QuestService.get_state_objective_value({"type": "equipped_rarity", "target": ItemData.ItemRarity.RARE}, inventory) == 2, "rarity quest objective returned the wrong value")
+	_check(QuestService.get_state_objective_value({"type": "equipment_level", "target": 3}, inventory) == 2, "equipment-level quest objective returned the wrong value")
+	_check(QuestService.get_state_objective_value({"type": "equipped_rarity", "target": ItemData.ItemRarity.LEGENDARY + 1}, inventory) == -1, "out-of-range rarity objective was accepted")
+	_check(QuestService.get_state_objective_value({"type": "equipment_level", "target": 0}, inventory) == -1, "zero equipment-level target was accepted")
+	_check(QuestService.get_state_objective_value({"type": "equipment_level", "target": "3"}, inventory) == -1, "invalid equipment-level target was accepted")
+	_check(QuestService.get_state_objective_value({"type": "unknown"}, inventory) == -1, "unknown state objective was accepted")
 
 func _test_inventory_removal_invariants() -> void:
 	var inventory := InventoryData.new()

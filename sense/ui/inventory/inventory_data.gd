@@ -511,9 +511,28 @@ func count_equipment_at_or_above_level(minimum_level: int) -> int:
 	if minimum_level < 1:
 		return 0
 	var count := 0
-	for item: ItemData in [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
-			 equipped_shield, equipped_accessory_1, equipped_accessory_2]:
+	for slot_type: String in EQUIPMENT_SLOTS:
+		var item := get_equipped(slot_type)
 		if item != null and item.enhancement_level >= minimum_level:
+			count += 1
+	return count
+
+
+func count_equipped_items() -> int:
+	var count := 0
+	for slot_type: String in EQUIPMENT_SLOTS:
+		if get_equipped(slot_type) != null:
+			count += 1
+	return count
+
+
+func count_equipment_at_or_above_rarity(minimum_rarity: int) -> int:
+	if minimum_rarity < ItemData.ItemRarity.COMMON or minimum_rarity > ItemData.ItemRarity.LEGENDARY:
+		return 0
+	var count := 0
+	for slot_type: String in EQUIPMENT_SLOTS:
+		var item := get_equipped(slot_type)
+		if item != null and int(item.rarity) >= minimum_rarity:
 			count += 1
 	return count
 

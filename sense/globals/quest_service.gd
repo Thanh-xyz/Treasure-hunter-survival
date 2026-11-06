@@ -255,15 +255,21 @@ func _check_daily_reset() -> void:
 # =============================================================================
 
 func to_dict() -> Dictionary:
+	var main := get_main_quest()
 	return {
-		"main_index": main_index, "main_progress": main_progress, "main_ready": main_ready,
+		"main_index": main_index,
+		"main_quest_id": str(main.get("id", "")),
+		"main_progress": main_progress, "main_ready": main_ready,
 		"dailies": dailies, "daily_date": daily_date,
 	}
 
 
 func from_dict(d: Dictionary) -> void:
 	reset()
-	main_index = clampi(int(d.get("main_index", 0)), 0, GameContent.MAIN_QUESTS.size())
+	var fallback_index := clampi(int(d.get("main_index", 0)), 0, GameContent.MAIN_QUESTS.size())
+	var saved_quest_id := str(d.get("main_quest_id", ""))
+	var saved_quest_index := GameContent.get_main_quest_index(saved_quest_id)
+	main_index = saved_quest_index if saved_quest_index >= 0 else fallback_index
 	main_progress = int(d.get("main_progress", 0))
 	main_ready = bool(d.get("main_ready", false))
 	if str(d.get("daily_date", "")) == _today():

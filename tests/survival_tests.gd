@@ -359,6 +359,7 @@ func _test_save_roundtrip() -> void:
 	SaveService.enabled = false
 	var snap := SaveService.read_snapshot()
 	_check(snap.get("version", 0) == SaveService.SAVE_VERSION, "snapshot has version")
+	_check(snap.get("quests", {}).get("main_quest_id", "") == "q04", "snapshot stores stable main quest id")
 
 	# Wipe live state then load
 	GameState.reset_profile()
@@ -375,6 +376,7 @@ func _test_save_roundtrip() -> void:
 	_check(bool(GameState.settings.get("compact_hud", false)), "compact HUD setting restored")
 	_check(int(GameState.settings.get("max_fps", 0)) == 30 and Engine.max_fps == 30, "FPS setting restored and applied")
 	_check(QuestService.main_index == 3, "quest progress restored")
+	_check(QuestService.get_main_quest().get("id", "") == "q04", "stable quest id restored the active quest")
 	_check(inv.gold == 1234, "gold restored")
 	_check(inv.get_item_count("wood") == 42, "items restored")
 	_check(inv.get_equipped("weapon") != null and inv.get_equipped("weapon").id == "iron_sword", "equipment restored")
@@ -443,6 +445,19 @@ func _test_save_roundtrip() -> void:
 	f.store_string(JSON.stringify(invalid_quests))
 	f.close()
 	_check(SaveService.read_snapshot().get("inventory", {}).get("gold", -1) == 1234, "invalid quest flags fall back to backup")
+	var invalid_quest_id := snap.duplicate(true)
+	invalid_quest_id["quests"]["main_quest_id"] = 4
+	f = FileAccess.open(SaveService.SAVE_PATH, FileAccess.WRITE)
+	f.store_string(JSON.stringify(invalid_quest_id))
+	f.close()
+	_check(SaveService.read_snapshot().get("inventory", {}).get("gold", -1) == 1234, "non-string quest id falls back to backup")
+
+	QuestService.from_dict({"main_index": 0, "main_quest_id": "q04", "main_progress": 0, "main_ready": false})
+	_check(QuestService.main_index == 3, "stable quest id takes precedence over stale index")
+	QuestService.from_dict({"main_index": 2, "main_progress": 0, "main_ready": false})
+	_check(QuestService.main_index == 2, "legacy quest save falls back to main index")
+	QuestService.from_dict({"main_index": 1, "main_quest_id": "removed_quest", "main_progress": 0, "main_ready": false})
+	_check(QuestService.main_index == 1, "unknown quest id falls back to saved index")
 
 	# Direct inventory hydration rejects malformed data without touching live state.
 	var protected_gold := inv.gold

@@ -302,3 +302,16 @@ The journal belongs to persistence while claim orchestration belongs to the ques
 service. It is independent of transport and can later carry an authority-resolved equipment
 instance without coupling gameplay rules to ENet. Only one claim may be pending, deliberately
 serializing offline mutations until a broader command ledger is justified.
+
+## Exact equipment reward carrier
+
+Canonical rewards may carry `equipment: [{card_id, stats}]`. This representation stores only the
+source identity and exact authoritative decimal values; runtime item ID and stable asset ID are
+derived from `ReferenceEquipmentCatalog`. Callers cannot provide levels, augments, rarity or asset
+aliases through this boundary.
+
+Reward normalization validates every instance and caps the list to inventory capacity. Grant
+materializes every equipment object before mutation, then commits equipment, ordinary items and
+currencies through the existing single inventory transaction before applying XP. A pending claim
+therefore persists and retries the same exact instances without coupling reward logic to save-item
+serialization or to a network transport.

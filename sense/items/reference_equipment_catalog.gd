@@ -89,24 +89,31 @@ static func is_valid_instance_data(item_id: String, card_id: int, asset_id: Stri
 
 
 static func is_valid_payload(card_id: int, stats: Dictionary) -> bool:
+	return not normalize_payload(card_id, stats).is_empty()
+
+
+static func normalize_payload(card_id: int, stats: Dictionary) -> Dictionary:
 	if not _CARDS.has(card_id) or not ItemData.is_valid_reference_stats(stats):
-		return false
+		return {}
 	var ranges: Dictionary = (_CARDS[card_id] as Dictionary)["ranges"]
+	var normalized := {}
 	for key: StringName in STAT_KEYS:
 		var value := float(stats.get(key, stats.get(String(key))))
 		var allowed := ranges[String(key)] as Dictionary
 		if value < float(allowed["min"]) or value > float(allowed["max"]):
-			return false
-	return true
+			return {}
+		normalized[String(key)] = value
+	return normalized
 
 
 static func materialize(card_id: int, stats: Dictionary) -> ItemData:
-	if not is_valid_payload(card_id, stats):
+	var normalized_stats := normalize_payload(card_id, stats)
+	if normalized_stats.is_empty():
 		return null
 	var definition := _CARDS[card_id] as Dictionary
 	var item := ItemDatabase.get_item_copy(str(definition["runtime_item_id"])) as ItemData
 	if item == null or item.item_type != ItemData.ItemType.WEAPON:
 		return null
-	if not item.set_reference_instance_data(card_id, str(definition["asset_id"]), stats):
+	if not item.set_reference_instance_data(card_id, str(definition["asset_id"]), normalized_stats):
 		return null
 	return item

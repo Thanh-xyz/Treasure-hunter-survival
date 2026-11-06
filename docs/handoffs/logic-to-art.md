@@ -298,3 +298,11 @@ No shared contract change should be implemented until these questions are resolv
   layout or quest icon change is required.
 - Inactive ID 305 is the separate ten-dig/box-149 quest and remains unmigrated until its Common
   weapon card IDs have an approved gameplay mapping.
+
+## 2026-11-06 — Reward box resolver prerequisite
+
+- Gameplay now has a deterministic, mutation-free weighted resolver for future reward boxes.
+- Its output uses the existing `xp`, `gold`, `diamonds` and `items` reward contract; no UI or art
+  consumer changes are required.
+- Box 149 is not registered and no existing weapon is aliased to cards 28/29/30. Agent B still
+  needs three approved stable art IDs before proposing the matching additive gameplay items.

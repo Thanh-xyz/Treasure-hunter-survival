@@ -3,6 +3,33 @@
 Date: 2026-11-04
 Status: startup/auth presentation integrated; broader asset registry remains proposed.
 
+## Quest 321 Merge Ingredient Visual And Ownership Contract
+
+- Quest `321` requires one ingredient merge after meeting Donx. Source config
+  records `questType: 36`, `equipmentType: 10`, `rareRequire: 1`, Box `148`, and
+  disabled status; it does not establish an Emberfield runtime API by itself.
+- Verified presentation is `MergeIngredientView`: ingredient grid/detail,
+  PushToMerge, Hold Upgrade, exactly eight merge inputs, displayed success
+  chance, Gold/Diamond rows, Gold-cost Merge, result notify, tips/help, and
+  close controls.
+- Existing stable icon IDs `item.ingredient.card_64.icon`,
+  `item.ingredient.card_66.icon`, and `item.ingredient.card_69.icon` are
+  metadata-only input identities. Box 148 references existing weapon art IDs
+  `item.weapon.card_28.icon`, `item.weapon.card_29.icon`, and
+  `item.weapon.card_30.icon`; none is a gameplay item/transaction contract.
+- Source dialogs say count and level affect success, eight inputs maximize it,
+  output preserves ingredient type, and only one ingredient can result. Exact
+  formula, costs, eligible combinations, failure consumption, result rarity,
+  and server authority remain unknown and must not be inferred from UI text.
+- Agent B owns ingredient instances and stable IDs, rarity/level/stat authority,
+  atomic validation/consumption/result, Box 148 materialization, Quest 321
+  completion, save/reload, and retry/multiplayer behavior. No such interface is
+  implemented or approved by this document.
+- A future Agent A panel requires an approved command/result contract and direct
+  Treasure Hunter screen captures for empty, selected, filled, success, and
+  failure states. Until then, exact geometry, sprite binding, colors, values,
+  transitions, and pixel parity remain unknown.
+
 ## Donx UI Asset Contract
 
 - Stable art ID `actor.npc.donx.portrait` maps to

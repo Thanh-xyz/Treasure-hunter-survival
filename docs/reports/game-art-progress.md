@@ -1,8 +1,32 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: recover the exact Donx portrait/icon UI assets for Treasure
-Hunter Quest 320 without substituting them for the composite world NPC.
+Current feature: establish the evidence and ownership contract for Treasure
+Hunter Quest 321's Merge Ingredient presentation.
+
+## Quest 321 Merge Ingredient Visual Contract
+
+- Documented the verified disabled Quest 321 sequence, Vietnamese text,
+  one-merge objective, raw `rareRequire: 1`, and Box 148 reward without
+  activating or implementing any behavior.
+- Corrected the source hierarchy count to eight input slots. The merge screen
+  also has ingredient inventory/detail, PushToMerge and Hold Upgrade actions,
+  displayed chance, Gold/Diamond rows, Gold-cost Merge, result notification,
+  tips/help, and close controls.
+- Recorded source guidance that input count and level affect success, eight
+  maximizes chance, output keeps the input type, and a merge yields at most one
+  ingredient. These are evidence boundaries, not an implemented formula or
+  authority contract.
+- Referenced existing exact metadata-only ingredient IDs for cards 64/66/69 and
+  Legendary weapon reward IDs for cards 28/29/30. No new asset or manifest
+  entry is justified without exact sprite pointers or a live merge-screen
+  capture.
+- Future runtime work requires direct visual evidence plus Agent B-owned
+  ingredient instances, rarity/level state, chance/cost calculation, atomic
+  consume/result command, Box 148 reward, quest event, saves, and retry/network
+  behavior. Generic Emberfield crafting must not be treated as an alias.
+- This slice changes documentation only. It does not add a panel, consumer,
+  gameplay API, Quest 321 registration, resource mutation, or parity claim.
 
 ## Donx Portrait And Icon Feature
 

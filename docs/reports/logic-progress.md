@@ -227,3 +227,16 @@ asset metadata.
 - Godot 4.6 headless import, focused inventory transactions, legacy phases 1-7 and survival/save
   tests passed with exit code 0. Expected negative-path warnings remain visible in the existing
   shop/save tests.
+
+## 2026-11-06 — Stable main-quest save identity
+
+- Branch: `feature/th-logic-stable-quest-save`, based on `origin/develop` at `e947ec0`.
+- Quest snapshots now include optional `main_quest_id` alongside the legacy `main_index`.
+  Recognized IDs take precedence on load; legacy or removed-ID snapshots fall back to the
+  bounded index.
+- Save validation rejects non-string IDs before live-state mutation. The field is additive, so
+  save version 2 and existing version 0/1 migrations remain compatible.
+- Focused tests cover roundtrip ID persistence, stale-index precedence, legacy fallback,
+  removed-ID fallback and malformed-ID recovery through the known-good backup.
+- No quest definition, objective, reward, HUD, monster ID, asset, LAN protocol or art-owned file
+  changed. This prepares an index-safe future migration to the verified reference chain.

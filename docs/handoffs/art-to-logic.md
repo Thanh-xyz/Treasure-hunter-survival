@@ -3,6 +3,22 @@
 Date: 2026-11-04
 Status: startup/auth presentation integrated; broader asset registry remains proposed.
 
+## Stone_6 Defense Ingredient Asset Contract
+
+- Stable art ID `item.ingredient.card_69.icon` maps to card `69` / `Stone_6`,
+  the verified Defense ingredient used by Quest 318 and Box 464-467.
+- Target texture is
+  `assets/treasure_hunter/items/ingredients/card_69_stone_6.png`, an exact
+  `25x30` local-only source copy with SHA-256
+  `0c34590bdb5c3d87a633ca09d7701bba8303094b37c9e24558cef624ec30dc06`.
+- Box 153's two art identities are now `item.ingredient.card_66.icon` and
+  `item.ingredient.card_69.icon`. This does not approve a gameplay item alias,
+  Box 153 registration, reward materialization, Quest 318, drops, upgrading,
+  persistence, or runtime UI.
+- Executed validation covers exact bytes/hash/dimensions/alpha, manifest
+  uniqueness/paths, lossless Godot import, Inventory Transaction, Legacy, and
+  Survival/save. No runtime visual parity claim is made without a consumer.
+
 ## Stone_1 Health Ingredient Asset Contract
 
 - Stable art ID `item.ingredient.card_64.icon` maps to card `64` / `Stone_1`,

@@ -4185,6 +4185,36 @@
         "SHA-256: 49e02811b700b5a5c42771d73683852273bbf4d7a458535ea87c31b05ede4a2d.",
         "No existing Emberfield gameplay item ID is approved as an alias, and no runtime consumer is integrated."
       ]
+    },
+    {
+      "asset_id": "item.ingredient.card_69.icon",
+      "category": "item_icon",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-445bb67891b6cba993aa188071767959/Stone_6__1026260916352235069.png",
+      "target_path": "assets/treasure_hunter/items/ingredients/card_69_stone_6.png",
+      "file_format": "png",
+      "dimensions": [
+        25,
+        30
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_quest_card_box_config_and_addressable_export",
+      "integration_status": "selected",
+      "notes": [
+        "Quest.json ID 318 requires one stat-type-4 Defense ingredient after quest 317.",
+        "Card.json ID 69 is Stone_6, describes adding Defense to equipment, and has Vietnamese description 'Thêm Phòng Thủ cho trang bị của bạn'.",
+        "Box.json IDs 464-467 independently bind card 69 to Common, Rare, Epic, and Legendary Defense ingredient rewards.",
+        "Box.json ID 153 independently grants Rare card 66 x2 and Rare card 69 x2 through two 100-percent CheckBox entries.",
+        "Unity addressable CAB-445bb67891b6cba993aa188071767959 Sprite path ID 1026260916352235069 exports at 25x30; exact pivot and pixels per unit remain unknown.",
+        "SHA-256: 0c34590bdb5c3d87a633ca09d7701bba8303094b37c9e24558cef624ec30dc06.",
+        "No existing Emberfield gameplay item ID is approved as an alias, and no runtime consumer or Box 153 gameplay registration is integrated."
+      ]
     }
   ]
 }

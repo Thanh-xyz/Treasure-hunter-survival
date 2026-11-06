@@ -744,6 +744,10 @@ func _build_death_panel() -> void:
 	_death_button.add_theme_stylebox_override("disabled", _revive_button_style(Color8(200, 200, 200, 128)))
 	_death_button.add_theme_font_size_override("font_size", 34)
 	_death_button.add_theme_color_override("font_color", UiTheme.C_GOLD)
+	_death_button.add_theme_color_override("font_hover_color", UiTheme.C_GOLD)
+	_death_button.add_theme_color_override("font_pressed_color", UiTheme.C_GOLD)
+	_death_button.add_theme_color_override("font_hover_pressed_color", UiTheme.C_GOLD)
+	_death_button.add_theme_color_override("font_disabled_color", UiTheme.C_GOLD)
 	_death_panel.add_child(_death_button)
 
 

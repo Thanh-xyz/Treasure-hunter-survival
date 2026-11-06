@@ -1,5 +1,18 @@
 # Logic Progress
 
+## 2026-11-06 — Verified currency reward-box catalog
+
+- Added exact source Box IDs 98, 150, 151 and 152 as isolated gameplay content: Diamond 1 and
+  Gold 100/200/300, all guaranteed single-entry rewards.
+- Catalog reads return deep copies and resolution delegates to the deterministic
+  `RewardBoxResolver`; unknown/unmapped boxes return no reward.
+- Box 149 is explicitly absent, preventing accidental use before its three Common weapon cards
+  have approved gameplay and asset identities.
+- Quest definitions, save state, UI, LAN and Agent A files remain unchanged.
+- Godot 4.6 import, focused transaction tests, legacy/survival/save suites and Xvfb live/dead HUD
+  rendering passed with exit code 0. Tests lock all four source IDs/payloads, deep-copy isolation
+  and the deliberate absence of Box 149.
+
 ## 2026-11-06 — Deterministic reward box prerequisite
 
 - Added `RewardBoxResolver` for one guaranteed weighted selection using caller-owned seeded RNG.

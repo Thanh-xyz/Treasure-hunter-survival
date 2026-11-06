@@ -26,6 +26,7 @@ func _ready() -> void:
 	_test_inventory_removal_invariants()
 	_test_recipe_catalog_validation()
 	_test_reward_box_resolver()
+	_test_reward_box_catalog()
 	_test_crafting_transaction()
 	_test_quest_claim_transaction()
 	_test_building_collection_transaction()
@@ -152,6 +153,29 @@ func _test_reward_box_resolver() -> void:
 		invalid_rng.seed = 1
 		_check(RewardBoxResolver.resolve(invalid, invalid_rng).is_empty(), "invalid reward box resolved: %s" % [invalid])
 	_check(RewardBoxResolver.resolve(entries, null).is_empty(), "reward box accepted a missing RNG")
+
+
+func _test_reward_box_catalog() -> void:
+	var expected := {
+		98: {"diamonds": 1},
+		150: {"gold": 100},
+		151: {"gold": 200},
+		152: {"gold": 300},
+	}
+	for box_id: int in expected:
+		_check(RewardBoxCatalog.has_box(box_id), "verified reward box %d is missing" % box_id)
+		var entries := RewardBoxCatalog.get_entries(box_id)
+		_check(entries == [{"weight": 100, "reward": expected[box_id]}], "reward box %d data drifted" % box_id)
+		var rng := RandomNumberGenerator.new()
+		rng.seed = box_id
+		_check(RewardBoxCatalog.resolve(box_id, rng) == expected[box_id], "reward box %d resolved incorrectly" % box_id)
+		(entries[0]["reward"] as Dictionary).clear()
+		_check(RewardBoxCatalog.get_entries(box_id) == [{"weight": 100, "reward": expected[box_id]}], "reward box %d exposed mutable catalog state" % box_id)
+	_check(not RewardBoxCatalog.has_box(149), "unmapped Box 149 was registered prematurely")
+	_check(RewardBoxCatalog.get_entries(149).is_empty(), "unknown reward box returned entries")
+	var missing_rng := RandomNumberGenerator.new()
+	missing_rng.seed = 149
+	_check(RewardBoxCatalog.resolve(149, missing_rng).is_empty(), "unknown reward box resolved a reward")
 
 
 func _test_economy_transaction() -> void:

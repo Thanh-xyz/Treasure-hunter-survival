@@ -4,6 +4,37 @@ Date: 2026-11-04; updated 2026-11-06
 Branch/worktree: `feature/th-game-art-workflow` in the Agent A worktree
 Stage: SCOUT complete; no project implementation occurred during SCOUT.
 
+## Quest 321 Merge Ingredient Evidence
+
+- Source quest `321` follows `320`, precedes `322`, uses quest type `36`,
+  `equipmentType: 10`, `rareRequire: 1`, requires one merge, awards Box `148`,
+  and remains disabled. Vietnamese text is `Hợp nhất đá thành phần` with the
+  instruction to stand near Donx, interact, and merge ingredient stones once.
+- Dialogs `9`, `658`, and `685` establish source guidance without defining an
+  Emberfield formula: same-grade/low-rarity inputs can produce one higher-quality
+  ingredient of the same type; more and higher-level inputs increase the chance;
+  eight inputs maximize the displayed success rate. Dialog `873` describes the
+  separate auto-merge feature and is outside Quest 321.
+- The inactive Unity `MergeIngredientView` contains two major regions. The
+  ingredient region has a scrollable grid, selected item/detail/stats,
+  Hold Upgrade, and PushToMerge. The merge region has exactly eight
+  `ItemUI_Merge` input slots (`ItemUI_Merge` plus `(1)` through `(7)`), success
+  chance, Gold and Diamond currency rows, a Gold-cost Merge button, result
+  notification, tips/help, and close controls.
+- Box `148` is `Box Beginner Weapon Legendary` and selects card `28`, `29`, or
+  `30` at `34/33/33`. Their exact metadata-only art IDs already exist as
+  `item.weapon.card_28.icon`, `item.weapon.card_29.icon`, and
+  `item.weapon.card_30.icon`; this does not implement reward resolution.
+- Exact ingredient icons for cards `64`, `66`, and `69` already exist as
+  `item.ingredient.card_64.icon`, `item.ingredient.card_66.icon`, and
+  `item.ingredient.card_69.icon`. Emberfield still has no approved Treasure
+  Hunter ingredient-instance rarity/level model, merge formula/cost, atomic
+  transaction, persistence, multiplayer/retry behavior, or Quest 321 event.
+- ADB capture `/tmp/th-q321-current.png` verifies Treasure Hunter `4.3.7` build
+  `1390` at `720x1600`, but the screen remains dimmed at server selection.
+  Exact merge-screen geometry, sprites, colors, values, states, animation, and
+  pixel parity therefore remain unverified; no account resource was changed.
+
 ## Quest 320 Donx Art Evidence
 
 - Source quest `320` follows `319`, precedes `321`, uses quest type `33`,
@@ -41,7 +72,7 @@ Stage: SCOUT complete; no project implementation occurred during SCOUT.
 - Unity scene `level1` contains a dedicated `IngredientView` with an ingredient
   grid and selected-item detail: rarity, level, icon, stat rows, description,
   Sell, and a Gold/cost Upgrade button using `HoldButton`. It is distinct from
-  `MergeIngredientView`, whose seven input slots, chance, Gold, and Merge action
+  `MergeIngredientView`, whose eight input slots, chance, Gold, and Merge action
   serve the later merge flow rather than Quest 319.
 - Existing exact local-only identities `item.ingredient.card_64.icon`,
   `item.ingredient.card_66.icon`, and `item.ingredient.card_69.icon` cover the

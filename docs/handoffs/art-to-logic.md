@@ -86,6 +86,34 @@ replaced with an inferred `Run_1`. Manifest canonical states are `idle`, `move`,
 stats, AI, drops, quest 310, save/LAN and runtime consumption remain outside
 this asset contract.
 
+## Mosqui Animated Atlas Contract
+
+`actor.monster.mosqui.atlas` selects the exact local-only runtime atlas at
+`assets/treasure_hunter/monsters/mosqui_atlas.png`. It is `384x256`, sliced into
+22 `64x64` source rectangles with center pivots at 40 PPU. The existing
+`actor.monster.mosqui.default` remains the integrated static icon/current
+consumer contract; this additive feature does not repoint it or the current
+`slime` gameplay identity.
+
+Verified source clip sequences are:
+
+| Source clip | Ordered keys | Loop | Stop time |
+| --- | --- | --- | ---: |
+| `idle` | `Idle_0, Idle_1, Idle_2, Idle_3, Idle_0` | yes | `0.375` |
+| `walk` | `Run_0, Run_1, Run_2, Run_3, Run_4, Run_5, Run_0` | yes | `0.2916666567` |
+| `attack` | `Attack_0, Attack_1, Attack_2, Attack_3, Attack_4, Attack_5` | yes | `0.6666666865` |
+| `dead` | `Death_0, Death_1, Death_2, Death_3, Death_4, Death_5` | no | `0.75` |
+
+The source `dead` clip also animates `SpriteRenderer.m_Color.a`: alpha is 1 at
+`0.5` seconds and 0 at `0.75` seconds. Manifest canonical states are `idle`,
+`move`, `attack`, and `death`. Clip-specific timing must be preserved; the
+Unity sample rate of 24 is not a single presentation FPS shared by all states.
+
+Card ID 37 and unavailable quest 313 are provenance evidence only. Directions,
+presented scale, hit frames, collision, gameplay identity, stats, AI, drops,
+quest activation, save/LAN and runtime consumption remain outside this asset
+contract.
+
 ## Asset Contract
 
 Gameplay should eventually reference a stable `asset_id`, resolved by an

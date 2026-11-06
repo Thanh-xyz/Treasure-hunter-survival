@@ -4328,6 +4328,132 @@
         "The illustration shows one equipment subject plus a 3x3 set of ingredient stones leading to a transformed result. It is tutorial/help evidence, not proof that the runtime CraftView accepts exactly nine ingredients.",
         "This is a metadata-only UI reference. It is not a CraftView panel, recipe, chance/cost formula, crafting transaction, Quest 323 completion event, or Box 98 reward contract."
       ]
+    },
+    {
+      "asset_id": "item.potion.card_900.icon",
+      "category": "item_icon",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-27556434b6678b260ca11c33e448082a/Elixir_1__-6562287470894062856.png",
+      "target_path": "assets/treasure_hunter/items/potions/card_900_elixir_1.png",
+      "file_format": "png",
+      "dimensions": [32, 32],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {"status": "user_supplied_extracted", "distribution_scope": "local_only", "license_status": "not_verified_for_public_redistribution"},
+      "evidence_status": "verified_card_sprite_metadata_and_pixel_identity",
+      "integration_status": "selected",
+      "notes": [
+        "Card.json ID 900 is Elixir_1; Quest 324 is a generic CraftedPotion objective and does not prove that Card 900 is its required output.",
+        "Addressable Sprite path ID -6562287470894062856 has original rect 32x32, centered pivot, 100 PPU, and a 22x30 crop restored at top-left offset (5, 1).",
+        "Crop SHA-256 4eb660f6566882656bfc4c442e1911eeb42444e49172cdc63ecfd80e5310cd6d is pixel-identical to the independent Unity-data Sprite export.",
+        "Reconstructed logical-canvas SHA-256: 9bdf7cdcec1db804f7e046b8ea13295f1bb97624a6d6d46813c6dee439cf4acb.",
+        "Metadata-only art ID; no Emberfield item, recipe, potion effect, Quest 324 behavior, or runtime consumer is mapped."
+      ]
+    },
+    {
+      "asset_id": "item.potion.card_901.icon",
+      "category": "item_icon",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-decbc2d71e337d06c260613e0e1145c1/Elixir_2__-2634301104702487641.png",
+      "target_path": "assets/treasure_hunter/items/potions/card_901_elixir_2.png",
+      "file_format": "png",
+      "dimensions": [32, 32],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {"status": "user_supplied_extracted", "distribution_scope": "local_only", "license_status": "not_verified_for_public_redistribution"},
+      "evidence_status": "verified_card_sprite_metadata_and_pixel_identity",
+      "integration_status": "selected",
+      "notes": [
+        "Card.json ID 901 is Elixir_2; Quest 324 does not establish a required Elixir tier.",
+        "Addressable Sprite path ID -2634301104702487641 has original rect 32x32, centered pivot, 100 PPU, and a 22x30 crop restored at top-left offset (5, 1).",
+        "Crop SHA-256 fe6b7b1a2e6eda32773e41f1baa881e088119e7e5cab4a2fa6fd8676f9b41b17 is pixel-identical to the independent Unity-data Sprite export.",
+        "Reconstructed logical-canvas SHA-256: 068c200cb6e6ce33945a67803cdb0156f55b8727f8b0df058008ff1ee4e23312.",
+        "Metadata-only art ID; no Emberfield item, recipe, effect, quest, or runtime mapping is implied."
+      ]
+    },
+    {
+      "asset_id": "item.potion.card_902.icon",
+      "category": "item_icon",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-595e606fec709bae0694efd34ee11c01/Elixir_3__4350849866145245561.png",
+      "target_path": "assets/treasure_hunter/items/potions/card_902_elixir_3.png",
+      "file_format": "png",
+      "dimensions": [32, 32],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {"status": "user_supplied_extracted", "distribution_scope": "local_only", "license_status": "not_verified_for_public_redistribution"},
+      "evidence_status": "verified_card_sprite_metadata_and_pixel_identity",
+      "integration_status": "selected",
+      "notes": [
+        "Card.json ID 902 is Elixir_3; Quest 324 does not establish a required Elixir tier.",
+        "Addressable Sprite path ID 4350849866145245561 has original rect 32x32, centered pivot, 100 PPU, and a 20x32 crop restored at top-left offset (6, 0).",
+        "Crop SHA-256 cf16f6a8d6baaefeed9ec43b85c452bf40219f326594d155e963db0bcb23df1c is pixel-identical to the independent Unity-data Sprite export.",
+        "Reconstructed logical-canvas SHA-256: 431bcef00c8eebdf6ab2161f08fb83e3c546e062ab2aba33e44012b1cc23b472.",
+        "Metadata-only art ID; no Emberfield item, recipe, effect, quest, or runtime mapping is implied."
+      ]
+    },
+    {
+      "asset_id": "item.potion.card_903.icon",
+      "category": "item_icon",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-888161cc8474142d55586fe24477407e/Elixir_4__-7238559032222656786.png",
+      "target_path": "assets/treasure_hunter/items/potions/card_903_elixir_4.png",
+      "file_format": "png",
+      "dimensions": [32, 32],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {"status": "user_supplied_extracted", "distribution_scope": "local_only", "license_status": "not_verified_for_public_redistribution"},
+      "evidence_status": "verified_card_sprite_metadata_and_pixel_identity",
+      "integration_status": "selected",
+      "notes": [
+        "Card.json ID 903 is Elixir_4; Quest 324 does not establish a required Elixir tier.",
+        "Addressable Sprite path ID -7238559032222656786 has original rect 32x32, centered pivot, 100 PPU, and a 32x26 crop restored at top-left offset (0, 3).",
+        "Crop SHA-256 7752b3606ac9a9b71f974658e7edde6b7061e41e66ff0d29f45a53e64e03cacd is pixel-identical to the independent Unity-data Sprite export.",
+        "Reconstructed logical-canvas SHA-256: 3bb1905b3735c042b34191b32e4971c50367d7ed592be514ad2e4425c3001188.",
+        "Metadata-only art ID; no Emberfield item, recipe, effect, quest, or runtime mapping is implied."
+      ]
+    },
+    {
+      "asset_id": "item.potion.card_904.icon",
+      "category": "item_icon",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-a74d35a7183b81827db92662743bb66e/Elixir_5__-3920510400539632491.png",
+      "target_path": "assets/treasure_hunter/items/potions/card_904_elixir_5.png",
+      "file_format": "png",
+      "dimensions": [32, 32],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {"status": "user_supplied_extracted", "distribution_scope": "local_only", "license_status": "not_verified_for_public_redistribution"},
+      "evidence_status": "verified_card_sprite_metadata_and_pixel_identity",
+      "integration_status": "selected",
+      "notes": [
+        "Card.json ID 904 is Elixir_5; Quest 324 does not establish a required Elixir tier.",
+        "Addressable Sprite path ID -3920510400539632491 has original rect 32x32, centered pivot, 100 PPU, and a 32x30 crop restored at top-left offset (0, 1).",
+        "Crop SHA-256 4841dde7c97a9be7be2e6027a6723d66d9bf8d7b890a7a869098ef657ff36fa7 is pixel-identical to the independent Unity-data Sprite export.",
+        "Reconstructed logical-canvas SHA-256: feec05fae5acede0a20cf46c17960f4ee0b53ec4b690d04c4a8b1b6a739419c6.",
+        "Metadata-only art ID; no Emberfield item, recipe, effect, quest, or runtime mapping is implied."
+      ]
+    },
+    {
+      "asset_id": "item.potion.card_905.icon",
+      "category": "item_icon",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-6892eb0ed103912f7adcb7f602050b53/Elixir_6__5364003978163849103.png",
+      "target_path": "assets/treasure_hunter/items/potions/card_905_elixir_6.png",
+      "file_format": "png",
+      "dimensions": [32, 32],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {"status": "user_supplied_extracted", "distribution_scope": "local_only", "license_status": "not_verified_for_public_redistribution"},
+      "evidence_status": "verified_card_sprite_metadata_and_pixel_identity",
+      "integration_status": "selected",
+      "notes": [
+        "Card.json ID 905 is Elixir_6; Quest 324 does not establish a required Elixir tier.",
+        "Addressable Sprite path ID 5364003978163849103 has original rect 32x32, centered pivot, 100 PPU, and a 32x30 crop restored at top-left offset (0, 1).",
+        "Crop SHA-256 5e6b31de18d466628a592fb0796773ca6b6e8637f4a57ccb1958416f9776cf5e is pixel-identical to the independent Unity-data Sprite export.",
+        "Reconstructed logical-canvas SHA-256: e5f6d1eaf6784a136bd111f5358f5a6d6aa36cd26cfb958ae479aa61323659be.",
+        "Metadata-only art ID; no Emberfield item, recipe, effect, quest, or runtime mapping is implied."
+      ]
     }
   ]
 }

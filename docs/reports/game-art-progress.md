@@ -1,8 +1,32 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: integrate the exact metadata-only craft-equipment tutorial art
-for Treasure Hunter Quest 323 without inventing the runtime crafting panel.
+Current feature: integrate exact metadata-only Card 900-905 Elixir icons for
+Treasure Hunter Quest 324 evidence without inventing potion recipes or mappings.
+
+## Quest 324 Elixir Icon Catalog
+
+- Restored all six Elixir sprites to their verified original transparent
+  `32x32` canvases using Unity trim offsets; no source pixels were rescaled,
+  filtered, recolored, or redrawn.
+- Added stable IDs `item.potion.card_900.icon` through
+  `item.potion.card_905.icon` with Card IDs/names, Sprite path IDs, crop sizes and
+  placements, centered pivots, `100 PPU`, crop/reconstructed hashes,
+  independent export identity, and `local_only` provenance.
+- Imported all six PNGs losslessly without mipmaps. The assets remain additive
+  and metadata-only, with no item database entry, recipe/tier mapping, effect,
+  HUD/CraftView consumer, Quest 324 behavior, Box 98 handling, save/network
+  state, shared source, or Agent B file changed.
+- Existing Emberfield potion/elixir IDs remain unchanged and provisional where
+  already documented. Similar names do not establish gameplay equivalence.
+- Direct live CraftView/potion captures remain unavailable, so runtime scale,
+  state and visual parity are not claimed. Validation targets exact crop/canvas
+  reconstruction, metadata, imports, loading, ownership, and documentation.
+- Executed validation confirms all six addressable/Unity-data crops are
+  pixel-identical; each target is RGBA `32x32` with partial alpha, exact crop
+  placement and transparent margins; all reconstructed hashes, manifest unique
+  IDs/paths/provenance, lossless imports, Godot 4.6 texture loads, exact
+  sixteen-file scope, and whitespace gates pass.
 
 ## Quest 323 Craft Tutorial Feature
 

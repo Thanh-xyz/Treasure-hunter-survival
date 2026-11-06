@@ -1,5 +1,18 @@
 # Logic-to-Art Contract Proposal
 
+## 2026-11-06 — Quest 308 / Upgrade One Equipment To Level 2
+
+- Gameplay exposes q308 through the unchanged generic quest contract with Vietnamese `Nâng cấp
+  trang bị`, progress `0/1` through `1/1`, and reward preview `200 Vàng`.
+- Progress is current equipped state: any equipped item at displayed Level 2 or above counts.
+  Presentation must continue invoking `InventoryData.upgrade_equipment(slot_type)` and reading final
+  quest/equipment/Gold state; it must not increment quest progress or compute a separate reward.
+- No icon, asset ID, animation, equipment slot, layout, effect, modal callback or upgrade formula
+  changed. Agent A requires no implementation work.
+- Import, gameplay/save suites, Equipment Detail functional render and all four generic quest-menu
+  render states pass. Manual inspection found no presentation regression.
+- Q310/Snailu and any exact reference-equipment upgrade presentation remain separately staged.
+
 ## 2026-11-06 — Quest 307 / Equip Three Items
 
 - Gameplay now exposes q307 through the unchanged generic quest contract with Vietnamese

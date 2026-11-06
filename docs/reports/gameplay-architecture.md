@@ -4,6 +4,22 @@ Status: approved as the incremental direction on 2026-11-04. The first implement
 adds atomic inventory transactions behind the existing APIs; broader service extraction is
 still deferred until reference parity and Agent A contracts are available.
 
+## Quest 307 state-objective activation
+
+- Quest `q307` reuses the existing pure `equipped_count` query over the seven stable equipment
+  slots. Progress reflects the current authoritative inventory snapshot; presentation never owns
+  or increments the count.
+- `QuestService` refreshes state objectives after a preceding claim and the live `Player` adapter
+  refreshes after equipment mutation/save hydration. This covers players who already have items
+  equipped when q307 becomes active as well as later equip actions.
+- The objective becomes ready at three occupied slots and then follows the existing ready-state
+  latch until claim. The reference does not prove post-readiness rollback behavior, so this
+  feature does not alter that shared rule.
+- Box `98` continues through deterministic materialization and the durable pending-claim journal.
+  Quest content adds no inventory, save, networking, presentation, or asset dependency.
+- Legacy index-only saves predating q305-q307 shift across three inserted quests; stable-ID saves
+  remain authoritative and require no schema migration.
+
 ## Quest 306 / Turtle vertical slice
 
 - `MonsterVisualCatalog` is a logic-owned runtime adapter from stable art IDs to cached

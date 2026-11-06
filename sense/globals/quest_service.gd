@@ -90,31 +90,126 @@ func get_quest_def(quest_id: String) -> Dictionary:
 # =============================================================================
 
 func claim(quest_id: String) -> bool:
+	_check_daily_reset()
+	var pending := SaveService.get_pending_claim()
+	if not pending.is_empty():
+		if str(pending.get("source_id", "")) != quest_id:
+			return false
+		return _apply_pending_claim(pending)
+
 	var main := get_main_quest()
 	if not main.is_empty() and main["id"] == quest_id:
 		if not main_ready:
 			return false
-		if not GameState.grant(main.get("reward", {})):
+		var main_record := _make_pending_claim("main", quest_id, main.get("reward", {}))
+		if main_record.is_empty() or not SaveService.prepare_pending_claim(main_record):
 			return false
-		quest_completed.emit(quest_id, main["name"])
-		main_index += 1
-		main_progress = 0
-		main_ready = false
-		_refresh_state_objectives()
-		quests_changed.emit()
-		return true
+		return _apply_pending_claim(main_record)
 	if dailies.has(quest_id):
 		var dq := get_quest_def(quest_id)
 		var st: Dictionary = dailies[quest_id]
 		if st["claimed"] or int(st["progress"]) < int(dq["obj"]["count"]):
 			return false
-		if not GameState.grant(dq.get("reward", {})):
+		var daily_record := _make_pending_claim("daily", quest_id, dq.get("reward", {}))
+		if daily_record.is_empty() or not SaveService.prepare_pending_claim(daily_record):
 			return false
-		st["claimed"] = true
-		quest_completed.emit(quest_id, dq["name"])
-		quests_changed.emit()
-		return true
+		return _apply_pending_claim(daily_record)
 	return false
+
+
+func retry_pending_claim() -> bool:
+	var pending := SaveService.get_pending_claim()
+	if pending.is_empty():
+		return false
+	return _apply_pending_claim(pending)
+
+
+func validate_pending_claim(record: Dictionary, quests: Dictionary) -> bool:
+	var source_kind := str(record.get("source_kind", ""))
+	var quest_id := str(record.get("source_id", ""))
+	if source_kind == "main":
+		if str(record.get("claim_id", "")) != "main:%s" % quest_id:
+			return false
+		return str(quests.get("main_quest_id", "")) == quest_id and bool(quests.get("main_ready", false))
+	elif source_kind == "daily":
+		var saved_date := str(quests.get("daily_date", ""))
+		if saved_date.is_empty() or str(record.get("claim_id", "")) != "daily:%s:%s" % [saved_date, quest_id]:
+			return false
+		var daily_states := quests.get("dailies", {}) as Dictionary
+		if not daily_states.get(quest_id) is Dictionary:
+			return false
+		var state := daily_states[quest_id] as Dictionary
+		if bool(state.get("claimed", false)):
+			return false
+		return int(state.get("progress", 0)) > 0
+	else:
+		return false
+	return false
+
+
+func _make_pending_claim(source_kind: String, quest_id: String, reward: Dictionary) -> Dictionary:
+	var normalized_reward := RewardBoxResolver.normalize_reward(reward)
+	if normalized_reward.is_empty():
+		return {}
+	var claim_id := "%s:%s" % [source_kind, quest_id]
+	if source_kind == "daily":
+		claim_id = "%s:%s:%s" % [source_kind, daily_date, quest_id]
+	return {
+		"version": 1,
+		"claim_id": claim_id,
+		"source_kind": source_kind,
+		"source_id": quest_id,
+		"reward": normalized_reward,
+	}
+
+
+func _apply_pending_claim(record: Dictionary) -> bool:
+	var source_kind := str(record.get("source_kind", ""))
+	var quest_id := str(record.get("source_id", ""))
+	var quest_name := quest_id
+	var daily_state: Dictionary = {}
+	if source_kind == "main":
+		var main := get_main_quest()
+		if main.is_empty() or str(main.get("id", "")) != quest_id or not main_ready:
+			return false
+		quest_name = str(main.get("name", quest_id))
+	elif source_kind == "daily":
+		var daily_date_prefix := "daily:%s:" % daily_date
+		if not str(record.get("claim_id", "")).begins_with(daily_date_prefix):
+			return false
+		var daily := get_quest_def(quest_id)
+		if daily.is_empty() or not dailies.has(quest_id):
+			return false
+		daily_state = dailies[quest_id]
+		if bool(daily_state.get("claimed", false)) or int(daily_state.get("progress", 0)) <= 0:
+			return false
+		quest_name = str(daily.get("name", quest_id))
+	else:
+		return false
+
+	# Persist the latest pre-grant state so capacity changes made after prepare
+	# survive a failed final checkpoint without replaying an already-saved reward.
+	if not SaveService.checkpoint_pending_claim():
+		return false
+	if not GameState.grant(record.get("reward", {})):
+		return false
+
+	if source_kind == "main":
+		main_index += 1
+		main_progress = 0
+		main_ready = false
+	elif not daily_state.is_empty():
+		daily_state["claimed"] = true
+
+	if not SaveService.finalize_pending_claim():
+		SaveService.restore_pending_claim_checkpoint()
+		return false
+
+	quest_completed.emit(quest_id, quest_name)
+	if source_kind == "main":
+		_refresh_state_objectives()
+	quests_changed.emit()
+	return true
 
 
 # =============================================================================
@@ -246,6 +341,12 @@ func _reset_dailies() -> void:
 
 func _check_daily_reset() -> void:
 	if daily_date != _today():
+		var pending := SaveService.get_pending_claim()
+		if (
+			str(pending.get("source_kind", "")) == "daily"
+			and str(pending.get("claim_id", "")).begins_with("daily:%s:" % daily_date)
+		):
+			return
 		_reset_dailies()
 		quests_changed.emit()
 
@@ -272,8 +373,14 @@ func from_dict(d: Dictionary) -> void:
 	main_index = saved_quest_index if saved_quest_index >= 0 else fallback_index
 	main_progress = int(d.get("main_progress", 0))
 	main_ready = bool(d.get("main_ready", false))
-	if str(d.get("daily_date", "")) == _today():
-		daily_date = _today()
+	var saved_daily_date := str(d.get("daily_date", ""))
+	var pending_claim := SaveService.get_pending_claim()
+	var restores_pending_daily := (
+		str(pending_claim.get("source_kind", "")) == "daily"
+		and str(pending_claim.get("claim_id", "")).begins_with("daily:%s:" % saved_daily_date)
+	)
+	if saved_daily_date == _today() or restores_pending_daily:
+		daily_date = saved_daily_date
 		var raw: Dictionary = d.get("dailies", {})
 		for dq in GameContent.DAILY_QUESTS:
 			var st: Dictionary = raw.get(dq["id"], {})

@@ -12,6 +12,9 @@ class StubPlayer:
 
 
 func _ready() -> void:
+	SaveService.SAVE_PATH = "user://saves/inventory_transaction_profile.json"
+	SaveService.enabled = true
+	SaveService.delete_save()
 	_player = StubPlayer.new()
 	_player.add_to_group("player")
 	add_child(_player)
@@ -31,8 +34,10 @@ func _ready() -> void:
 	_test_reference_equipment_catalog()
 	_test_crafting_transaction()
 	_test_quest_claim_transaction()
+	_test_daily_claim_recovery()
 	_test_building_collection_transaction()
 	_test_building_upgrade_transaction()
+	SaveService.delete_save()
 	if _failures.is_empty():
 		print("[INVENTORY TRANSACTION TEST] ALL PASSED")
 		get_tree().quit(0)
@@ -732,9 +737,84 @@ func _test_quest_claim_transaction() -> void:
 	_check(not QuestService.claim("q02"), "quest advanced without reward capacity")
 	_check(QuestService.main_index == 1 and QuestService.main_ready, "failed quest claim changed state")
 	_check(GameState.xp == xp_before, "failed quest claim granted partial XP")
+	_check(SaveService.get_pending_claim().get("claim_id", "") == "main:q02", "failed claim did not persist its resolved journal")
+
+	# Loading the prepared snapshot retries the same reward but keeps it pending
+	# while the restored inventory is still full.
+	_player.inventory = InventoryData.new()
+	QuestService.reset()
+	_check(SaveService.load_game(), "prepared quest claim did not reload")
+	_check(QuestService.main_index == 1 and QuestService.main_ready, "prepared quest state did not recover")
+	_check(
+		SaveService.get_pending_claim().get("reward", {}) == RewardBoxResolver.normalize_reward(GameContent.MAIN_QUESTS[1]["reward"]),
+		"prepared reward changed during recovery",
+	)
+
 	_player.inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
+	var corrupted := {"value": false}
+	_player.inventory.inventory_changed.connect(func() -> void:
+		if not corrupted["value"]:
+			corrupted["value"] = true
+			GameState.current_zone = "invalid_zone"
+	)
+	_check(not QuestService.claim("q02"), "invalid final snapshot committed a quest claim")
+	_check(GameState.current_zone == "town" and QuestService.main_index == 1 and QuestService.main_ready, "failed final checkpoint did not restore prepared state")
+	_check(_player.inventory.get_item_count("health_potion") == 0, "failed final checkpoint retained a granted reward")
+	_check(not SaveService.get_pending_claim().is_empty(), "failed final checkpoint lost the retry journal")
+
 	_check(QuestService.claim("q02"), "quest failed after freeing reward capacity")
 	_check(_player.inventory.get_item_count("health_potion") == 3, "quest did not grant full item reward")
+	_check(QuestService.main_index == 2 and SaveService.get_pending_claim().is_empty(), "successful claim did not advance and clear its journal")
+	_check(not QuestService.claim("q02") and _player.inventory.get_item_count("health_potion") == 3, "completed claim granted twice")
+
+
+func _test_daily_claim_recovery() -> void:
+	SaveService.delete_save()
+	GameState.reset_profile()
+	GameState.level = GameContent.MAX_LEVEL
+	QuestService.reset()
+	_player.inventory = InventoryData.new()
+	_player.inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	QuestService.dailies["d_boss"]["progress"] = 1
+	var xp_before := GameState.xp
+	var gold_before := _player.inventory.gold
+	_check(not QuestService.claim("d_boss"), "daily claim advanced without reward capacity")
+	_check(
+		SaveService.get_pending_claim().get("claim_id", "") == "daily:%s:d_boss" % QuestService.daily_date,
+		"failed daily claim did not persist a dated journal",
+	)
+
+	# Simulate loading the prepared claim after the calendar day changed. The old
+	# daily state must remain available until its exact persisted reward is retried.
+	var prepared := SaveService.read_snapshot()
+	var stale_date := "2000-01-01"
+	prepared["quests"]["daily_date"] = stale_date
+	prepared["pending_claim"]["claim_id"] = "daily:%s:d_boss" % stale_date
+	var save_file := FileAccess.open(SaveService.SAVE_PATH, FileAccess.WRITE)
+	_check(save_file != null, "daily recovery fixture could not open its save")
+	if save_file != null:
+		save_file.store_string(JSON.stringify(prepared, "  "))
+		save_file.close()
+
+	_player.inventory = InventoryData.new()
+	QuestService.reset()
+	_check(SaveService.load_game(), "stale pending daily claim did not reload")
+	_check(QuestService.daily_date == stale_date, "load reset a daily before its pending claim recovered")
+	_check(not SaveService.get_pending_claim().is_empty(), "failed automatic daily retry lost its journal")
+	_check(GameState.xp == xp_before and _player.inventory.gold == gold_before, "failed automatic daily retry granted a partial reward")
+
+	_player.inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
+	_check(QuestService.claim("d_boss"), "stale pending daily claim did not retry")
+	_check(GameState.level == GameContent.MAX_LEVEL and GameState.xp == xp_before, "daily retry bypassed the max-level XP cap")
+	_check(_player.inventory.gold == gold_before + 300, "daily retry granted incorrect gold")
+	_check(_player.inventory.get_item_count("hero_shard") == 3, "daily retry omitted its item reward")
+	_check(bool(QuestService.dailies["d_boss"]["claimed"]), "daily retry did not mark the saved quest claimed")
+	_check(SaveService.get_pending_claim().is_empty(), "successful daily retry did not clear its journal")
+
+	QuestService.get_tracker_rows()
+	_check(QuestService.daily_date != stale_date, "completed stale daily state did not reset")
+	_check(not QuestService.claim("d_boss"), "completed daily journal granted twice after reset")
+	_check(_player.inventory.get_item_count("hero_shard") == 3, "duplicate daily claim changed the reward")
 
 
 func _test_building_collection_transaction() -> void:

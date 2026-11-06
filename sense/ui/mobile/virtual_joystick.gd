@@ -7,7 +7,12 @@ extends Control
 @export var radius: float = 72.0
 @export var dead_zone: float = 0.18
 
-const JOYSTICK_RING := preload("res://assets/treasure_hunter/ui/reference/joystick_ring.png")
+const JOYSTICK_BACKGROUND := preload("res://assets/treasure_hunter/ui/reference/joystick_ring.png")
+const JOYSTICK_HANDLE := preload("res://assets/treasure_hunter/ui/reference/joystick_handle.png")
+# Preserve the verified Unity 256:128 background/handle ratio at the captured HUD scale.
+const BACKGROUND_SIZE := 184.0
+const HANDLE_SIZE := BACKGROUND_SIZE * 0.5
+const BACKGROUND_TINT := Color8(181, 130, 107)
 
 var _touch_index: int = -1
 var _center: Vector2 = Vector2.ZERO
@@ -81,7 +86,19 @@ func _set_action(action: String, strength: float) -> void:
 
 func _draw() -> void:
 	var alpha: float = float(GameState.settings.get("joystick_opacity", 0.7))
-	var ring_rect := Rect2(_center - Vector2(radius, radius), Vector2(radius * 2.0, radius * 2.0))
-	draw_texture_rect(JOYSTICK_RING, ring_rect, false, Color(1, 1, 1, alpha))
-	draw_circle(_center + _knob, radius * 0.34, Color(0.23, 0.22, 0.25, 0.96 * alpha))
-	draw_arc(_center + _knob, radius * 0.34, 0, TAU, 36, Color(0.55, 0.54, 0.58, alpha), 3.0)
+	var background_extent := Vector2(BACKGROUND_SIZE, BACKGROUND_SIZE)
+	var handle_extent := Vector2(HANDLE_SIZE, HANDLE_SIZE)
+	var visual_range := (BACKGROUND_SIZE - HANDLE_SIZE) * 0.5
+	var visual_offset := _knob * (visual_range / radius)
+	draw_texture_rect(
+		JOYSTICK_BACKGROUND,
+		Rect2(_center - background_extent * 0.5, background_extent),
+		false,
+		Color(BACKGROUND_TINT, alpha)
+	)
+	draw_texture_rect(
+		JOYSTICK_HANDLE,
+		Rect2(_center + visual_offset - handle_extent * 0.5, handle_extent),
+		false,
+		Color(1, 1, 1, alpha)
+	)

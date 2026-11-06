@@ -255,3 +255,14 @@ The presentation reads the existing `QuestService.get_main_quest()`,
 No quest ID, objective, reward, save field, signal, gameplay event, or Agent B
 file changed. Icon mappings for quests after `q01` remain an art-evidence gap and
 must not become a gameplay dependency.
+
+## Fixed Joystick Visual Contract
+
+`VirtualJoystick` now draws the active-scene-verified `F200_Circle_10`
+background and `F200_Circle_11` handle instead of the help-screen
+`Icon_Joystick` source and procedural handle.
+
+Touch acquisition, moving center, `radius`, `dead_zone`, `_knob` input vector,
+`ui_left/right/up/down` strengths, release behavior, and the user opacity setting
+are unchanged. The new scaling affects presentation only; Agent B does not need
+to adapt player movement, input maps, saves, LAN, or gameplay tests.

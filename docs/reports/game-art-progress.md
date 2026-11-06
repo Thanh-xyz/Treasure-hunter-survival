@@ -156,10 +156,23 @@ Current feature: remove unsupported fixed-HUD XP bar.
 - Preserved XP state, `xp_changed` signal handling, level progression, portrait
   refresh, save data, and all fixed stat rows.
 
+## Beginner Quest Suggestion Feature
+
+- Replaced the inferred permanent zone label and generic three-row quest box
+  with the decoded `BeginnerQuestView/SuggestionQuestPanel` presentation.
+- Integrated the exact `F200_50` sliced frame, verified `Grass5` first-quest
+  icon, and directly decoded Winbee guide sprite as local-only reference assets.
+- The compact HUD suggestion now presents only the active main quest. Daily
+  quests remain available in the existing full Quest menu.
+- Preserved `QuestService` IDs, progress, ready state, claim behavior, rewards,
+  saves, and the existing non-ready click path that opens the Quest menu.
+- Later main quests intentionally show no icon until their source mappings are
+  verified. This avoids presenting Grass5 as an unsupported generic quest icon.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
-- Verified 104 assets, 104 unique asset IDs, and 104 unique target paths.
+- Verified 108 assets, 108 unique asset IDs, and 108 unique target paths.
 - Verified every non-null source and target path exists.
 - Verified all 48 supplied Treasure Hunter entries use
   `distribution_scope: local_only`.
@@ -207,6 +220,19 @@ Current feature: remove unsupported fixed-HUD XP bar.
   and the portrait-to-stat gap more closely follows the authorized capture.
   Full-region parity is not claimed because portrait content, font metrics, and
   dynamic stat values differ.
+- Godot 4.6 imported the three quest-reference PNGs and parsed the updated
+  `MobileHUD` without script or resource errors.
+- Inventory transaction, legacy system, and survival suites completed with exit
+  code `0`; their intentional corrupt-save and missing-HUD fixture warnings are
+  unchanged from the existing tests.
+- Startup and mobile-HUD render gates completed with exit code `0`. Direct
+  inspection of `/tmp/emberfield-mobile-hud.png` confirms the Grass5 icon,
+  sliced suggestion frame, Winbee overlap, and active-main-quest-only text.
+- Direct inspection of `/tmp/emberfield-mobile-hud-dead.png` confirms the quest
+  suggestion is hidden immediately in the death state.
+- Verified the integrated quest assets as `21x17`, `38x39`, and `77x116` RGBA
+  PNGs. Recorded SHA-256 hashes match the directly decoded/copied files in the
+  manifest; all three remain `local_only`.
 
 ## Not Yet Implemented
 

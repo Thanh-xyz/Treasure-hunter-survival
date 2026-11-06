@@ -3439,6 +3439,91 @@
         "Observed in reference state: custom HUD layout.",
         "No runtime consumer in Emberfield yet."
       ]
+    },
+    {
+      "asset_id": "ui.reference.quest.suggestion.frame",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/analysis/TreasureHunter_analysis/decoded/base/assets/bin/Data/sharedassets1.assets.split0",
+      "target_path": "assets/treasure_hunter/ui/reference/quest_suggestion_frame.png",
+      "file_format": "png",
+      "dimensions": [
+        21,
+        17
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/mobile_hud.gd"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_scene_pointer_and_direct_decode",
+      "integration_status": "integrated",
+      "notes": [
+        "Unity Sprite sharedassets1.assets path ID 9248, name F200_50.",
+        "Direct decode requires sharedassets1.assets.split0 and sharedassets0.assets.split0 to resolve the texture dependency.",
+        "Verified Unity borders: left 7, top 4, right 6, bottom 8.",
+        "Runtime Image tint is black with alpha 0.470588."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.quest.icon.dig",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Grass5__4738.png",
+      "target_path": "assets/treasure_hunter/ui/reference/quest_dig_icon.png",
+      "file_format": "png",
+      "dimensions": [
+        38,
+        39
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/mobile_hud.gd"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_file_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Unity Sprite sharedassets1.assets path ID 4738, name Grass5.",
+        "Verified against the first Đào đất suggestion shown in the authorized runtime capture.",
+        "SHA-256: 7e2a59eb65b9b82c48d521ce674e0b1baa4d038a09512ea979c56443535d89f1."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.quest.guide.winbee",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/analysis/TreasureHunter_analysis/decoded/base/assets/bin/Data/sharedassets1.assets.split0",
+      "target_path": "assets/treasure_hunter/ui/reference/quest_guide_winbee.png",
+      "file_format": "png",
+      "dimensions": [
+        77,
+        116
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/mobile/mobile_hud.gd"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_scene_pointer_and_runtime_capture",
+      "integration_status": "integrated",
+      "notes": [
+        "Unity Sprite sharedassets1.assets path ID 6001, name Winbee.",
+        "The batch-exported Winbee__6001.png is fully transparent; the integrated target was decoded directly with its texture dependency loaded.",
+        "SHA-256: aed57a4fb6ba632927943382097576b4abd761bed5a1f21268bd2d6b7e67fc48."
+      ]
     }
   ]
 }

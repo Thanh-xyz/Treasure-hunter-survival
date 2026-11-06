@@ -349,3 +349,19 @@ Suppressed stats remain present as `0.0`. Catalog validation requires all three 
 non-zero stat, and source-range validity for each non-zero value. The canonical reward and pending
 claim therefore retain the exact generated dictionary, so capacity failures and restarts retry the
 same equipment instead of consuming RNG again.
+
+## Quest reward materialization
+
+`QuestRewardResolver` separates quest definitions from committed rewards. Direct rewards are
+normalized without consuming RNG; a `reward_box_id` is resolved through `RewardBoxCatalog` using
+the caller-owned authority stream. Mixed direct/box specifications and unknown boxes are rejected.
+
+`QuestService` materializes the reward before `SaveService.prepare_pending_claim()`. Only the
+canonical exact result enters the journal, so a full inventory, restart or final-checkpoint failure
+retries the same Box 149 card and Common stats without consuming authority RNG again. Offline mode
+owns a randomized local stream; a future host can inject its own `RandomNumberGenerator` without
+changing quest rules or save transport.
+
+Reward materialization and pending-journal preparation form one authority transaction: if the
+journal cannot be persisted, `QuestService` restores the pre-resolution RNG state. A later claim
+therefore observes the same authority stream rather than gaining a reroll from an I/O failure.

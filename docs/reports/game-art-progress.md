@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: establish the exact Mosqui animated atlas contract.
+Current feature: match Treasure Hunter equipment rarity fields for quest 314.
 
 ## Quest Menu Runtime Feature
 
@@ -458,6 +458,28 @@ Current feature: establish the exact Mosqui animated atlas contract.
 - Inventory, legacy, survival, and live/dead MobileHUD render gates completed
   with exit code `0`. The icons have no runtime consumer in this feature, so no
   in-game Box 149 visual parity is claimed yet.
+
+## Quest 314 Rarity Field Presentation
+
+- Authorized item-detail and inventory captures verify full occupied-field colors
+  rather than Emberfield's former thin rarity glow: Common `#FFEDC3`, Rare
+  `#27A1CB`, Epic `#A964DF`, and Legendary `#E1C321`.
+- `InventorySlotUI` now uses those capture-derived colors for equippable items in
+  inventory and equipment fields while retaining the prior background for
+  materials/consumables plus empty, hover, selected and drop-target states. Drag
+  previews follow the same boundary.
+- Emberfield's additional Uncommon tier keeps its existing green as an explicit
+  local fallback; it is not claimed as a Treasure Hunter rarity tier.
+- The exported `Frame_Common_*`, `Frame_Rare_*`, `Frame_Epic_*`, and
+  `Frame_Legendary_*` families remain unconsumed because the exact Unity
+  ItemView binding is not yet verified.
+- `RenderInventoryRarity` provides a deterministic output, asserts the four
+  verified equipment field pixels, and verifies a non-equipment Epic item keeps
+  the prior dark field before saving `/tmp/emberfield-inventory-rarity.png`.
+- Godot `4.6.stable.official.89cea1439` imports the project and the focused Xvfb
+  render passes with exact output pixels for all four verified tiers. Inventory
+  Transaction, Legacy, and Survival/save suites complete with exit code `0`;
+  existing missing-item, corrupt-save and resource-cleanup warnings remain.
 
 ## Not Yet Implemented
 

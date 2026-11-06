@@ -306,3 +306,10 @@ No shared contract change should be implemented until these questions are resolv
   consumer changes are required.
 - Box 149 is not registered and no existing weapon is aliased to cards 28/29/30. Agent B still
   needs three approved stable art IDs before proposing the matching additive gameplay items.
+
+## 2026-11-06 — Verified currency reward-box catalog
+
+- Gameplay contains exact source definitions for boxes 98/150/151/152 only: Diamond 1 and Gold
+  100/200/300. No presentation change is required.
+- Box 149 is intentionally absent. Agent A's proposed three weapon asset IDs remain the dependency
+  for its future registration and the ten-dig follow-up quest.

@@ -50,6 +50,11 @@ This remains separate from `LootTable`, whose no-drop, repeated-roll and enemy-d
 different. Offline callers may seed locally; a future LAN host must own the seed/roll and replicate
 only the committed outcome. Box/card registries remain content adapters layered above this rule.
 
+`RewardBoxCatalog` is that content adapter for verified source Box IDs. It exposes deep-copied
+entries so consumers cannot mutate canonical data. Randomized quest boxes must be materialized and
+persisted before `GameState.grant()` retries; otherwise a full inventory could be used to reroll a
+reward. Until that boundary exists, the active quest definitions keep their direct rewards.
+
 ## Domain model proposal
 
 Use typed Resources/RefCounted value objects where Godot supports them, with dictionaries only

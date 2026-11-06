@@ -787,6 +787,7 @@ func _setup_inventory() -> void:
 	
 	# Connect equipment change signal to update stats
 	inventory.equipment_changed.connect(_on_equipment_changed)
+	inventory.equipment_upgraded.connect(_on_equipment_upgraded)
 	
 	# Load inventory panel scene
 	var inventory_scene := preload("res://sense/ui/inventory/inventory_panel.tscn")
@@ -902,6 +903,10 @@ func _on_equipment_changed(_slot_type: String) -> void:
 		if attack_hitbox != null:
 			attack_hitbox.damage = stats.attack_damage
 		_refresh_combat_modifiers()
+
+
+func _on_equipment_upgraded(slot_type: String, item_id: String, level: int, cost: int) -> void:
+	GameEvent.equipment_upgraded.emit(slot_type, item_id, level, cost)
 
 
 ## Called when player uses an item from inventory

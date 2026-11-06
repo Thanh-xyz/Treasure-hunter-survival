@@ -9,7 +9,7 @@ extends Node
 signal saved
 signal loaded
 
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
 const SAVE_DIR := "user://saves"
 var SAVE_PATH: String = "user://saves/profile.json"  ## tests point this elsewhere
 const AUTOSAVE_INTERVAL := 60.0
@@ -150,6 +150,11 @@ func _migrate(data: Dictionary) -> Dictionary:
 		return {}
 	if v < 1:
 		data["version"] = 1
+		v = 1
+	if v < 2:
+		# Version 2 adds optional per-item enhancement levels. Missing levels are
+		# intentionally interpreted as the catalog default (display level 1).
+		data["version"] = 2
 	return data
 
 
@@ -328,6 +333,14 @@ func _validate_item_entry(entry: Dictionary, equipment_slot: String = "") -> boo
 		return false
 	if equipment_slot != "" and (quantity != 1 or not _item_fits_slot(item, equipment_slot)):
 		return false
+	var raw_level: Variant = entry.get("level", 1)
+	if not _is_integer(raw_level):
+		return false
+	var level := int(raw_level)
+	if level < 1 or level > item.max_upgrade_level:
+		return false
+	if level > 1 and not item.has_valid_upgrade_configuration():
+		return false
 	var augments: Variant = entry.get("augments", [])
 	if not augments is Array or augments.size() > item.get_augment_slot_count():
 		return false
@@ -401,6 +414,8 @@ const EQUIP_SLOTS := ["helmet", "armor", "weapon", "shield", "boots", "accessory
 
 func _item_to_dict(item: ItemData, qty: int) -> Dictionary:
 	var d := {"id": item.id, "qty": qty}
+	if item.enhancement_level > 1:
+		d["level"] = item.enhancement_level
 	if not item.applied_augments.is_empty():
 		d["augments"] = item.applied_augments.duplicate()
 	return d
@@ -409,10 +424,12 @@ func _item_to_dict(item: ItemData, qty: int) -> Dictionary:
 func _item_from_dict(d: Dictionary) -> ItemData:
 	var id := str(d.get("id", ""))
 	var augments: Array = d.get("augments", [])
-	if augments.is_empty():
+	var level := int(d.get("level", 1))
+	if augments.is_empty() and level == 1:
 		return ItemDatabase.get_item(id)
 	var item: ItemData = ItemDatabase.get_item_copy(id)
 	if item != null:
+		item.enhancement_level = level
 		item.applied_augments.clear()
 		for a in augments:
 			item.applied_augments.append(str(a))

@@ -152,12 +152,33 @@ resolves enemy damage and lifesteal. This establishes the attack-result boundary
 larger `CombatResolver` proposal without moving active skills, projectiles or status effects in
 the same feature.
 
+## Implemented equipment-enhancement slice
+
+Equippable `ItemData` now separates immutable catalog configuration from per-instance state.
+Catalog templates define whether the item can upgrade, base cost, cost rate and maximum level;
+duplicated equipment instances carry the displayed enhancement level and applied augments.
+
+`InventoryData.upgrade_equipment()` is the authoritative command boundary. It accepts only a
+stable equipment-slot ID, resolves cost from trusted item data, duplicates the equipped item,
+commits the new level and gold balance, then publishes final-state equipment and upgrade events.
+Stat aggregation reads scaled base equipment values while augment values remain independent.
+
+Save schema version 2 serializes enhancement levels only when above level 1, migrates versions
+0 and 1 to level 1 when the field is absent, and rejects invalid types, bounds and upgrades on
+items without a valid enhancement configuration. This keeps local saves ready for a future
+host-authoritative command adapter without coupling the rule to transport or presentation.
+
+Treasure Hunter evidence confirms displayed levels 1-10, per-card base cost/rate fields and
+state-based upgrade quests. The current Emberfield item IDs have no approved one-to-one card
+mapping, so default cost/rate values and the isolated 1.1 stat multiplier remain explicitly
+provisional until stronger runtime/server evidence is available.
+
 ## Key risks
 
 - `player.gd` and `LanSession` are large cross-layer files, so broad refactors would create
   high regression and merge-conflict risk.
 - Current content IDs mix legacy placeholders and reference-facing names.
-- The focused gameplay transaction suite runs with a temporary Godot 4.6 binary. The complete
-  legacy/survival suite is still blocked by tracked scene references to missing player sprites.
+- Validation currently relies on a temporary Godot 4.6 binary path; import, complete gameplay
+  suites, HUD rendering and LAN harnesses pass, but CI remains the cross-platform release gate.
 - Reference server rules are absent; online parity cannot be claimed from XAPK evidence.
 - Source-derived art needs a distribution-rights decision before any public release.

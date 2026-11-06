@@ -1,5 +1,5 @@
 extends Node2D
-## Captures the integrated Snailu atlas in its idle gameplay presentation.
+## Captures the runtime Snailu catalog at a fixed idle frame.
 
 const OUTPUT_PATH := "/tmp/emberfield-snailu.png"
 
@@ -10,12 +10,17 @@ func _ready() -> void:
 
 func _capture() -> void:
 	RenderingServer.set_default_clear_color(Color("18362f"))
-	var snailu := Monster.create("snailu")
-	snailu.position = Vector2(180, 420)
-	add_child(snailu)
+	var animation := AnimatedSprite2D.new()
+	animation.sprite_frames = MonsterVisualCatalog.get_frames("actor.monster.snailu.atlas")
+	animation.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	animation.position = Vector2(180, 400)
+	animation.animation = "idle"
+	animation.frame = 0
+	animation.frame_progress = 0.0
+	add_child(animation)
+	animation.stop()
 	await get_tree().process_frame
-	snailu.set_physics_process(false)
-	await get_tree().create_timer(0.25).timeout
+	await RenderingServer.frame_post_draw
 	var image := get_viewport().get_texture().get_image()
 	var err := image.save_png(OUTPUT_PATH)
 	if err != OK:

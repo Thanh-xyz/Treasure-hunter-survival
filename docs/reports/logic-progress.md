@@ -30,9 +30,9 @@
   invalid-snapshot, HUD and exit-resource warnings remain deliberate fixtures or harness noise.
 - Two-process `LanCombatPeerRunner.tscn`: host exit `0`, client exit `0`; authoritative HP/removal,
   range rejection, loot, partial inventory, critical hit, life steal and reward restoration pass.
-- `RenderSnailu.tscn` under Xvfb: exit `0`; `/tmp/emberfield-snailu.png` is a 360x800 RGBA PNG,
-  SHA-256 `956017d1921d59539c8426daaca732ee08c28b10a991b10270d7f561ebb583e8`.
-  Manual inspection confirms the expected idle Snailu, label and health bar render without clipping.
+- `RenderSnailu.tscn` under Xvfb: two independent runs exit `0` and produce the same 360x800 RGBA
+  PNG, SHA-256 `01d272bc6e851a62381079b983ee7a2762a7e9b2a11672e1a6d5e0da493c7077`, with zero pixel
+  difference. Manual inspection confirms the fixed runtime-catalog `idle[0]` frame is unclipped.
   No direct-capture pixel-parity claim is made.
 - `RenderGameMenu.tscn` under Xvfb: exit `0`; all four 360x800 states render without clipping or
   blank rewards on manual inspection. This is a generic quest UI regression, not q310 parity proof.
@@ -46,6 +46,8 @@
   remains. The 12-file diff matches the approved q310 core plan and contains no Agent A-owned file.
 - One low-severity evidence-label drift called the 1.0-second gate verified/source-backed. It is now
   consistently marked inferred from raw/base timing evidence; runtime behavior and tests are unchanged.
+- A second low finding showed the full actor capture contained presentation/timing variance. The
+  harness now isolates the runtime catalog at `idle[0]`; two independent captures match exactly.
 - Stable `shroom` data is untouched; q310 targets only additive `snailu`. Mixed-row atlas support is
   generic and cached, while `reference_melee` and collision override are opt-in, so existing actors
   retain previous behavior.

@@ -1,5 +1,57 @@
 # Logic Progress
 
+## 2026-11-06 — Quest 310 / Defeat Snailu
+
+- Added stable `snailu` without changing legacy `shroom`: Card 34, 200 HP, 30 damage, 70px attack
+  range, 200px aggro, 30px collider, 1.0s gate, verified attack/death clip durations, zero XP and
+  source Gold 40-50. Speed and one Greenwood camp remain labeled provisional.
+- Added exact atlas consumption for all 21 frames, including the mixed-row `Idle_1` move key, and
+  opt-in reference melee behavior that preserves the attack clip and applies only one hit.
+- Inserted q310 after q308 with three Snailu kills and Box 98's one Diamond. Legacy index-only saves
+  now shift by five; stable IDs, claim journal, save schema and LAN transport remain unchanged.
+- Added focused quest/runtime/drop/collision/animation/save assertions and deterministic Snailu
+  render tooling. Rare Card 161, q311, exact speed/spawn geometry/lifetime/hit-frame parity remain
+  excluded.
+
+### COOK preflight
+
+- Godot `4.6.stable.official.89cea1439` headless editor import: exit `0`.
+- `git diff --check`: exit `0`.
+- Full Survival/Legacy/LAN/render validation belongs to TEST and is not yet claimed.
+
+### Test evidence
+
+- Godot `4.6.stable.official.89cea1439` headless editor import: exit `0`.
+- `InventoryTransactionTests.tscn`: exit `0`; all transaction, reward and retry-safety checks pass.
+- `SurvivalTests.tscn`: exit `0`; q308 -> q310 -> q02, exact target/count/reward, stable/legacy save
+  behavior, atlas regions/durations, collision, movement/range/cadence, one-hit attack, death ID,
+  zero XP and Gold 40-50 checks all pass.
+- `LegacySystemTests.tscn`: exit `0`; phases 1-7 and its Survival/save runner pass. Corrupt-save,
+  invalid-snapshot, HUD and exit-resource warnings remain deliberate fixtures or harness noise.
+- Two-process `LanCombatPeerRunner.tscn`: host exit `0`, client exit `0`; authoritative HP/removal,
+  range rejection, loot, partial inventory, critical hit, life steal and reward restoration pass.
+- `RenderSnailu.tscn` under Xvfb: exit `0`; `/tmp/emberfield-snailu.png` is a 360x800 RGBA PNG,
+  SHA-256 `956017d1921d59539c8426daaca732ee08c28b10a991b10270d7f561ebb583e8`.
+  Manual inspection confirms the expected idle Snailu, label and health bar render without clipping.
+  No direct-capture pixel-parity claim is made.
+- `RenderGameMenu.tscn` under Xvfb: exit `0`; all four 360x800 states render without clipping or
+  blank rewards on manual inspection. This is a generic quest UI regression, not q310 parity proof.
+- Source Quest 310 jq assertion, exact atlas hash/dimensions and `git diff --check` pass.
+- TEST initially exposed one typed-fixture compile error for `damage_before`; the explicit `int`
+  annotation fixed it, and all affected suites were rerun successfully.
+
+### Review closeout
+
+- No high/medium correctness, compatibility, ownership, fidelity, performance or validation finding
+  remains. The 12-file diff matches the approved q310 core plan and contains no Agent A-owned file.
+- One low-severity evidence-label drift called the 1.0-second gate verified/source-backed. It is now
+  consistently marked inferred from raw/base timing evidence; runtime behavior and tests are unchanged.
+- Stable `shroom` data is untouched; q310 targets only additive `snailu`. Mixed-row atlas support is
+  generic and cached, while `reference_melee` and collision override are opt-in, so existing actors
+  retain previous behavior.
+- Residual gaps remain explicit: provisional speed/spawn/hit timing, no source lifetime behavior,
+  no live pixel comparison, deferred Card 161 and temporary q310 -> q02 transition.
+
 ## 2026-11-06 — Quest 308 / Upgrade One Equipment To Level 2
 
 - Inserted stable `q308` after q307 with source ID 308, exact Vietnamese copy, existing

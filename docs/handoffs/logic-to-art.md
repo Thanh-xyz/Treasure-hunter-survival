@@ -1,5 +1,19 @@
 # Logic-to-Art Contract Proposal
 
+## 2026-11-06 — Quest 310 / Snailu
+
+- Gameplay ID `snailu` now consumes stable local-only art ID `actor.monster.snailu.atlas` through
+  canonical states `idle`, `move`, `attack`, and `death`; no direction suffix is required.
+- Runtime preserves the exact frame sequences, durations and loop flags, including source `Idle_1`
+  as the second move key. No atlas, import setting, manifest entry, pivot, PPU or source asset changed.
+- The legacy `shroom` ID and `actor.monster.snailu.default` static consumer remain separate and
+  unchanged. Presentation must not alias kills or saves between `shroom` and `snailu`.
+- Gameplay starts `attack` at the logical gate and keeps the clip active through its verified
+  duration. The 0.4-second damage point is explicitly provisional; no new art hit-frame event is
+  claimed or requested.
+- Card 161 Rare back equipment is not materialized. Agent A action is required only if a later
+  feature approves a stable `Back_8` asset contract. Current Gold/quest behavior needs no art change.
+
 ## 2026-11-06 — Quest 308 / Upgrade One Equipment To Level 2
 
 - Gameplay exposes q308 through the unchanged generic quest contract with Vietnamese `Nâng cấp

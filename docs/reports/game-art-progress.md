@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: establish exact Box 149 beginner weapon icon identities.
+Current feature: establish the exact post-tutorial quest-menu visual kit.
 
 ## Completed Before This Feature
 
@@ -225,14 +225,33 @@ Current feature: establish exact Box 149 beginner weapon icon identities.
   contract but does not create gameplay items, register Box 149, alter quests,
   or choose names/stats outside Agent B ownership.
 
+## Post-Tutorial Quest Menu Kit Feature
+
+- Logged into the user's existing, already-onboarded reference account through
+  authorized ADB and captured main, daily, login-reward and achievement tabs at
+  `720x1600` without claiming, rerolling or changing account state.
+- Independently matched the visible objective strings to the supplied
+  `Quest.json` and treated the captured progress/unlocks as account-state
+  evidence rather than default-player data.
+- Traced the active Unity `DailyQuestsView/Panel` hierarchy to exact main-card,
+  claim-card, section-header, list-panel, selected-tab, unselected-tab, main,
+  daily and achievement sprite sources.
+- Added nine bit-exact local-only reference sprites with stable manifest IDs,
+  Unity borders/pivots/PPU, source/target hashes and explicit `selected` status.
+- Reused existing back, login, line, panel and button assets instead of copying
+  duplicates. Rejected the ambiguous white `BG_1` fill because its final visual
+  depends on runtime context not proven by the exported PNG alone.
+- Did not modify `GameMenu`, `MobileHUD`, `QuestService`, quest content, claim
+  behavior, rewards, saves, LAN or Agent B gameplay files.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
-- Verified 109 assets, 109 unique asset IDs, and 109 unique target paths.
+- Verified 121 assets, 121 unique asset IDs, and 121 unique target paths.
 - Verified every non-null source and target path exists.
-- Verified all 49 supplied Treasure Hunter entries use
+- Verified all 65 supplied Treasure Hunter entries use
   `distribution_scope: local_only`.
-- Verified all 41 curated UI reference targets match their recorded sources
+- Verified all nine quest-menu reference targets match their recorded sources
   bit-for-bit and have the manifest dimensions.
 - Verified the player scene slices its `768x80` sheets into eight `96x80`
   AtlasTexture regions; manifest frame metadata matches the scene.

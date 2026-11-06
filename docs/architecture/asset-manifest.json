@@ -3639,6 +3639,273 @@
         "SHA-256: f16424065f8d12bc1450ca51604376aeccb33da2ff17df704d46df6b85bbf520.",
         "No existing Emberfield gameplay item ID is approved as an alias."
       ]
+    },
+    {
+      "asset_id": "ui.reference.quest.menu.panel.normal",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Panel_Nomal__6487.png",
+      "target_path": "assets/treasure_hunter/ui/reference/quest_panel_normal.png",
+      "file_format": "png",
+      "dimensions": [
+        48,
+        48
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "MainQuestUI/Content Image component 95567 points to sharedassets1.assets Sprite 6487, Panel_Nomal.",
+        "Unity dimensions 48x48; border left/top/right/bottom 20; pivot (0.5, 0.5); 32 pixels per unit.",
+        "Visible as the active main-quest card frame in the authorized post-tutorial account capture.",
+        "SHA-256: b830a12d39c8f0b62ea2eb27e7dfcf838b646f33d4f5d9ff5c4cfdc4812f469b.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.quest.menu.panel.claim",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Panel_Claim__6209.png",
+      "target_path": "assets/treasure_hunter/ui/reference/quest_panel_claim.png",
+      "file_format": "png",
+      "dimensions": [
+        48,
+        48
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_scene_pointer_and_export",
+      "integration_status": "selected",
+      "notes": [
+        "MainQuestUI/Content/Claim Image component 97046 points to sharedassets1.assets Sprite 6209, Panel_Claim.",
+        "Unity dimensions 48x48; border left/top/right/bottom 20; pivot (0.5, 0.5); 32 pixels per unit.",
+        "The claim-ready main-quest state was not activated on the reference account during this scout.",
+        "SHA-256: dc2a40fa0084a80dbf641eedb380b8311e5ef8f43a0c0f02ca1031922df9953a.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.quest.menu.section.label",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/panel_1__6633.png",
+      "target_path": "assets/treasure_hunter/ui/reference/quest_section_label.png",
+      "file_format": "png",
+      "dimensions": [
+        128,
+        50
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "LabelNextQuest/Background component 119870 and LabelCompleteQuest/Background component 108180 point to Sprite 6633, panel_1.",
+        "Unity dimensions 128x50; no slice border; pivot (0.5, 0.5); 51.61289978027344 pixels per unit.",
+        "The runtime Images tint the source near-black at RGB 0.0588235 with full alpha.",
+        "SHA-256: 239d70cec3d1461e919ce163034f376ca32a99cec1648c539953f1475a24999d.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.quest.menu.list.panel",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Panel2_0__7450.png",
+      "target_path": "assets/treasure_hunter/ui/reference/quest_list_panel.png",
+      "file_format": "png",
+      "dimensions": [
+        48,
+        48
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "NextQuests/Background component 96812 and CompleteQuests/Background component 118474 point to Sprite 7450, Panel2_0.",
+        "Unity dimensions 48x48; border left/top/right/bottom 20; pivot (0.5, 0.5); 100 pixels per unit.",
+        "The runtime Images use alpha 0.7843137.",
+        "SHA-256: de6ae6bb51ae0c145dcecbc90a933c65a5d2e854be0a11d9eb5df4aa0e0555c9.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.quest.menu.tab.active",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/UITab1_0__7028.png",
+      "target_path": "assets/treasure_hunter/ui/reference/quest_tab_active.png",
+      "file_format": "png",
+      "dimensions": [
+        29,
+        29
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Quest Tab Buttons/Tween component 108372 points to sharedassets1.assets Sprite 7028, UITab1_0.",
+        "Unity dimensions 29x29; borders left 16, top 13, right 10, bottom 13; pivot (0.5, 0.5); 100 pixels per unit.",
+        "Visible behind the selected main-quest tab in the authorized capture.",
+        "SHA-256: 35e832bd9e72bd9fe5680cd4506f720e15bd479340ce74bd0f8a6f0858057e5b.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.quest.menu.tab.inactive",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/UITab2_0__5004.png",
+      "target_path": "assets/treasure_hunter/ui/reference/quest_tab_inactive.png",
+      "file_format": "png",
+      "dimensions": [
+        29,
+        29
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Quest Tab Buttons/Button component 95756 points to sharedassets1.assets Sprite 5004, UITab2_0.",
+        "Unity dimensions 29x29; borders left 16, top 13, right 10, bottom 13; pivot (0.5, 0.5); 100 pixels per unit.",
+        "Visible behind the unselected quest tabs in the authorized capture.",
+        "SHA-256: 2974e8bb284241d42f048c1655cf2aabcd2adbf95e438667bb04ff5275afd241.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.quest.menu.icon.main",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/IconSlot_MainQuest__5810.png",
+      "target_path": "assets/treasure_hunter/ui/reference/quest_icon_main.png",
+      "file_format": "png",
+      "dimensions": [
+        27,
+        32
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Quest Tab Button/Icon component 109719 points to sharedassets1.assets Sprite 5810, IconSlot_MainQuest.",
+        "Unity source rect 32x32 exports to a 27x32 visible sprite; pivot (0.5, 0.5); 100 pixels per unit.",
+        "SHA-256: cd2cf11defb58c84b187d57edbe1dc298da64db82746d84f4443d0ddd82066cb.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.quest.menu.icon.daily",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/IconSlot_DailyQuest__6628.png",
+      "target_path": "assets/treasure_hunter/ui/reference/quest_icon_daily.png",
+      "file_format": "png",
+      "dimensions": [
+        32,
+        30
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Quest Tab Button (1)/Icon component 104804 points to sharedassets1.assets Sprite 6628, IconSlot_DailyQuest.",
+        "Unity source rect 32x32 exports to a 32x30 visible sprite; pivot (0.5, 0.5); 100 pixels per unit.",
+        "SHA-256: 2b5c7d809df52098459f01ffd3b5b4a8fc3be9ff53bd96fe0807c967be8b1126.",
+        "No runtime consumer in Emberfield yet."
+      ]
+    },
+    {
+      "asset_id": "ui.reference.quest.menu.icon.achievement",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/IconSlot_Achievement__6340.png",
+      "target_path": "assets/treasure_hunter/ui/reference/quest_icon_achievement.png",
+      "file_format": "png",
+      "dimensions": [
+        32,
+        30
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "docs/reports/reference-screen-inventory.md"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
+      "integration_status": "selected",
+      "notes": [
+        "Quest Tab Button (3)/Icon component 126639 points to sharedassets1.assets Sprite 6340, IconSlot_Achievement.",
+        "Unity source rect 32x32 exports to a 32x30 visible sprite; pivot (0.5, 0.5); 100 pixels per unit.",
+        "SHA-256: e20082244a250551e05577008613251c49fb0d28b1108cacb27205b86e0d9e87.",
+        "No runtime consumer in Emberfield yet."
+      ]
     }
   ]
 }

@@ -1,5 +1,22 @@
 # Logic Progress
 
+## 2026-11-06 — Quest 305 Box 149 activation
+
+- Inserted stable runtime quest `q305` after `q01`, matching source quest 305's ten-dig objective,
+  Vietnamese copy and Box 149 reward. `q01` is explicitly tagged as source quest 335.
+- Added pure quest reward materialization with an injected RNG. Box 149 resolves before pending
+  claim preparation; retries and reloads use only the exact journaled card/stat payload.
+- Added reward-authority RNG injection for deterministic tests and future host authority while
+  preserving randomized offline operation. Failed journal preparation restores RNG state, closing
+  an I/O-failure reroll path found during review. Save schema is unchanged.
+- Stable-ID saves continue restoring by ID. Legacy index-only saves shift once after q01 so the
+  inserted quest does not move existing progress backward.
+- Game Menu reads a data-provided reward preview and now shows q305 between q01 and q02 without
+  changing quest-card layout or art.
+- Godot 4.6 import, Inventory Transaction, Legacy phases 1-7, Survival/save and the Xvfb Game Menu
+  render pass. Tests cover exact ten-dig progress, direct/no-RNG rewards, invalid reward specs,
+  deterministic Box 149 resolution, full-inventory journal/reload/retry, no reroll and migration.
+
 ## 2026-11-06 — Box 149 Common stat generator
 
 - Added a caller-owned deterministic generator and strict recorded-draw replay for the verified

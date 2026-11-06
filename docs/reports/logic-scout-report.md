@@ -1,5 +1,21 @@
 # Logic Scout Report
 
+## 2026-11-06 — Quest 305 Box 149 activation
+
+- Source quest 305 is a main-chain type-29 objective after 335 and before 306. It requires exactly
+  ten digs and awards Box 149; Vietnamese text is `Đào đất` / `Di chuyển đến bất kỳ ô nào và đứng
+  yên để đào`.
+- Emberfield `q01` already represents source quest 335 with one dig and Box 150's 100 Gold, but
+  previously advanced directly to clean-room `q02`. Dig events and stable quest-ID persistence are
+  already implemented.
+- Box 149 card selection, Common stat generation, exact equipment materialization and durable
+  pending-claim retry are all integrated prerequisites. The missing boundary was resolving a
+  random quest reward once before journal preparation.
+- Existing saves with stable quest IDs can survive insertion by ID. Legacy index-only saves need
+  a one-position shift after q01 so old progress does not move backward into newly inserted q305.
+- Agent A's active Equipment Detail work modifies only inventory presentation files. The planned
+  quest/gameplay files and minimal Game Menu reward-preview hook have no direct overlap.
+
 ## 2026-11-06 — Box 149 initial Common stat generator
 
 - Authorized 4.3.6 ARM64 IL2CPP analysis verifies the real Option-claim path calls the normal

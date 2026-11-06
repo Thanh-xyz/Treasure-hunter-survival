@@ -16,9 +16,11 @@ var main_ready: bool = false
 ## daily quest id -> {"progress": int, "claimed": bool}
 var dailies: Dictionary = {}
 var daily_date: String = ""
+var _reward_rng := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
+	_reward_rng.randomize()
 	GameEvent.enemy_killed.connect(_on_enemy_killed)
 	GameEvent.resource_gathered.connect(_on_resource_gathered)
 	GameEvent.ground_dug.connect(_on_ground_dug)
@@ -30,6 +32,15 @@ func _ready() -> void:
 	GameState.pet_changed.connect(func(_p: String) -> void: _refresh_state_objectives())
 	GameState.mount_changed.connect(func(_m: String, _r: bool) -> void: _refresh_state_objectives())
 	reset()
+
+
+## Offline mode owns this RNG locally. A future authoritative host can inject
+## its own stream without coupling quest rules to a network transport.
+func set_reward_authority_rng(rng: RandomNumberGenerator) -> bool:
+	if rng == null:
+		return false
+	_reward_rng = rng
+	return true
 
 
 func reset() -> void:
@@ -101,8 +112,8 @@ func claim(quest_id: String) -> bool:
 	if not main.is_empty() and main["id"] == quest_id:
 		if not main_ready:
 			return false
-		var main_record := _make_pending_claim("main", quest_id, main.get("reward", {}))
-		if main_record.is_empty() or not SaveService.prepare_pending_claim(main_record):
+		var main_record := _prepare_quest_claim("main", quest_id, main)
+		if main_record.is_empty():
 			return false
 		return _apply_pending_claim(main_record)
 	if dailies.has(quest_id):
@@ -110,8 +121,8 @@ func claim(quest_id: String) -> bool:
 		var st: Dictionary = dailies[quest_id]
 		if st["claimed"] or int(st["progress"]) < int(dq["obj"]["count"]):
 			return false
-		var daily_record := _make_pending_claim("daily", quest_id, dq.get("reward", {}))
-		if daily_record.is_empty() or not SaveService.prepare_pending_claim(daily_record):
+		var daily_record := _prepare_quest_claim("daily", quest_id, dq)
+		if daily_record.is_empty():
 			return false
 		return _apply_pending_claim(daily_record)
 	return false
@@ -145,6 +156,16 @@ func validate_pending_claim(record: Dictionary, quests: Dictionary) -> bool:
 	else:
 		return false
 	return false
+
+
+func _prepare_quest_claim(source_kind: String, quest_id: String, quest: Dictionary) -> Dictionary:
+	var rng_state := _reward_rng.state
+	var reward := QuestRewardResolver.resolve(quest, _reward_rng)
+	var record := _make_pending_claim(source_kind, quest_id, reward)
+	if record.is_empty() or not SaveService.prepare_pending_claim(record):
+		_reward_rng.state = rng_state
+		return {}
+	return record
 
 
 func _make_pending_claim(source_kind: String, quest_id: String, reward: Dictionary) -> Dictionary:
@@ -369,6 +390,10 @@ func from_dict(d: Dictionary) -> void:
 	reset()
 	var fallback_index := clampi(int(d.get("main_index", 0)), 0, GameContent.MAIN_QUESTS.size())
 	var saved_quest_id := str(d.get("main_quest_id", ""))
+	# Saves predating stable quest IDs used the old chain index. q305 was inserted
+	# after q01, so old in-progress/completed indices at that boundary shift by one.
+	if saved_quest_id.is_empty() and fallback_index > 0:
+		fallback_index = mini(fallback_index + 1, GameContent.MAIN_QUESTS.size())
 	var saved_quest_index := GameContent.get_main_quest_index(saved_quest_id)
 	main_index = saved_quest_index if saved_quest_index >= 0 else fallback_index
 	main_progress = int(d.get("main_progress", 0))

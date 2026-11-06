@@ -1,5 +1,23 @@
 # Logic Scout Report
 
+## 2026-11-06 — Quest 307 / Equip Three Items
+
+- Source Quest `307` follows `306`, precedes `308`, uses quest type `30`, requires exactly three
+  currently equipped items, and awards Box `98`. Vietnamese text is `Mặc trang bị` / `Trang bị
+  bất kỳ vật phẩm nào`.
+- The singular localized description does not override the authoritative `minNumber=3` and
+  `maxNumber=3`. Cross-quest evidence for type `30` confirms this is a current equipment-state
+  check rather than an accumulated equip-action counter.
+- Emberfield already implements `InventoryData.count_equipped_items()`, QuestService objective
+  `equipped_count`, deferred refresh after equipment changes/save hydration, transition-time
+  objective refresh, stable quest IDs, and retry-safe Box `98` rewards.
+- No new data model, equipment event, UI callback, asset, animation, manifest entry, LAN message,
+  or save field is required. The safe feature is additive quest registration plus legacy-index
+  translation and regression tests.
+- Post-completion behavior after unequipping is not directly evidenced. Emberfield's existing
+  ready-state latch is preserved rather than introducing a speculative rollback rule.
+- Agent A's Quest 320/Donx work is read-only SCOUT and has no active diff or dependency on q307.
+
 ## 2026-11-06 — Quest 306 / Turtle
 
 - Source quest `306` follows `305`, uses `KillMobSpecific`, targets Card/Mob `33` once, and

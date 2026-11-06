@@ -1,8 +1,30 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: establish the evidence and ownership contract for Treasure
-Hunter quest 319's ingredient Level 2 presentation.
+Current feature: recover the exact Donx portrait/icon UI assets for Treasure
+Hunter Quest 320 without substituting them for the composite world NPC.
+
+## Donx Portrait And Icon Feature
+
+- Recovered `Donx` and `Donx Icon` from the verified `2048x2048` UINPC atlas
+  instead of using the known-empty packed-sprite exporter outputs.
+- Preserved each sprite's original `256x256` logical canvas. The portrait places
+  the packed `247x196` region at bottom-left offset `(5, 28)`; the icon uses its
+  complete `256x256` atlas rect.
+- Added metadata-only IDs `actor.npc.donx.portrait` and
+  `actor.npc.donx.icon`, with local-only provenance, source rects, pivots, PPU,
+  atlas hash, target hashes, and explicit non-world usage.
+- The two files total less than 36 KiB and avoid importing the 610 KiB source
+  atlas. No scene, script, UI consumer, gameplay ID, quest behavior, interaction,
+  merge system, map placement, animation, or Agent B file changed.
+- The world Donx remains the separate RoyalKnight composite. Direct live screen
+  comparison is unavailable, so this feature claims exact source reconstruction
+  only, not runtime pixel parity.
+- Executed validation confirms the atlas and output hashes, `256x256` dimensions,
+  partial alpha, transparent margins, zero-pixel difference from independently
+  rebuilt expected crops, unique manifest IDs/paths, `local_only` provenance,
+  lossless imports, Godot 4.6 texture loading, ownership-only diff, and clean
+  whitespace.
 
 ## Quest 319 Ingredient Level 2 Visual Contract
 

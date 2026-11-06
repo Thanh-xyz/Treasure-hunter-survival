@@ -1,5 +1,17 @@
 # Logic-to-Art Contract Proposal
 
+## 2026-11-06 — Quest 307 / Equip Three Items
+
+- Gameplay now exposes q307 through the unchanged generic quest contract with Vietnamese
+  `Mặc trang bị`, objective progress `0/3` through `3/3`, and reward preview `1 Kim cương`.
+- Progress is authoritative current equipment state. Presentation must read `QuestService` and
+  must not count equip button presses or infer slot state independently.
+- No icon, equipment art, asset ID, animation, direction, layout, equipment-slot identifier, or
+  UI callback changed. Agent A requires no implementation work.
+- Import, focused transactions, Legacy/Survival/save and all four generic quest-menu render states
+  pass. Manual render inspection found no presentation regression.
+- q308 and any new equipment-upgrade presentation remain separately staged.
+
 ## 2026-11-06 — Quest 306 / Turtle
 
 - Gameplay now consumes stable art ID `actor.monster.turtle.default` for monster ID `turtle`.

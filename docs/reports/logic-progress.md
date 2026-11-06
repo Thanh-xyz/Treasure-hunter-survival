@@ -1,5 +1,33 @@
 # Logic Progress
 
+## 2026-11-06 — Quest 307 / Equip Three Items
+
+- Inserted stable `q307` after `q306` using source ID 307, exact Vietnamese copy, the existing
+  `equipped_count` state objective with count three, and Box 98's one-Diamond reward.
+- q307 evaluates existing equipment immediately when q306 is claimed and refreshes through the
+  current equipment mutation adapter. No click counter or new gameplay event was added.
+- Stable-ID saves still restore by ID. Legacy index-only saves predating all three inserted source
+  quests now shift old post-q01 indices by three; save schema remains unchanged.
+- Focused chain tests cover two pre-equipped items remaining incomplete, the third completing the
+  quest, exact one-Diamond claim, no double grant, q307 -> q02 progression, and legacy migration.
+- q308, post-readiness unequip rollback, UI changes, art/assets, equipment rules, LAN schema, and
+  new dependencies remain outside this feature.
+
+### Test evidence
+
+- Godot `4.6.stable.official.89cea1439` headless editor import: exit `0`.
+- `InventoryTransactionTests.tscn`: exit `0`, all transaction and retry-safety tests passed.
+- `SurvivalTests.tscn`: exit `0`, including q306 -> q307 -> q02 ordering, two-versus-three
+  equipped-state evaluation, one-Diamond claim, duplicate prevention and legacy index migration.
+- `LegacySystemTests.tscn`: exit `0`, phases 1-7 and its Survival/save runner passed. Corrupt-save
+  and invalid-snapshot warnings are deliberate negative fixtures.
+- `RenderGameMenu.tscn` under Xvfb: exit `0` and saved all four main/claim/daily/complete captures
+  under `/tmp/emberfield-quest-menu-*.png`; manual inspection found no clipping, blank reward or
+  layout regression. This is a generic presentation regression, not a pixel-parity claim.
+- `git diff --check`: exit `0`.
+- REVIEW found no high/medium issue, ownership overlap, shared-contract drift or unrelated change.
+  The only residual unknown is post-readiness unequip behavior; the existing latch remains explicit.
+
 ## 2026-11-06 — Quest 306 / Turtle
 
 - Added stable gameplay monster ID `turtle` for source Card `33`: 100 HP, 20 damage, zero speed,

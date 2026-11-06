@@ -4,6 +4,31 @@ Date: 2026-11-04; updated 2026-11-06
 Branch/worktree: `feature/th-game-art-workflow` in the Agent A worktree
 Stage: SCOUT complete; no project implementation occurred during SCOUT.
 
+## Quest 320 Donx Art Evidence
+
+- Source quest `320` follows `319`, precedes `321`, uses quest type `33`,
+  requires NPC `7`, awards Box `98`, and remains disabled. Vietnamese text is
+  `Gặp Donx` / `Gặp Donx ở góc trên bên trái của làng`.
+- Card `75` identifies Donx as the merge-ingredient NPC. Dialog `625` verifies
+  proximity interaction; actual ingredient merging belongs to Quest `321` and
+  is not part of the Quest 320 art contract.
+- The standalone `Donx` and `Donx Icon` exporter PNGs are transparent because
+  their pixels are packed in SpriteAtlas `UINPC`; they are not evidence that the
+  source art is missing. The verified atlas is `2048x2048`, SHA-256
+  `8d28832bfe609fea976358b4b4b24021fb748c44d6a39ee000d7e5c34881e420`.
+- Sprite path ID `5441` restores a `247x196` packed portrait at logical offset
+  `(5, 28)` inside its original `256x256` canvas. Sprite path ID `5668` restores
+  the full `256x256` icon from atlas bottom-left `(0, 388)`. Both use centered
+  pivots; PPU values are `100` and `83.11688232421875` respectively.
+- The map NPC is separate: prefab `Donx Body` is a `1.2x` composite RoyalKnight
+  hierarchy using the `Unit` Animator, body/limb/eye/clothing/armor/hair parts,
+  `Sword_2`, `Shield_Knight_2`, shadow, sorting, and outline support. Neither UI
+  image may be used as its world sprite.
+- ADB confirmed Treasure Hunter `4.3.7` build `1390` on the connected Samsung
+  device, but only the covered server-selection state was available. Exact live
+  portrait placement, world scale, idle timing, prompt geometry, and map
+  position remain unverified; no pixel-parity claim is made.
+
 ## Quest 319 Ingredient Level 2 Evidence
 
 - Source quest `319` follows `318`, precedes `320`, keeps quest type `31`,

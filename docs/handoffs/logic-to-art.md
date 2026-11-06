@@ -352,3 +352,15 @@ No shared contract change should be implemented until these questions are resolv
   upgrade rule. Presentation must not expose an Upgrade action for these IDs yet.
 - Godot import, gameplay/save suites and live/dead HUD rendering pass; the blacksmith remains at
   its pre-feature 29 public items. Agent A's presentation requires no change.
+
+## 2026-11-06 — Pending quest-claim journal contract
+
+- Quest completion signals now publish only after reward, quest transition and journal clearing
+  have been persisted successfully. Existing `QuestService.claim()` and presentation signals keep
+  their public shape.
+- A failed claim may remain retryable through an internal persisted journal. UI should continue
+  reading authoritative quest/inventory state and must not grant, reroll or clear rewards itself.
+- No asset ID, animation state, direction, layout, quest definition or Turtle contract changed.
+  Agent A requires no adaptation for this feature.
+- Box 149 and quest 305 remain excluded. Their later UI may display only the exact materialized
+  instance supplied by gameplay; presentation must never reroll card/stat values.

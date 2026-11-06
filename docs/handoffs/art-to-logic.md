@@ -266,3 +266,13 @@ Touch acquisition, moving center, `radius`, `dead_zone`, `_knob` input vector,
 `ui_left/right/up/down` strengths, release behavior, and the user opacity setting
 are unchanged. The new scaling affects presentation only; Agent B does not need
 to adapt player movement, input maps, saves, LAN, or gameplay tests.
+
+## Revive Button Visual Contract
+
+The death-state button now renders through the scene-verified `Button1_0`
+20-pixel nine-slice and its decoded Unity color transitions. The implementation
+reuses `ui.reference.button.orange`; it adds no asset or manifest entry.
+
+Button position, size, Vietnamese label/countdown, `_death_timer`, disabled
+behavior, `_respawn_town` callback, respawn state, save data, and LAN behavior
+are unchanged. Agent B does not need to adapt gameplay code or tests.

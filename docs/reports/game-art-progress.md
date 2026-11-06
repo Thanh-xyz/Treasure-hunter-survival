@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: establish the exact Turtle atlas and icon asset contract.
+Current feature: establish the exact Snailu animated atlas contract.
 
 ## Quest Menu Runtime Feature
 
@@ -54,6 +54,29 @@ Current feature: establish the exact Turtle atlas and icon asset contract.
   rects/pivots/PPU values, four clip sequences, loop flags and durations.
   Source-target byte/hash checks and pixel comparison passed. The manifest now
   has 123 unique asset IDs/targets and 67 `local_only` entries.
+
+## Snailu Animated Atlas Feature
+
+- Verified that Snailu GameObject path ID `12019` renders through `Mob_1`,
+  Texture2D path ID `410` and AnimatorController `2949`.
+- Added the exact `384x256` atlas as selected local-only asset
+  `actor.monster.snailu.atlas` while preserving the existing integrated static
+  icon ID `actor.monster.snailu.default` and all current runtime consumers.
+- Recorded 21 `64x64` sprites, center pivots, 40 PPU, sample rate 24, and the
+  Unity-proven `idle`, `walk`, `attack`, and `dead` sequences.
+- Preserved the source `walk` anomaly exactly: its second key is `Idle_1`, not
+  an invented `Run_1`. Canonical manifest states map `walk` to `move` and
+  `dead` to `death`.
+- Kept the feature asset-only: no gameplay ID, monster registration, stats, AI,
+  drops, collision, quest 310, save/LAN contract or runtime consumer changed.
+- Godot `4.6.stable.official.89cea1439` imported the atlas with lossless
+  compression and mipmap generation disabled. Inventory Transaction, Legacy and
+  Survival/save suites completed with exit code `0`; existing corrupt-save and
+  resource warnings remain visible.
+- Independent UnityPy validation passed for the runtime pointer, all 21 sprite
+  rects/pivots/PPU values, four clip sequences, sample rates, loop flags and
+  durations. Source-target byte/hash checks pass. The manifest now has 124
+  unique asset IDs/targets and 68 `local_only` entries.
 
 ## Completed In This Feature
 

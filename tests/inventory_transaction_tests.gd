@@ -31,6 +31,7 @@ func _ready() -> void:
 	_test_reward_box_resolver()
 	_test_reward_box_checkbox_resolver()
 	_test_reward_box_catalog()
+	_test_reference_equipment_reward_resolver()
 	_test_reference_equipment_catalog()
 	_test_crafting_transaction()
 	_test_quest_claim_transaction()
@@ -289,6 +290,84 @@ func _test_reward_box_catalog() -> void:
 	var missing_rng := RandomNumberGenerator.new()
 	missing_rng.seed = 149
 	_check(RewardBoxCatalog.resolve(149, missing_rng).is_empty(), "unknown reward box resolved a reward")
+
+
+func _test_reference_equipment_reward_resolver() -> void:
+	var options: Array = [
+		{"weight": 34, "card_id": 28},
+		{"weight": 33, "card_id": 29},
+		{"weight": 33, "card_id": 30},
+	]
+	_check(RewardBoxCatalog.has_equipment_box(149), "verified equipment Box 149 is missing")
+	_check(not RewardBoxCatalog.has_box(149), "equipment Box 149 leaked into direct canonical boxes")
+	_check(RewardBoxCatalog.get_equipment_options(149) == options, "Box 149 equipment options drifted")
+	_check(RewardBoxCatalog.select_equipment_roll(149, 1) == {"box_id": 149, "roll": 1, "card_id": 28}, "Box 149 roll 1 missed card 28")
+	_check(RewardBoxCatalog.select_equipment_roll(149, 34)["card_id"] == 28, "Box 149 roll 34 missed card 28")
+	_check(RewardBoxCatalog.select_equipment_roll(149, 35)["card_id"] == 29, "Box 149 roll 35 missed card 29")
+	_check(RewardBoxCatalog.select_equipment_roll(149, 67)["card_id"] == 29, "Box 149 roll 67 missed card 29")
+	_check(RewardBoxCatalog.select_equipment_roll(149, 68)["card_id"] == 30, "Box 149 roll 68 missed card 30")
+	_check(RewardBoxCatalog.select_equipment_roll(149, 100)["card_id"] == 30, "Box 149 roll 100 missed card 30")
+	_check(RewardBoxCatalog.select_equipment_roll(149, 0).is_empty(), "Box 149 accepted roll zero")
+	_check(RewardBoxCatalog.select_equipment_roll(149, 101).is_empty(), "Box 149 accepted roll above total")
+	_check(RewardBoxCatalog.select_equipment_roll(999, 1).is_empty(), "unknown equipment box selected a card")
+	var mutable_options := RewardBoxCatalog.get_equipment_options(149)
+	mutable_options[0]["card_id"] = 30
+	_check(RewardBoxCatalog.get_equipment_options(149) == options, "Box 149 exposed mutable option state")
+
+	var first_rng := RandomNumberGenerator.new()
+	var second_rng := RandomNumberGenerator.new()
+	first_rng.seed = 149
+	second_rng.seed = 149
+	_check(
+		RewardBoxCatalog.select_equipment(149, first_rng) == RewardBoxCatalog.select_equipment(149, second_rng),
+		"Box 149 seeded selection was not deterministic",
+	)
+	var invalid_cases: Array = [
+		[],
+		[{"weight": 34, "card_id": 28}, {"weight": 33, "card_id": 28}],
+		[{"weight": 100, "card_id": 999}],
+		[{"weight": 0, "card_id": 28}],
+		[{"weight": 100, "card_id": 28, "stats": {}}],
+		[{"weight": 9223372036854775807, "card_id": 28}, {"weight": 1, "card_id": 29}],
+	]
+	for invalid: Array in invalid_cases:
+		var invalid_rng := RandomNumberGenerator.new()
+		invalid_rng.seed = 149
+		var initial_state := invalid_rng.state
+		_check(ReferenceEquipmentRewardResolver.select(invalid, invalid_rng).is_empty(), "invalid equipment options selected a card: %s" % [invalid])
+		_check(invalid_rng.state == initial_state, "invalid equipment options consumed RNG state")
+	_check(ReferenceEquipmentRewardResolver.select(options, null).is_empty(), "equipment selection accepted missing RNG")
+
+	var source_stats := {"health": 13.9, "damage": 29.8, "speed": 0.08}
+	var selection := RewardBoxCatalog.select_equipment_roll(149, 34)
+	var finalized := RewardBoxCatalog.finalize_equipment_reward(selection, source_stats)
+	_check(finalized == {"equipment": [{"card_id": 28, "stats": source_stats}]}, "Box 149 exact reward finalized incorrectly")
+	_check(
+		RewardBoxCatalog.finalize_equipment_reward(
+			RewardBoxCatalog.select_equipment_roll(149, 35),
+			{"health": 20, "damage": 3, "speed": 0.05},
+		)["equipment"][0]["card_id"] == 29,
+		"Box 149 did not finalize selected card 29",
+	)
+	_check(
+		RewardBoxCatalog.finalize_equipment_reward(
+			RewardBoxCatalog.select_equipment_roll(149, 68),
+			{"health": 2, "damage": 3, "speed": 0.1},
+		)["equipment"][0]["card_id"] == 30,
+		"Box 149 did not finalize selected card 30",
+	)
+	source_stats["damage"] = 49.0
+	_check(is_equal_approx(float(finalized["equipment"][0]["stats"]["damage"]), 29.8), "finalized Box 149 reward retained caller stats")
+	var changed_card := selection.duplicate(true)
+	changed_card["card_id"] = 29
+	_check(RewardBoxCatalog.finalize_equipment_reward(changed_card, {"health": 20, "damage": 3, "speed": 0.05}).is_empty(), "Box 149 finalized a card that did not match its roll")
+	var changed_roll := selection.duplicate(true)
+	changed_roll["roll"] = 35
+	_check(RewardBoxCatalog.finalize_equipment_reward(changed_roll, {"health": 2, "damage": 5, "speed": 0.05}).is_empty(), "Box 149 finalized a roll that did not match its card")
+	var unknown_box := selection.duplicate(true)
+	unknown_box["box_id"] = 999
+	_check(RewardBoxCatalog.finalize_equipment_reward(unknown_box, {"health": 2, "damage": 5, "speed": 0.05}).is_empty(), "unknown box finalized equipment")
+	_check(RewardBoxCatalog.finalize_equipment_reward(selection, {"health": 1, "damage": 5, "speed": 0.05}).is_empty(), "Box 149 finalized invalid exact stats")
 
 
 func _test_reference_equipment_catalog() -> void:

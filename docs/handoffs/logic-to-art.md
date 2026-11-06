@@ -373,3 +373,14 @@ No shared contract change should be implemented until these questions are resolv
   requires no adaptation in this feature.
 - Future reward presentation must read the materialized instance's source asset ID and exact stats;
   it must not roll, round, recolor or substitute presentation-side values.
+
+## 2026-11-06 — Box 149 authority boundary
+
+- Gameplay now records the exact source `34/33/33` card-selection contract for Box 149 without
+  inventing weapon stats. Selection records the box, roll and card 28, 29 or 30; a separate
+  authority must provide the complete exact stat payload before a reward can be journaled or
+  granted.
+- Stable icon IDs remain derived from `ReferenceEquipmentCatalog`. No new art ID, manifest entry,
+  texture path, UI callback, animation or direction contract was added.
+- Presentation must never select a card, generate stats or reroll a failed/retried reward. Quest
+  305 and a reward popup consumer remain outside this feature, so Agent A requires no adaptation.

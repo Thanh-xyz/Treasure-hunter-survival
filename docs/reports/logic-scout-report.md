@@ -333,3 +333,19 @@ observed examples alone.
   item-ID quantities, so exact equipment data would currently be discarded by `GameState.grant()`.
 - Initial stat RNG, rounding, rarity transformation, Box 149 registration and quest 305 remain
   unknown and are not implied by this prerequisite.
+
+## 2026-11-06 — Box 149 authority-boundary scout
+
+- `Box.json` verifies that Box 149 is an available non-stackable Option box with one Common
+  equipment result: card 28 at weight 34, card 29 at 33 or card 30 at 33. Every result has quantity
+  one. Quest 305 is the inactive ten-dig follow-up that rewards this box.
+- Native client metadata includes `BoxToEquipmentFromRandompack`, `EquipmentsReward`,
+  `rawStatData`, `CreateStats` and multiplier-stat methods, but the available export does not expose
+  their executable initial stat-roll or rounding logic. The quest response shape supports an
+  authority returning already materialized equipment.
+- Public Treasure Hunter documentation describes later tier upgrades, not the initial Beginner
+  Weapon roll. Four observed inventory instances are insufficient to infer a distribution and
+  include Rare/Epic transformations outside Box 149's Common result.
+- The safe integration boundary therefore selects the source card independently, then requires an
+  exact catalog-valid stat payload from an offline/host authority before it creates a canonical
+  reward. Quest insertion remains deferred.

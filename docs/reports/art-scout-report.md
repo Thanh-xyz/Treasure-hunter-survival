@@ -198,3 +198,28 @@ screenshot, diff, and correction.
 - ADB UI hierarchy does not expose Unity's internal controls, so the capture and
   decoded RectTransform evidence are used together. No gameplay behavior is
   inferred from these measurements.
+
+## Fixed Joystick Placement Evidence
+
+- Authorized device `SM_A047F` was connected and the package
+  `com.megacombat.treasurehunter` was observed at `720x1600`; Android reports
+  the Unity game surface as `720x1516` with the final 84 pixels owned by system
+  navigation.
+- The active runtime capture `/tmp/ths-runtime-joystick-scout.png` places the
+  joystick around screen center `(447, 897)`, but the settings flow exposes a
+  full-screen custom HUD editor with explicit `Reset` and `Save` actions in
+  `/tmp/ths-game-settings-runtime.png`. The runtime coordinate is therefore a
+  saved custom layout and is not treated as the canonical default.
+- No `Reset` or `Save` action was invoked. The editor was entered and exited
+  read-only, so the reference account layout was not changed.
+- Decoded `MainCanvas - Camera` uses a `1080x1920` CanvasScaler reference,
+  `Scale With Screen Size`, and `matchWidthOrHeight=0.5`. On the verified
+  `720x1516` game surface, its scale factor is approximately `0.725527`.
+- Active GameObject `30170` (`Fixed Joystick`) is anchored at `(0.5, 0)` with
+  anchored position `(0, 542)`, size `256x256`, and pivot `(0.5, 0.5)`. This
+  maps its default center to approximately `(360, 1122.76)` and its background
+  size to approximately `185.74` pixels.
+- Emberfield's existing exact-source visual is `184` pixels and its touch area
+  is `238x300`; only the control origin needs to move from `(274,980)` to
+  `(241,958)` to place its rest center at `(360,1123)`. Input semantics and the
+  established source scaling remain outside this placement correction.

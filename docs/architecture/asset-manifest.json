@@ -4127,6 +4127,35 @@
         "SHA-256: e20082244a250551e05577008613251c49fb0d28b1108cacb27205b86e0d9e87.",
         "Consumed by the disabled achievement tab until a gameplay domain is approved."
       ]
+    },
+    {
+      "asset_id": "item.ingredient.card_66.icon",
+      "category": "item_icon",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-55e812578eafcc090b2aa395a93ea527/Stone_3__-6727630107612017795.png",
+      "target_path": "assets/treasure_hunter/items/ingredients/card_66_stone_3.png",
+      "file_format": "png",
+      "dimensions": [
+        29,
+        32
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_quest_card_box_config_and_addressable_export",
+      "integration_status": "selected",
+      "notes": [
+        "Quest.json ID 316 requires one stat-type-1 Damage ingredient after quest 315.",
+        "Card.json ID 66 is Stone_3, describes adding Damage to equipment, and has Vietnamese description 'Thêm Tấn Công cho trang bị của bạn'.",
+        "Box.json IDs 452-455 independently bind card 66 to Common, Rare, Epic, and Legendary Damage ingredient rewards.",
+        "Unity addressable CAB-55e812578eafcc090b2aa395a93ea527 Sprite path ID -6727630107612017795 exports at 29x32; exact pivot and pixels per unit remain unknown.",
+        "SHA-256: 49e02811b700b5a5c42771d73683852273bbf4d7a458535ea87c31b05ede4a2d.",
+        "No existing Emberfield gameplay item ID is approved as an alias, and no runtime consumer is integrated."
+      ]
     }
   ]
 }

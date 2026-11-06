@@ -3,6 +3,22 @@
 Date: 2026-11-04
 Status: startup/auth presentation integrated; broader asset registry remains proposed.
 
+## Stone_3 Damage Ingredient Asset Contract
+
+- Stable art ID `item.ingredient.card_66.icon` maps to source card `66` /
+  `Stone_3`, the verified Damage ingredient used by Quest 316 and Box 452-455.
+- Target texture is
+  `assets/treasure_hunter/items/ingredients/card_66_stone_3.png`, an exact
+  `29x32` local-only source copy with SHA-256
+  `49e02811b700b5a5c42771d73683852273bbf4d7a458535ea87c31b05ede4a2d`.
+- The asset has no runtime consumer or approved gameplay item ID. Agent B may
+  use the stable art ID as metadata after integration, but Quest 316, digging
+  drops, rarity/stat generation, upgrading, persistence, and Box 153 require
+  separate gameplay plans. Stone_6 remains a separate Box 153 dependency.
+- Source/target byte identity, SHA-256, dimensions, alpha, manifest uniqueness
+  and target paths, Godot import, Inventory Transaction, Legacy, and
+  Survival/save are covered by executed validation.
+
 ## Equipment Detail Presentation Contract
 
 - Equipped-slot taps open a dedicated Treasure Hunter-style item-detail modal.

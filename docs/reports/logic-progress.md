@@ -1,5 +1,37 @@
 # Logic Progress
 
+## 2026-11-06 — Quest 308 / Upgrade One Equipment To Level 2
+
+- Inserted stable `q308` after q307 with source ID 308, exact Vietnamese copy, existing
+  `equipment_level` state objective at displayed Level 2/count one, and Box 151's 200 Gold reward.
+- Q308 observes authoritative equipped instance state. Level-1 equipment remains incomplete; an
+  existing inventory upgrade followed by the normal state refresh completes it without a quest-
+  specific click counter or event.
+- Stable-ID saves remain unchanged. Legacy index-only saves predating q305-q308 now shift old
+  post-q01 indices by four; the save schema and pending-claim journal are unchanged.
+- Focused chain coverage verifies q307 -> q308 -> q02, upgrade cost/state ordering, exact 200 Gold
+  claim, no duplicate grant, and legacy migration.
+- Q310/Snailu, Box149 reference upgrade enablement, formula/balance changes, UI/art changes, LAN and
+  new dependencies remain outside this feature.
+
+### Test evidence
+
+- Godot `4.6.stable.official.89cea1439` headless editor import: exit `0`.
+- `InventoryTransactionTests.tscn`: exit `0`, including authoritative enhancement and locked
+  reference-equipment regressions.
+- `SurvivalTests.tscn`: exit `0`, including q307 -> q308 -> q02, Level-1/Level-2 state evaluation,
+  upgrade charge ordering, exact 200 Gold claim, duplicate prevention and legacy index migration.
+- `LegacySystemTests.tscn`: exit `0`, phases 1-7 and its Survival/save runner passed. Corrupt-save
+  and invalid-snapshot warnings remain deliberate negative fixtures.
+- `RenderEquipmentDetail.tscn` under Xvfb: exit `0`, verified the real modal/tap path, authoritative
+  cost/upgrade, insufficient-Gold rejection, locked Box149 reference equipment, removal and saved
+  `/tmp/emberfield-equipment-detail.png`.
+- `RenderGameMenu.tscn` under Xvfb: exit `0`, saved all four menu states. Manual inspection found no
+  clipping, blank reward or layout regression. These are regression checks, not new parity claims.
+- `git diff --check`: exit `0`.
+- REVIEW found no high/medium issue, ownership overlap, shared-contract drift or unrelated change.
+  The pre-existing provisional generic upgrade balance remains explicit and outside parity claims.
+
 ## 2026-11-06 — Quest 307 / Equip Three Items
 
 - Inserted stable `q307` after `q306` using source ID 307, exact Vietnamese copy, the existing

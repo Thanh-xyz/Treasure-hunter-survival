@@ -1,5 +1,24 @@
 # Logic Scout Report
 
+## 2026-11-06 — Quest 308 / Upgrade One Equipment To Level 2
+
+- Source Quest `308` follows `307`, points directly to `310`, uses quest type `39`, requires one
+  equipment item with raw `levelRequire=1`, and awards Box `151`. Vietnamese text is `Nâng cấp
+  trang bị` / `Nâng cấp bất kỳ trang bị nào lên Cấp 2`.
+- Cross-quest evidence proves the source level field is zero-based: Quest 312 raw `4` displays
+  Level 5, while Quest 315 raw `2` displays Level 3. Emberfield therefore uses displayed target
+  Level 2 rather than copying raw value `1` into the objective.
+- Box `151` contains exactly Gold currency ID `1` x200 and is already covered by the immutable
+  reward-box catalog. Quest `309` is an empty disabled node; Quest `310` declares `308` as its
+  previous quest, so q308 does not route through q309.
+- Emberfield already implements current-state `equipment_level` evaluation, authoritative equipped
+  item upgrades, save persistence, post-transition refresh, retry-safe claims, and the integrated
+  Equipment Detail presentation. No new event, model, schema, asset, UI or LAN message is needed.
+- Generic Emberfield upgrade costs/stat growth remain explicitly provisional and Box 149 reference
+  weapons remain locked. Activating q308 does not establish formula parity or authorize either
+  contract to change.
+- Agent A's Quest 321 work is documentation-only and does not overlap q308 source/tests.
+
 ## 2026-11-06 — Quest 307 / Equip Three Items
 
 - Source Quest `307` follows `306`, precedes `308`, uses quest type `30`, requires exactly three

@@ -4,6 +4,22 @@ Status: approved as the incremental direction on 2026-11-04. The first implement
 adds atomic inventory transactions behind the existing APIs; broader service extraction is
 still deferred until reference parity and Agent A contracts are available.
 
+## Quest 308 state-objective activation
+
+- Quest `q308` reuses the existing pure `equipment_level` query with displayed level target `2`
+  and count `1`. Progress reflects equipped instance state, not upgrade button presses or events.
+- Claiming q307 refreshes the newly active objective against the current inventory. Later successful
+  upgrades emit the established equipment mutation signals, and the live Player adapter refreshes
+  state objectives after final authoritative equipment/Gold state is visible.
+- Box `151` resolves through the existing reward catalog and durable pending-claim journal as
+  exactly 200 Gold. Quest content adds no economy formula, save schema or networking dependency.
+- Source raw `levelRequire` is normalized at the content boundary because it is zero-based while
+  Emberfield stores/displays equipment levels from 1. Generic upgrade balance remains provisional;
+  q308 observes the result without redefining the upgrade rule.
+- Legacy index-only saves predating q305-q308 shift across four inserted quests; stable-ID saves
+  remain authoritative. Q310/Snailu remains a separate vertical slice, so q308 currently hands off
+  to q02 after claim.
+
 ## Quest 307 state-objective activation
 
 - Quest `q307` reuses the existing pure `equipped_count` query over the seven stable equipment

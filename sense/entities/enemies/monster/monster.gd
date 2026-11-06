@@ -8,6 +8,7 @@ extends CharacterBody2D
 ##   ranged  — keeps distance, fires projectiles
 ##   charger — telegraphs a line, then dashes through the target
 ##   stationary_melee — scans and attacks without moving or chasing
+##   reference_melee — source-scaled range/cadence with a complete attack clip
 ##   boss_*  — handled by Boss (subclass)
 ##
 ## Damage in:  player hitbox -> HurtboxComponent -> apply_hit()
@@ -62,6 +63,7 @@ var _wander_dir: Vector2 = Vector2.ZERO
 var _knock: Vector2 = Vector2.ZERO
 var _charge_dir: Vector2 = Vector2.ZERO
 var _charge_hit: bool = false
+var _attack_hit_applied: bool = false
 var _base_visual_scale: Vector2 = Vector2.ONE
 var _last_attacker_peer_id: int = 1
 
@@ -176,7 +178,7 @@ func _build_visual() -> void:
 func _build_body() -> void:
 	var shape := CollisionShape2D.new()
 	var circle := CircleShape2D.new()
-	circle.radius = maxf(4.0, body_radius * 0.5)
+	circle.radius = float(def.get("collision_radius", maxf(4.0, body_radius * 0.5)))
 	shape.shape = circle
 	shape.position = Vector2(0, -2)
 	add_child(shape)
@@ -287,6 +289,8 @@ func _think(delta: float) -> void:
 	match def.get("ai", "melee"):
 		"stationary_melee":
 			_think_stationary_melee(delta)
+		"reference_melee":
+			_think_reference_melee(delta)
 		"ranged":
 			_think_ranged(delta)
 		"charger":
@@ -298,6 +302,8 @@ func _think(delta: float) -> void:
 func _set_state(s: String) -> void:
 	state = s
 	state_time = 0.0
+	if s == "windup":
+		_attack_hit_applied = false
 
 
 func _dist_to_target() -> float:
@@ -380,6 +386,37 @@ func _think_stationary_melee(_delta: float) -> void:
 	target.take_damage(damage)
 	_set_state("windup")
 	_play_anim("attack")
+
+
+func _think_reference_melee(_delta: float) -> void:
+	var attack_interval := float(def.get("attack_interval", 1.1))
+	var attack_duration := float(def.get("attack_duration", 0.4))
+	match state:
+		"windup":
+			var hit_time := float(def.get("attack_hit_time", 0.4))
+			if not _attack_hit_applied and state_time >= hit_time:
+				_attack_hit_applied = true
+				if target and _dist_to_target() <= attack_range:
+					target.take_damage(damage)
+			if state_time >= attack_duration:
+				_set_state("recover")
+		"recover":
+			var recovery_duration := float(def.get("attack_recovery", maxf(0.0, attack_interval - attack_duration)))
+			if state_time >= recovery_duration:
+				_set_state("idle")
+		_:
+			if target == null:
+				_wander()
+				return
+			if _dist_to_target() <= attack_range:
+				velocity = Vector2.ZERO
+				if attack_cooldown <= 0.0:
+					facing = _dir_to_target()
+					attack_cooldown = attack_interval
+					_set_state("windup")
+					_play_anim("attack")
+				return
+			_move_toward_target()
 
 
 # --- ranged -------------------------------------------------------------------

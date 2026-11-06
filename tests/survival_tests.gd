@@ -69,6 +69,7 @@ func run_all() -> bool:
 	_test_save_roundtrip()
 	await _test_monster_kill()
 	await _test_turtle_runtime()
+	await _test_snailu_runtime()
 	await _test_menu_keeps_world_running()
 	await _test_auto_farm_toggle()
 	_test_combat_roll()
@@ -312,12 +313,24 @@ func _test_quests() -> void:
 	var q308_gold_before: int = _stub_player.inventory.gold
 	_check(QuestService.claim("q308"), "claim q308")
 	_check(_stub_player.inventory.gold == q308_gold_before + 200, "q308 did not grant exactly 200 Gold")
-	_check(QuestService.get_main_quest()["id"] == "q02", "q308 did not advance to q02")
+	_check(QuestService.get_main_quest()["id"] == "q310", "q308 did not advance to q310")
 	_check(not QuestService.claim("q308") and _stub_player.inventory.gold == q308_gold_before + 200, "q308 granted twice")
+	GameEvent.enemy_killed.emit("shroom", Vector2.ZERO, false)
+	_check(QuestService.main_progress == 0 and not QuestService.main_ready, "legacy shroom kill completed q310")
+	GameEvent.enemy_killed.emit("snailu", Vector2.ZERO, false)
+	GameEvent.enemy_killed.emit("snailu", Vector2.ZERO, false)
+	_check(QuestService.main_progress == 2 and not QuestService.main_ready, "q310 completed before three Snailu kills")
+	GameEvent.enemy_killed.emit("snailu", Vector2.ZERO, false)
+	_check(QuestService.main_progress == 3 and QuestService.main_ready, "three Snailu kills did not complete q310")
+	var q310_diamonds_before: int = _stub_player.inventory.diamonds
+	_check(QuestService.claim("q310"), "claim q310")
+	_check(_stub_player.inventory.diamonds == q310_diamonds_before + 1, "q310 did not grant exactly one Diamond")
+	_check(QuestService.get_main_quest()["id"] == "q02", "q310 did not advance to q02")
+	_check(not QuestService.claim("q310") and _stub_player.inventory.diamonds == q310_diamonds_before + 1, "q310 granted twice")
 	for i in range(8):
 		GameEvent.enemy_killed.emit("slime", Vector2.ZERO, false)
 	_check(QuestService.main_ready, "kill 8 slimes completes q02")
-	_check(QuestService.dailies["d_hunt"]["progress"] == 10, "daily hunt counts all monster kills")
+	_check(QuestService.dailies["d_hunt"]["progress"] == 14, "daily hunt counts all monster kills")
 	GameEvent.enemy_killed.emit("slime_king", Vector2.ZERO, true)
 	_check(QuestService.dailies["d_boss"]["progress"] == 1, "daily boss counts boss kill")
 	_check(QuestService.claim("d_boss"), "claim daily boss")
@@ -584,7 +597,7 @@ func _test_save_roundtrip() -> void:
 	QuestService.from_dict({"main_index": 0, "main_quest_id": "q04", "main_progress": 0, "main_ready": false})
 	_check(QuestService.main_index == GameContent.get_main_quest_index("q04"), "stable quest id takes precedence over stale index")
 	QuestService.from_dict({"main_index": 2, "main_progress": 0, "main_ready": false})
-	_check(QuestService.main_index == 6, "legacy quest save did not shift across inserted q305-q308")
+	_check(QuestService.main_index == 7, "legacy quest save did not shift across inserted q305-q310")
 	QuestService.from_dict({"main_index": 1, "main_quest_id": "removed_quest", "main_progress": 0, "main_ready": false})
 	_check(QuestService.main_index == 1, "unknown stable quest id did not preserve explicit fallback index")
 
@@ -807,6 +820,104 @@ func _test_turtle_runtime() -> void:
 	_check(GameState.xp == xp_before, "Turtle granted unverified XP")
 	GameEvent.enemy_killed.disconnect(cb)
 	await get_tree().create_timer(float(turtle_def["death_duration"]) + 0.05).timeout
+
+
+func _test_snailu_runtime() -> void:
+	var asset_id := "actor.monster.snailu.atlas"
+	_check(MonsterVisualCatalog.has_asset(asset_id), "Snailu stable art ID is not registered")
+	var definition := MonsterVisualCatalog.get_definition(asset_id)
+	_check(definition.get("frame_size", Vector2i.ZERO) == Vector2i(64, 64), "Snailu frame size drifted")
+	var frames := MonsterVisualCatalog.get_frames(asset_id)
+	_check(frames != null, "Snailu atlas did not build SpriteFrames")
+	var expected := {
+		"idle": {"row": 0, "frames": [0, 1, 2, 3, 0], "duration": 0.7083333731, "loop": true},
+		"move": {
+			"row": 1,
+			"frames": [Vector2i(0, 1), Vector2i(1, 0), Vector2i(2, 1), Vector2i(3, 1), Vector2i(4, 1), Vector2i(5, 1)],
+			"duration": 0.4583333135,
+			"loop": true,
+		},
+		"attack": {"row": 2, "frames": [0, 1, 2, 3, 4, 5], "duration": 0.6666666865, "loop": true},
+		"death": {"row": 3, "frames": [0, 1, 2, 3, 4, 5], "duration": 0.75, "loop": false},
+	}
+	for animation_name: String in expected:
+		var expected_animation: Dictionary = expected[animation_name]
+		var sequence: Array = expected_animation["frames"]
+		_check(frames.has_animation(animation_name), "Snailu animation missing: %s" % animation_name)
+		_check(frames.get_frame_count(animation_name) == sequence.size(), "Snailu frame count drifted: %s" % animation_name)
+		_check(frames.get_animation_loop(animation_name) == bool(expected_animation["loop"]), "Snailu loop flag drifted: %s" % animation_name)
+		_check(is_equal_approx(frames.get_animation_speed(animation_name), float(sequence.size()) / float(expected_animation["duration"])), "Snailu clip duration drifted: %s" % animation_name)
+		for frame_index in range(sequence.size()):
+			var frame_value: Variant = sequence[frame_index]
+			var coordinates: Vector2i
+			if frame_value is Vector2i:
+				coordinates = frame_value
+			else:
+				coordinates = Vector2i(int(frame_value), int(expected_animation["row"]))
+			var atlas := frames.get_frame_texture(animation_name, frame_index) as AtlasTexture
+			var expected_region := Rect2(float(coordinates.x * 64), float(coordinates.y * 64), 64.0, 64.0)
+			_check(atlas != null and atlas.region == expected_region, "Snailu atlas region drifted: %s[%d]" % [animation_name, frame_index])
+
+	var snailu_def: Dictionary = GameContent.MONSTERS["snailu"]
+	_check(GameContent.MONSTERS.has("shroom") and GameContent.MONSTERS["shroom"] != snailu_def, "legacy shroom identity was replaced by Snailu")
+	_check(int(snailu_def.get("source_card_id", 0)) == 34, "Snailu source Card ID drifted")
+	_check(int(snailu_def["hp"]) == 200 and int(snailu_def["dmg"]) == 30, "Snailu source stats drifted")
+	_check(float(snailu_def["range"]) == 70.0 and float(snailu_def["aggro"]) == 200.0, "Snailu source-scaled ranges drifted")
+	_check(is_equal_approx(float(snailu_def["attack_interval"]), 1.0), "Snailu attack gate drifted")
+	_check(snailu_def["gold"] == Vector2i(40, 50) and snailu_def["loot"].is_empty(), "Snailu approved loot boundary drifted")
+
+	var snailu := Monster.create("snailu")
+	snailu.position = Vector2(300, 300)
+	snailu.set_physics_process(false)
+	add_child(snailu)
+	_check(snailu.visual is AnimatedSprite2D, "Snailu does not use the atlas visual")
+	_check((snailu.visual as AnimatedSprite2D).sprite_frames == frames, "Snailu visual did not consume the stable catalog")
+	_check(snailu.max_hp == 200 and snailu.damage == 30 and snailu.xp_reward == 0, "Snailu runtime stats drifted")
+	var body_shape: CollisionShape2D = null
+	for child in snailu.get_children():
+		if child is CollisionShape2D:
+			body_shape = child
+			break
+	_check(body_shape != null and body_shape.shape is CircleShape2D and is_equal_approx((body_shape.shape as CircleShape2D).radius, 30.0), "Snailu source collider radius drifted")
+
+	_stub_player.global_position = snailu.global_position + Vector2(71, 0)
+	snailu.target = _stub_player
+	snailu.attack_cooldown = 0.0
+	snailu._think_reference_melee(0.0)
+	_check(snailu.state == "idle" and snailu.velocity.length() > 0.0, "Snailu did not chase outside exact attack range")
+	_stub_player.global_position = snailu.global_position + Vector2(70, 0)
+	snailu.velocity = Vector2.ZERO
+	snailu._think_reference_melee(0.0)
+	_check(snailu.state == "windup" and is_equal_approx(snailu.attack_cooldown, 1.0), "Snailu did not open its 1.0s attack gate at exact range")
+	var damage_before: int = _stub_player.damage_taken
+	snailu.state_time = 0.4
+	snailu._think_reference_melee(0.0)
+	snailu._think_reference_melee(0.0)
+	_check(_stub_player.damage_taken == damage_before + 30 and snailu.state == "windup", "Snailu attack did not apply exactly one hit during the full clip")
+	snailu.state_time = float(snailu_def["attack_duration"])
+	snailu._think_reference_melee(0.0)
+	_check(snailu.state == "recover", "Snailu attack clip did not finish at the verified duration")
+
+	var killed: Array[String] = []
+	var cb := func(id: String, _position: Vector2, _is_boss: bool) -> void: killed.append(id)
+	GameEvent.enemy_killed.connect(cb)
+	var xp_before := GameState.xp
+	snailu.apply_hit(snailu.hp, Vector2.ZERO)
+	_check(snailu.is_dead() and killed.has("snailu"), "Snailu death did not emit its stable gameplay ID")
+	_check(GameState.xp == xp_before, "Snailu invented an unverified XP reward")
+	await get_tree().process_frame
+	var dropped_gold := 0
+	var spawned_gold: Array[GameItem] = []
+	for child in get_tree().current_scene.get_children():
+		if child is GameItem and child.content_type == GameItem.ContentType.GOLD and child.global_position.distance_to(snailu.global_position) < 80.0:
+			spawned_gold.append(child)
+			dropped_gold += child.value
+	_check(dropped_gold >= 40 and dropped_gold <= 50, "Snailu Gold drop escaped the verified 40-50 range")
+	for item in spawned_gold:
+		item.queue_free()
+	await get_tree().create_timer(float(snailu_def["death_duration"]) + 0.05).timeout
+	GameEvent.enemy_killed.disconnect(cb)
+	_stub_player.global_position = Vector2.ZERO
 
 
 func _test_menu_keeps_world_running() -> void:

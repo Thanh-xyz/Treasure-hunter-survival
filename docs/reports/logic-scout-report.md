@@ -1,5 +1,25 @@
 # Logic Scout Report
 
+## 2026-11-06 — Quest 310 / Defeat Snailu
+
+- Source Quest `310` follows `308` directly because `309` is empty/disabled. It uses
+  `KillMobSpecific`, targets Card `34` exactly three times, awards Box `98`, and uses Vietnamese
+  `Đánh bại Snailu` for both title and description.
+- Card `34` verifies 200 HP, 30 damage, raw stats `0.3` and `0.5`, a 240-second prefab lifetime,
+  collider radius `0.75`, and death Box `34` with 40-50 Gold plus Rare Card `161`. The official
+  wiki independently places Snailu in Green Zone and summarizes 50 Gold/Rare Equipment.
+- Recovered prefab structure supports a moving melee actor, source range `1.75`, target radius `5`
+  and an inferred 1.0-second attack gate from raw/base timing values. At the approved 40 PPU those radii map to 70px, 200px
+  and a 30px collider. Exact movement conversion, hit frame, spawn count/coordinates and lifetime
+  semantics remain unknown.
+- Agent A's exact `actor.monster.snailu.atlas` contains 21 centered 64x64 frames and verified
+  idle/move/attack/death clips. The move sequence's second key is source `Idle_1`, not `Run_1`.
+- Emberfield's legacy `shroom` ID displays a static Snailu icon but has unrelated stats and spawns.
+  It remains untouched; the reference encounter uses additive stable gameplay ID `snailu`.
+- Card `161` has source stat ranges and external art but no approved manifest/runtime item identity.
+  The first implementation slice therefore includes verified Gold only and defers Rare equipment.
+- Agent A's Quest 323 work is metadata-only in Agent A-owned files and has no gameplay overlap.
+
 ## 2026-11-06 — Quest 308 / Upgrade One Equipment To Level 2
 
 - Source Quest `308` follows `307`, points directly to `310`, uses quest type `39`, requires one

@@ -162,6 +162,16 @@ const MONSTERS := {
 		"range": 16.0, "aggro": 150.0, "scale": 0.78, "gold": Vector2i(2, 6),
 		"loot": [["venom_gland", 18, 1, 1], ["herb_segment", 25, 1, 2]],
 	},
+	# Source confirms movement but not the Unity-to-Emberfield speed conversion.
+	"snailu": {
+		"name": "Snailu", "source_card_id": 34,
+		"visual": "atlas", "asset_id": "actor.monster.snailu.atlas",
+		"ai": "reference_melee", "hp": 200, "dmg": 30, "spd": 30.0, "xp": 0, "level": 1,
+		"range": 70.0, "aggro": 200.0, "scale": 1.0, "collision_radius": 30.0,
+		"gold": Vector2i(40, 50), "loot": [],
+		"attack_interval": 1.0, "attack_duration": 0.6666666865, "attack_hit_time": 0.4,
+		"death_duration": 0.75,
+	},
 	"boar": {
 		"name": "Astromophy", "visual": "pixel", "sprite": "boar", "palette": "boar",
 		"texture": "res://assets/treasure_hunter/monsters/astromophy.png", "squash": 0.025,
@@ -254,7 +264,7 @@ const ZONES := {
 	"greenwood": {
 		"name": "Greenwood Meadow", "level": 1, "scene": "res://sense/maps/field/greenwood.tscn",
 		"size": Vector2i(60, 90), "ground_tint": Color(1, 1, 1), "seed": 1101,
-		"spawns": [["slime", 9], ["bat", 5], ["shroom", 4], ["boar", 3], ["turtle", 1]],
+		"spawns": [["slime", 9], ["bat", 5], ["shroom", 4], ["boar", 3], ["turtle", 1], ["snailu", 1]],
 		"trees": 34, "rocks": 18, "lumber": 9, "dig_spots": 42,
 		"world_boss": "slime_king", "boss_interval": 180.0,
 	},
@@ -339,6 +349,10 @@ const MAIN_QUESTS := [
 		"source_quest_id": 308,
 		"obj": {"type": "equipment_level", "target": 2, "count": 1},
 		"reward_box_id": 151, "reward_preview": "200 Vàng"},
+	{"id": "q310", "name": "Đánh bại Snailu", "desc": "Đánh bại Snailu",
+		"source_quest_id": 310,
+		"obj": {"type": "kill", "target": "snailu", "count": 3},
+		"reward_box_id": 98, "reward_preview": "1 Kim cương"},
 	{"id": "q02", "name": "Slime Cleanup", "desc": "Defeat Meadow Slimes.",
 		"obj": {"type": "kill", "target": "slime", "count": 8}, "reward": {"xp": 60, "gold": 80, "items": {"health_potion": 3}}},
 	{"id": "q03", "name": "Timber!", "desc": "Chop trees for wood. Hit a tree to gather.",

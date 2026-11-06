@@ -277,3 +277,15 @@ No shared contract change should be implemented until these questions are resolv
   `main_ready` and `quests_changed`. Presentation must not read raw save fields.
 - No quest/art/asset ID changed in this slice. The change only prevents a future chain reorder
   from silently displaying a different active quest for an existing profile.
+
+## 2026-11-06 — Diamond wallet runtime contract
+
+- Gameplay now exposes `InventoryData.diamonds`, `diamonds_changed(amount)`, and
+  `GameState.get_diamonds()`. Reward/cost dictionaries use the normalized key `diamonds`.
+- This implements reference currency semantics and persistence only. The current fixed HUD
+  remains Gold-only; no Agent A scene, asset, manifest or layout file changed.
+- A future Diamond display should subscribe to `diamonds_changed` and read the wallet value. It
+  must not represent Diamond as an item or calculate a separate presentation-side balance.
+- LAN Diamond rewards are not implemented in this slice. Presentation must not imply that
+  clients receive Diamond over the current `item`/`gold`/`xp` protocol.
+- Godot import, gameplay/save suites and live/dead MobileHUD render passed.

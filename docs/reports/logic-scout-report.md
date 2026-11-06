@@ -1,5 +1,20 @@
 # Logic Scout Report
 
+## 2026-11-06 — Diamond wallet scout
+
+- Authorized reference configs define Gold as currency ID 1, Diamond as currency ID 2, and
+  beginner reward box 98 as exactly one Diamond.
+- Emberfield previously stored only Gold in `InventoryData`; item and Gold changes already used
+  one atomic transaction, save inventory contained `gold`, `slots` and `equipment`, and no
+  Diamond state existed.
+- The full beginner-chain reward migration therefore depends on a real Diamond wallet. Modeling
+  Diamond as an item would contradict the reference; placing it in `GameState` would split the
+  wallet and break mixed-reward atomicity.
+- Agent A's fixed-joystick feature is integrated and has no overlap with the gameplay wallet,
+  save service or tests. No open PR was present at feature start.
+- LAN accepts only `item`, `gold` and `xp` reward kinds, and the fixed HUD displays only Gold.
+  Both are explicit later contracts, not implied capabilities of the offline wallet.
+
 Date: 2026-11-04
 Branch/worktree: `feature/th-game-logic` at `e8fc3c7`
 Stage: SCOUT only; no gameplay implementation has started.

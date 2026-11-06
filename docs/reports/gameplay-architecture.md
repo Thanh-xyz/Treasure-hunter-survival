@@ -4,6 +4,23 @@ Status: approved as the incremental direction on 2026-11-04. The first implement
 adds atomic inventory transactions behind the existing APIs; broader service extraction is
 still deferred until reference parity and Agent A contracts are available.
 
+## Quest 310 / Snailu vertical slice
+
+- Stable gameplay ID `snailu` consumes `actor.monster.snailu.atlas`; legacy `shroom` remains a
+  separate save/LAN identity. The cached catalog supports explicit per-frame atlas coordinates so
+  the verified mixed-row `Idle_1` move key is represented without altering source pixels.
+- Snailu uses opt-in `reference_melee`. It measures the recovered 70px attack range from actor
+  centers, preserves the full 0.6666666865-second attack clip, applies one hit at the existing
+  provisional generic 0.4-second timing, and honors the inferred 1.0-second attack gate. Existing
+  melee/flyer/ranged/charger/stationary actors retain their prior defaults.
+- Content owns verified HP, damage, radii, cadence, collider, death duration and Gold range. Speed
+  and the single Green Zone camp are explicitly provisional adapters; XP and Card 161 are omitted
+  rather than invented.
+- Quest `q310` reuses the existing stable kill-event and retry-safe Box 98 claim paths. q308 now
+  advances to q310; q310 advances temporarily to q02 until q311 is independently approved.
+- Offline death rewards use the existing pickup spawner; LAN hosts use the existing authoritative
+  Gold spawn boundary. No transport or save schema changes are needed.
+
 ## Quest 308 state-objective activation
 
 - Quest `q308` reuses the existing pure `equipment_level` query with displayed level target `2`

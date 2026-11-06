@@ -3,6 +3,28 @@
 Date: 2026-11-04
 Status: startup/auth presentation integrated; broader asset registry remains proposed.
 
+## Quest 322 Craft Icon Asset Contract
+
+- Stable art ID `ui.reference.hud.icon.craft` maps to
+  `assets/treasure_hunter/ui/reference/icon_craft.png`, the exact local-only
+  `32x32` logical Craft texture with SHA-256
+  `45082300fbba749d96179d9ea0ac85c6a5627b55f0173b8bc5bed2351dacc1de`.
+- Source Sprite `Craft` path ID `5842` has centered pivot and `32 PPU`. Its
+  visible `28x30` pixels match addressable `Fire Camp` path ID
+  `22940246309438056` exactly.
+- This ID is metadata-only. It is not a world campfire ID, sprite/animation,
+  light or proximity shape, map placement, HUD state event, crafting command,
+  Quest 322 completion event, or Box 153 gameplay contract.
+- Agent B retains ownership of campfire proximity state, stable world/gameplay
+  IDs, quest completion, crafting authority, saves, and multiplayer behavior.
+  A future runtime consumer also requires direct capture evidence for icon size,
+  position, bag-to-craft transition, and campfire presentation.
+- Do not substitute `assets/blacksmith/fire_frames.png`; its provenance is
+  unknown and it is not verified against Treasure Hunter campfire art.
+- Executed validation covers exact source bytes/hash/canvas/alpha/bounds, zero
+  pixel difference for the visible Craft/Fire Camp sprites, manifest integrity,
+  lossless import, and successful Godot 4.6 loading at `32x32`.
+
 ## Quest 321 Merge Ingredient Visual And Ownership Contract
 
 - Quest `321` requires one ingredient merge after meeting Donx. Source config

@@ -4272,6 +4272,34 @@
         "Recovered PNG SHA-256: 782bc268ed49f4c832cf37b22db00caddf17fde2f846b789ed66f865413ab465.",
         "This is a metadata-only UI icon, not a world sprite, gameplay NPC ID, interaction contract, or Quest 320 implementation."
       ]
+    },
+    {
+      "asset_id": "ui.reference.hud.icon.craft",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/textures/sharedassets1.assets/Craft__538.png",
+      "target_path": "assets/treasure_hunter/ui/reference/icon_craft.png",
+      "file_format": "png",
+      "dimensions": [
+        32,
+        32
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_quest_dialog_sprite_metadata_and_pixel_match",
+      "integration_status": "selected",
+      "notes": [
+        "Quest.json ID 322 and Dialog.json ID 624 state that entering a campfire area reveals the crafting icon.",
+        "Unity Sprite path ID 5842 is named Craft, has an original 32x32 rect, centered pivot, 32 pixels per unit, and a visible 28x30 export.",
+        "Addressable Sprite path ID 22940246309438056 is named Fire Camp and has zero pixel difference from the visible Craft sprite export.",
+        "The selected full 32x32 logical canvas has SHA-256 45082300fbba749d96179d9ea0ac85c6a5627b55f0173b8bc5bed2351dacc1de and nontransparent bounding box 24x27+4+4.",
+        "This is a metadata-only HUD icon. It is not a world campfire asset, proximity trigger, HUD-state callback, crafting command, or Quest 322 implementation."
+      ]
     }
   ]
 }

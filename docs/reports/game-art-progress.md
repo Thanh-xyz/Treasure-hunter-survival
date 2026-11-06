@@ -1,8 +1,31 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: establish the evidence and ownership contract for Treasure
-Hunter Quest 321's Merge Ingredient presentation.
+Current feature: integrate the exact metadata-only craft HUD icon for Treasure
+Hunter Quest 322 without inventing the campfire world/proximity system.
+
+## Quest 322 Craft Icon Feature
+
+- Selected the exact `32x32` `Craft` logical texture and copied it byte-for-byte
+  to `assets/treasure_hunter/ui/reference/icon_craft.png`.
+- Added stable art ID `ui.reference.hud.icon.craft` with Quest 322/Dialog 624,
+  Sprite 5842, centered pivot, `32 PPU`, dimensions, alpha/bounds, hash, and
+  `local_only` provenance evidence.
+- Verified that the visible `28x30` Craft sprite and addressable `Fire Camp`
+  sprite have zero differing pixels. The full logical canvas remains the selected
+  contract so transparent margins and centered pivot are preserved.
+- The asset is additive and metadata-only. No world campfire, fire animation,
+  light/trigger/map placement, HUD consumer/state swap, crafting panel/API,
+  Quest 322 activation, Box 153 behavior, save/network state, or Agent B file
+  changed.
+- The existing blacksmith fire sheet is not reused because it has unknown
+  provenance and is not verified Treasure Hunter campfire evidence. Direct live
+  icon/world comparison remains unavailable, so runtime parity is not claimed.
+- Executed validation confirms source/target byte identity, SHA-256, `32x32`
+  dimensions, partial alpha/bounds, zero pixel difference for the reconstructed
+  `28x30` visible sprite against both Craft and Fire Camp exports, manifest
+  uniqueness/path/provenance, lossless import, Godot 4.6 texture loading, exact
+  six-file scope, and clean whitespace.
 
 ## Quest 321 Merge Ingredient Visual Contract
 

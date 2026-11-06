@@ -310,3 +310,15 @@ asset metadata.
 - Regression coverage locks the count, reward dictionary, exact Gold delta, absence of XP and
   normal progression to q02.
 - No quest ID, UI, asset, save field, LAN protocol or later quest definition changed.
+
+## 2026-11-06 — Reference equipment instance persistence
+
+- Branch: `feature/th-logic-equipment-instance-payload`, based on `origin/develop` at `d322c30`.
+- `ItemData` can carry a source card ID, stable art asset ID and exact decimal Health, Damage and
+  Speed payload on duplicated equipment instances without applying those values to gameplay.
+- Save schema version 3 round-trips the optional payload, migrates versions 0/1/2, rejects
+  malformed or non-equipment payloads and preserves catalog-template isolation.
+- Godot `4.6.stable.official.89cea1439` import, focused inventory transactions, legacy phases
+  1-7, survival/save tests and Xvfb live/dead MobileHUD rendering passed with exit code 0.
+- No item ID, quest, reward-box registration, combat formula, UI, LAN protocol, asset manifest or
+  Agent A-owned file changed. Box 149 and quest 305 remain unimplemented.

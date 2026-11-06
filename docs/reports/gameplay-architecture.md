@@ -248,3 +248,19 @@ domain wallet to transport or art.
   suites, HUD rendering and LAN harnesses pass, but CI remains the cross-platform release gate.
 - Reference server rules are absent; online parity cannot be claimed from XAPK evidence.
 - Source-derived art needs a distribution-rights decision before any public release.
+
+## Reference equipment instance payload
+
+`ItemData` now provides an optional per-instance evidence carrier separate from immutable
+catalog configuration. A materialized reference equipment instance can retain its positive
+source card ID, stable asset ID and exact `health`/`damage`/`speed` decimal values. Setters copy
+and normalize the payload so callers cannot mutate it through a retained dictionary reference.
+
+Save schema version 3 serializes this carrier only when it is complete and valid. Hydration
+duplicates the catalog resource even when enhancement level and augments are at their defaults,
+which prevents one rolled instance from mutating every item sharing the catalog template.
+Versions 0, 1 and 2 migrate additively because the new field is optional.
+
+The payload deliberately does not alter existing attack, health or movement calculations.
+Materialization ranges, RNG ownership, rarity effects, display rounding, reward commitment and
+LAN replication remain separate features requiring their own evidence and approval.

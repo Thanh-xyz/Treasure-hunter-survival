@@ -276,3 +276,17 @@ Replacing the current 15-quest clean-room chain is intentionally deferred. Saves
 Turtle (card 33) also lacks an approved canonical runtime monster mapping, while current
 placeholder IDs remain protected by the shared stable-ID decision. Agent A's active beginner
 quest HUD work is presentation-only in `mobile_hud.gd`; logic must not modify that file.
+
+## 2026-11-06 — Reference equipment instance evidence
+
+Decoded Treasure Hunter metadata confirms that cards 28, 29 and 30 are distinct Common weapon
+definitions with Health, Damage and Speed ranges. Authorized runtime inspection also shows
+multiple equipment instances using the same `Weapons_0` icon while carrying different decimal
+values, including Health `13.9`/`14.6`, Damage `29.8`/`29.2` and Speed `0.08` on Epic instances,
+plus Health `7.7` and Damage `26.3` on a Rare instance.
+
+This rules out representing a reference weapon solely as a catalog item ID. The minimum safe
+carrier is a duplicated equipment instance containing its source card ID, stable art asset ID
+and exact rolled stat payload. The observed values are preserved as evidence only: their random
+distribution, rarity transformation, rounding and contribution to Emberfield combat remain
+unknown and are not inferred by this feature.

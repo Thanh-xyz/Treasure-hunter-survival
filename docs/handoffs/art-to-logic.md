@@ -3,6 +3,28 @@
 Date: 2026-11-04
 Status: startup/auth presentation integrated; broader asset registry remains proposed.
 
+## Donx UI Asset Contract
+
+- Stable art ID `actor.npc.donx.portrait` maps to
+  `assets/treasure_hunter/npcs/donx/donx_portrait.png`; stable art ID
+  `actor.npc.donx.icon` maps to
+  `assets/treasure_hunter/npcs/donx/donx_icon.png`.
+- Both are exact local-only reconstructions on the verified original `256x256`
+  logical canvas. Their SHA-256 values are
+  `60343b9fc30f4d9e00388ae5d260af1a7f309bfdb534939a4b1c59f67542d5f6`
+  and `782bc268ed49f4c832cf37b22db00caddf17fde2f846b789ed66f865413ab465`.
+- These IDs are metadata-only UI identities. They are not gameplay NPC IDs and
+  must not be used for world rendering, collision, interaction, Quest 320
+  completion, or Quest 321 ingredient merging.
+- The world NPC remains the source composite `Donx Body` RoyalKnight hierarchy.
+  Runtime reconstruction requires separate direct-capture evidence and an
+  approved shared scene/gameplay contract.
+- No Agent B adaptation is required. Any future consumer should resolve the
+  stable art ID rather than hard-code the source atlas or target path.
+- Executed validation confirms source/output hashes, exact crop reconstruction,
+  dimensions/alpha/margins, manifest uniqueness and paths, lossless import, and
+  successful Godot 4.6 loading of both `256x256` textures.
+
 ## Quest 319 Ingredient Level 2 Visual And Ownership Contract
 
 - Quest `319` requires any ingredient to reach Level 2. Source config records

@@ -325,8 +325,24 @@ func _test_quests() -> void:
 	var q310_diamonds_before: int = _stub_player.inventory.diamonds
 	_check(QuestService.claim("q310"), "claim q310")
 	_check(_stub_player.inventory.diamonds == q310_diamonds_before + 1, "q310 did not grant exactly one Diamond")
-	_check(QuestService.get_main_quest()["id"] == "q02", "q310 did not advance to q02")
+	_check(QuestService.get_main_quest()["id"] == "q311", "q310 did not advance to q311")
+	_check(QuestService.main_progress == 0 and not QuestService.main_ready, "Common equipment completed q311")
 	_check(not QuestService.claim("q310") and _stub_player.inventory.diamonds == q310_diamonds_before + 1, "q310 granted twice")
+	_check(_stub_player.inventory.add_item(ItemDatabase.get_item_copy("fire_blade"), 1) == 0, "q311 Rare equipment setup failed")
+	var rare_weapon_index := -1
+	for i in range(_stub_player.inventory.inventory_slots.size()):
+		var slot_item: ItemData = _stub_player.inventory.get_item_at(i).item
+		if slot_item != null and slot_item.id == "fire_blade":
+			rare_weapon_index = i
+			break
+	_check(rare_weapon_index >= 0 and _stub_player.inventory.equip_item(rare_weapon_index), "q311 could not equip Rare equipment")
+	QuestService.refresh_state_objectives(_stub_player.inventory)
+	_check(QuestService.main_progress == 1 and QuestService.main_ready, "Rare equipment did not complete q311")
+	var q311_diamonds_before: int = _stub_player.inventory.diamonds
+	_check(QuestService.claim("q311"), "claim q311")
+	_check(_stub_player.inventory.diamonds == q311_diamonds_before + 1, "q311 did not grant exactly one Diamond")
+	_check(QuestService.get_main_quest()["id"] == "q02", "q311 did not advance to q02")
+	_check(not QuestService.claim("q311") and _stub_player.inventory.diamonds == q311_diamonds_before + 1, "q311 granted twice")
 	for i in range(8):
 		GameEvent.enemy_killed.emit("slime", Vector2.ZERO, false)
 	_check(QuestService.main_ready, "kill 8 slimes completes q02")
@@ -596,8 +612,10 @@ func _test_save_roundtrip() -> void:
 
 	QuestService.from_dict({"main_index": 0, "main_quest_id": "q04", "main_progress": 0, "main_ready": false})
 	_check(QuestService.main_index == GameContent.get_main_quest_index("q04"), "stable quest id takes precedence over stale index")
+	QuestService.from_dict({"main_index": 0, "main_quest_id": "q311", "main_progress": 0, "main_ready": false})
+	_check(QuestService.main_index == GameContent.get_main_quest_index("q311"), "stable q311 save did not restore by quest id")
 	QuestService.from_dict({"main_index": 2, "main_progress": 0, "main_ready": false})
-	_check(QuestService.main_index == 7, "legacy quest save did not shift across inserted q305-q310")
+	_check(QuestService.main_index == 8, "legacy quest save did not shift across inserted q305-q311")
 	QuestService.from_dict({"main_index": 1, "main_quest_id": "removed_quest", "main_progress": 0, "main_ready": false})
 	_check(QuestService.main_index == 1, "unknown stable quest id did not preserve explicit fallback index")
 

@@ -1,5 +1,54 @@
 # Logic Progress
 
+## 2026-11-06 — Quest 311 / Equip Rare Equipment
+
+- Inserted stable `q311` after q310 with exact Vietnamese copy, the existing normalized
+  Rare-or-better equipment-state objective, and Box 98's one Diamond. Q311 currently hands off to
+  q02 while q312 remains separately staged.
+- Legacy index-only saves predating q305-q311 now shift by six. Stable quest IDs, save schema,
+  pending-claim journal and LAN transport remain unchanged.
+- Focused Survival coverage exercises Common rejection, authoritative Rare equipment swap, current
+  state refresh, exact one-Diamond claim, duplicate prevention, q310 -> q311 -> q02 and legacy save
+  migration.
+- Card 161/Back_8, Snailu loot, new equipment slots/types, q312, art/UI source and rarity enums are
+  unchanged and explicitly excluded.
+
+### COOK preflight
+
+- Branch `feature/th-logic-quest311-equip-rare` from `origin/develop@b8ceb90`, including Agent A's
+  disjoint Quest 324 metadata-only icon catalog.
+- Godot `4.6.stable.official.89cea1439` headless editor import: exit `0`.
+- `git diff --check`: exit `0` before documentation updates.
+
+### Test evidence
+
+- Source Quest 311 jq assertion passes for type/equipment/rarity/count/reward/chain and exact
+  Vietnamese strings.
+- Godot `4.6.stable.official.89cea1439` headless editor import: exit `0`.
+- `InventoryTransactionTests.tscn`: exit `0`; existing equipment rarity/state and atomic reward
+  boundaries pass.
+- `SurvivalTests.tscn`: exit `0`; Common rejection, Rare equip, q310 -> q311 -> q02, one Diamond,
+  duplicate prevention and stable/legacy save assertions pass.
+- `LegacySystemTests.tscn`: exit `0`; phases 1-7 and its Survival/save runner pass. Expected
+  corrupt-save, invalid-snapshot, HUD and exit-resource warnings remain fixture/harness noise.
+- `RenderGameMenu.tscn`: exit `0`; four `360x800` states render without clipping or blank rewards
+  on manual inspection. `RenderInventoryRarity.tscn`: exit `0`; exact equipment rarity fields and
+  non-equipment fallback verify successfully. These are regressions, not direct q311 parity proof.
+- Exact seven-file scope and `git diff --check` pass. LAN is not run because no network, combat,
+  authority interface or snapshot schema changed.
+- TEST initially exposed one GDScript type-inference error in the new fixture. Explicit `ItemData`
+  typing fixed it, and all affected gates were rerun successfully.
+
+### Review evidence
+
+- REVIEW found no high/medium issue. One low coverage gap was corrected: stable-ID restoration had
+  only exercised an older quest ID, so the save suite now restores `q311` directly from a stale
+  index. Standalone Survival, Legacy phases 1-7 plus save runner and `git diff --check` pass again.
+- The final diff remains the exact seven planned files. No Agent A-owned file, art/presentation
+  contract, gameplay ID outside q311, save schema or LAN interface changed.
+- Residual unknowns remain explicit: live exact-only versus Rare-or-better semantics and the
+  intended Card 161/Back_8 acquisition path cannot be confirmed at the server-selection gate.
+
 ## 2026-11-06 — Quest 310 / Defeat Snailu
 
 - Added stable `snailu` without changing legacy `shroom`: Card 34, 200 HP, 30 damage, 70px attack

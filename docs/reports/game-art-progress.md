@@ -1,7 +1,7 @@
 # Game Art Progress
 
-Date: 2026-11-05
-Current feature: remove unsupported fixed-HUD XP bar.
+Date: 2026-11-06
+Current feature: match the active Treasure Hunter fixed joystick visuals.
 
 ## Completed Before This Feature
 
@@ -169,12 +169,24 @@ Current feature: remove unsupported fixed-HUD XP bar.
 - Later main quests intentionally show no icon until their source mappings are
   verified. This avoids presenting Grass5 as an unsupported generic quest icon.
 
+## Fixed Joystick Visual Feature
+
+- Corrected the earlier `Icon_Joystick` mapping using stronger active-scene
+  pointer evidence.
+- Replaced the movement background with exact `F200_Circle_10` and the
+  procedural circle/arc thumb with exact `F200_Circle_11`.
+- Preserved the existing touch region, floating center, input radius, dead zone,
+  input action strengths, action IDs, opacity setting, and release behavior.
+- Scaled the verified `256:128` Unity background/handle ratio into the existing
+  HUD placement and constrained only the visual handle offset to its available
+  travel range.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
-- Verified 108 assets, 108 unique asset IDs, and 108 unique target paths.
+- Verified 109 assets, 109 unique asset IDs, and 109 unique target paths.
 - Verified every non-null source and target path exists.
-- Verified all 48 supplied Treasure Hunter entries use
+- Verified all 49 supplied Treasure Hunter entries use
   `distribution_scope: local_only`.
 - Verified all 41 curated UI reference targets match their recorded sources
   bit-for-bit and have the manifest dimensions.
@@ -233,6 +245,15 @@ Current feature: remove unsupported fixed-HUD XP bar.
 - Verified the integrated quest assets as `21x17`, `38x39`, and `77x116` RGBA
   PNGs. Recorded SHA-256 hashes match the directly decoded/copied files in the
   manifest; all three remain `local_only`.
+- Godot 4.6 imported the corrected `79x79` joystick background and new `34x34`
+  handle without script or resource errors.
+- Inventory transaction, legacy, and survival suites completed with exit code
+  `0`; startup and live/dead HUD render gates also completed with exit code `0`.
+- Direct HUD inspection confirms the decoded brown-tinted four-arrow background
+  and exact circular handle replace the pale layout icon and procedural thumb at
+  the existing movement-control location.
+- Both joystick targets match their supplied exports bit-for-bit and their
+  manifest hashes; provenance remains `local_only`.
 
 ## Not Yet Implemented
 

@@ -126,10 +126,13 @@ comparison verified that `Login_Tab_0__6356.png` is the yellow active state and
 `Login_Tab_1__6566.png` is the gray inactive state; stable target names and manifest
 source mappings now reflect the observed appearance.
 
-HUD render comparison also separated two misleading joystick sources:
-`Joystick_1__6234.png` is the orange gamepad-style button, while
-`Icon_Joystick__5652.png` is the circular directional ring seen around the live
-movement thumb. The runtime uses only the verified ring for movement presentation.
+HUD render comparison initially separated two misleading joystick sources:
+`Joystick_1__6234.png` is the orange gamepad-style button and
+`Icon_Joystick__5652.png` is the help/custom-layout joystick icon. Subsequent
+scene-pointer decoding proved that neither is the active movement control. The
+active `Fixed Joystick` uses `F200_Circle_10` as its `256x256` background and
+`F200_Circle_11` as its centered `128x128` Handle; both are now rendered by the
+runtime movement control.
 
 The top-right collapse control uses `Icon_Arrow__5990.png`. The four-direction
 `Button_MinimizeMode 2__6229.png` candidate was rejected because its silhouette

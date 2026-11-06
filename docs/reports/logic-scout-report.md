@@ -1,5 +1,22 @@
 # Logic Scout Report
 
+## 2026-11-06 — Treasure Hunter `RandomType` semantics
+
+- The authorized `global-metadata.dat` is valid Unity 6 IL2CPP metadata version 108. Direct
+  metadata decoding identifies `MCP.DataModels.BaseModels.RandomType` with enum fields
+  `Option = 0` and `CheckBox = 1`; the relevant server methods are owned by `BattleManager`:
+  `GetItemPacksFromBox`, `GetItemPackFromRandomPacks`, `GetValidRandomPacks`,
+  `GetRandomPacks`, and `GetAllPossibleRandomPacks`.
+- `Box.json` contains 634 Option boxes and 201 CheckBox boxes. CheckBox entries use only whole
+  chances 50 or 100 in the inspected data, while Option entries are relative weighted choices
+  and may use fractional weights.
+- Box 149 is Option with weapon cards 28/29/30 at 34/33/33, confirming exactly one result.
+  Box 153 is CheckBox with card 66 x2 and card 69 x2, both at 100, confirming both results are
+  granted independently rather than selecting one.
+- The next safe implementation slice is a mutation-free CheckBox resolver with injected RNG,
+  validation-before-roll and additive reward merging. Registering Box 153 remains deferred until
+  Stone_3 and Stone_6 have canonical gameplay and asset identities.
+
 ## 2026-11-06 — Verified currency reward-box catalog
 
 - The beginner chain is strictly ordered from active quest 335 to quest 305 and then Turtle quest

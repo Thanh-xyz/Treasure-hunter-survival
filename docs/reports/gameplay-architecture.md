@@ -55,6 +55,14 @@ entries so consumers cannot mutate canonical data. Randomized quest boxes must b
 persisted before `GameState.grant()` retries; otherwise a full inventory could be used to reroll a
 reward. Until that boundary exists, the active quest definitions keep their direct rewards.
 
+Treasure Hunter's source enum separates `Option = 0` from `CheckBox = 1`. Option boxes resolve one
+relative-weight entry through `resolve()`/`resolve_roll()`. CheckBox boxes evaluate every entry
+independently through `resolve_checkbox()`/`resolve_checkbox_rolls()` and merge successful
+currency/item quantities into one normalized payload. Both modes validate the complete definition
+before consuming caller-owned RNG; neither mode grants or persists the outcome. This preserves the
+same offline/host-authoritative boundary and keeps retry-safe materialization as an application/save
+responsibility.
+
 ## Domain model proposal
 
 Use typed Resources/RefCounted value objects where Godot supports them, with dictionaries only

@@ -4,6 +4,7 @@ extends Node
 ## Use this to get item data by ID
 
 var items: Dictionary = {}
+var _reference_items: Dictionary = {}
 
 ## Path to the item icons sprite sheet
 const ICON_SHEET_PATH := "res://assets/items/item_icons.png"
@@ -110,6 +111,32 @@ func _create_weapons() -> void:
 		"type": ItemData.ItemType.WEAPON, "price": 180, "attack": 20,
 		"icon_name": "hunting_bow"
 	})
+	_create_reference_weapons()
+
+
+func _create_reference_weapons() -> void:
+	for card_id: int in ReferenceEquipmentCatalog.get_card_ids():
+		var definition := ReferenceEquipmentCatalog.get_definition(card_id)
+		var runtime_item_id := str(definition["runtime_item_id"])
+		_reference_items[runtime_item_id] = ItemHelper.create_item({
+			"id": runtime_item_id,
+			"name": str(definition["source_name"]),
+			"description": "",
+			"type": ItemData.ItemType.WEAPON,
+			"rarity": ItemData.ItemRarity.COMMON,
+			"price": 10,
+			"sell_price": 0,
+			"attack": 0,
+			"health": 0,
+			"speed": 0.0,
+			# Source upgrade metadata remains in ReferenceEquipmentCatalog. Runtime
+			# upgrade stays disabled until reference stats participate in the rule.
+			"can_upgrade": false,
+			"upgrade_base_cost": 0,
+			"upgrade_cost_rate": 1.0,
+			"max_upgrade_level": 1,
+			"use_atlas": false,
+		})
 
 
 func _create_armor() -> void:
@@ -582,6 +609,8 @@ func _create_survival_items() -> void:
 func get_item(item_id: String) -> ItemData:
 	if items.has(item_id):
 		return items[item_id]
+	if _reference_items.has(item_id):
+		return _reference_items[item_id]
 	return null
 
 

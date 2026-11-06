@@ -353,6 +353,9 @@ func _validate_item_entry(entry: Dictionary, equipment_slot: String = "") -> boo
 	var reference: Variant = entry.get("reference", {})
 	if not reference is Dictionary:
 		return false
+	var reference_card_id := ReferenceEquipmentCatalog.get_card_id_for_runtime_item(item.id)
+	if reference_card_id > 0 and reference.is_empty():
+		return false
 	if not reference.is_empty():
 		if not item.is_equippable():
 			return false
@@ -361,6 +364,17 @@ func _validate_item_entry(entry: Dictionary, equipment_slot: String = "") -> boo
 		if not reference.get("asset_id") is String or str(reference.get("asset_id", "")).is_empty():
 			return false
 		if not reference.get("stats") is Dictionary or not ItemData.is_valid_reference_stats(reference.get("stats", {})):
+			return false
+		var source_card_id := int(reference.get("card_id", -1))
+		if reference_card_id > 0:
+			if not ReferenceEquipmentCatalog.is_valid_instance_data(
+				item.id,
+				source_card_id,
+				str(reference.get("asset_id", "")),
+				reference.get("stats", {})
+			):
+				return false
+		elif ReferenceEquipmentCatalog.has_card(source_card_id):
 			return false
 	var augments: Variant = entry.get("augments", [])
 	if not augments is Array or augments.size() > item.get_augment_slot_count():

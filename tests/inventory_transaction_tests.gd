@@ -28,6 +28,7 @@ func _ready() -> void:
 	_test_reward_box_resolver()
 	_test_reward_box_checkbox_resolver()
 	_test_reward_box_catalog()
+	_test_reference_equipment_catalog()
 	_test_crafting_transaction()
 	_test_quest_claim_transaction()
 	_test_building_collection_transaction()
@@ -256,6 +257,74 @@ func _test_reward_box_catalog() -> void:
 	var missing_rng := RandomNumberGenerator.new()
 	missing_rng.seed = 149
 	_check(RewardBoxCatalog.resolve(149, missing_rng).is_empty(), "unknown reward box resolved a reward")
+
+
+func _test_reference_equipment_catalog() -> void:
+	var expected := {
+		28: {"runtime_item_id": "th_weapon_28", "source_name": "Weapons_0", "asset_id": "item.weapon.card_28.icon", "can_upgrade": true, "upgrade_base_cost": 10, "upgrade_rate": 1.4},
+		29: {"runtime_item_id": "th_weapon_29", "source_name": "Weapons_1", "asset_id": "item.weapon.card_29.icon", "can_upgrade": true, "upgrade_base_cost": 10, "upgrade_rate": 1.4},
+		30: {"runtime_item_id": "th_weapon_30", "source_name": "Weapons_2", "asset_id": "item.weapon.card_30.icon", "can_upgrade": true, "upgrade_base_cost": 10, "upgrade_rate": 1.4},
+	}
+	_check(ReferenceEquipmentCatalog.get_card_ids() == [28, 29, 30], "reference weapon card IDs drifted")
+	for card_id: int in expected:
+		var definition := ReferenceEquipmentCatalog.get_definition(card_id)
+		for key: String in expected[card_id]:
+			_check(definition.get(key) == expected[card_id][key], "reference weapon %d %s drifted" % [card_id, key])
+		var template := ItemDatabase.get_item(str(expected[card_id]["runtime_item_id"]))
+		_check(template != null and template.item_type == ItemData.ItemType.WEAPON, "reference weapon %d template is missing" % card_id)
+		_check(not ItemDatabase.items.has(str(expected[card_id]["runtime_item_id"])), "reference weapon %d leaked into public shop items" % card_id)
+		_check(template != null and template.rarity == ItemData.ItemRarity.COMMON, "reference weapon %d rarity drifted" % card_id)
+		_check(template != null and not template.can_upgrade and template.max_upgrade_level == 1, "reference weapon %d exposed incomplete runtime upgrades" % card_id)
+		_check(template != null and not template.has_reference_instance_data(), "reference weapon %d polluted its catalog template" % card_id)
+
+	var rolled_stats := {"health": 13.9, "damage": 29.8, "speed": 0.08}
+	var first := ReferenceEquipmentCatalog.materialize(28, rolled_stats)
+	var second := ReferenceEquipmentCatalog.materialize(28, rolled_stats)
+	_check(first != null and first.id == "th_weapon_28", "card 28 did not materialize its runtime identity")
+	_check(first != null and first.source_card_id == 28 and first.source_asset_id == "item.weapon.card_28.icon", "card 28 lost source identity")
+	_check(first != null and first.get_reference_stats() == rolled_stats, "card 28 exact stats changed during materialization")
+	_check(first != null and second != null and first != second, "reference weapon materialization reused an instance")
+	rolled_stats["damage"] = 49.0
+	_check(first != null and is_equal_approx(float(first.get_reference_stats().get("damage", 0.0)), 29.8), "materialized stats retained caller state")
+	var inventory := InventoryData.new()
+	_check(first != null and inventory.add_item(first, 1) == 0, "materialized reference weapon did not enter inventory")
+	var restored_inventory := InventoryData.new()
+	_check(SaveService.deserialize_inventory(restored_inventory, SaveService.serialize_inventory(inventory)), "materialized reference weapon did not survive save hydration")
+	var restored := restored_inventory.get_item_at(0).get("item") as ItemData
+	_check(restored != null and restored.id == "th_weapon_28" and restored.get_reference_stats() == first.get_reference_stats(), "materialized reference weapon changed during save hydration")
+	var upgrade_inventory := InventoryData.new()
+	var upgrade_candidate := ReferenceEquipmentCatalog.materialize(28, {"health": 13.9, "damage": 29.8, "speed": 0.08})
+	_check(upgrade_candidate != null and upgrade_inventory.add_item(upgrade_candidate, 1) == 0, "reference upgrade rejection setup failed")
+	_check(upgrade_inventory.equip_item(0), "reference upgrade rejection could not equip weapon")
+	upgrade_inventory.gold = 100
+	var upgrade_signals := {"gold": 0, "equipment": 0, "upgraded": 0}
+	upgrade_inventory.gold_changed.connect(func(_amount: int) -> void: upgrade_signals["gold"] += 1)
+	upgrade_inventory.equipment_changed.connect(func(_slot: String) -> void: upgrade_signals["equipment"] += 1)
+	upgrade_inventory.equipment_upgraded.connect(func(_slot: String, _id: String, _level: int, _cost: int) -> void: upgrade_signals["upgraded"] += 1)
+	_check(not upgrade_inventory.upgrade_equipment("weapon"), "reference weapon exposed an incomplete runtime upgrade")
+	_check(upgrade_inventory.gold == 100 and upgrade_inventory.get_equipped("weapon").enhancement_level == 1, "rejected reference upgrade changed state")
+	_check(upgrade_signals == {"gold": 0, "equipment": 0, "upgraded": 0}, "rejected reference upgrade emitted changes")
+
+	_check(ReferenceEquipmentCatalog.materialize(28, {"health": 2, "damage": 5, "speed": 0.05}) != null, "card 28 rejected inclusive minimums")
+	_check(ReferenceEquipmentCatalog.materialize(28, {"health": 20, "damage": 50, "speed": 0.1}) != null, "card 28 rejected inclusive maximums")
+	_check(ReferenceEquipmentCatalog.materialize(29, {"health": 20, "damage": 3, "speed": 0.05}) != null, "card 29 exact payload was rejected")
+	_check(ReferenceEquipmentCatalog.materialize(30, {"health": 20, "damage": 35, "speed": 2.0}) != null, "card 30 exact payload was rejected")
+	var invalid_payloads: Array[Dictionary] = [
+		{"health": 1.9, "damage": 5, "speed": 0.05},
+		{"health": 20.1, "damage": 5, "speed": 0.05},
+		{"health": 2, "damage": 4.9, "speed": 0.05},
+		{"health": 2, "damage": 50.1, "speed": 0.05},
+		{"health": 2, "damage": 5, "speed": 0.049},
+		{"health": 2, "damage": 5, "speed": 0.101},
+		{"health": 2, "damage": 5},
+		{"health": 2, "damage": 5, "speed": 0.05, "defense": 1},
+	]
+	for payload: Dictionary in invalid_payloads:
+		_check(ReferenceEquipmentCatalog.materialize(28, payload) == null, "card 28 accepted invalid payload: %s" % str(payload))
+	_check(ReferenceEquipmentCatalog.materialize(999, {"health": 2, "damage": 5, "speed": 0.05}) == null, "unknown reference card materialized")
+	var mutable_definition := ReferenceEquipmentCatalog.get_definition(28)
+	mutable_definition["runtime_item_id"] = "changed"
+	_check(ReferenceEquipmentCatalog.get_runtime_item_id(28) == "th_weapon_28", "reference catalog exposed mutable state")
 
 
 func _test_economy_transaction() -> void:

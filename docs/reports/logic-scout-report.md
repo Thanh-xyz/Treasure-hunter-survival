@@ -191,3 +191,24 @@ working vertical slice, characterize it with executable tests, freeze cross-agen
 extract deterministic domain rules behind the existing Godot-facing APIs. Reference data
 should enter through reviewed adapters and an evidence ledger, with every value labelled
 confirmed, inferred or provisional.
+
+## 2026-11-06 — Beginner quest equipment-objective scout
+
+The authorized `Quest.json` confirms the early chain `305 -> 306 -> 307 -> 308 -> 310 ->
+311 -> 312 -> 313 -> 314 -> 315`. Within that sequence, quest type `30` checks equipped item
+count/rarity and type `39` checks the current count of equipment at a required level. The
+Vietnamese descriptions explicitly require three equipped items, one Rare item, one Epic item,
+one item at displayed levels 2 and 5, and three items at displayed level 3. The raw
+`levelRequire` values are zero-based relative to the displayed descriptions.
+
+Current `QuestService` supports event objectives and profile-state objectives, but it has no
+equipped-count, equipped-rarity or equipment-level evaluator. `InventoryData` already owns the
+seven equipped slots and an equipment-level query, while `Player` already observes every
+successful equipment mutation. This makes a state-query adapter the smallest compatible slice;
+counting upgrade clicks would contradict the reference evidence.
+
+Replacing the current 15-quest clean-room chain is intentionally deferred. Saves persist
+`main_index`, so insertion/reordering changes the meaning of existing progress. The reference
+Turtle (card 33) also lacks an approved canonical runtime monster mapping, while current
+placeholder IDs remain protected by the shared stable-ID decision. Agent A's active beginner
+quest HUD work is presentation-only in `mobile_hud.gd`; logic must not modify that file.

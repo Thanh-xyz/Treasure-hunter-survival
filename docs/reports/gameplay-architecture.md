@@ -173,6 +173,24 @@ state-based upgrade quests. The current Emberfield item IDs have no approved one
 mapping, so default cost/rate values and the isolated 1.1 stat multiplier remain explicitly
 provisional until stronger runtime/server evidence is available.
 
+## Equipment quest objective boundary
+
+Equipment objectives are evaluated from current authoritative inventory state, never from UI
+click counts. `InventoryData` exposes read-only aggregate queries for equipped count, minimum
+rarity and displayed enhancement level. `QuestService` converts an objective definition into a
+current value, and the live `Player` adapter requests a refresh after `equipment_changed`.
+
+The objective vocabulary is:
+
+- `equipped_count`: number of occupied equipment slots.
+- `equipped_rarity`: number of equipped items at or above an Emberfield `ItemRarity` target.
+- `equipment_level`: number of equipped items at or above a displayed level target.
+
+Reference raw enums must be normalized before entering this vocabulary: `rareRequire` does not
+directly equal Emberfield's rarity enum, and `levelRequire` is one lower than the displayed
+level in the verified beginner quests. This boundary is transport-independent and can later be
+reused by a host-authoritative quest snapshot without coupling quest rules to LAN RPCs.
+
 ## Key risks
 
 - `player.gd` and `LanSession` are large cross-layer files, so broad refactors would create

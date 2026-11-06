@@ -1,8 +1,26 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: recreate the Treasure Hunter equipped-item detail panel for
-quest 315 presentation.
+Current feature: establish the exact Treasure Hunter Stone_3 Damage ingredient
+identity for quest 316.
+
+## Stone_3 Damage Ingredient Feature
+
+- Selected the exact `29x32` addressable Stone_3 sprite for source card `66`
+  and copied it byte-for-byte to
+  `assets/treasure_hunter/items/ingredients/card_66_stone_3.png`.
+- Added stable art ID `item.ingredient.card_66.icon` with Quest 316, Card 66,
+  Box 452-455, source CAB/path ID, alpha, dimensions, SHA-256, and `local_only`
+  provenance evidence.
+- The asset remains additive with no runtime consumer. No gameplay item alias,
+  Quest 316 activation, digging/drop rule, rarity generation, stat formula,
+  upgrade economy, save field, or Box 153 registration is implied.
+- Exact Unity pivot/PPU and direct live item/quest presentation remain unknown;
+  the current integration claims source identity only, not pixel parity in a
+  rendered screen.
+- Byte/hash/dimension/alpha checks, manifest JSON uniqueness/path gates, Godot
+  4.6 import, Inventory Transaction, Legacy, Survival/save, and
+  `git diff --check` pass. Existing fixture/cleanup warnings remain unchanged.
 
 ## Equipment Detail Panel Feature
 

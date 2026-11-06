@@ -1,8 +1,27 @@
 # Agent A Art Scout Report
 
-Date: 2026-11-04
+Date: 2026-11-04; updated 2026-11-06
 Branch/worktree: `feature/th-game-art-workflow` in the Agent A worktree
 Stage: SCOUT complete; no project implementation occurred during SCOUT.
+
+## Quest 316 Damage Ingredient Evidence
+
+- Source quest `316` is a disabled beginner-chain objective after `315` and
+  before `317`. It requires one stat-type-1 Damage ingredient and awards Box
+  `98`; Vietnamese text is `Đào đá Damage` / `Nguyên liệu rơi ngẫu nhiên khi
+  đào ô`.
+- Card `66` is `Stone_3`, an upgradeable rarity-colored ingredient whose source
+  description is `Add damage to your equipment`; its Vietnamese description is
+  `Thêm Tấn Công cho trang bị của bạn`. Boxes `452`-`455` bind the same card to
+  the four source rarities.
+- The selected exact addressable sprite is `29x32`, transparent/partial alpha,
+  and SHA-256
+  `49e02811b700b5a5c42771d73683852273bbf4d7a458535ea87c31b05ede4a2d`.
+  Pivot, pixels per unit, live scale, rarity frame, drop behavior, and runtime
+  quest presentation remain unknown.
+- ADB confirmed the authorized Treasure Hunter 4.3.7 process, but Samsung Game
+  Booster touch lock covered the game during this SCOUT. No live Quest 316
+  capture or account-changing action occurred.
 
 ## Architecture
 

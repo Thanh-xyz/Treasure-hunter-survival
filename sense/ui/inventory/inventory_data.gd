@@ -21,6 +21,7 @@ extends Resource
 
 signal inventory_changed
 signal equipment_changed(slot_type: String)
+signal equipment_upgraded(slot_type: String, item_id: String, level: int, cost: int)
 signal augments_changed(equip_slot: String)
 signal gold_changed(amount: int)
 
@@ -480,13 +481,50 @@ func get_equipped(slot_type: String) -> ItemData:
 		_: return null
 
 
+## Upgrade one equipped item level as a single economy/equipment transaction.
+## The caller supplies only a stable slot ID; cost and growth come from ItemData.
+func upgrade_equipment(slot_type: String) -> bool:
+	if not EQUIPMENT_SLOTS.has(slot_type):
+		return false
+	var equipment := get_equipped(slot_type)
+	if equipment == null or not equipment.can_upgrade_further():
+		return false
+	var cost := equipment.get_upgrade_cost()
+	if cost <= 0 or gold < cost:
+		return false
+
+	var upgraded := equipment.duplicate() as ItemData
+	if upgraded == null:
+		return false
+	upgraded.applied_augments = equipment.applied_augments.duplicate()
+	upgraded.enhancement_level = equipment.enhancement_level + 1
+
+	# Commit the item first so every gold/equipment observer sees final state.
+	_set_equipped(slot_type, upgraded)
+	gold = gold - cost
+	equipment_changed.emit(slot_type)
+	equipment_upgraded.emit(slot_type, upgraded.id, upgraded.enhancement_level, cost)
+	return true
+
+
+func count_equipment_at_or_above_level(minimum_level: int) -> int:
+	if minimum_level < 1:
+		return 0
+	var count := 0
+	for item: ItemData in [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
+			 equipped_shield, equipped_accessory_1, equipped_accessory_2]:
+		if item != null and item.enhancement_level >= minimum_level:
+			count += 1
+	return count
+
+
 ## Calculate total equipment bonuses (includes augment stat contributions)
 func get_total_attack_bonus() -> int:
 	var total := 0
 	for item: ItemData in [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
 				 equipped_shield, equipped_accessory_1, equipped_accessory_2]:
 		if item != null:
-			total += item.attack_bonus
+			total += item.get_scaled_attack_bonus()
 			total += _get_augment_stat_sum(item, "attack_bonus")
 	return total
 
@@ -496,7 +534,7 @@ func get_total_defense_bonus() -> int:
 	for item: ItemData in [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
 				 equipped_shield, equipped_accessory_1, equipped_accessory_2]:
 		if item != null:
-			total += item.defense_bonus
+			total += item.get_scaled_defense_bonus()
 			total += _get_augment_stat_sum(item, "defense_bonus")
 	return total
 
@@ -506,7 +544,7 @@ func get_total_health_bonus() -> int:
 	for item: ItemData in [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
 				 equipped_shield, equipped_accessory_1, equipped_accessory_2]:
 		if item != null:
-			total += item.health_bonus
+			total += item.get_scaled_health_bonus()
 			total += _get_augment_stat_sum(item, "health_bonus")
 	return total
 
@@ -516,7 +554,7 @@ func get_total_speed_bonus() -> float:
 	for item: ItemData in [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
 				 equipped_shield, equipped_accessory_1, equipped_accessory_2]:
 		if item != null:
-			total += item.speed_bonus
+			total += item.get_scaled_speed_bonus()
 			total += _get_augment_stat_sum_float(item, "speed_bonus")
 	return total
 
@@ -612,6 +650,7 @@ func apply_augment(equip_slot: String, augment_inventory_index: int) -> bool:
 		return false
 	var updated_equipment := equipment.duplicate() as ItemData
 	updated_equipment.applied_augments = equipment.applied_augments.duplicate()
+	updated_equipment.enhancement_level = equipment.enhancement_level
 	updated_equipment.applied_augments.append(augment_slot.item.id)
 	inventory_slots = simulated
 	_set_equipped(equip_slot, updated_equipment)
@@ -641,6 +680,7 @@ func remove_augment(equip_slot: String, augment_index: int) -> bool:
 		return false
 	var updated_equipment := equipment.duplicate() as ItemData
 	updated_equipment.applied_augments = equipment.applied_augments.duplicate()
+	updated_equipment.enhancement_level = equipment.enhancement_level
 	updated_equipment.applied_augments.remove_at(augment_index)
 	inventory_slots = simulated
 	_set_equipped(equip_slot, updated_equipment)

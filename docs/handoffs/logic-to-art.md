@@ -233,3 +233,21 @@ No shared contract change should be implemented until these questions are resolv
   gameplay outcomes independently. The current damage-number presentation remains unchanged.
 - Reference evidence confirms Critical, Critical Bonus and LifeSteal are distinct. Critical
   Bonus visual/gameplay behavior is not implemented because its exact formula is unknown.
+
+## 2026-11-05 — Equipment enhancement runtime contract
+
+- Equipped item instances expose `enhancement_level` (displayed 1-10),
+  `max_upgrade_level`, `can_upgrade_further()` and `get_upgrade_cost()`.
+- UI invokes `InventoryData.upgrade_equipment(slot_type)` with one of the existing stable slot
+  IDs. It must not submit a client-computed cost or stat value.
+- Successful upgrades emit both `InventoryData.equipment_upgraded` and forwarded
+  `GameEvent.equipment_upgraded(slot_type, item_id, level, cost)` after the upgraded item and
+  final gold balance are visible. Failed commands emit no upgrade/equipment/gold change.
+- Existing tooltip text now reports level and scaled stats. No asset, scene layout, animation,
+  direction or item/equipment-slot ID changed.
+- Agent A may bind the verified Treasure Hunter equipment-detail Upgrade action to this command
+  and event. Exact reference visuals and any upgrade effect remain Agent A-owned; gameplay must
+  continue to use stable IDs rather than hard-coded asset paths.
+- Current default cost/rate/stat growth is explicitly provisional pending exact card-ID mapping.
+  Presentation should display values returned by gameplay and must not imply confirmed numeric
+  parity with the original server.

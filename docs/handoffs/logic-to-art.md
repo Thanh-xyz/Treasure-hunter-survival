@@ -1,5 +1,17 @@
 # Logic-to-Art Contract Proposal
 
+## 2026-11-06 — Quest 311 / Equip Rare Equipment
+
+- Gameplay exposes q311 through the unchanged generic quest contract with Vietnamese
+  `Mặc trang bị Rare`, progress `0/1` through `1/1`, and reward preview `1 Kim cương`.
+- Progress is authoritative current state: one equipped item at Emberfield Rare or higher. UI must
+  read `QuestService`; it must not compare source raw integer `1`, count equip clicks, or implement
+  an exact-item requirement.
+- Agent A's existing rarity-field colors and generic quest menu are sufficient. No asset ID, color,
+  equipment slot, animation, layout or callback changed, and Quest 324 icons remain unrelated.
+- Card 161/`Back_8` and a back-slot presentation are not materialized. They require a separately
+  approved shared art/item/save/UI contract before any future Snailu loot integration.
+
 ## 2026-11-06 — Quest 310 / Snailu
 
 - Gameplay ID `snailu` now consumes stable local-only art ID `actor.monster.snailu.atlas` through

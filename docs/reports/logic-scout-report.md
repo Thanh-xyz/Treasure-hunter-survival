@@ -1,5 +1,29 @@
 # Logic Scout Report
 
+## 2026-11-06 — Quest 311 / Equip Rare Equipment
+
+- Authorized Quest `311` follows `310` and precedes `312`. It is type `30`, requires one equipped
+  item with raw `rareRequire: 1`, awards Box `98`, and uses Vietnamese `Mặc trang bị Rare` /
+  `Độ hiếm của vật phẩm được xác định bằng màu sắc`.
+- The recovered beginner chain and q314 establish raw rarity order Common `0`, Rare `1`, Epic `2`.
+  Emberfield deliberately retains its additional Uncommon tier, so q311 must normalize to
+  `ItemData.ItemRarity.RARE` rather than copying raw integer `1`.
+- Existing `InventoryData.count_equipment_at_or_above_rarity()` and QuestService
+  `equipped_rarity` evaluate authoritative current equipment state. They already reject invalid
+  targets and count Rare-or-better equipment; no event counter or UI-derived progress is needed.
+- Box `98` is already a retry-safe one-Diamond authority. The generic quest menu and Agent A's
+  integrated Common/Rare/Epic/Legendary field colors already present the required state without a
+  new asset or callback.
+- Source Snailu Card `34` drops Rare Card `161` (`Back_8`), which naturally feeds this tutorial, but
+  Emberfield has no back equipment type/slot/save/UI contract and no Agent A stable Back_8 art ID.
+  Q311 itself accepts any Rare item, and the existing Rare `fire_blade` is sufficient for a focused
+  quest slice; Card 161 remains separately gated.
+- Public wiki data conflicts with the authorized local Card config for Snailu loot, indicating
+  version drift. Local config remains the source of truth. ADB is still blocked at server selection,
+  so exact live completion timing and whether higher tiers qualify remain unobserved.
+- Agent A's Quest 324 Elixir catalog is metadata-only and disjoint. Shared runtime edits for q311
+  are limited to the quest row and legacy index migration.
+
 ## 2026-11-06 — Quest 310 / Defeat Snailu
 
 - Source Quest `310` follows `308` directly because `309` is empty/disabled. It uses

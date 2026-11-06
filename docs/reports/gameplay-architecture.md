@@ -332,3 +332,20 @@ journaling and grant, so retries never reroll either the card or its stats.
 This prevents callers from resolving Box 149 through the ordinary reward API before an exact stat
 authority exists, while preserving the source `34/33/33` selection evidence for offline and later
 host-authoritative consumers.
+
+## Box 149 Common stat authority
+
+`ReferenceEquipmentStatGenerator` implements only the verified initial Common path for cards
+28/29/30. It accepts a caller-owned `RandomNumberGenerator`, preserving deterministic offline
+replay and future host authority while retaining the reference draw order and exact integer
+domains. A separate replay API validates a recorded draw sequence before creating any payload.
+
+The adaptation intentionally does not recreate the reference client's multiple time-seeded
+`System.Random` instances because their timing correlations are neither stable nor suitable for
+save recovery or LAN authority. The gameplay contract is the verified draw domain/order and the
+committed result, not wall-clock seeding behavior.
+
+Suppressed stats remain present as `0.0`. Catalog validation requires all three keys, at least one
+non-zero stat, and source-range validity for each non-zero value. The canonical reward and pending
+claim therefore retain the exact generated dictionary, so capacity failures and restarts retry the
+same equipment instead of consuming RNG again.

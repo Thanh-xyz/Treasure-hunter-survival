@@ -1,5 +1,21 @@
 # Logic Scout Report
 
+## 2026-11-06 — Box 149 initial Common stat generator
+
+- Authorized 4.3.6 ARM64 IL2CPP analysis verifies the real Option-claim path calls the normal
+  Common constructor with `isAllStat=false`; the preview-only all-stat path is not used.
+- The outer `Next(0, 1000)` suppresses two independently drawn stat indices for `0..499`, one
+  for `500..899`, and none for `900..999`. Duplicate suppression indices are valid, producing
+  one/two/three non-zero stats with probabilities `1/3`, `17/30`, and `1/10`.
+- Non-suppressed values use the lowest quarter of each card range at 0.001 precision with an
+  exclusive integer upper bound. The special random-multiplier path is card `2233` only and
+  does not apply to cards 28/29/30.
+- Existing reward materialization and pending-claim persistence already carry exact stat
+  dictionaries, so no save-schema, quest-service or game-state change is required. A generated
+  reward must be finalized before journal preparation to prevent retry rerolls.
+- Agent A's rarity-field work is integrated and paused. No active art dependency or source-file
+  overlap exists; quest 305 activation and combat-stat consumption remain separate features.
+
 ## 2026-11-06 — Treasure Hunter `RandomType` semantics
 
 - The authorized `global-metadata.dat` is valid Unity 6 IL2CPP metadata version 108. Direct

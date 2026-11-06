@@ -32,6 +32,7 @@ func _ready() -> void:
 	_test_reward_box_checkbox_resolver()
 	_test_reward_box_catalog()
 	_test_reference_equipment_reward_resolver()
+	_test_reference_equipment_stat_generator()
 	_test_reference_equipment_catalog()
 	_test_crafting_transaction()
 	_test_quest_claim_transaction()
@@ -420,7 +421,9 @@ func _test_reference_equipment_catalog() -> void:
 	_check(ReferenceEquipmentCatalog.materialize(28, {"health": 20, "damage": 50, "speed": 0.1}) != null, "card 28 rejected inclusive maximums")
 	_check(ReferenceEquipmentCatalog.materialize(29, {"health": 20, "damage": 3, "speed": 0.05}) != null, "card 29 exact payload was rejected")
 	_check(ReferenceEquipmentCatalog.materialize(30, {"health": 20, "damage": 35, "speed": 2.0}) != null, "card 30 exact payload was rejected")
+	_check(ReferenceEquipmentCatalog.materialize(28, {"health": 0, "damage": 5, "speed": 0}) != null, "card 28 rejected verified suppressed stats")
 	var invalid_payloads: Array[Dictionary] = [
+		{"health": 0, "damage": 0, "speed": 0},
 		{"health": 1.9, "damage": 5, "speed": 0.05},
 		{"health": 20.1, "damage": 5, "speed": 0.05},
 		{"health": 2, "damage": 4.9, "speed": 0.05},
@@ -436,6 +439,69 @@ func _test_reference_equipment_catalog() -> void:
 	var mutable_definition := ReferenceEquipmentCatalog.get_definition(28)
 	mutable_definition["runtime_item_id"] = "changed"
 	_check(ReferenceEquipmentCatalog.get_runtime_item_id(28) == "th_weapon_28", "reference catalog exposed mutable state")
+
+
+func _test_reference_equipment_stat_generator() -> void:
+	var one_stat := ReferenceEquipmentStatGenerator.replay_common(28, [499, 0, 1, 5000])
+	_check(one_stat == {"health": 0.0, "speed": 0.0, "damage": 5.0}, "Common duplicate-free suppression did not leave one stat")
+	var duplicate_suppression := ReferenceEquipmentStatGenerator.replay_common(28, [0, 0, 0, 50, 5000])
+	_check(duplicate_suppression == {"health": 0.0, "speed": 0.05, "damage": 5.0}, "Common duplicate suppression did not leave two stats")
+	var two_stats_low := ReferenceEquipmentStatGenerator.replay_common(28, [500, 2, 2000, 50])
+	var two_stats_high := ReferenceEquipmentStatGenerator.replay_common(28, [899, 2, 6499, 61])
+	_check(two_stats_low == {"health": 2.0, "speed": 0.05, "damage": 0.0}, "Common outer roll 500 used the wrong suppression branch")
+	_check(two_stats_high == {"health": 6.499, "speed": 0.061, "damage": 0.0}, "Common outer roll 899 or exclusive upper bounds drifted")
+	var three_stats_low := ReferenceEquipmentStatGenerator.replay_common(28, [900, 2000, 50, 5000])
+	var three_stats_high := ReferenceEquipmentStatGenerator.replay_common(28, [999, 6499, 61, 16249])
+	_check(three_stats_low == {"health": 2.0, "speed": 0.05, "damage": 5.0}, "Common outer roll 900 did not keep all stats")
+	_check(three_stats_high == {"health": 6.499, "speed": 0.061, "damage": 16.249}, "card 28 Common maximum draws drifted")
+	_check(
+		ReferenceEquipmentStatGenerator.replay_common(29, [900, 52499, 286, 8499]) == {"health": 52.499, "speed": 0.286, "damage": 8.499},
+		"card 29 Common domains drifted",
+	)
+	_check(
+		ReferenceEquipmentStatGenerator.replay_common(30, [900, 6499, 574, 10999]) == {"health": 6.499, "speed": 0.574, "damage": 10.999},
+		"card 30 Common domains drifted",
+	)
+	for value: float in three_stats_high.values():
+		_check(is_equal_approx(value * 1000.0, round(value * 1000.0)), "Common stat was not quantized to 0.001")
+
+	var invalid_draws: Array[Array] = [
+		[],
+		[-1, 0, 0, 50, 5000],
+		[1000, 2000, 50, 5000],
+		[499, 0, 1],
+		[499, 0, 3, 5000],
+		[900, 6500, 61, 16249],
+		[900, 6499, 62, 16249],
+		[900, 6499, 61, 16250],
+		[900, 6499, 61, 16249, 1],
+	]
+	for draws: Array in invalid_draws:
+		_check(ReferenceEquipmentStatGenerator.replay_common(28, draws).is_empty(), "Common replay accepted invalid draws: %s" % [draws])
+	_check(ReferenceEquipmentStatGenerator.replay_common(999, [900, 2000, 50, 5000]).is_empty(), "Common replay accepted an unknown card")
+	_check(ReferenceEquipmentStatGenerator.generate_common(28, null).is_empty(), "Common generation accepted a missing RNG")
+	var invalid_rng := RandomNumberGenerator.new()
+	invalid_rng.seed = 149
+	var invalid_state := invalid_rng.state
+	_check(ReferenceEquipmentStatGenerator.generate_common(999, invalid_rng).is_empty(), "Common generation accepted an unknown card")
+	_check(invalid_rng.state == invalid_state, "invalid Common generation consumed RNG state")
+
+	var first_rng := RandomNumberGenerator.new()
+	var second_rng := RandomNumberGenerator.new()
+	first_rng.seed = 149
+	second_rng.seed = 149
+	var first_reward := RewardBoxCatalog.resolve_common_equipment(149, first_rng)
+	var second_reward := RewardBoxCatalog.resolve_common_equipment(149, second_rng)
+	_check(not first_reward.is_empty() and first_reward == second_reward, "Box 149 Common resolution was not deterministic")
+	_check(RewardBoxResolver.normalize_reward(first_reward) == first_reward, "generated Box 149 reward was not canonical")
+	_check(RewardBoxCatalog.resolve_common_equipment(999, first_rng).is_empty(), "unknown box generated Common equipment")
+	var generated_equipment := first_reward.get("equipment", []) as Array
+	if not generated_equipment.is_empty():
+		var generated_entry := generated_equipment[0] as Dictionary
+		_check(
+			ReferenceEquipmentCatalog.materialize(int(generated_entry["card_id"]), generated_entry["stats"]) != null,
+			"generated Box 149 reward did not materialize",
+		)
 
 
 func _test_economy_transaction() -> void:
@@ -928,7 +994,7 @@ func _test_exact_equipment_reward_transaction() -> void:
 	GameState.reset_profile()
 	QuestService.reset()
 	_player.inventory = InventoryData.new()
-	var valid_stats := {"health": 13.9, "damage": 29.8, "speed": 0.08}
+	var valid_stats := ReferenceEquipmentStatGenerator.replay_common(28, [0, 0, 0, 50, 5000])
 	_check(not GameState.grant({"equipment": [{"card_id": "28", "stats": valid_stats}]}), "direct grant accepted a string equipment card ID")
 	_check(not GameState.grant({"equipment": [{"card_id": 28, "stats": valid_stats, "level": 10}]}), "direct grant accepted an unapproved equipment field")
 	_check(_player.inventory.get_item_count("th_weapon_28") == 0, "invalid direct equipment grant changed inventory")
@@ -948,7 +1014,7 @@ func _test_exact_equipment_reward_transaction() -> void:
 	_check(SaveService.prepare_pending_claim(record), "exact equipment claim did not prepare")
 	source_stats["damage"] = 49.0
 	_check(
-		is_equal_approx(float(SaveService.get_pending_claim()["reward"]["equipment"][0]["stats"]["damage"]), 29.8),
+		is_equal_approx(float(SaveService.get_pending_claim()["reward"]["equipment"][0]["stats"]["damage"]), 5.0),
 		"prepared equipment claim retained caller stats",
 	)
 	_check(not QuestService.retry_pending_claim(), "full inventory accepted exact equipment claim")
@@ -965,7 +1031,7 @@ func _test_exact_equipment_reward_transaction() -> void:
 	_check(rewarded != null and rewarded.id == "th_weapon_28", "exact equipment retry granted the wrong runtime item")
 	_check(rewarded != null and rewarded.source_card_id == 28, "exact equipment retry lost source card identity")
 	_check(rewarded != null and rewarded.source_asset_id == "item.weapon.card_28.icon", "exact equipment retry lost stable asset identity")
-	_check(rewarded != null and is_equal_approx(float(rewarded.get_reference_stats().get("damage", 0.0)), 29.8), "exact equipment retry changed decimal stats")
+	_check(rewarded != null and rewarded.get_reference_stats() == valid_stats, "exact equipment retry changed generated stats")
 	_check(SaveService.get_pending_claim().is_empty(), "exact equipment retry did not clear its journal")
 	_check(not QuestService.claim("q02") and _player.inventory.get_item_count("th_weapon_28") == 1, "exact equipment claim granted twice")
 	_check(not ItemDatabase.get_item("th_weapon_28").has_reference_instance_data(), "exact equipment reward mutated its catalog template")

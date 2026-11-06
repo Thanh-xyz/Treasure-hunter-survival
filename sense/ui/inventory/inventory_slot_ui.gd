@@ -36,6 +36,12 @@ const SLOT_BG_COLOR := Color(0.14, 0.12, 0.16, 1.0)
 const SLOT_BG_EMPTY := Color(0.1, 0.09, 0.12, 1.0)
 const SLOT_BG_DROP_TARGET := Color(0.2, 0.25, 0.18, 1.0)  # Highlight when can drop
 
+# Dominant occupied-field colors sampled from authorized Treasure Hunter captures.
+const REFERENCE_FIELD_COMMON := Color8(255, 237, 195)
+const REFERENCE_FIELD_RARE := Color8(39, 161, 203)
+const REFERENCE_FIELD_EPIC := Color8(169, 100, 223)
+const REFERENCE_FIELD_LEGENDARY := Color8(225, 195, 33)
+
 # Border colors - pixel art style with light top-left, dark bottom-right
 const BORDER_LIGHT := Color(0.45, 0.4, 0.35, 1.0)
 const BORDER_MID := Color(0.3, 0.27, 0.24, 1.0)
@@ -241,11 +247,30 @@ func set_filtered(filtered: bool) -> void:
 	queue_redraw()
 
 
+static func get_rarity_field_color(rarity: int) -> Color:
+	match rarity:
+		ItemData.ItemRarity.COMMON:
+			return REFERENCE_FIELD_COMMON
+		ItemData.ItemRarity.UNCOMMON:
+			# Treasure Hunter has no verified equivalent for Emberfield's extra tier.
+			return Color(0.3, 0.8, 0.3, 1.0)
+		ItemData.ItemRarity.RARE:
+			return REFERENCE_FIELD_RARE
+		ItemData.ItemRarity.EPIC:
+			return REFERENCE_FIELD_EPIC
+		ItemData.ItemRarity.LEGENDARY:
+			return REFERENCE_FIELD_LEGENDARY
+		_:
+			return SLOT_BG_COLOR
+
+
 func _draw() -> void:
 	var rect := Rect2(Vector2.ZERO, SLOT_SIZE)
 	
 	# Draw slot background - highlight if drag target
-	var bg_color := SLOT_BG_COLOR if item != null else SLOT_BG_EMPTY
+	var bg_color := SLOT_BG_EMPTY
+	if item != null:
+		bg_color = get_rarity_field_color(item.rarity) if item.is_equippable() else SLOT_BG_COLOR
 	if is_drag_target:
 		bg_color = SLOT_BG_DROP_TARGET
 	_draw_slot_background(rect, bg_color)
@@ -273,10 +298,6 @@ func _draw() -> void:
 			modulate.a = 1.0
 		
 		_draw_item_icon(rect)
-		
-		# Draw rarity border glow
-		if item.rarity != ItemData.ItemRarity.COMMON:
-			_draw_rarity_glow(rect, item.get_rarity_color())
 		
 		# Draw stack count
 		if item.stackable and quantity > 1:
@@ -393,27 +414,6 @@ func _draw_item_icon(rect: Rect2) -> void:
 	draw_texture_rect(item_icon, icon_rect, false)
 
 
-func _draw_rarity_glow(rect: Rect2, color: Color) -> void:
-	# Pixel art style rarity border - solid colored inner border
-	var glow_color := color
-	glow_color.a = 0.7
-	
-	# Draw colored border lines (pixel art style - no glow, just solid pixels)
-	var inner := BORDER_WIDTH + 1
-	# Top
-	draw_rect(Rect2(rect.position.x + inner, rect.position.y + inner,
-					rect.size.x - inner * 2, 2), glow_color)
-	# Bottom
-	draw_rect(Rect2(rect.position.x + inner, rect.position.y + rect.size.y - inner - 2,
-					rect.size.x - inner * 2, 2), glow_color)
-	# Left
-	draw_rect(Rect2(rect.position.x + inner, rect.position.y + inner,
-					2, rect.size.y - inner * 2), glow_color)
-	# Right
-	draw_rect(Rect2(rect.position.x + rect.size.x - inner - 2, rect.position.y + inner,
-					2, rect.size.y - inner * 2), glow_color)
-
-
 func _draw_stack_count(rect: Rect2) -> void:
 	var font := ThemeDB.fallback_font
 	var font_size := 9
@@ -450,8 +450,10 @@ class DragPreviewDrawer extends Control:
 		
 		var rect := Rect2(Vector2.ZERO, size)
 		
-		# Draw semi-transparent background
-		draw_rect(rect, Color(0.14, 0.12, 0.16, 0.9))
+		# Match the occupied slot field in the drag preview.
+		var field_color := InventorySlotUI.get_rarity_field_color(item.rarity) if item.is_equippable() else InventorySlotUI.SLOT_BG_COLOR
+		field_color.a = 0.9
+		draw_rect(rect, field_color)
 		
 		# Draw border
 		draw_rect(rect, Color(0.5, 0.45, 0.35, 1.0), false, 2.0)
@@ -464,12 +466,6 @@ class DragPreviewDrawer extends Control:
 				size - Vector2(8, 8)
 			)
 			draw_texture_rect(item_icon, icon_rect, false)
-		
-		# Draw rarity border
-		if item.rarity != ItemData.ItemRarity.COMMON:
-			var glow_color := item.get_rarity_color()
-			glow_color.a = 0.8
-			draw_rect(Rect2(2, 2, size.x - 4, size.y - 4), glow_color, false, 2.0)
 		
 		# Draw stack count
 		if item.stackable and quantity > 1:

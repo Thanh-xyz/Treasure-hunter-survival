@@ -403,6 +403,25 @@ retain source card IDs as metadata, but must not alias the cards to existing
 evidence. Box 149 registration, item names, stats, reward materialization, saves,
 LAN, quests, and runtime consumers remain outside this feature.
 
+## Quest 314 Rarity Field Presentation Contract
+
+`InventorySlotUI` now presents equippable items in inventory/equipment fields
+using exact dominant colors sampled from authorized Treasure Hunter captures: Common
+`#FFEDC3`, Rare `#27A1CB`, Epic `#A964DF`, and Legendary `#E1C321`.
+
+This is presentation-only. It consumes Emberfield's existing `ItemData.rarity`
+and does not reinterpret Treasure Hunter `rareRequire` integers, reorder the
+`ItemRarity` enum, activate quest 314, grant box 98, or change inventory/save/LAN
+state. Emberfield Uncommon remains a green fallback with no claimed reference
+equivalent. Non-equipment items retain their prior dark field because the
+reference `useRareColor` boundary is not mapped into Emberfield. Agent B requires
+no gameplay adaptation.
+
+Godot 4.6 import, focused rarity-field pixel assertions, Inventory Transaction,
+Legacy, and Survival/save regressions pass. The deterministic render is
+`/tmp/emberfield-inventory-rarity.png`; it validates the presentation without
+creating a new gameplay or persistence dependency.
+
 # Post-Tutorial Quest Menu Visual Kit
 
 - Authorized runtime captures now cover main, daily, login-reward and

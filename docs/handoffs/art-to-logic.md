@@ -241,3 +241,17 @@ runtime captures. This is presentation-only.
 `GameState.xp`, `xp_needed()`, `xp_changed`, level progression, saves, rewards,
 and `_refresh_card()` signal routing remain intact. Agent B does not need to
 change XP, quest, combat, save, or LAN code.
+
+## Beginner Quest Suggestion Contract
+
+`MobileHUD` now mirrors the decoded Treasure Hunter beginner suggestion using
+the exact `F200_50` frame, `Grass5` icon for verified quest `q01`, and Winbee
+guide sprite. The small HUD panel intentionally renders only the active main
+quest; daily quests continue to render in the full Quest menu.
+
+The presentation reads the existing `QuestService.get_main_quest()`,
+`main_progress`, and `main_ready` values. A ready panel still calls
+`QuestService.claim(quest_id)`; a non-ready panel still opens the Quest menu.
+No quest ID, objective, reward, save field, signal, gameplay event, or Agent B
+file changed. Icon mappings for quests after `q01` remain an art-evidence gap and
+must not become a gameplay dependency.

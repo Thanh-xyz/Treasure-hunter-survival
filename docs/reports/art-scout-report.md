@@ -121,3 +121,27 @@ screenshot, diff, and correction.
 - The selected `Panel_Level` source appears in the runtime HUD only at
   `SkillGroup/PotionShortcut/ItemUI/ItemInfo/Level`; it must not be repurposed as
   a player-level or XP frame.
+
+## Beginner Quest Suggestion Evidence
+
+- The authorized runtime capture `/tmp/ths-next-scout-login-progress.png` shows
+  the first suggestion as `Đào đất`, progress `0/1`, with a Grass5 icon and the
+  Winbee guide character on the right edge.
+- Decoded hierarchy
+  `UIManager/MainCanvas - Camera/BeginnerQuestView/SuggestionQuestPanel` identifies
+  the suggestion panel independently from the full `QuestView/QuestProgressPanel`.
+- The popup Image resolves to `sharedassets1.assets:9248` (`F200_50`), a `21x17`
+  source with Unity borders left `7`, top `4`, right `6`, bottom `8`, and black
+  tint alpha `0.470588`.
+- The verified first-quest icon resolves to `sharedassets1.assets:4738`
+  (`Grass5`), source size `38x39`.
+- The guide character resolves to `sharedassets1.assets:6001` (`Winbee`), source
+  size `77x116`. The batch-exported PNG is fully transparent; loading both
+  `sharedassets1.assets.split0` and `sharedassets0.assets.split0` recovers the
+  valid sprite and its texture dependency.
+- `Quest.json` and Emberfield `GameContent.MAIN_QUESTS` both identify `q01` as
+  the dig tutorial. Later quest icon mappings remain unverified and must not
+  reuse Grass5 by inference.
+- No Android device was connected during this feature SCOUT, so the existing
+  authorized capture and decoded scene/assets remain the available runtime
+  evidence.

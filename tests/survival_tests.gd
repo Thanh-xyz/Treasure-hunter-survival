@@ -254,9 +254,15 @@ func _test_quests() -> void:
 	_stub_player.inventory = InventoryData.new()
 	var q := QuestService.get_main_quest()
 	_check(q["id"] == "q01", "first main quest is q01")
+	_check(int(q["obj"]["count"]) == 1, "active dig tutorial does not match the runtime 0/1 objective")
+	_check(q["reward"] == {"gold": 100}, "active dig tutorial reward does not match box 150")
+	var q01_xp_before: int = GameState.xp
+	var q01_gold_before: int = int(_stub_player.inventory.gold)
 	GameEvent.ground_dug.emit("stone", 1)
 	_check(QuestService.main_ready, "dig objective completes")
 	_check(QuestService.claim("q01"), "claim q01")
+	_check(GameState.xp == q01_xp_before, "q01 granted XP absent from box 150")
+	_check(_stub_player.inventory.gold == q01_gold_before + 100, "q01 did not grant exactly 100 gold")
 	_check(QuestService.get_main_quest()["id"] == "q02", "advances to q02")
 	for i in range(8):
 		GameEvent.enemy_killed.emit("slime", Vector2.ZERO, false)

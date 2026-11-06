@@ -15,6 +15,15 @@
 - LAN accepts only `item`, `gold` and `xp` reward kinds, and the fixed HUD displays only Gold.
   Both are explicit later contracts, not implied capabilities of the offline wallet.
 
+## 2026-11-06 — Active dig tutorial correction
+
+- Direct runtime evidence shows the visible `Đào đất` objective at `0/1`.
+- Static quest ID 335 is active, requires one dig and leads to ID 305; ID 305 requires ten digs
+  but is marked inactive. The prior proposal to change q01 to ten was therefore withdrawn.
+- Active ID 335 rewards box 150, whose only payload is exactly 100 Gold. Emberfield's existing
+  30 XP + 50 Gold reward was provisional and contradicted this direct config chain.
+- The safe slice retains q01 ID/count/presentation and corrects only its reward to 100 Gold.
+
 Date: 2026-11-04
 Branch/worktree: `feature/th-game-logic` at `e8fc3c7`
 Stage: SCOUT only; no gameplay implementation has started.

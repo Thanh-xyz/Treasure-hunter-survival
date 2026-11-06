@@ -1,7 +1,26 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: establish the exact post-tutorial quest-menu visual kit.
+Current feature: integrate the verified quest-menu visual kit at runtime.
+
+## Quest Menu Runtime Feature
+
+- Replaced only the generic quest-tab presentation inside `GameMenu` with the
+  verified Treasure Hunter tab, card, list, section-label, and icon sources.
+- Preserved `open("quest")`, `QuestService` signals/data, claim callbacks,
+  rewards, quest IDs, save behavior, LAN behavior, and every non-quest menu tab.
+- Main and daily categories consume the existing Emberfield domains. Login
+  rewards and achievements remain visibly disabled because no approved gameplay
+  domain exists for them; no placeholder objectives or rewards are invented.
+- Main-page next/completed groups are read-only projections of the existing
+  `GameContent.MAIN_QUESTS` order and `QuestService.main_index`.
+- Added deterministic `720x1600` main, claim-ready, daily, and chain-complete captures through
+  `tests/RenderGameMenu.tscn`. Main/daily support visual comparison; the
+  claim-ready render validates the conditional consumer only because that
+  runtime state was not captured from the reference account.
+- The verified asset structure follows the post-tutorial reference capture, but
+  the displayed quest content reflects Emberfield's current save/domain state;
+  this feature does not claim content parity with the user's reference account.
 
 ## Completed Before This Feature
 

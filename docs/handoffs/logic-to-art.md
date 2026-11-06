@@ -1,5 +1,21 @@
 # Logic-to-Art Contract Proposal
 
+## 2026-11-06 — Quest 306 / Turtle
+
+- Gameplay now consumes stable art ID `actor.monster.turtle.default` for monster ID `turtle`.
+  Canonical animation names are exactly `idle`, `move`, `attack`, and `death`; no directional
+  suffix is required.
+- The runtime adapter uses the existing `64x64` top-to-bottom atlas rows and the approved frame
+  order/durations. It does not modify the atlas, import metadata, manifest, PPU, pivot, or icon.
+- Turtle is stationary and knockback-immune. Gameplay starts `attack` when the verified logical
+  `1.0s` gate opens and starts `death` on zero HP. There is no new hit-frame event or art callback.
+- Quest/UI may display `Đánh bại Turtle`, `Đánh bại Rùa`, and `1 Kim cương`. Reward selection and
+  granting remain gameplay authority; presentation must not synthesize another Turtle identity or
+  reroll Box `98`.
+- The Greenwood spawn is provisional because source coordinates are unavailable. No art-side
+  change is requested; later collision/pivot or spawn parity evidence must be proposed as a new
+  shared contract rather than silently changing this slice.
+
 ## 2026-11-06 — Quest 305 Box 149 activation
 
 - Main quest `q305` now appears after `q01` with progress `0/10` and an explicit preview string

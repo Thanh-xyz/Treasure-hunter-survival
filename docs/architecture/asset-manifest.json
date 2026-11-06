@@ -2308,6 +2308,89 @@
       "notes": []
     },
     {
+      "asset_id": "actor.monster.turtle.default",
+      "category": "monster_sprite",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/textures/sharedassets1.assets/Mob_0__347.png",
+      "target_path": "assets/treasure_hunter/monsters/turtle_atlas.png",
+      "file_format": "png",
+      "dimensions": [
+        384,
+        256
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": {
+        "states": [
+          "idle",
+          "move",
+          "attack",
+          "death"
+        ],
+        "directions": [],
+        "direction_aliases": {},
+        "frame_dimensions": [
+          64,
+          64
+        ],
+        "frame_count": 21,
+        "fps": null,
+        "loop": null,
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "foot_point": null,
+        "hit_frame": null,
+        "effect_socket": null,
+        "evidence": "Unity Texture2D, Sprite and AnimationClip metadata"
+      },
+      "usage": [],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_unity_runtime_pointer_and_clip_metadata",
+      "integration_status": "selected",
+      "notes": [
+        "Turtle GameObject path ID 12012 renders through child Mob_0; SpriteRenderer path ID 89200 starts on Sprite Idle_0 path ID 4810.",
+        "Texture2D path ID 347 is named Mob_0 and contains 21 Sprite objects in 64x64 source rectangles at 40 pixels per unit.",
+        "All four Unity AnimationClips record a sample rate of 24; fps remains null because the clips have different key spacing and durations.",
+        "Unity clip idle loops Idle_0, Idle_1, Idle_2, Idle_3, Idle_0 and stops at 0.7083333731 seconds.",
+        "Unity clip walk loops Run_0 through Run_5 and stops at 0.4583333135 seconds; manifest canonical state is move.",
+        "Unity clip attack loops Attack_0, Attack_1, Attack_2, Attack_4, Attack_4, Attack_5 and stops at 0.6666666865 seconds; no Attack_3 sprite or hit frame is claimed.",
+        "Unity clip dead plays Death_0 through Death_5, stops at 0.75 seconds and does not loop; manifest canonical state is death.",
+        "No directional set, collision footprint, gameplay ID, stats, AI, drops or runtime consumer is approved in this asset-only feature.",
+        "SHA-256: e728b3ff433abba843b99563200554d75ae7f7e38551c8ace7dfa3beda907c4d."
+      ]
+    },
+    {
+      "asset_id": "actor.monster.turtle.icon",
+      "category": "monster_icon",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-1fd24d8c39755ec9b4ad3ac213506e33/Turtle Icon__-596310287070136921.png",
+      "target_path": "assets/treasure_hunter/monsters/turtle_icon.png",
+      "file_format": "png",
+      "dimensions": [
+        20,
+        21
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_card_config_and_exported_sprite",
+      "integration_status": "selected",
+      "notes": [
+        "Card.json ID 33 is named Turtle and uses equipmentType 12; quest 306 targets mobId 33.",
+        "The visible pixels match Mob_0 Idle_0 exactly; this icon preserves two additional transparent rows and remains a distinct UI asset.",
+        "This identity is not GreenTortoise, PurpleTortoise, moss_turtle, shell_tortoise or an existing Emberfield monster alias.",
+        "SHA-256: 3af66fea0a1cfe98fb7a884dfdc7169df1163c89440d3da5fa20e3e92f6c7307."
+      ]
+    },
+    {
       "asset_id": "ui.reference.logo.title",
       "category": "ui_reference",
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets0.assets/Logo1__13.png",

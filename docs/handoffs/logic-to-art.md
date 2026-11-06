@@ -1,5 +1,16 @@
 # Logic-to-Art Contract Proposal
 
+## 2026-11-06 — Box 149 Common stat generator
+
+- Gameplay now owns deterministic initial Common stat generation for source cards 28/29/30 and
+  emits the existing exact-equipment reward payload. Suppressed stats remain present as `0.0`.
+- Reward presentation must read the committed materialized instance and must not independently
+  choose the card, reroll stats, remove zero entries or derive display values from source ranges.
+- No asset ID, item ID, rarity enum, equipment slot, animation, direction, texture, scene or UI
+  callback changed. Agent A requires no implementation change for this feature.
+- Quest 305 activation and reference-stat UI formatting remain deferred and require their own
+  evidence-backed plans.
+
 Status: proposed by Agent B during SCOUT. Agent A agreement is required before implementation.
 
 ## 2026-11-04 Agent B update

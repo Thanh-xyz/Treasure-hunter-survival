@@ -1,5 +1,24 @@
 # Logic Progress
 
+## 2026-11-06 — Box 149 Common stat generator
+
+- Added a caller-owned deterministic generator and strict recorded-draw replay for the verified
+  initial Common path of cards 28/29/30. Draw order is card selection, outer suppression roll,
+  suppression indices, then Health/Speed/Damage values.
+- Preserved exact thresholds `0..499`, `500..899`, `900..999`, duplicate suppression and the
+  card-specific exclusive integer bounds at 0.001 precision. The card-2233 multiplier path is
+  intentionally absent.
+- Reference payload validation now accepts exact zero-valued suppressed entries while rejecting
+  all-zero payloads and continuing to range-check every non-zero stat.
+- Box 149 can resolve card plus stats on one caller-owned RNG stream and emits the existing
+  canonical exact-equipment reward. The current pending-claim journal persists that result, so
+  save recovery retries without rerolling.
+- Quest 305, other rarities, runtime combat-stat application, UI, save schema and LAN transport
+  remain unchanged. Agent A requires no adaptation.
+- Godot 4.6 import, Inventory Transaction, Legacy phases 1-7 and Survival/save pass with exit code
+  0. Focused tests cover threshold boundaries, duplicate suppression, all card domains, exclusive
+  maxima, 0.001 quantization, invalid input, seeded determinism, materialization and journal retry.
+
 ## 2026-11-06 — Box 149 authority boundary
 
 - Added a two-phase equipment reward resolver for verified Box 149 card selection. Recorded rolls

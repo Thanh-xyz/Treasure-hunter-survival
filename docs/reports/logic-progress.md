@@ -1,5 +1,22 @@
 # Logic Progress
 
+## 2026-11-06 — Box 149 authority boundary
+
+- Added a two-phase equipment reward resolver for verified Box 149 card selection. Recorded rolls
+  map exactly as `1-34 -> 28`, `35-67 -> 29`, and `68-100 -> 30`; seeded callers own RNG state.
+- Invalid, duplicate, unknown or overflowing option tables are rejected before RNG use. Catalog
+  reads return deep copies and Box 149 remains excluded from the direct canonical reward registry.
+- Finalization accepts only the selected box card plus exact catalog-valid Health/Damage/Speed and
+  verifies that the box ID, recorded roll and card still agree before returning the existing
+  canonical equipment reward shape. It does not generate, round or transform stats.
+- Quest 305, stat-generation policy, rarity transforms, save schema, UI, combat application, LAN
+  transport and Agent A-owned files remain unchanged. Agent A's Mosqui atlas is preserved as the
+  integrated base.
+- Godot 4.6 import, focused InventoryTransaction, Legacy phases 1-7, Survival/save, four quest-menu
+  renders and live/dead HUD renders pass. Blacksmith enumeration remains at 29 public items.
+- Review corrected the initial loose card-only handoff by binding finalization to an immutable
+  `box_id + roll + card_id` selection record. Modified tuples are rejected before grant.
+
 ## 2026-11-06 — Independent CheckBox reward resolution
 
 - Decoded Unity 6 IL2CPP metadata confirms `RandomType.Option = 0` and

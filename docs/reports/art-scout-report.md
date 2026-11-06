@@ -4,6 +4,32 @@ Date: 2026-11-04; updated 2026-11-06
 Branch/worktree: `feature/th-game-art-workflow` in the Agent A worktree
 Stage: SCOUT complete; no project implementation occurred during SCOUT.
 
+## Quest 322 Locate Campfire Art Evidence
+
+- Source quest `322` follows `321`, precedes `323`, uses quest type `34`, raw
+  `equipmentType: 10`, awards Box `153`, and remains disabled. Vietnamese text
+  is `Tìm lửa trại`: campfires are scattered around the map and entering one
+  reveals the crafting icon.
+- Dialog `624` repeats the objective. Crafting help text further verifies that
+  inside campfire light the ingredient-bag HUD action changes into the craft
+  button, which opens the crafting panel. Trigger geometry, world placement,
+  light radius, and runtime transition remain unknown.
+- Exact UI art is available. Unity Sprite path ID `5842`, `Craft`, has original
+  rect `32x32`, centered pivot, `32 PPU`, and a visible `28x30` export. The full
+  logical texture is transparent/partial alpha, has nontransparent bounds
+  `24x27+4+4`, and SHA-256
+  `45082300fbba749d96179d9ea0ac85c6a5627b55f0173b8bc5bed2351dacc1de`.
+- Addressable Sprite path ID `22940246309438056`, `Fire Camp`, exports at
+  `28x30` and has zero pixel difference from the visible `Craft` sprite. This
+  independently supports the icon identity, not a world campfire contract.
+- Emberfield has no approved campfire world object, proximity trigger, or HUD
+  bag-to-craft swap. The separate `assets/blacksmith/fire_frames.png` sheet has
+  unknown provenance and must not substitute for Treasure Hunter campfire art.
+- Box `153` already maps to exact metadata-only ingredient art IDs for cards
+  `66` and `69`; reward materialization and Quest 322 behavior remain gameplay
+  owned. ADB still exposes only the dimmed server-selection state, so live icon
+  scale, position, transition, and world presentation are unverified.
+
 ## Quest 321 Merge Ingredient Evidence
 
 - Source quest `321` follows `320`, precedes `322`, uses quest type `36`,

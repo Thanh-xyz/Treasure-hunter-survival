@@ -63,6 +63,29 @@ Agent B must not alias this identity to GreenTortoise, PurpleTortoise,
 quest 306 are provenance evidence only until a separate gameplay proposal is
 approved.
 
+## Snailu Animated Atlas Contract
+
+`actor.monster.snailu.atlas` selects the exact local-only runtime atlas at
+`assets/treasure_hunter/monsters/snailu_atlas.png`. It is `384x256`, sliced into
+21 `64x64` source rectangles with center pivots at 40 PPU. The existing
+`actor.monster.snailu.default` remains the integrated static icon/current
+consumer contract; this additive feature does not repoint it.
+
+Verified source clip sequences are:
+
+| Source clip | Ordered keys | Loop | Stop time |
+| --- | --- | --- | ---: |
+| `idle` | `Idle_0, Idle_1, Idle_2, Idle_3, Idle_0` | yes | `0.7083333731` |
+| `walk` | `Run_0, Idle_1, Run_2, Run_3, Run_4, Run_5` | yes | `0.4583333135` |
+| `attack` | `Attack_0, Attack_1, Attack_2, Attack_3, Attack_4, Attack_5` | yes | `0.6666666865` |
+| `dead` | `Death_0, Death_1, Death_2, Death_3, Death_4, Death_5` | no | `0.75` |
+
+The `Idle_1` key in `walk` is verified source data and must not be silently
+replaced with an inferred `Run_1`. Manifest canonical states are `idle`, `move`,
+`attack`, and `death`. Directions, hit frames, collision, gameplay identity,
+stats, AI, drops, quest 310, save/LAN and runtime consumption remain outside
+this asset contract.
+
 ## Asset Contract
 
 Gameplay should eventually reference a stable `asset_id`, resolved by an

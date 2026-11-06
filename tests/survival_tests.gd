@@ -353,6 +353,16 @@ func _test_save_roundtrip() -> void:
 	inv.equip_item(_add_and_find(inv, "iron_sword"))
 	var enhanced_weapon := inv.get_equipped("weapon").duplicate() as ItemData
 	enhanced_weapon.enhancement_level = 3
+	# This exercises the generic persistence carrier only; it does not map card
+	# 28 to Emberfield's iron_sword gameplay identity.
+	var rolled_stats := {"health": 13.9, "damage": 29.8, "speed": 0.08}
+	_check(enhanced_weapon.set_reference_instance_data(
+		28,
+		"item.weapon.card_28.icon",
+		rolled_stats
+	), "reference equipment payload is accepted")
+	rolled_stats["damage"] = 999.0
+	_check(is_equal_approx(float(enhanced_weapon.get_reference_stats().get("damage", 0.0)), 29.8), "reference payload retained caller-owned dictionary")
 	inv._set_equipped("weapon", enhanced_weapon)
 	GameState.level = 7
 	_check(GameState.unlock_pet("lucky_cat"), "adopt lucky cat for save test")
@@ -368,6 +378,19 @@ func _test_save_roundtrip() -> void:
 	var snap := SaveService.read_snapshot()
 	_check(snap.get("version", 0) == SaveService.SAVE_VERSION, "snapshot has version")
 	_check(snap.get("quests", {}).get("main_quest_id", "") == "q04", "snapshot stores stable main quest id")
+	var level_one_inventory := InventoryData.new()
+	_check(SaveService.deserialize_inventory(level_one_inventory, {
+		"gold": 0,
+		"slots": [{"id": "iron_sword", "qty": 1, "reference": {
+			"card_id": 28,
+			"asset_id": "item.weapon.card_28.icon",
+			"stats": {"health": 13.9, "damage": 29.8, "speed": 0.08},
+		}}],
+		"equipment": {},
+	}), "level-one reference equipment payload hydrates")
+	var level_one_item := level_one_inventory.get_item_at(0).get("item") as ItemData
+	_check(level_one_item != null and level_one_item != ItemDatabase.get_item("iron_sword"), "level-one reference equipment reused catalog template")
+	_check(level_one_item != null and level_one_item.source_card_id == 28, "level-one reference equipment lost source identity")
 
 	# Wipe live state then load
 	GameState.reset_profile()
@@ -392,6 +415,14 @@ func _test_save_roundtrip() -> void:
 	_check(inv.get_equipped("weapon") != null and inv.get_equipped("weapon").id == "iron_sword", "equipment restored")
 	_check(inv.get_equipped("weapon").enhancement_level == 3, "equipment enhancement level restored")
 	_check(inv.get_equipped("weapon") != ItemDatabase.get_item("iron_sword"), "enhanced save reused the catalog template")
+	_check(inv.get_equipped("weapon").source_card_id == 28, "reference card identity restored")
+	_check(inv.get_equipped("weapon").source_asset_id == "item.weapon.card_28.icon", "reference asset identity restored")
+	_check(inv.get_equipped("weapon").get_reference_stats() == {
+		"health": 13.9,
+		"damage": 29.8,
+		"speed": 0.08,
+	}, "reference decimal stat payload restored")
+	_check(ItemDatabase.get_item("iron_sword").source_card_id == -1, "reference payload mutated catalog template")
 
 	# Corrupt main file -> backup is used
 	SaveService.enabled = true
@@ -436,7 +467,7 @@ func _test_save_roundtrip() -> void:
 	f.close()
 	_check(SaveService.read_snapshot().get("inventory", {}).get("diamonds", -1) == 17, "invalid diamonds fall back to backup")
 
-	for legacy_version in [0, 1]:
+	for legacy_version in [0, 1, 2]:
 		var legacy := snap.duplicate(true)
 		legacy["version"] = legacy_version
 		legacy["inventory"]["equipment"]["weapon"].erase("level")
@@ -514,6 +545,28 @@ func _test_save_roundtrip() -> void:
 		"slots": [{"id": "wood", "qty": 1, "level": 2}],
 		"equipment": {},
 	}), "non-upgradeable item accepted an enhancement level")
+	var invalid_references: Array = [
+		{"card_id": 0, "asset_id": "item.weapon.card_28.icon", "stats": {"health": 1, "damage": 1, "speed": 0.1}},
+		{"card_id": 28, "asset_id": "", "stats": {"health": 1, "damage": 1, "speed": 0.1}},
+		{"card_id": 28, "asset_id": "item.weapon.card_28.icon", "stats": {"health": 1, "damage": 1}},
+		{"card_id": 28, "asset_id": "item.weapon.card_28.icon", "stats": {"health": 1, "damage": 1, "speed": "fast"}},
+		{"card_id": 28, "asset_id": "item.weapon.card_28.icon", "stats": {"health": 1, "damage": 1, "speed": 0.1, "defense": 2}},
+	]
+	for invalid_reference: Dictionary in invalid_references:
+		_check(not SaveService.deserialize_inventory(inv, {
+			"gold": 999,
+			"slots": [],
+			"equipment": {"weapon": {"id": "iron_sword", "qty": 1, "reference": invalid_reference}},
+		}), "invalid reference equipment payload was accepted: %s" % str(invalid_reference))
+	_check(not SaveService.deserialize_inventory(inv, {
+		"gold": 999,
+		"slots": [{"id": "wood", "qty": 1, "reference": {
+			"card_id": 28,
+			"asset_id": "item.weapon.card_28.icon",
+			"stats": {"health": 1, "damage": 1, "speed": 0.1},
+		}}],
+		"equipment": {},
+	}), "non-equipment item accepted a reference equipment payload")
 	_check(inv.gold == protected_gold and inv.diamonds == protected_diamonds and inv.get_item_count("wood") == protected_wood, "rejected hydration preserves live inventory")
 	_check(inv.get_equipped("weapon").enhancement_level == protected_weapon_level, "rejected hydration changed enhanced equipment")
 

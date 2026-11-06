@@ -99,6 +99,14 @@ enum ItemRarity {
 ## equipment is stored on duplicated item instances.
 @export_storage var enhancement_level: int = 1
 
+@export_category("Reference Instance Data")
+## Exact source identity and rolled values for equipment materialized from
+## Treasure Hunter card data. These values are evidence only until a later
+## feature explicitly maps them into Emberfield's runtime stat calculations.
+@export_storage var source_card_id: int = -1
+@export_storage var source_asset_id: String = ""
+@export_storage var reference_stats: Dictionary = {}
+
 @export_category("Consumable Effects")
 @export var heal_amount: int = 0
 @export var stamina_restore: float = 0.0
@@ -120,6 +128,48 @@ var applied_augments: Array[String] = []
 ## 1.1 stat curve is provisional supporting evidence until server behavior is
 ## directly verified.
 const PROVISIONAL_STAT_GROWTH_RATE := 1.1
+const REFERENCE_STAT_KEYS := [&"health", &"damage", &"speed"]
+
+
+func set_reference_instance_data(card_id: int, asset_id: String, stats: Dictionary) -> bool:
+	if card_id <= 0 or asset_id.is_empty() or not is_valid_reference_stats(stats):
+		return false
+	source_card_id = card_id
+	source_asset_id = asset_id
+	reference_stats = _normalize_reference_stats(stats)
+	return true
+
+
+func has_reference_instance_data() -> bool:
+	return source_card_id > 0 and not source_asset_id.is_empty() and is_valid_reference_stats(reference_stats)
+
+
+func get_reference_stats() -> Dictionary:
+	return reference_stats.duplicate(true)
+
+
+static func is_valid_reference_stats(stats: Dictionary) -> bool:
+	if stats.size() != REFERENCE_STAT_KEYS.size():
+		return false
+	for key: StringName in REFERENCE_STAT_KEYS:
+		if not stats.has(key) and not stats.has(String(key)):
+			return false
+		var value: Variant = stats.get(key, stats.get(String(key)))
+		if (not value is int and not value is float) or not is_finite(float(value)) or float(value) < 0.0:
+			return false
+	for raw_key: Variant in stats:
+		if not raw_key is String and not raw_key is StringName:
+			return false
+		if StringName(raw_key) not in REFERENCE_STAT_KEYS:
+			return false
+	return true
+
+
+static func _normalize_reference_stats(stats: Dictionary) -> Dictionary:
+	var normalized := {}
+	for key: StringName in REFERENCE_STAT_KEYS:
+		normalized[String(key)] = float(stats.get(key, stats.get(String(key))))
+	return normalized
 
 
 func get_enhancement_multiplier() -> float:

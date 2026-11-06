@@ -4,6 +4,23 @@ Status: approved as the incremental direction on 2026-11-04. The first implement
 adds atomic inventory transactions behind the existing APIs; broader service extraction is
 still deferred until reference parity and Agent A contracts are available.
 
+## Quest 311 / Rare equipment state boundary
+
+Q311 is an additive content row over the existing inventory-owned state query. Reference raw rarity
+`1` is normalized at the content boundary to Emberfield `ItemData.ItemRarity.RARE`; domain logic then
+counts current equipped items at or above that tier. UI color, button clicks and acquisition source
+do not determine quest truth.
+
+Claiming q310 advances to q311 and immediately evaluates the current equipment snapshot. Equipping,
+unequipping, upgrading, augmenting or hydrating inventory continues through the existing equipment
+signals and `QuestService.refresh_state_objectives()` adapter. Box 98 is resolved and journaled by the
+same offline authority used by the preceding tutorial quests. A future LAN host can reuse the state
+query and committed reward without coupling it to ENet transport.
+
+Card 161/Back_8 is not part of this boundary. Adding it would require a new equipment type/slot,
+serialization validation, UI placement, an Agent A asset ID and a separate Snailu loot migration.
+The q311 rule therefore remains item-identity agnostic and preserves the current seven stable slots.
+
 ## Quest 310 / Snailu vertical slice
 
 - Stable gameplay ID `snailu` consumes `actor.monster.snailu.atlas`; legacy `shroom` remains a

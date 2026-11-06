@@ -1,8 +1,35 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: integrate the exact metadata-only craft HUD icon for Treasure
-Hunter Quest 322 without inventing the campfire world/proximity system.
+Current feature: integrate the exact metadata-only craft-equipment tutorial art
+for Treasure Hunter Quest 323 without inventing the runtime crafting panel.
+
+## Quest 323 Craft Tutorial Feature
+
+- Copied the exact `512x240` `CraftView_1` source texture byte-for-byte to
+  `assets/treasure_hunter/ui/reference/tutorial_craft_equipment.png` and imported
+  it losslessly without mipmaps.
+- Added stable art ID `ui.reference.tutorial.craft_equipment` with Quest 323,
+  Sprite `6161`, Texture2D `777`, centered pivot, `80 PPU`, opaque dimensions,
+  exact hash, and `local_only` provenance evidence.
+- Documented the verified CraftView structure: equipment/ingredient inventory,
+  item detail, one equipment input, twelve ingredient slots, displayed chance,
+  craft level/progress, currencies, help, and cost-bearing craft action. The
+  alternate hierarchy variant's craft points, step, PushToCraft, and notify are
+  also recorded without selecting an active runtime variant.
+- The image's 3x3 ingredient illustration is not treated as a nine-input rule;
+  the discrepancy with twelve hierarchy slots remains explicit. `Forge Craft`
+  and `Craft Level 1/2` are excluded because their Quest 323 roles are unproven.
+- The asset is additive and metadata-only. No scene, script, runtime consumer,
+  recipe/formula, crafting transaction, Quest 323 behavior, Box 98 reward,
+  save/network state, shared source, or Agent B file changed.
+- ADB still cannot reach CraftView, so runtime screenshot/visual-diff parity is
+  not claimed. Validation is limited to exact source pixels/metadata, manifest,
+  lossless import, texture loading, ownership scope, and documentation truth.
+- Executed validation confirms source/target/Sprite byte and pixel identity,
+  SHA-256, RGBA `512x240` opaque full-canvas bounds, manifest uniqueness/path/
+  provenance, lossless import settings, successful Godot 4.6 texture loading at
+  `512x240`, exact six-file scope, and clean whitespace.
 
 ## Quest 322 Craft Icon Feature
 

@@ -4300,6 +4300,34 @@
         "The selected full 32x32 logical canvas has SHA-256 45082300fbba749d96179d9ea0ac85c6a5627b55f0173b8bc5bed2351dacc1de and nontransparent bounding box 24x27+4+4.",
         "This is a metadata-only HUD icon. It is not a world campfire asset, proximity trigger, HUD-state callback, crafting command, or Quest 322 implementation."
       ]
+    },
+    {
+      "asset_id": "ui.reference.tutorial.craft_equipment",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/textures/sharedassets1.assets/CraftView_1__777.png",
+      "target_path": "assets/treasure_hunter/ui/reference/tutorial_craft_equipment.png",
+      "file_format": "png",
+      "dimensions": [
+        512,
+        240
+      ],
+      "transparency": "opaque",
+      "animation": null,
+      "usage": [],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_quest_scene_sprite_metadata_and_pixel_identity",
+      "integration_status": "selected",
+      "notes": [
+        "Quest.json ID 323 requires one equipment craft after Quest 322 and instructs the player to use equipment plus ingredient stones through the campfire craft icon.",
+        "Unity Sprite path ID 6161 is named CraftView_1, uses Texture2D path ID 777, has a 512x240 rect, centered pivot, and 80 pixels per unit.",
+        "The Sprite and Texture2D exports are byte-identical; the selected PNG SHA-256 is 50a3aae2181ec61cc2697724e04a355b2e76067141d1f8fa07208730669ba43e.",
+        "The illustration shows one equipment subject plus a 3x3 set of ingredient stones leading to a transformed result. It is tutorial/help evidence, not proof that the runtime CraftView accepts exactly nine ingredients.",
+        "This is a metadata-only UI reference. It is not a CraftView panel, recipe, chance/cost formula, crafting transaction, Quest 323 completion event, or Box 98 reward contract."
+      ]
     }
   ]
 }

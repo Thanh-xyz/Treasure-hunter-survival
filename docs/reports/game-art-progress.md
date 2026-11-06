@@ -1,7 +1,7 @@
 # Game Art Progress
 
 Date: 2026-11-06
-Current feature: match the active Treasure Hunter fixed joystick visuals.
+Current feature: match the active Treasure Hunter revive button visuals.
 
 ## Completed Before This Feature
 
@@ -181,6 +181,17 @@ Current feature: match the active Treasure Hunter fixed joystick visuals.
   HUD placement and constrained only the visual handle offset to its available
   travel range.
 
+## Revive Button Visual Feature
+
+- Replaced the generic themed death-state button background with the exact
+  scene-verified `Button1_0` nine-slice already integrated as
+  `button_orange.png`.
+- Applied the decoded Unity normal, highlighted, pressed, and disabled color
+  transitions while preserving nearest-neighbor filtering and 20-pixel slice
+  borders.
+- Preserved button position, size, Vietnamese label/countdown, disabled timer,
+  `_respawn_town` callback, death state, and all gameplay contracts.
+
 ## Validation Evidence
 
 - Parsed `docs/architecture/asset-manifest.json` successfully with `jq`.
@@ -254,6 +265,16 @@ Current feature: match the active Treasure Hunter fixed joystick visuals.
   the existing movement-control location.
 - Both joystick targets match their supplied exports bit-for-bit and their
   manifest hashes; provenance remains `local_only`.
+- Godot 4.6 imported the updated HUD without script or resource errors.
+- Inventory transaction, legacy, and survival suites completed with exit code
+  `0`; startup and live/dead HUD render gates also completed with exit code `0`.
+- Direct inspection of `/tmp/emberfield-mobile-hud-dead.png` confirms the normal
+  revive state uses the brown/orange path ID `6916` nine-slice at the unchanged
+  rectangle. The similarly named gray path ID `6918` hotbar variant was detected
+  and rejected during visual validation.
+- The integrated `button_orange.png` target matches the verified path ID `6916`
+  export bit-for-bit. Hover, pressed, and disabled colors are metadata-verified
+  but were not separately captured as runtime screenshots.
 
 ## Not Yet Implemented
 

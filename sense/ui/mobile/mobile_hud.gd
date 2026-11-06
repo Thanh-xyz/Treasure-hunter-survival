@@ -671,7 +671,9 @@ func _reference_image_button(texture: Texture2D, caption: String, callback: Call
 
 func _build_controls() -> void:
 	joystick = VirtualJoystick.new()
-	joystick.position = Vector2(274, 980)
+	# Unity's default 1080x1920 layout maps the fixed-stick center to (360, 1123)
+	# in the 720x1516 game surface; the remaining 84 pixels are Android navigation.
+	joystick.position = Vector2(241, 958)
 	joystick.size = Vector2(238, 300)
 	add_child(joystick)
 

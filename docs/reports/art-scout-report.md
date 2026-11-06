@@ -4,6 +4,28 @@ Date: 2026-11-04; updated 2026-11-06
 Branch/worktree: `feature/th-game-art-workflow` in the Agent A worktree
 Stage: SCOUT complete; no project implementation occurred during SCOUT.
 
+## Quest 319 Ingredient Level 2 Evidence
+
+- Source quest `319` follows `318`, precedes `320`, keeps quest type `31`,
+  requires `levelRequire: 1`, awards Box `98`, and remains disabled. Vietnamese
+  text is `Nâng đá lên Lv2` / `Nâng bất kỳ nguyên liệu nào lên Cấp 2.`
+- Source cards `64`, `66`, and `69` are upgradeable Common ingredient templates.
+  Each records a static 10 Gold upgrade cost and `upgradeLevelRate: 1.5` in
+  `Card.json`. These fields are source evidence only; Emberfield has no approved
+  ingredient-instance level, upgrade authority, persistence, or Quest 319 event.
+- Unity scene `level1` contains a dedicated `IngredientView` with an ingredient
+  grid and selected-item detail: rarity, level, icon, stat rows, description,
+  Sell, and a Gold/cost Upgrade button using `HoldButton`. It is distinct from
+  `MergeIngredientView`, whose seven input slots, chance, Gold, and Merge action
+  serve the later merge flow rather than Quest 319.
+- Existing exact local-only identities `item.ingredient.card_64.icon`,
+  `item.ingredient.card_66.icon`, and `item.ingredient.card_69.icon` cover the
+  three beginner-chain ingredient icons but remain metadata-only.
+- ADB verified Treasure Hunter 4.3.7 on the connected `SM_A047F` and captured
+  the server-selection state. The active touch-lock overlay prevented navigation
+  to `IngredientView`; no direct runtime layout, scale, hold duration, final
+  values, or interaction capture is available, and no account resource changed.
+
 ## Quest 318 Defense Ingredient Evidence
 
 - Source quest `318` follows `317`, requires one stat-type-4 Defense ingredient,

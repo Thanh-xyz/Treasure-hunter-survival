@@ -91,36 +91,48 @@ combat is readable), `STAGGER` (poise break).
 Monster IDs `slime`, `shroom`, `boar` are kept for save/quest/LAN compatibility; only their
 display names and visuals change. `snailu` and `turtle` retire (SAVE_MIGRATION_PLAN).
 
-| Biome | Monster (id) | AI | Role |
+Each of the three zones has its **own exclusive roster** (owner decision). No regular monster
+appears in more than one zone.
+
+| Zone | Monster (id) | AI | Role |
 | --- | --- | --- | --- |
-| T1 | Gnatling (`slime`, was "Mosqui") | flyer | swarm chip damage |
-| T1 | Bramble Snail (`shroom`, was "Snailu") | melee | slow tank, leaves slowing slime |
-| T1 | Bristle Boar (`boar`, was "Astromophy") | charger | telegraphed charge |
-| T1 | Puffcap (`puffcap`) | ranged | spore lobs, poison |
-| T1 | Mossback Tortoise (`mossback`, replaces `turtle`) | stationary guard | tutorial target, shell-up phase |
-| T1 night | Dusk Bat (`bat`) | flyer | existing |
-| T2 | Briar Wolf, Hornet Swarm, Sapling Treant, Fungal Shaman | pack / swarm / stationary / healer | |
-| T3 | Cave Crawler, Glowworm, Golemite, Shade Bat | burrow / light-lure / armoured / dark flyer | |
-| T4 | Bone Grunt, Bone Archer (existing), Ash Wisp, Cursed Sentinel | melee / ranged / kamikaze / guard | |
-| T5 | Frost Slime (existing), Rime Elk, Ice Troll, Snow Harpy | splitter / charger / regen brute / dive | |
-| T6 | Magma Slime (existing), Cinder Hound, Ash Revenant, Ember Drake | splitter / pack / reviver / flyer-breath | |
-| Hollowfolk | Raider, Slinger, Shieldbearer, Shaman, Chieftain | outpost units | |
-| Ash Hunters | Ashstalker, Pyre Hound | tracker | hunt Kindled Key carriers and Ash-zone nights |
+| Normal | Gnatling (`slime`, was "Mosqui") | flyer | swarm chip damage |
+| Normal | Bramble Snail (`shroom`, was "Snailu") | melee | slow tank, leaves slowing slime |
+| Normal | Bristle Boar (`boar`, was "Astromophy") | charger | telegraphed charge |
+| Normal | Puffcap (`puffcap`) | ranged | spore lobs, poison |
+| Normal | Mossback Tortoise (`mossback`, replaces `turtle`) | stationary guard | tutorial target, shell-up phase |
+| Normal | Briar Wolf (`briar_wolf`) | pack | bleed bites, flanks |
+| Normal | Sapling Treant (`sapling_treant`) | stationary | root snare |
+| Normal night | Dusk Bat (`bat`) | flyer | existing |
+| Ash | Magma Slime (existing) | splitter | burning puddles |
+| Ash | Cinder Hound | pack | burn bite, sprints |
+| Ash | Ash Wisp | kamikaze flyer | explodes, blinds |
+| Ash | Bone Grunt, Bone Archer (existing skeleton IDs) | melee / ranged | Grey Choir undead in the ruins |
+| Ash | Ash Revenant | reviver | raises fallen undead |
+| Ash | Ember Drake | flyer, breath | elite-tier roamer |
+| Ash | Hollowfolk Raider, Slinger, Shieldbearer, Shaman, Chieftain | outpost units | camps and outposts |
+| Ash night | Ashstalker, Pyre Hound (Ash Hunters) | tracker | hunt Kindled Key carriers and night travellers |
+| Snow | Frost Slime (existing) | splitter | chill puddles |
+| Snow | Rime Elk | charger | ice-slide charge |
+| Snow | Ice Troll | regen brute | regenerates unless burning |
+| Snow | Snow Harpy | dive flyer | knock-back dives |
+| Snow | Frostbound Knight | armoured melee | parry stance, armour break needed |
+| Snow | Glacier Crab | burrow/guard | ambush from snowdrifts |
+| Snow night | Wraith of the White | tracker | stalks players outside light/heat |
 
 ### Bosses
 
-| Boss | Kind | Phase mechanics |
+| Boss | Zone · kind | Phase mechanics |
 | --- | --- | --- |
-| Mire King (existing) | world, T1 | P1 slam + summon slimes · P2 split into 3 mini-kings |
-| Hollow Stag | field, T2 | P1 charge lanes · P2 antler bramble walls · P3 enrage at 25% |
-| Rootmother | dungeon, T2 | rooted; vines across the arena; destroy 3 bulbs to expose her |
-| Geode Wyrm | dungeon, T3 | burrows, crystal shards; break crystals to stagger |
-| Lantern Colossus | world, T3 | darkness phase: only lantern light shows its telegraphs |
-| Crypt Warden (existing) | dungeon, T1–2 | existing behaviour kept |
-| Grey Choir Abbot | field, T4 | revives fallen skeletons; interrupt the chant |
-| Bone Colossus (existing) | dungeon, T5 | existing 2 phases + P3 bone storm |
-| Glacier Behemoth | world, T5 | freezing floor zones; shatter armour with fire |
-| Pyre Sovereign | vault, T6 | 3 phases; Kindled Key bearers deal +20% damage |
+| Mire King (existing) | Normal · world | P1 slam + summon slimes · P2 split into 3 mini-kings |
+| Hollow Stag | Normal · field | P1 charge lanes · P2 antler bramble walls · P3 enrage at 25% |
+| Crypt Warden (existing) | Normal · dungeon | existing behaviour kept |
+| Grey Choir Abbot | Ash · field | revives fallen skeletons; interrupt the chant |
+| Lantern Colossus | Ash · world | ash-storm phase: only lantern light shows its telegraphs |
+| Geode Wyrm | Ash · dungeon (Gloamdeep Mines) | burrows, crystal shards; break crystals to stagger |
+| Pyre Sovereign | Ash · Ember Vault | 3 phases; Kindled Key bearers deal +20% damage |
+| Glacier Behemoth | Snow · world | freezing floor zones; shatter armour with fire |
+| Bone Colossus (existing) | Snow · dungeon (Frozen Sepulchre) | existing 2 phases + P3 bone storm |
 
 Boss rewards follow the generic pattern of **last-hit bonus + participation tier by damage
 share** (top 1 / ≥10% / any). Offline the player gets both. On LAN, rewards are split per peer
@@ -143,7 +155,7 @@ rarity weight (≤ +30%). Boss-exclusive items carry `bound: true` on LAN.
 
 ## 6. Difficulty scaling
 
-- Monster level by region band. Damage and HP grow ~12% per level.
+- Monster level by zone band (Normal 1–15, Ash 15–30, Snow 30–45). Damage and HP grow ~12% per level.
 - Under-levelled warning on region entry when GS < 80% of the recommendation.
 - LAN party scaling: monster HP × (1 + 0.6 × (players − 1)); boss HP × (1 + 0.8 × (players − 1)).
 

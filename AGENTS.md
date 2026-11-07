@@ -1,7 +1,7 @@
-# Emberfield Agent Rules
+# Cinderwild Agent Rules
 
-These rules apply to the entire repository. Emberfield is an **original** 2D pixel-art survival
-RPG. It aims for gameplay breadth and depth comparable to Treasure Hunter – Survival, built through
+These rules apply to the entire repository (folder and Godot `config/name`: `emberfield`).
+Cinderwild is an **original** 2D pixel-art survival RPG. It aims for gameplay breadth and depth comparable to Treasure Hunter – Survival, built through
 independent design, implementation and content. Preserve the existing Godot 4.6 project and its
 architecture; never replace it with a new scaffold.
 
@@ -46,7 +46,10 @@ quests, dialogue, audio and balance numbers must be original.
   status `excluded`. Existing uses are replaced and then retired per
   `docs/design/ASSET_REPLACEMENT_PLAN.md`; don't delete them before the replacement passes and
   the owner approves.
-- Asset priority: original Emberfield assets → verified-licence assets with documented
+- The `excluded` status changes only if a written licence from the rights holder of the reference
+  game, covering use in this project, is stored under `docs/legal/` and approved by the owner. A
+  general statement that the material is "authorised" is not enough.
+- Asset priority: original Cinderwild assets → verified-licence assets with documented
   commercial use → new original pixel art → properly licensed third-party packs.
 - Every production asset needs a provenance record (source, creator, licence, commercial use,
   modification, attribution, restrictions). Assets without one are `unverified`: allowed in

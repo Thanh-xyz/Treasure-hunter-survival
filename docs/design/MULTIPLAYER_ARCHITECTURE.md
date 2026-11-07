@@ -71,7 +71,7 @@ peer save and the host ledger reconcile. Mismatches are logged and the host's ve
 | Building (shared homestead) | ❌ | host validation, permission levels | `Place`, `Upgrade`, `Move` |
 | Kindled Key | ❌ | host-owned, carrier broadcast | |
 | World clock / events | ❌ | host clock broadcast every 5 s | |
-| PvP | ❌ | opt-in duel flag, arena mode, Ashen Wastes PvP | `DuelRequest`, `PvPHit` |
+| PvP | ❌ | opt-in duel flag, arena mode, Ash-zone PvP flag | `DuelRequest`, `PvPHit` |
 
 ## 5. Session lifecycle
 
@@ -92,7 +92,9 @@ peer save and the host ledger reconcile. Mismatches are logged and the host's ve
 | --- | --- |
 | Duel | Both accept; 2-minute limit; higher HP% wins on time-out; no item loss |
 | LAN Arena | 1v1 / 2v2 in a dedicated arena scene; stats normalised option; Valor rewards |
-| Ashen Wastes flag | Region-wide PvP in LAN sessions when the host enables it; carried Kindled Keys transfer on kill; nothing else drops |
+| Ash-zone flag | Zone-wide PvP in the Ash zone when the host enables it. On a PvP kill: a carried Kindled Key always drops, and the danger-zone death roll may drop one item that only the killer can pick up (WORLD §7) |
+
+Homestead sieges are not planned (owner decision 2026-11-07).
 
 The damage formula is shared. A PvP damage scalar (0.6) keeps time-to-kill readable.
 

@@ -13,7 +13,7 @@
 | Skill tree | 3 branches × 5 nodes per hero | 1 point per level from 2 | Modifies the three hero skills and the passives |
 | Gear score | derived | equipment, runes, pet, mount | Displayed power, region recommendations, matchmaking hint |
 | Codex | account-wide | bestiary, exploration, collections | Small capped account bonuses |
-| Ember Cycles (opt-in) | prestige 0–10 | endgame | Reset level and regions; keep collection; +permanent "Ember Mark" bonuses |
+| Ember Cycles (opt-in) — **deferred until after the first release** (owner decision) | prestige 0–10 | endgame | Reset level and regions; keep collection; +permanent "Ember Mark" bonuses |
 
 XP curve: keep the existing `GameContent` curve shape and extend to 45. Target ~1 level per
 45–60 min in Act III.
@@ -146,24 +146,24 @@ core.
 
 ## 9. Sets
 
-Each region drops one named gear set (5 pieces across weapon/helmet/armor/gloves/boots) with a
-theme:
+Each zone drops two named gear sets (5 pieces across weapon/helmet/armor/gloves/boots), each
+with a theme:
 
-| Set | Region | 2-piece | 4-piece |
+| Set | Zone | 2-piece | 4-piece |
 | --- | --- | --- | --- |
-| Meadowguard | T1 | +8% HP | Heal 3% HP on kill |
-| Thornweave | T2 | +6% crit | Hits apply bramble bleed |
-| Deepdelver | T3 | +25% ore gather | Light radius +50%, +10% DEF in caves |
-| Cinderbound | T4 | +10% fire res | Burning enemies take +15% damage |
-| Rimewarden | T5 | +10% frost res | Every 5th hit freezes 0.6 s |
-| Ashwalker | T6 | +10% all res | Remnant timer ×2; Ash Hunters deal −20% damage to you |
+| Meadowguard | Normal | +8% HP | Heal 3% HP on kill |
+| Thornweave | Normal | +6% crit | Hits apply bramble bleed |
+| Deepdelver | Ash (Gloamdeep Mines) | +25% ore gather | Light radius +50%, +10% DEF in dungeons |
+| Cinderbound | Ash | +10% fire res | Burning enemies take +15% damage |
+| Rimewarden | Snow | +10% frost res | Every 5th hit freezes 0.6 s |
+| Wayfarer | Snow | +10% all res | −50% death item-drop chance in danger zones; night stalkers deal −20% damage to you |
 
 ## 10. Runes (generalised augments)
 
 The existing **Augment** system (stat boost / passive / active skill / timed buff) becomes
 **Runes** in the UI, keeping the code name `augment` to avoid churn.
 
-- Tier I–V. Higher tiers come from deeper regions, bosses and vaults.
+- Tier I–V. Higher tiers come from harder zones (Normal I–II, Ash II–IV, Snow III–V), bosses and vaults.
 - Socket hosts: equipment (by rarity 0–3 sockets), **pets (2)**, **mounts (2)**. This generalises
   `apply_augment(equip_slot, …)` to any socket host.
 - Families: Might (atk/crit), Bulwark (hp/def/res), Swiftness (spd/aspd/dodge), Fortune (gold/

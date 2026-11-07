@@ -21,7 +21,7 @@ There's no purchasable currency. Embers are the scarce, earned currency.
 | Container | Capacity | Holds | Notes |
 | --- | --- | --- | --- |
 | **Bag** | 32 → 64 (satchel upgrades) | equipment, consumables, quest items, keys | existing 32 slots |
-| **Material pouch** | 40 → 120 stacks, stack 999 | materials, ingredients, runes (unsocketed) | **new**: materials move out of the bag. Contents are *unbanked* in Ash zones (WORLD §6) |
+| **Material pouch** | 40 → 120 stacks, stack 999 | materials, ingredients, runes (unsocketed) | **new**: materials move out of the bag. Never dropped on death (only one equipped or bag item can drop, WORLD §7) |
 | **Homestead storage** | 60 per Storehouse level (max 240) | anything | **new**: safe; reachable from beacons with an upgrade |
 | Equipment | 9 slots | gear | existing 7 + gloves + cloak |
 | Hotbar | 4 skills + 8 items | references only | existing |
@@ -70,7 +70,7 @@ runes, and pet utility skills.
 
 | Station | Where | Crafts | Exists? |
 | --- | --- | --- | --- |
-| Campfire | world (T1–T3 camps), homestead | basic meals, torches, bandages | new |
+| Campfire | world camps in every zone, homestead | basic meals, torches, bandages | new |
 | Workbench | homestead | tools, planks, basic gear, building kits | partial (crafting panel) |
 | Smelter | homestead | ingots | new |
 | Forge | homestead / Hearthmoor smith | weapons, armour, enhancement, ascension, traps | partial (blacksmith NPC) |
@@ -124,9 +124,9 @@ Shop stock and prices are data-driven, with weekly rotation slots.
 | Materials | gathering, terrain, production buildings, salvage | crafting, building, enhancement, feeding |
 | Gear | drops, crafting | salvage, ascension fodder, selling |
 
-Targets for TEST: a player at the region's recommended GS can afford one enhancement attempt per
-~10 minutes of farming that region. Gold income per hour by tier: T1 2k, T2 6k, T3 15k, T4 35k,
-T5 70k, T6 120k, with costs scaled to match. A simulation script (headless) will check the
+Targets for TEST: a player at the zone's recommended GS can afford one enhancement attempt per
+~10 minutes of farming that zone. Gold income per hour by zone: Normal 2k–8k, Ash 15k–45k,
+Snow 70k–120k (rising across sub-areas), with costs scaled to match. A simulation script (headless) will check the
 curves before tuning by hand.
 
 ## 8. Farming

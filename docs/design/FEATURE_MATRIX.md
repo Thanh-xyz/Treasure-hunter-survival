@@ -22,7 +22,7 @@
 | F0.5 | — → Save v6 migration | MISSING | `save_service.gd` | Mapping, Lost & Found | fixtures | F0.2 | Fixture suite → all v1–v5 fixtures load, no loss |
 | F0.6 | — → Third-party asset licences | NEEDS LEGAL REVIEW | `assets/{tilesets,soldiers,enemies,items,Shop,blacksmith,Font}` | Licence text | CREDITS.md | D5 | Manual → every pack verified or scheduled for replacement |
 | F0.7 | — → Upstream code rights | NEEDS LEGAL REVIEW | whole repo (upstream has no licence) | Written permission | — | D5 | Owner confirmation recorded |
-| F0.8 | — → Branding (title, logo, icon) | PARTIAL | `icon.svg` (Godot default) | Logo, icon | 3 assets | D7 | Visual review |
+| F0.8 | — → Branding: title **Cinderwild**, logo, icon | PARTIAL | `icon.svg` (Godot default) | Logo, icon, UI/window title; trademark check | 3 assets | — | Visual review; `config/name` unchanged |
 
 ## A. Character
 
@@ -34,9 +34,9 @@
 | A4 | — → Skill trees (3×5 per hero) | MISSING | — | All | tree data, icons | A2 | Unit → node effects modify skills; respec refunds |
 | A5 | Combat stats → 15-stat `StatBlock` | PARTIAL | `character_stats.gd`, `inventory_data.gd` sums | crit_dmg, aspd, acc, dodge, counter, res, gather, luck; aggregator | stat table | — | Unit → aggregate equals sum of sources; caps enforced |
 | A6 | Power → Gear score | MISSING | — | Formula, HUD | weights | A5, B3 | Unit → GS monotonic in item power |
-| A7 | Death/respawn → beacon/homestead respawn + Ash-zone remnant | PARTIAL | `player.gd`, respawn flow | Remnant, beacons | remnant rules | C2, D4 | Integration → pouch drops only in Ash zones; recoverable 10 min |
+| A7 | Death/respawn → beacon/homestead respawn + danger-zone item-drop roll (monster kill: lost; player kill: killer-only pickup) | PARTIAL | `player.gd`, respawn flow | Drop roll, killer pickup, beacons | drop chance data | C2, D4 | Integration → pouch drops only in Ash zones; recoverable 10 min |
 | A8 | — → Codex/account bonuses | MISSING | — | All | codex data | H, I | Unit → bonuses capped |
-| A9 | Seasons → Ember Cycles (opt-in prestige) | MISSING | — | All | — | endgame | Deferred (owner question) |
+| A9 | Seasons → Ember Cycles (opt-in prestige) | MISSING (deferred after v1, owner decision) | — | All | — | endgame | — |
 
 ## B. Equipment
 
@@ -48,7 +48,7 @@
 | B4 | Random stats → instance affixes + uid | PARTIAL | reference instance data (to retire) | Generic instances | affix pools | save v8 | Unit → rolls within bands; serialisation round-trip |
 | B5 | Upgrade → +0…+15 with success/fail, pity, ward | PARTIAL | `upgrade_equipment` | Probabilities, protection | cost table | B4 | Seeded unit → rates match table ±1% over 100k rolls |
 | B6 | Tier upgrade → Ascension | MISSING | — | All | — | B4 | Unit → stats never decrease |
-| B7 | Sets → 6 region sets (2/4 piece) | MISSING | — | All | 30 icons, set table | B1, E | Unit → bonuses toggle at thresholds |
+| B7 | Sets → 6 sets, 2 per zone (2/4 piece) | MISSING | — | All | 30 icons, set table | B1, E | Unit → bonuses toggle at thresholds |
 | B8 | Stones → Runes on gear/pets/mounts, fusion | PARTIAL | augment system | Tiers, families, hosts, fusion | rune icons | B4, J | Unit → socket rules; fusion odds |
 | B9 | Artifacts → Relics with auras | MISSING | — | All | relic data | B8 | Unit → aura radius on LAN |
 | B10 | Requirements → level gate | MISSING | — | — | — | A2 | Unit |
@@ -89,15 +89,15 @@
 
 | ID | Ref concept → Emberfield | Status | Existing files | Missing | Assets/Data | Deps | Test → Accept |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| E1 | Zones → biome data model | MISSING | `field_map.gd`, `GameContent.ZONES` | Biome table consumed by FieldMap | biome data | — | Unit → map built from data only |
-| E2 | Zones → 6 regions + hub + homestead | PARTIAL | town, greenwood, frostvale, homestead | thornwood, gloamdeep, cinder_ruins, ashen_wastes | 4 tilesets | E1 | Scene load test per region |
+| E1 | Zones → zone data model + concentric ring function | MISSING | `field_map.gd`, `GameContent.ZONES` | Zone table, radial membership, noise borders, sectors | biome data | — | Unit → map built from data only |
+| E2 | Zones → one continuous overworld: Normal centre, Ash ring, Snow outer ring; chunk streaming | PARTIAL | town, greenwood, frostvale (separate scenes today), homestead | cinderwaste (Ash); sub-areas; Greenwood/Frostvale expansion | 1 new + 2 reworked tilesets | E1 | Scene load test per region |
 | E3 | Dungeons → 5 dungeons | PARTIAL | Crypt Depths | 4 new themes | room sets | E1 | Generation test → all rooms reachable |
 | E4 | Safe vs danger areas → Ash zones | MISSING | `safe` flag on zones | Rules | — | A7 | Integration |
 | E5 | — → Landmarks, beacons, fast travel | MISSING | gate/portal | All | sprites | E1 | Integration |
 | E6 | — → Fog of war, exploration rewards | MISSING | minimap | Fog | — | E1 | Unit → reveal % persisted |
 | E7 | — → Day/night (`WorldClock`) | MISSING | — | All | light textures | save v7 | Unit → clock persistence, night tables |
 | E8 | — → Weather | MISSING | — | Visuals | particles | E7 | Visual |
-| E9 | World persistence → region state | MISSING | — | Save section | — | save v7 | Round-trip |
+| E9 | World persistence → per-chunk state + player position | MISSING | — | Save section | — | save v7 | Round-trip; `greenwood`/`frostvale` saves land in the right ring |
 
 ## F. Combat and monsters
 
@@ -161,7 +161,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | J1 | Quest engine | PARTIAL | `quest_service.gd` | New objective types | — | — | Existing suites |
 | J2 | Tutorial q305–q311 | NEEDS REPLACEMENT | `game_content.gd` | t01–t07 original | text | F0.5 | Migration fixture |
-| J3 | Main chain (4 acts, ~45) | PARTIAL | q01–q15 original | ~30 quests, narrative | text, NPC portraits | E | Content test → every quest reachable |
+| J3 | Main chain (3 acts, ~40) | PARTIAL | q01–q15 original | ~30 quests, narrative | text, NPC portraits | E | Content test → every quest reachable |
 | J4 | Side/weekly/bounty quests | MISSING | 3 dailies | Pools | — | J1 | Unit |
 | J5 | Achievements | MISSING | — | ~80 | icons | A8 | Unit |
 | J6 | Events calendar | PARTIAL | world boss timer | Calendar, Blood Ember, bonus days | — | E7 | Unit → clock-skew guard |
@@ -184,7 +184,7 @@
 | L2 | CommandBus/Authority layer | MISSING | — | All | — | — | Same command offline and host give equal results |
 | L3 | Sync: equipment/crafting/gathering/chests/buffs/quests/pets/mounts/building/keys/clock | MISSING | — | Per MULTIPLAYER §4 | — | L2 + each system | Per-system LAN tests |
 | L4 | Reconnection | PARTIAL | disconnect replay | Session tokens, ledger | — | L2 | Kill/rejoin test → no loss/dupe |
-| L5 | PvP duel/arena/region flag | MISSING | — | All | arena scene | L2, F4 | LAN test |
+| L5 | PvP duel/arena/Ash-zone flag (no sieges) | MISSING | — | All | arena scene | L2, F4 | LAN test |
 | L6 | Clans, guild village, sieges, faction war | MISSING (deferred to online) | — | — | — | P10 | — |
 | L7 | Online server | MISSING (design only) | — | — | — | P10 | — |
 

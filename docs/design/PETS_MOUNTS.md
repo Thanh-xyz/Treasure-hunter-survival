@@ -15,11 +15,11 @@
 | Moss Turtle (`moss_turtle`) | defence | Common–Epic | existing |
 | Dusk Owl (`dusk_owl`) | support | Uncommon–Legendary | existing |
 | Lucky Cat (`lucky_cat`) | utility (luck) | Uncommon–Legendary | existing |
-| Thorn Pup | attack, bleed | Common–Epic | Thornwood egg |
-| Glowmoth | utility, light radius | Uncommon–Epic | Gloamdeep egg |
-| Pebble Golem | defence, taunt | Rare–Legendary | Gloamdeep outpost |
-| Cinder Imp | attack, burn | Rare–Legendary | Cinder Ruins egg |
-| Frost Kit | support, chill | Rare–Legendary | Frostvale egg |
+| Thorn Pup | attack, bleed | Common–Epic | Normal-zone egg |
+| Glowmoth | utility, light radius | Uncommon–Epic | Gloamdeep Mines (Ash) |
+| Pebble Golem | defence, taunt | Rare–Legendary | Hollowfolk outposts (Ash) |
+| Cinder Imp | attack, burn | Rare–Legendary | Ash-zone egg |
+| Frost Kit | support, chill | Rare–Legendary | Snow-zone egg |
 | Ash Raven | utility, finds secrets | Epic–Legendary | Kindled Key vaults |
 | Hearth Drakeling | attack, fire breath | Legendary–Mythic | Ember Vault |
 | Lantern Wisp | support, heal + light | Epic–Mythic | achievement line |
@@ -63,10 +63,10 @@ Owning N distinct pets gives small account-wide stat bonuses (codex).
 | Tusk Boar | attack | charge-through | existing |
 | Shell Tortoise | defence | shell-up (damage reduction) | existing |
 | Gale Stag | speed | double dash | existing |
-| Bramble Ram | attack | knock-back butt | Thornwood |
-| Cave Strider | utility | climb ledges (shortcuts) | Gloamdeep |
-| Rime Elk | speed | ice-walk (no slide) | Frostvale |
-| Ash Hound | attack | ignores Ash-touched | Cinder Ruins outposts |
+| Bramble Ram | attack | knock-back butt | Normal zone |
+| Cave Strider | utility | climb ledges (shortcuts) | Gloamdeep Mines (Ash) |
+| Rime Elk | speed | ice-walk (no slide) | Snow zone (tamed) |
+| Ash Hound | attack | ignores Ash-touched | Hollowfolk outposts (Ash) |
 | Ember Drake (ground) | utility | hover over lava/ash pits | Ember Vault |
 | Lantern Moth | utility | light radius, glide | achievement |
 

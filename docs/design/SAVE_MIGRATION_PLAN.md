@@ -50,7 +50,7 @@ dailies, heroes, pets, mounts, buildings.
 | Version | Feature (roadmap) | Migration |
 | --- | --- | --- |
 | **v6** | P0 content retirement | See §4 |
-| v7 | P1-6 world state (later extended by P5) | Add `world{clock, regions{id:{breaks, nodes, chests, fog}}, keys, maps}`; fresh defaults |
+| v7 | P1-3b / P1-6 overworld + world state (later extended by P5) | Add `world{seed, clock, chunks{"x,y":{breaks, nodes, chests}}, fog, keys, maps}` with fresh defaults; `profile.current_zone` `greenwood` → `overworld` at a Normal-ring spawn beacon, `frostvale` → `overworld` at a Snow-ring beacon (or the Normal centre if the player is under-levelled); add `profile.position` |
 | v8 | P2-1 item instances + material pouch + storage + new slots | Move material-category stacks from bag to pouch; add `uid` to every equipment instance; convert `level` → `enhance` (level 1 → +0, level n → +(n−1)); add empty `gloves`, `cloak`; `diamonds` → `embers` 1:1 |
 | v9 | P2-8 runes generalised | `augments[]` on items → rune instances socketed in the same item |
 | v10 | P6-1 / P7-1 homestead grid + pet/mount instances | `plots[i]` → building at fixed grid cell with the same type/level; `pets{id:level}` → instances with that level, Common rarity, 1★; `mounts` → instances keeping skin lists |

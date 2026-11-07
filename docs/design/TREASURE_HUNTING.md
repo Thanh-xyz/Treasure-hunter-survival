@@ -12,14 +12,14 @@
 | Treasure maps | low–medium | Rare+ cache, recipe scroll | all |
 | Hidden locations (secret rooms, cracked walls, sealed cellars) | low | codex + cache | all |
 | Dungeon chests and secret rooms | medium | gear, runes | dungeons |
-| Outpost storage | medium | materials, embers | T3+ |
+| Outpost storage | medium | materials, embers | Ash |
 | **Kindled Keys → Ember Vault caches** | **high** | embers, tier-IV/V runes, eggs, Mythic recipe | Ash zones |
-| Ember Vault (dungeon) | very high | Mythic gear, vault-exclusive pets/mounts | T6 |
+| Ember Vault (dungeon) | very high | Mythic gear, vault-exclusive pets/mounts | Ash (endgame) |
 
 ## 2. Treasure maps
 
 - **Fragments** drop from terrain, dig plots and mobs. 4 fragments make a **Weathered Map**
-  (T1–T3). Rare drops make **Gilded Maps** (T4+).
+  (Normal and Ash). Rare drops make **Gilded Maps** (Ash and Snow).
 - Reading a map rolls a target location in a region (seeded, saved), shown as a sketched
   minimap clue: a landmark silhouette plus a distance ring that tightens as you approach.
 - At the spot a special dig plot appears. Digging it may spawn **guardians** (mimic chest,
@@ -46,7 +46,7 @@ keys can be taken by killing the holder; the reveal, hunter and channel rules he
    doubles. After 15 minutes it burns out into Ember Dust (a consolation reward).
 
 ### Opening
-- Each Ash region has 2–3 **Ember Vault caches** (fixed landmark positions per seed).
+- The Ash zone has 4–6 **Ember Vault caches** (fixed landmark positions per seed).
 - The carrier must **channel 60 s** at the cache. Taking damage pauses (doesn't reset) the channel.
   Hunters spawn in a final wave during the channel.
 - Rewards: embers (40–120), a tier IV–V rune, a chance at an egg or mount token, Vault recipe
@@ -55,7 +55,7 @@ keys can be taken by killing the holder; the reveal, hunter and channel rules he
 ### Death and theft
 - On death the key drops at the death spot (always, regardless of Ash-zone rules). It stays
   marked for 2 minutes, then returns to the terrain pool.
-- **LAN PvP** (opt-in or in the Ashen Wastes PvP flag): killing a carrier takes their key. In
+- **LAN PvP** (opt-in duel or the Ash-zone PvP flag): killing a carrier takes their key. In
   co-op without PvP, a party can **escort**: allies near the carrier get +10% damage, and hunters
   split their focus.
 

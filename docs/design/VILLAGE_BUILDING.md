@@ -39,7 +39,7 @@ The homestead is the player's **bank, factory and fortress**. It must give long-
 | Lumber Mill | 2×2 | 5 | Wood over time | exists |
 | Stone Quarry | 2×2 | 5 | Stone over time | exists |
 | Herb Garden | 2×2 | 5 | Herbs and pet treats | exists |
-| Ore Drill | 2×2 | 5 | Ore of a chosen tier (needs a region cleared) | new |
+| Ore Drill | 2×2 | 5 | Ore of a chosen zone tier (needs that zone's boss cleared) | new |
 | Farm plot | 2×2 | 3 | Crops | new |
 | Well, Scarecrow | 1×1 | 3 / 1 | Farm modifiers | new |
 | Training Hall | 3×2 | 5 | +ATK per level (existing) | exists |
@@ -67,7 +67,7 @@ shifting by tier (wood/stone → planks/ingots → alloys → embers). Upgrade t
 | Camp | 1 | inner ring, 6 buildings, workbench |
 | Hamlet | 3 | mid ring, smelter, forge, farm, first Ashfall raids |
 | Village | 5 | outer ring, rune altar, hatchery, towers, second build queue |
-| Stronghold | 8 | ash-iron walls, ore drill T4+, beacon relay |
+| Stronghold | 8 | ash-iron walls, Snow-tier ore drill, beacon relay |
 | Ember Keep | 10 | cosmetic keep, Mythic recipes, Ember Cycle eligibility |
 
 Renown comes from quests, raid defences, codex and building levels.
@@ -93,7 +93,7 @@ per tier) walk between buildings, giving visual life and auto-collecting (Villag
 
 ## 8. Hollowfolk Outposts (raidable NPC villages)
 
-From T3, regions contain fortified outposts: palisade, gate, 3–6 destructible buildings
+The Ash zone contains fortified outposts: palisade, gate, 3–6 destructible buildings
 (Barracks, Slinger Nest, Totem that heals defenders, Storage that drops loot when broken,
 Chieftain's Hut). Destroying the Chieftain's Hut clears the outpost and gives a big chest and
 embers. The outpost rebuilds after 24 h with a higher level. This uses the same building

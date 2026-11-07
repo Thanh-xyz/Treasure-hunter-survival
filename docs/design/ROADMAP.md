@@ -42,8 +42,9 @@ P0 Foundation ──► P1 World/Character ──► P2 Items ──► P3 Comba
 | --- | --- | --- | --- |
 | P1-1 `StatBlock` pure aggregator behind the existing API (no behaviour change) | A5 | M | P0-2 |
 | P1-2 `CommandBus` + `LocalAuthority` skeleton; route attack/gather/equip through it | L2 | M | P1-1 |
-| P1-3 Biome data model; `FieldMap` reads Greenwood/Frostvale from data | E1 | M | — |
-| P1-4 Breakable terrain layer (TileMap damage map, drops, regrow) in Greenwood | D1 | L | P1-3 |
+| P1-3 Zone data model + radial ring function (noise borders, sectors); `FieldMap` reads zones from data | E1 | M | — |
+| P1-3b 🔒 Continuous overworld scene with 32×32 chunk streaming; spawn tables per ring; old greenwood/frostvale scenes kept until acceptance | E2 | L | P1-3 |
+| P1-4 Breakable terrain layer (TileMap damage map, drops, regrow, per-chunk deltas) | D1 | L | P1-3b |
 | P1-5 Tool belt + tool-tiered gathering formula; `ResourceNode` respawn persistence | D2, D3 | M | P1-1 |
 | P1-6 🔒 `WorldClock` day/night + save v7 world section | E7, E9 | M | P0-8 |
 | P1-7 Level cap 45 + skill points | A2 | S | P1-1 |
@@ -89,14 +90,14 @@ P0 Foundation ──► P1 World/Character ──► P2 Items ──► P3 Comba
 
 | Task | Size | Depends on |
 | --- | --- | --- |
-| P5-1 Thornwood region (tileset, roster, Hollow Stag, set) | L | P1-4, P3-8 |
-| P5-2 Gloamdeep Caverns + Gloamdeep Mines dungeon | L | P5-1 |
-| P5-3 Ash-zone rules + remnant death | M | P1-6, P2-1 |
+| P5-1 Normal ring (centre): sectors, full roster, Hollow Stag, 2 sets | L | P1-4, P3-8 |
+| P5-2 Ash ring (around Normal): tileset, roster, outposts, Grey Choir Abbot, Lantern Colossus, Gloamdeep Mines | L | P5-1 |
+| P5-3 Danger-zone death roll (monster kill: lost; player kill: killer pickup) | M | P1-6, P2-1 |
 | P5-4 Treasure maps + guardians | M | P1-4 |
 | P5-5 Kindled Keys + Ash Hunter director + vault caches | L | P5-3, P3-6 |
-| P5-6 Cinder Ruins, Frostvale Peaks rework, Frozen Sepulchre | L | P5-2 |
-| P5-7 Ashen Wastes + Ember Vault | L | P5-5, P5-6 |
-| P5-8 Hidden locations + dowsing; world-boss altars T3/T5 | M | P1-4 |
+| P5-6 Snow ring (outermost; replaces the separate Frostvale scene): roster, Cold meter, blizzards, Glacier Behemoth, Frozen Sepulchre | L | P5-2 |
+| P5-7 Ember Vault (Ash endgame) | L | P5-5 |
+| P5-8 Hidden locations + dowsing; world-boss altar per zone | M | P1-4 |
 
 ## P6 — Village and building
 
@@ -129,7 +130,7 @@ P0 Foundation ──► P1 World/Character ──► P2 Items ──► P3 Comba
 | P8-3 Side quests, weeklies, bounties | M | P8-1 |
 | P8-4 Achievements + codex | M | P8-1 |
 | P8-5 Event calendar (Blood Ember, bonus days, wandering merchant, Season of Embers) | M | P1-6 |
-| P8-6 Ember Cycles prestige (if approved) | M | all |
+| P8-6 Ember Cycles prestige — deferred after the first release | — | — |
 
 ## P9 — LAN multiplayer (4 players)
 
@@ -139,7 +140,7 @@ P0 Foundation ──► P1 World/Character ──► P2 Items ──► P3 Comba
 | P9-2 LAN discovery, content hash, session tokens, reconnection ledger | M | P9-1 |
 | P9-3 Sync equipment/crafting/gathering/chests/buffs | L | P9-1 |
 | P9-4 Sync pets/mounts/building/keys/clock/quests credit | L | P9-3 |
-| P9-5 PvP duel, arena, Ashen Wastes flag | M | P9-1 |
+| P9-5 PvP duel, arena, Ash-zone flag (no sieges) | M | P9-1 |
 | P9-6 4-process harness, bandwidth measurements | M | P9-2 |
 
 ## P10 — Online architecture (design only)
@@ -159,4 +160,4 @@ P10-1 Server/accounts/persistence/anti-cheat design document; no implementation.
 | Tool install | P0-2 |
 | Save format changes | P0-8 (v6), P1-6 (v7), P2-1 (v8), P2-8 (v9), P6-1/P7-1 (v10) |
 | Removal of copied content | P0-9 |
-| Major system redesigns | P3-5 (skill input) |
+| Major system redesigns | P1-3b (continuous overworld), P3-5 (skill input) |

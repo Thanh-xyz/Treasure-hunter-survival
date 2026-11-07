@@ -8,7 +8,7 @@
 
 ## 1. Asset priority (from the directive)
 
-1. Original Emberfield assets (`PixelArt` ASCII sprites, anything newly authored)
+1. Original Cinderwild/Emberfield assets (`PixelArt` ASCII sprites, anything newly authored)
 2. Verified-licence assets with documented commercial-use rights
 3. New original pixel art
 4. Properly licensed third-party packs (licence text checked in)
@@ -23,7 +23,7 @@
 | **D. Commissioned / owner-made art** | Heroes, bosses, key art, logo | Cost/time | Owner |
 
 Honest constraint: routes A/B can deliver a consistent, original, shippable *low-fi* style for
-most of the roster. Polished heroes and bosses, plus tilesets for 6 biomes, realistically need
+most of the roster. Polished heroes and bosses, plus tilesets for the 3 zones, realistically need
 route C or D. The plan doesn't depend on any one route: every runtime reference goes through an
 **asset ID**, so a sprite can be upgraded later without code changes.
 
@@ -58,18 +58,18 @@ reference-parity workflows. These are moved out of the repo or deleted only with
 | `assets/items/item_icons.png` | Verify or replace with a route-B icon set |
 | `assets/Shop/**`, `assets/blacksmith/**` | Verify (the `.aseprite` source suggests team-made) |
 | `assets/Font/*.ttf` | Add licence text (Pixellari is commonly distributed as free for commercial use — **must be confirmed from the author's licence file**) |
-| `icon.svg` (Godot default) | Replace with an Emberfield logo/icon |
+| `icon.svg` (Godot default) | Replace with a Cinderwild logo/icon |
 
 ## 5. New assets needed (by milestone)
 
 | Milestone | Assets |
 | --- | --- |
 | P0 | Ember UI kit; 4 T1 monster replacements; Warden Captain portrait; logo/icon |
-| P1 | T1 tileset (if TX not verified); breakable tile sprites ×6 biomes (crack stages); day/night light textures; tool icons |
+| P1 | T1 tileset (if TX not verified); breakable tile sprites ×3 zones (crack stages); day/night light textures; tool icons |
 | P2 | Rarity frames ×6; material/ingredient icons (~60, route B); gloves/cloak icons; rune icons ×6 families × 5 tiers |
 | P3 | Dodge animation, status FX (burn, poison, bleed, chill, shock, stun), elite aura, hit sparks |
 | P4 | Station sprites ×10, crop growth stages ×12, processing icons |
-| P5 | T2–T6 tilesets, monster rosters (~22), boss sprites (~8), landmarks, chests, keys, map icons |
+| P5 | Ash and Snow tilesets, zone monster rosters (~20), boss sprites (~7), landmarks, chests, keys, map icons |
 | P6 | Building sprites ×25 with level variants, walls, traps, towers, Hollowfolk units |
 | P7 | 8 new pets × 3 evolutions; 6 new mounts; skins |
 | P8 | NPC portraits, codex illustrations (small) |

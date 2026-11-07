@@ -19,6 +19,8 @@ Severity: Critical · High · Medium · Low.
 | R13 | **Reverse-engineering artifacts on disk** (decompiled smali, IL2CPP metadata, Pairip/Play Integrity analysis, two XAPKs). | Low (for code) / owner's legal call | `assets-ths/` | Keep out of the repo and of any agent workflow; never use to bypass protections |
 | R14 | **Mobile performance**: per-frame loot magnet, runtime texture generation, up to 96-enemy LAN batches. | Low | `field_map.gd MAGNET_INTERVAL`, `LanSession.MAX_ENEMY_BATCH` | Profile once biomes add density; cache already exists in `PixelArt` |
 
+| R15 | **Continuous concentric overworld** (owner decision 2026-11-07): one large map (~576×576 tiles) needs chunk streaming, per-chunk persistence and LAN interest management; the current game loads one small zone scene at a time. | Medium-High | `WORLD_DESIGN.md` §1; `scene_transition_service.gd`, `LanSession` zone sync | Prototype chunking early (P1-3b) with a frame-time budget on a low-end phone before building content on it |
+
 ## Unknowns
 
 - Whether the existing test suites currently pass on this machine (not run).

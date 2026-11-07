@@ -1,4 +1,7 @@
-# Emberfield — Game Design Document
+# Cinderwild — Game Design Document
+
+> Title decided 2026-11-07: **Cinderwild**. The repository, folder and internal Godot
+> `config/name` stay `emberfield` so existing `user://` save paths keep working (see §11).
 
 - Stage: BRAINSTORM draft for owner approval · 2026-11-07
 - Engine: Godot 4.6 / GDScript, portrait mobile first, desktop for development
@@ -31,7 +34,7 @@ data tables and be tuned during TEST. They are not commitments.
 
 ## 1. Vision
 
-> **Emberfield** is a portrait pixel-art survival RPG. You rekindle a dying frontier by breaking
+> **Cinderwild** is a portrait pixel-art survival RPG. You rekindle a dying frontier by breaking
 > open the land for materials, forging gear from what you find, raising a homestead against the
 > encroaching Ash, and carrying dangerous treasure keys through hunted country. It plays fully
 > offline and with up to four friends on LAN.
@@ -41,7 +44,7 @@ data tables and be tuned during TEST. They are not commitments.
 1. **Everything feeds something.** Every activity produces an input for another system. No
    dead-end loot.
 2. **Carry risk to earn reward.** The best rewards have to be *carried* somewhere while the
-   world pushes back: keys, unbanked materials, Ashfall raids.
+   world pushes back: keys, gear at risk in the danger zones, Ashfall raids.
 3. **Build a place worth defending.** The homestead is your bank, factory and fortress, and it
    is attacked.
 4. **Fair and earned.** No loot boxes, no premium shortcuts. Time and skill are the only currency
@@ -69,14 +72,15 @@ Scattered through the land are **Embers**, living fragments of the Hearthfire. E
 hatch companion eggs, and open the sealed **Ember Vaults** the old wardens left behind.
 
 The player is a **Kindler**, a frontier settler sworn to carry embers home and rekindle the
-**Hearthmoor** settlement. Each region pushed back from the Ash makes the next one reachable.
+**Hearthmoor** settlement. The frontier has three zones: the green **Normal** lands, the grey
+**Ash** wastes, and the frozen **Snow** heights beyond them.
 
 Factions:
 
 | Faction | Role |
 | --- | --- |
 | Hearthmoor settlers | Hub NPCs: smith, alchemist, quartermaster, stablekeeper, warden captain |
-| Hollowfolk | Ash-touched raiders who build fortified outposts in mid and late regions |
+| Hollowfolk | Ash-touched raiders who build fortified outposts in the Ash zone |
 | The Grey Choir | Late-game Ash cult that animates the dead (ruins, crypts) |
 | Wildkin | Beasts and spirits of each biome; neutral until the Ash corrupts them |
 
@@ -110,7 +114,7 @@ instead of hard locks.
           ▼                                ▼                                 │
    materials (pouch)                 loot, embers, keys                      │
           │                                │                                 │
-          └──────► CARRY HOME (risk: death drops unbanked pouch, hunters) ◄──┘
+          └──────► CARRY HOME (risk: Ash/Snow death may cost an item, hunters) ◄─┘
                                    │
                                    ▼
    HOMESTEAD: bank ▸ process (smelt/tan/brew) ▸ craft ▸ enhance ▸ socket runes
@@ -132,12 +136,11 @@ instead of hard locks.
 
 ### Progression arc (first release target ≈ 40–60 h)
 
-| Act | Regions | Player level | Unlocks |
+| Act | Zone | Player level | Unlocks |
 | --- | --- | --- | --- |
-| I — Rekindle | Hearthmoor, Greenwood Meadow | 1–10 | Homestead, workbench, first pet, Crypt Depths |
-| II — Push back | Thornwood, Gloamdeep Caverns | 10–22 | Forge, smelter, mounts, Ashfall raids, Kindled Keys |
-| III — Into the Ash | Cinder Ruins, Frostvale Peaks | 22–36 | Rune altar, Mythic crafting, outposts, world bosses |
-| IV — Heartlands | Ashen Wastes | 36–45 | Ember Vault endgame, Ember Cycles (prestige) |
+| I — Rekindle | Hearthmoor + **Normal** (Greenwood) | 1–15 | Homestead, workbench, forge, first pet and mount, Crypt Depths |
+| II — Into the Ash | **Ash** (Cinderwaste) | 15–30 | Smelter, rune altar, Ashfall raids, Hollowfolk outposts, Kindled Keys, Gloamdeep Mines, Ember Vault |
+| III — The White Heights | **Snow** (Frostvale) | 30–45 | Mythic crafting, Cold survival, Frozen Sepulchre, hardest world boss |
 
 ---
 
@@ -151,8 +154,8 @@ instead of hard locks.
 | Gathering | Breakable terrain tiles, resource nodes, ore veins, herbs, fishing (later), farming | ECONOMY / WORLD |
 | Crafting | Stations, processing chains, timed queues, success rates for runes, recipe unlocks | ECONOMY |
 | Combat | Basic + weapon-class attacks, dodge roll, 3 hero skills + 2 gear skills, status effects | COMBAT |
-| Monsters | 6 biomes × 4–5 mobs, elites, champions, field/world/dungeon bosses, outposts | COMBAT |
-| World | 7 regions + hub, 4 dungeons, day/night, weather, fog of war, fast-travel beacons | WORLD |
+| Monsters | 3 zones × 7–10 zone-exclusive mobs, elites, champions, field/world/dungeon bosses, outposts | COMBAT |
+| World | One continuous map: Normal centre, Ash ring around it, Snow outer ring; hub at the centre; homestead; 4 dungeons; day/night, weather, fog of war, beacons | WORLD |
 | Village | Grid homestead, 18 buildings, production, storage, defences, Ashfall raids | VILLAGE |
 | Treasure | Treasure maps, buried caches, Kindled Keys, Ember Vaults, secret rooms | TREASURE |
 | Pets & mounts | 12 pets, 10 mounts, eggs, rarity, levels, stars, skills, collection bonuses | PETS_MOUNTS |
@@ -192,7 +195,7 @@ instead of hard locks.
 
 ## 8. Audio direction
 
-- Music: one calm and one tense theme per region, a hub theme, a boss theme and a homestead theme.
+- Music: one calm and one tense theme per zone, a hub theme, a boss theme and a homestead theme.
 - SFX: event-driven through a new `AudioService` that listens to `GameEvent` (hit, crit, gather,
   break, loot by rarity, level-up, craft success/fail, UI).
 - Sources: original compositions or CC0/verified-licence packs, recorded in the provenance
@@ -203,10 +206,21 @@ instead of hard locks.
 None. If the owner later wants a commercial release, cosmetic-only purchases can be layered on top
 without touching balance. This is outside the current plan.
 
-## 10. Open design questions for the owner
+## 10. Owner decisions (2026-11-07)
 
-1. Keep **Emberfield** as the final title? (Assumed yes.)
-2. Is the death penalty "drop unbanked material pouch in Ash regions" acceptable, or should it be
-   softer (lose 25%)?
-3. Should Ember Cycles (prestige) be in the first release or deferred?
-4. Should LAN PvP include homestead sieges, or only duels and the arena?
+| Topic | Decision |
+| --- | --- |
+| Title | **Cinderwild** (trademark/store-name check still needed before any release) |
+| World | Three zones, **Normal, Ash, Snow**, each with its own monsters, laid out as **concentric rings** on one map: Ash surrounds Normal, Snow surrounds Ash (WORLD_DESIGN §1) |
+| Death in danger zones | A **chance** to drop **one** equipped or bag item. Killed by a monster: the item is lost. Killed by a player: only the killer can pick it up (WORLD_DESIGN §7) |
+| Ember Cycles | Deferred until after the first release |
+| LAN PvP | Duels and arena (plus the Ash-zone PvP flag). Homestead sieges are not planned |
+
+Open: whether the death-drop rule applies to Snow as well as Ash (assumed yes).
+
+## 11. Naming and save paths
+
+Godot derives the `user://` directory from `application/config/name` (`emberfield`). Renaming it
+would orphan existing saves, so the display title changes to Cinderwild in the UI, window title
+and export metadata, while `config/name` stays. If the internal name must change later, set
+`application/config/use_custom_user_dir` with the old directory name first.

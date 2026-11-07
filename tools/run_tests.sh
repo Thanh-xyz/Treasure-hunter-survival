@@ -29,7 +29,15 @@ report() { # $1 = name, $2 = exit code
 ( isolate import; "$GODOT" --headless --editor --quit-after 120 --path "$ROOT" >"$WORK/logs/import.log" 2>&1 )
 report "import" $?
 
-for suite in InventoryTransactionTests SurvivalTests LegacySystemTests; do
+python3 -I "$ROOT/tools/provenance/test_check_provenance.py" >"$WORK/logs/provenance_unit.log" 2>&1
+report "provenance gate unit tests" $?
+python3 -I "$ROOT/tools/provenance/check_provenance.py" --mode dev --quiet >"$WORK/logs/provenance_dev.log" 2>&1
+report "provenance gate (dev)" $?
+# Release mode is expected to fail until every asset is original/verified; it is reported, not counted.
+python3 -I "$ROOT/tools/provenance/check_provenance.py" --mode release --quiet >"$WORK/logs/provenance_release.log" 2>&1
+echo "INFO  provenance gate (release): $(tail -1 "$WORK/logs/provenance_release.log")"
+
+for suite in InventoryTransactionTests SurvivalTests LegacySystemTests ProvenanceTests; do
 	( isolate "$suite"; timeout 600 "$GODOT" --headless --path "$ROOT" "res://tests/$suite.tscn" >"$WORK/logs/$suite.log" 2>&1 )
 	report "$suite" $?
 done

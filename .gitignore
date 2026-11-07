@@ -2,3 +2,7 @@
 .godot/
 .vscode/settings.json
 /android/
+
+# Python caches
+__pycache__/
+*.pyc

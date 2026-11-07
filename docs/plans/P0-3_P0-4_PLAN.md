@@ -51,9 +51,8 @@ references an asset that isn't allowed for the current build mode.
 
 Initial classification:
 - 56 Feb-era packs/fonts → `unverified`.
-- 82 `assets/treasure_hunter/**` → `licence_pending`, `license_ref` = the Mega Combat PDF, plus a
-  note that the files were obtained by APK extraction (which the document's §4 itself prohibits).
-  They move to `verified` only after verification (owner decision below).
+- 82 `assets/treasure_hunter/**` → `excluded` (owner decision 2026-11-07: not used in the game;
+  replaced in P0-5…P0-8, retired in P0-9).
 - `PixelArt` sprites (runtime-generated) → one `original` record per sprite ID family.
 - `icon.svg` → `unverified` (Godot default icon).
 
@@ -136,7 +135,5 @@ never lose data.
 
 ## Owner decisions needed
 
-1. **Mega Combat licence verification.** Until it is verified, the 82 reference assets stay
-   `licence_pending` (usable in dev builds, blocked from release builds). See the summary
-   message for the specific points that need checking.
-2. Approve this PLAN for P0-3 and P0-4.
+Approved 2026-11-07. Reference-game assets are `excluded`; the Mega Combat document is not used
+as a licence basis.

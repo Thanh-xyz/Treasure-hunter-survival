@@ -46,6 +46,9 @@ quests, dialogue, audio and balance numbers must be original.
   status `excluded`. Existing uses are replaced and then retired per
   `docs/design/ASSET_REPLACEMENT_PLAN.md`; don't delete them before the replacement passes and
   the owner approves.
+- Owner decision 2026-11-07: reference-game assets are **not used** in the game. They may be
+  consulted only for general style cues (resolution, sprite scale, readability). Never trace,
+  redraw, recolour or closely imitate a specific sprite, icon, UI element or design.
 - The `excluded` status changes only if a written licence from the rights holder of the reference
   game, covering use in this project, is stored under `docs/legal/` and approved by the owner. A
   general statement that the material is "authorised" is not enough.

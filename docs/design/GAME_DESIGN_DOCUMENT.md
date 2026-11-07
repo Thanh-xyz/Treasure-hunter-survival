@@ -216,7 +216,9 @@ without touching balance. This is outside the current plan.
 | Ember Cycles | Deferred until after the first release |
 | LAN PvP | Duels and arena (plus the Ash-zone PvP flag). Homestead sieges are not planned |
 
-Open: whether the death-drop rule applies to Snow as well as Ash (assumed yes).
+The death-drop rule applies to both Ash and Snow (confirmed).
+
+| Reference-game assets | **Not used in the game** (owner decision after the licence discussion). They may serve only as a general style reference (resolution, character scale, readability); no tracing, redrawing or imitation of specific designs |
 
 ## 11. Naming and save paths
 

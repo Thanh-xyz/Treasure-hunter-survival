@@ -5,11 +5,15 @@ extends RefCounted
 
 const PLANT_SHEET := preload("res://assets/tilesets/TX Plant.png")
 const PROPS_SHEET := preload("res://assets/tilesets/TX Props.png")
-const THS_TREE_CLUSTER := preload("res://assets/treasure_hunter/field/tree_cluster.png")
-const THS_TREE_MEDIUM := preload("res://assets/treasure_hunter/field/tree_medium.png")
-const THS_BUSH := preload("res://assets/treasure_hunter/field/bush.png")
-const THS_STUMP := preload("res://assets/treasure_hunter/field/stump.png")
-const SOURCE_CAPTURE_SCALE := 0.5
+## Trees, bushes and stumps from the CC0 Ninja Adventure nature tileset (16 px grid), drawn at
+## integer scales. Region rects are in source pixels.
+const NATURE_SHEET := preload("res://assets/ninja_adventure/Backgrounds/Tilesets/TilesetNature.png")
+const NATURE_REGIONS := {
+	"tree_cluster": [Rect2(64, 32, 64, 48), 2],
+	"tree_round": [Rect2(48, 288, 48, 48), 2],
+	"bush": [Rect2(16, 160, 16, 16), 2],
+	"stump": [Rect2(64, 128, 16, 16), 2],
+}
 
 static var _ground_tileset: TileSet = null
 
@@ -43,15 +47,20 @@ const REGIONS := {
 
 
 static func make_sprite(key: String, scale: float = 1.0) -> Sprite2D:
-	var source_texture := _source_texture_for(key)
-	if source_texture != null:
-		var source_sprite := Sprite2D.new()
-		source_sprite.texture = source_texture
-		source_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-		var source_scale := scale * SOURCE_CAPTURE_SCALE * _source_scale_for(key)
-		source_sprite.scale = Vector2(source_scale, source_scale)
-		source_sprite.position = Vector2(0, -source_texture.get_height() * source_scale * 0.5 + 2.0)
-		return source_sprite
+	var nature_key := _nature_key_for(key)
+	if not nature_key.is_empty():
+		var region: Rect2 = NATURE_REGIONS[nature_key][0]
+		# Integer pixel scale from the table; callers' legacy fractional scales were tuned for the
+		# retired capture art and would blur 16 px tiles, so they are ignored for nature props.
+		var pixel_scale := float(NATURE_REGIONS[nature_key][1])
+		var nature := Sprite2D.new()
+		nature.texture = NATURE_SHEET
+		nature.region_enabled = true
+		nature.region_rect = region
+		nature.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		nature.scale = Vector2(pixel_scale, pixel_scale)
+		nature.position = Vector2(0, -region.size.y * pixel_scale * 0.5 + 2.0)
+		return nature
 	var entry: Array = REGIONS.get(key, REGIONS["rock_1"])
 	var spr := Sprite2D.new()
 	spr.texture = PLANT_SHEET if entry[0] == "plant" else PROPS_SHEET
@@ -64,18 +73,18 @@ static func make_sprite(key: String, scale: float = 1.0) -> Sprite2D:
 	return spr
 
 
-static func _source_texture_for(key: String) -> Texture2D:
+static func _nature_key_for(key: String) -> String:
 	match key:
 		"tree_1", "tree_3":
-			return THS_TREE_CLUSTER
+			return "tree_cluster"
 		"tree_2":
-			return THS_TREE_MEDIUM
+			return "tree_round"
 		"bush_1", "bush_2", "bush_3", "bush_4", "bush_5":
-			return THS_BUSH
+			return "bush"
 		"stump":
-			return THS_STUMP
+			return "stump"
 		_:
-			return null
+			return ""
 
 
 static func _source_scale_for(key: String) -> float:

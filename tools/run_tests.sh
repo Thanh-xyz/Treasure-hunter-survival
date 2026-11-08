@@ -35,6 +35,8 @@ python3 -I "$ROOT/tools/provenance/check_provenance.py" --mode dev --quiet >"$WO
 report "provenance gate (dev)" $?
 python3 -I "$ROOT/tools/provenance/sync_original_art.py" --check >"$WORK/logs/art_manifest.log" 2>&1
 report "original art manifest records" $?
+python3 -I "$ROOT/tools/provenance/register_third_party.py" --check >"$WORK/logs/third_party_manifest.log" 2>&1
+report "third-party asset records" $?
 # Release mode is expected to fail until every asset is original/verified; it is reported, not counted.
 python3 -I "$ROOT/tools/provenance/check_provenance.py" --mode release --quiet >"$WORK/logs/provenance_release.log" 2>&1
 echo "INFO  provenance gate (release): $(tail -1 "$WORK/logs/provenance_release.log")"

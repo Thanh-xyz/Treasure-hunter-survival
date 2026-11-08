@@ -16,29 +16,25 @@ const BTN_ICONS := {
 	"bag": "bag", "hero": "helmet_horned", "pet": "heart", "mount": "boot_green",
 	"quest": "scroll", "map": "gem_green", "village": "wood", "system": "gamepad",
 }
-const HUD_PANEL := preload("res://assets/treasure_hunter/ui/reference/panel_stats.png")
-const HOTBAR_FRAME := preload("res://assets/treasure_hunter/ui/reference/hotbar_frame.png")
-const REVIVE_BUTTON := preload("res://assets/treasure_hunter/ui/reference/button_orange.png")
-const PORTRAIT_FRAME := preload("res://assets/treasure_hunter/ui/reference/portrait_frame.png")
-const PORTRAIT_BACKGROUND := preload("res://assets/treasure_hunter/ui/reference/login_panel.png")
-const PORTRAIT_BORDER := preload("res://assets/treasure_hunter/ui/reference/portrait_border.png")
-const MENU_BUTTON := preload("res://assets/treasure_hunter/ui/reference/button_menu.png")
-const MINIMIZE_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_minimize.png")
-const WEAPON_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_weapon.png")
-const POWER_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_power.png")
-const HEALTH_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_health.png")
-const DAMAGE_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_damage.png")
-const SPEED_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_speed.png")
-const GOLD_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_gold.png")
-const MAP_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_map.png")
-const STAT_LINE := preload("res://assets/treasure_hunter/ui/reference/stat_line.png")
-const QUEST_SUGGESTION_FRAME := preload("res://assets/treasure_hunter/ui/reference/quest_suggestion_frame.png")
-const QUEST_DIG_ICON := preload("res://assets/treasure_hunter/ui/reference/quest_dig_icon.png")
-const QUEST_GUIDE_WINBEE := preload("res://assets/treasure_hunter/ui/reference/quest_guide_winbee.png")
-const BACK_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_back.png")
-const PET_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_pet.png")
-const SKILL_ICON := preload("res://assets/treasure_hunter/ui/reference/icon_skill.png")
-const RAIL_ICON_TINT := Color8(143, 139, 143)
+# Original Ember UI kit art (ArtCatalog IDs, ART_BIBLE.md). Icons are 16 px drawn at 3× (48 px).
+const HUD_ICON_SCALE := 3
+const HUD_ICON_SIZE := 48.0
+const RAIL_ICON_TINT := Color.WHITE
+const GUIDE_NAME := "Orla"
+var MINIMIZE_ICON: Texture2D = ArtCatalog.texture("ui.icon.minimize", HUD_ICON_SCALE)
+var MENU_ICON: Texture2D = ArtCatalog.texture("ui.icon.menu", HUD_ICON_SCALE)
+var WEAPON_ICON: Texture2D = ArtCatalog.texture("ui.icon.attack", HUD_ICON_SCALE)
+var POWER_ICON: Texture2D = ArtCatalog.texture("ui.icon.power", HUD_ICON_SCALE)
+var HEALTH_ICON: Texture2D = ArtCatalog.texture("ui.icon.health", HUD_ICON_SCALE)
+var DAMAGE_ICON: Texture2D = ArtCatalog.texture("ui.icon.damage", HUD_ICON_SCALE)
+var SPEED_ICON: Texture2D = ArtCatalog.texture("ui.icon.speed", HUD_ICON_SCALE)
+var GOLD_ICON: Texture2D = ArtCatalog.texture("ui.icon.gold", HUD_ICON_SCALE)
+var MAP_ICON: Texture2D = ArtCatalog.texture("ui.icon.map", HUD_ICON_SCALE)
+var QUEST_DIG_ICON: Texture2D = ArtCatalog.texture("ui.icon.dig", HUD_ICON_SCALE)
+var QUEST_GUIDE: Texture2D = ArtCatalog.texture("npc.warden_captain.portrait", 4)
+var BAG_ICON: Texture2D = ArtCatalog.texture("ui.icon.bag", HUD_ICON_SCALE)
+var PET_ICON: Texture2D = ArtCatalog.texture("ui.icon.pet", HUD_ICON_SCALE)
+var SKILL_ICON: Texture2D = ArtCatalog.texture("ui.icon.skill", HUD_ICON_SCALE)
 
 var legacy_hud: CanvasLayer = null
 var player: Node = null
@@ -54,7 +50,7 @@ var mount_btn: ActionButton
 var interact_btn: ActionButton
 var _hotbar_slots: Array[ActionButton] = []
 var _hotbar_fill: ColorRect
-var _hotbar_frame: NinePatchRect
+var _hotbar_frame: Panel
 
 var _hp_bar: ProgressBar
 var _hp_label: Label
@@ -248,24 +244,13 @@ func _build_player_card() -> void:
 	frame.size = Vector2(98, 98)
 	frame.focus_mode = Control.FOCUS_NONE
 	frame.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	var frame_style := StyleBoxTexture.new()
-	frame_style.texture = PORTRAIT_FRAME
-	frame_style.texture_margin_left = 15.0
-	frame_style.texture_margin_top = 15.0
-	frame_style.texture_margin_right = 15.0
-	frame_style.texture_margin_bottom = 15.0
+	var frame_style := StyleBoxEmpty.new()
 	frame.add_theme_stylebox_override("normal", frame_style)
 	frame.add_theme_stylebox_override("hover", frame_style)
 	frame.add_theme_stylebox_override("pressed", frame_style)
 	frame.pressed.connect(func() -> void: _on_menu_button("bag"))
 	add_child(frame)
-	var portrait_background := NinePatchRect.new()
-	portrait_background.texture = PORTRAIT_BACKGROUND
-	portrait_background.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	portrait_background.set_patch_margin(SIDE_LEFT, 20)
-	portrait_background.set_patch_margin(SIDE_TOP, 20)
-	portrait_background.set_patch_margin(SIDE_RIGHT, 20)
-	portrait_background.set_patch_margin(SIDE_BOTTOM, 20)
+	var portrait_background := _kit_panel("ui.panel.dark")
 	portrait_background.set_anchors_preset(Control.PRESET_FULL_RECT)
 	portrait_background.offset_left = 7
 	portrait_background.offset_top = 7
@@ -285,15 +270,8 @@ func _build_player_card() -> void:
 	_portrait.offset_bottom = -8
 	_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	frame.add_child(_portrait)
-	var portrait_border := NinePatchRect.new()
-	portrait_border.texture = PORTRAIT_BORDER
-	portrait_border.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	portrait_border.set_patch_margin(SIDE_LEFT, 15)
-	portrait_border.set_patch_margin(SIDE_TOP, 15)
-	portrait_border.set_patch_margin(SIDE_RIGHT, 15)
-	portrait_border.set_patch_margin(SIDE_BOTTOM, 15)
+	var portrait_border := _kit_panel("ui.frame.portrait")
 	portrait_border.set_anchors_preset(Control.PRESET_FULL_RECT)
-	portrait_border.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	frame.add_child(portrait_border)
 
 	var stats := _panel(Rect2(8, 150, 180, 204))
@@ -336,35 +314,19 @@ func _build_player_card() -> void:
 func _hud_value_row(parent: VBoxContainer, icon_texture: Texture2D) -> HBoxContainer:
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(0, 49)
-	var panel_style := StyleBoxTexture.new()
-	panel_style.texture = HUD_PANEL
-	panel_style.texture_margin_left = 20.0
-	panel_style.texture_margin_top = 20.0
-	panel_style.texture_margin_right = 20.0
-	panel_style.texture_margin_bottom = 20.0
-	panel_style.content_margin_left = 0.0
-	panel_style.content_margin_top = 0.0
-	panel_style.content_margin_right = 0.0
-	panel_style.content_margin_bottom = 0.0
-	panel.add_theme_stylebox_override("panel", panel_style)
+	panel.add_theme_stylebox_override("panel", _row_style())
 	parent.add_child(panel)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 0)
 	panel.add_child(row)
 	var icon := TextureRect.new()
 	icon.texture = icon_texture
-	icon.custom_minimum_size = Vector2(44, 44)
+	icon.custom_minimum_size = Vector2(HUD_ICON_SIZE, HUD_ICON_SIZE)
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	row.add_child(icon)
-	var line := TextureRect.new()
-	line.texture = STAT_LINE
-	line.custom_minimum_size = Vector2(16, 48)
-	line.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	line.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	line.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	row.add_child(line)
+	row.add_child(_divider(Vector2(12, 48)))
 	return row
 
 
@@ -384,24 +346,16 @@ func _build_left_panel() -> void:
 	_boss_timer_label.visible = false
 	add_child(_boss_timer_label)
 
-	var popup := NinePatchRect.new()
-	popup.texture = QUEST_SUGGESTION_FRAME
+	var popup := _kit_panel("ui.panel.dark")
 	popup.position = Vector2(0, 12)
 	popup.size = Vector2(176, 70)
-	popup.set_patch_margin(SIDE_LEFT, 7)
-	popup.set_patch_margin(SIDE_TOP, 4)
-	popup.set_patch_margin(SIDE_RIGHT, 6)
-	popup.set_patch_margin(SIDE_BOTTOM, 8)
-	popup.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	popup.self_modulate = Color(0, 0, 0, 0.470588)
-	popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	popup.z_index = 0
 	_quest_tracker.add_child(popup)
 
 	_quest_icon = TextureRect.new()
 	_quest_icon.texture = QUEST_DIG_ICON
-	_quest_icon.position = Vector2(7, 19)
-	_quest_icon.size = Vector2(52, 52)
+	_quest_icon.position = Vector2(9, 23)
+	_quest_icon.size = Vector2(HUD_ICON_SIZE, HUD_ICON_SIZE)
 	_quest_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_quest_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_quest_icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -427,9 +381,9 @@ func _build_left_panel() -> void:
 	_quest_tracker.add_child(_quest_progress_label)
 
 	var guide := TextureRect.new()
-	guide.texture = QUEST_GUIDE_WINBEE
-	guide.position = Vector2(101, 49)
-	guide.size = Vector2(154, 232)
+	guide.texture = QUEST_GUIDE
+	guide.position = Vector2(104, 151)
+	guide.size = Vector2(128, 112)
 	guide.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	guide.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	guide.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -437,7 +391,7 @@ func _build_left_panel() -> void:
 	guide.z_index = 1
 	_quest_tracker.add_child(guide)
 
-	var guide_name := UiTheme.label("Winbee", 21, Color(1.0, 0.22, 0.08))
+	var guide_name := UiTheme.label(GUIDE_NAME, 21, UiTheme.C_GOLD)
 	guide_name.position = Vector2(132, 263)
 	guide_name.size = Vector2(98, 27)
 	guide_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -471,7 +425,7 @@ func _build_boss_bar() -> void:
 func _build_menu_rail() -> void:
 	_fold_button = _reference_icon_button(MINIMIZE_ICON, "Hide controls", _toggle_hud_chrome)
 	_fold_button.position = Vector2(540, 18)
-	var system_button := _reference_image_button(MENU_BUTTON, "Menu", func() -> void: _on_menu_button("system"))
+	var system_button := _reference_icon_button(MENU_ICON, "Menu", func() -> void: _on_menu_button("system"))
 	system_button.position = Vector2(622, 18)
 
 	var resources := _panel(Rect2(532, 150, 180, 154))
@@ -491,13 +445,11 @@ func _build_menu_rail() -> void:
 		left.size = Vector2(90, 90)
 		_foldable_controls.append(left)
 
-	# Direct 4.3.6 capture places combat on the right rail. The starter hotbar
-	# below remains empty instead of carrying an invented ATK slot.
 	attack_btn = _action_btn("character_attack", Vector2(663, 1003), 45.0, "")
 	attack_btn.icon = WEAPON_ICON
 	_foldable_controls.append(attack_btn)
 
-	var inventory_button := _reference_icon_button(BACK_ICON, "Inventory", func() -> void: _on_menu_button("bag"), RAIL_ICON_TINT)
+	var inventory_button := _reference_icon_button(BAG_ICON, "Inventory", func() -> void: _on_menu_button("bag"), RAIL_ICON_TINT)
 	inventory_button.position = Vector2(618, 1060)
 	inventory_button.size = Vector2(90, 90)
 	_foldable_controls.append(inventory_button)
@@ -521,17 +473,7 @@ func _nav_button(id: String, caption: String) -> Button:
 func _world_info_row(parent: VBoxContainer, icon_texture: Texture2D, initial_text: String, color: Color) -> Label:
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(0, 49)
-	var panel_style := StyleBoxTexture.new()
-	panel_style.texture = HUD_PANEL
-	panel_style.texture_margin_left = 20.0
-	panel_style.texture_margin_top = 20.0
-	panel_style.texture_margin_right = 20.0
-	panel_style.texture_margin_bottom = 20.0
-	panel_style.content_margin_left = 0.0
-	panel_style.content_margin_top = 0.0
-	panel_style.content_margin_right = 0.0
-	panel_style.content_margin_bottom = 0.0
-	panel.add_theme_stylebox_override("panel", panel_style)
+	panel.add_theme_stylebox_override("panel", _row_style())
 	parent.add_child(panel)
 	var row := Control.new()
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -539,21 +481,15 @@ func _world_info_row(parent: VBoxContainer, icon_texture: Texture2D, initial_tex
 	if icon_texture != null:
 		var icon := TextureRect.new()
 		icon.texture = icon_texture
-		icon.position = Vector2(9, 5)
-		icon.size = Vector2(40, 39)
+		icon.position = Vector2(4, 0)
+		icon.size = Vector2(HUD_ICON_SIZE, HUD_ICON_SIZE)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		row.add_child(icon)
-		var line := NinePatchRect.new()
-		line.texture = STAT_LINE
-		line.position = Vector2(45, 2)
-		line.size = Vector2(18, 45)
-		line.set_patch_margin(SIDE_TOP, 20)
-		line.set_patch_margin(SIDE_BOTTOM, 20)
-		line.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var line := _divider(Vector2(12, 45))
+		line.position = Vector2(52, 2)
 		row.add_child(line)
 	var value := UiTheme.label(initial_text, 18, color)
 	value.position = Vector2(69, 0) if icon_texture != null else Vector2(7, 0)
@@ -580,13 +516,8 @@ func _icon_button(icon_name: String, caption: String, callback: Callable) -> But
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(background)
 
-	var frame := NinePatchRect.new()
-	frame.texture = HUD_PANEL
+	var frame := _kit_panel("ui.frame.action")
 	frame.set_anchors_preset(Control.PRESET_FULL_RECT)
-	frame.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
-		frame.set_patch_margin(side, 6)
 	b.add_child(frame)
 
 	var icon := TextureRect.new()
@@ -623,46 +554,24 @@ func _reference_icon_button(texture: Texture2D, caption: String, callback: Calla
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(background)
 
-	var frame := NinePatchRect.new()
-	frame.texture = HUD_PANEL
+	var frame := _kit_panel("ui.frame.action")
 	frame.set_anchors_preset(Control.PRESET_FULL_RECT)
-	frame.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
-		frame.set_patch_margin(side, 6)
 	b.add_child(frame)
 
 	var icon := TextureRect.new()
 	icon.texture = texture
 	icon.modulate = tint
 	icon.set_anchors_preset(Control.PRESET_FULL_RECT)
-	icon.offset_left = 14
-	icon.offset_top = 13
-	icon.offset_right = -14
-	icon.offset_bottom = -13
+	icon.offset_left = 12
+	icon.offset_top = 12
+	icon.offset_right = -12
+	icon.offset_bottom = -12
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(icon)
 
-	b.pressed.connect(callback)
-	add_child(b)
-	_controls.append(b)
-	return b
-
-
-func _reference_image_button(texture: Texture2D, caption: String, callback: Callable) -> Button:
-	var b := Button.new()
-	b.flat = true
-	b.focus_mode = Control.FOCUS_NONE
-	b.custom_minimum_size = Vector2(72, 72)
-	b.size = Vector2(72, 72)
-	b.icon = texture
-	b.expand_icon = true
-	b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	b.tooltip_text = caption
-	b.add_theme_constant_override("icon_max_width", 72)
 	b.pressed.connect(callback)
 	add_child(b)
 	_controls.append(b)
@@ -686,14 +595,9 @@ func _build_controls() -> void:
 	add_child(_hotbar_fill)
 	_controls.append(_hotbar_fill)
 
-	_hotbar_frame = NinePatchRect.new()
-	_hotbar_frame.texture = HOTBAR_FRAME
+	_hotbar_frame = _kit_panel("ui.frame.hotbar")
 	_hotbar_frame.position = Vector2(0, hotbar_top)
 	_hotbar_frame.size = Vector2(720, 116)
-	_hotbar_frame.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	_hotbar_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
-		_hotbar_frame.set_patch_margin(side, 13)
 	add_child(_hotbar_frame)
 	_controls.append(_hotbar_frame)
 
@@ -754,14 +658,41 @@ func _build_death_panel() -> void:
 
 
 func _revive_button_style(tint: Color) -> StyleBoxTexture:
-	var style := StyleBoxTexture.new()
-	style.texture = REVIVE_BUTTON
-	style.texture_margin_left = 20.0
-	style.texture_margin_top = 20.0
-	style.texture_margin_right = 20.0
-	style.texture_margin_bottom = 20.0
+	var style := ArtCatalog.stylebox("ui.button.primary").duplicate() as StyleBoxTexture
 	style.modulate_color = tint
 	return style
+
+
+## A non-interactive Panel drawn with a kit 9-slice style.
+func _kit_panel(style_id: String) -> Panel:
+	var panel := Panel.new()
+	panel.add_theme_stylebox_override("panel", ArtCatalog.stylebox(style_id))
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return panel
+
+
+## HUD stat/info row background with no content padding.
+func _row_style() -> StyleBox:
+	var style := ArtCatalog.stylebox("ui.panel.dark").duplicate() as StyleBox
+	style.content_margin_left = 0.0
+	style.content_margin_top = 0.0
+	style.content_margin_right = 0.0
+	style.content_margin_bottom = 0.0
+	return style
+
+
+## Thin vertical divider between an icon and its value.
+func _divider(min_size: Vector2) -> Control:
+	var holder := CenterContainer.new()
+	holder.custom_minimum_size = min_size
+	holder.size = min_size
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var bar := ColorRect.new()
+	bar.color = ArtPalette.color("m")
+	bar.custom_minimum_size = Vector2(3, min_size.y - 12)
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(bar)
+	return holder
 
 
 # =============================================================================

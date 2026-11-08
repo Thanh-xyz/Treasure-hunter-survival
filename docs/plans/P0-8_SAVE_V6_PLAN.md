@@ -40,13 +40,16 @@ All text is newly written. The chain then continues with the existing original `
 
 ### Starter weapons (`ItemDatabase`)
 
-| ID | Type | Rarity | Stats (original) |
+| ID | Type | Rarity | Stats |
 | --- | --- | --- | --- |
-| `ashwood_blade` | sword | Common | +8 ATK |
-| `ironbark_cleaver` | axe | Common | +6 ATK, +12 HP |
-| `ember_spear` | spear | Common | +7 ATK, +4% speed |
+| `ashwood_blade` | sword | Common | **owner to provide** |
+| `ironbark_cleaver` | axe | Common | **owner to provide** |
+| `ember_spear` | spear | Common | **owner to provide** |
 
-All upgradable (default cost curve). Icons: ASCII (P0-5 icon set).
+Owner decision 2026-11-08: weapon stats will be supplied by the owner later. Implementation keeps
+them as a single data row per weapon in `ItemDatabase` and blocks P0-8 merge until the values
+are filled in. The migration's gold compensation depends on these values. All weapons are
+upgradable (default cost curve). Icons: ASCII (P0-5 icon set).
 
 ### `mossback` monster
 Stationary guard (existing `stationary_melee` profile), original numbers: HP 90, damage 14,
@@ -108,6 +111,6 @@ LAN: `PROTOCOL_VERSION` 5 → 6 (monster and item IDs changed).
 | Compensation formula feels arbitrary | It's small and logged; owner can change the rate |
 
 ## 7. Approval requested 🔒
-- New tutorial text, rewards, starter weapons and `mossback` numbers above.
+- New tutorial text, rewards and `mossback` numbers above (approved 2026-11-08); starter weapon stats pending from the owner.
 - Save v6 mapping and the `lost_and_found` / `migration_log` sections.
 - LAN protocol bump.

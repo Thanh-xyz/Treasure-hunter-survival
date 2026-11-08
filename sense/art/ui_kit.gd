@@ -12,6 +12,8 @@ const UI_PX := 3   ## UI units per art pixel (720-wide logical viewport → 240 
 const PATTERNS := {
 	"ui.panel.default": {"margin": 2, "body": "d", "alpha": 0.94, "rows": [
 		"oooooo", "ommmmo", "omddoo", "omddoo", "oooooo", "oooooo"]},
+	"ui.panel.highlight": {"margin": 2, "body": "d", "alpha": 0.94, "rows": [
+		"oooooo", "oYYYYo", "oyddyo", "oyddyo", "oyyyyo", "oooooo"]},
 	"ui.panel.dark": {"margin": 2, "body": "o", "alpha": 0.86, "rows": [
 		"mmmmmm", "mddddm", "mdoodm", "mdoodm", "mddddm", "mmmmmm"]},
 	"ui.button.primary": {"margin": 2, "rows": [
@@ -34,6 +36,8 @@ const PATTERNS := {
 		"oooooo", "ommmmo", "oddddo", "oddddo", "oddddo", "oooooo"]},
 	"ui.frame.portrait": {"margin": 3, "center": false, "rows": [
 		"oooooooo", "oyyyyyyo", "oyooooyo", "oyo..oyo", "oyo..oyo", "oyooooyo", "oyyyyyyo", "oooooooo"]},
+	"ui.frame.action": {"margin": 2, "center": false, "rows": [
+		"oooooo", "ommmmo", "om..so", "om..so", "osssso", "oooooo"]},
 	"ui.frame.hotbar": {"margin": 2, "body": "o", "alpha": 0.78, "rows": [
 		"oooooo", "oAAAAo", "oAooAo", "oAooAo", "oAAAAo", "oooooo"]},
 }

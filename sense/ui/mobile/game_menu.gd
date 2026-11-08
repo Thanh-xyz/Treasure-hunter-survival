@@ -11,17 +11,8 @@ const TAB_TITLES := {
 	"hero": "Heroes", "pet": "Pets", "mount": "Mounts", "quest": "Quests",
 	"map": "World Map", "village": "Homestead", "system": "System",
 }
-const QUEST_PANEL_NORMAL := preload("res://assets/treasure_hunter/ui/reference/quest_panel_normal.png")
-const QUEST_PANEL_CLAIM := preload("res://assets/treasure_hunter/ui/reference/quest_panel_claim.png")
-const QUEST_LIST_PANEL := preload("res://assets/treasure_hunter/ui/reference/quest_list_panel.png")
-const QUEST_SECTION_LABEL := preload("res://assets/treasure_hunter/ui/reference/quest_section_label.png")
-const QUEST_TAB_ACTIVE := preload("res://assets/treasure_hunter/ui/reference/quest_tab_active.png")
-const QUEST_TAB_INACTIVE := preload("res://assets/treasure_hunter/ui/reference/quest_tab_inactive.png")
-const QUEST_ICON_MAIN := preload("res://assets/treasure_hunter/ui/reference/quest_icon_main.png")
-const QUEST_ICON_DAILY := preload("res://assets/treasure_hunter/ui/reference/quest_icon_daily.png")
-const QUEST_ICON_LOGIN := preload("res://assets/treasure_hunter/ui/reference/icon_login.png")
-const QUEST_ICON_ACHIEVEMENT := preload("res://assets/treasure_hunter/ui/reference/quest_icon_achievement.png")
-const QUEST_BUTTON_BACK := preload("res://assets/treasure_hunter/ui/reference/button_back.png")
+# Quest screen art comes from the original Ember UI kit (ArtCatalog IDs, ART_BIBLE.md §6).
+const QUEST_ICON_SCALE := 3   # 16 px icons drawn at 48 px
 
 var current_tab: String = "hero"
 var _content: VBoxContainer
@@ -349,10 +340,10 @@ func _build_quest_tabs() -> void:
 	row.add_theme_constant_override("separation", 6)
 	_content.add_child(row)
 	row.add_child(_quest_back_button())
-	row.add_child(_quest_tab_button(QUEST_ICON_MAIN, "main", true))
-	row.add_child(_quest_tab_button(QUEST_ICON_DAILY, "daily", true))
-	row.add_child(_quest_tab_button(QUEST_ICON_LOGIN, "login", false))
-	row.add_child(_quest_tab_button(QUEST_ICON_ACHIEVEMENT, "achievement", false))
+	row.add_child(_quest_tab_button(ArtCatalog.texture("ui.icon.quest_main", QUEST_ICON_SCALE), "main", true))
+	row.add_child(_quest_tab_button(ArtCatalog.texture("ui.icon.quest_daily", QUEST_ICON_SCALE), "daily", true))
+	row.add_child(_quest_tab_button(ArtCatalog.texture("ui.icon.login", QUEST_ICON_SCALE), "login", false))
+	row.add_child(_quest_tab_button(ArtCatalog.texture("ui.icon.quest_achievement", QUEST_ICON_SCALE), "achievement", false))
 
 
 func _quest_back_button() -> Button:
@@ -360,9 +351,12 @@ func _quest_back_button() -> Button:
 	button.custom_minimum_size = Vector2(76, 76)
 	button.focus_mode = Control.FOCUS_NONE
 	button.tooltip_text = "Back"
-	var style := _quest_texture_style(QUEST_BUTTON_BACK, 12)
-	for state in ["normal", "hover", "pressed", "hover_pressed"]:
-		button.add_theme_stylebox_override(state, style)
+	button.icon = ArtCatalog.texture("ui.icon.back", QUEST_ICON_SCALE)
+	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	button.add_theme_stylebox_override("normal", _kit_style("ui.button.secondary"))
+	button.add_theme_stylebox_override("hover", _kit_style("ui.button.secondary.hover"))
+	button.add_theme_stylebox_override("pressed", _kit_style("ui.button.secondary.pressed"))
+	button.add_theme_stylebox_override("hover_pressed", _kit_style("ui.button.secondary.pressed"))
 	button.pressed.connect(close)
 	return button
 
@@ -376,8 +370,8 @@ func _quest_tab_button(icon: Texture2D, category: String, enabled: bool) -> Butt
 	button.expand_icon = false
 	button.disabled = not enabled
 	var active := category == _quest_category
-	var normal_style := _quest_texture_style(QUEST_TAB_ACTIVE if active else QUEST_TAB_INACTIVE, 13)
-	var pressed_style := _quest_texture_style(QUEST_TAB_ACTIVE, 13)
+	var normal_style := _kit_style("ui.tab.active" if active else "ui.tab.inactive")
+	var pressed_style := _kit_style("ui.tab.active")
 	button.add_theme_stylebox_override("normal", normal_style)
 	button.add_theme_stylebox_override("hover", pressed_style if enabled else normal_style)
 	button.add_theme_stylebox_override("pressed", pressed_style)
@@ -472,7 +466,7 @@ func _build_daily_quest_page() -> void:
 func _quest_section(text: String) -> PanelContainer:
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(0, 72)
-	var style := _quest_texture_style(QUEST_SECTION_LABEL, 0, Color(0.0588, 0.0588, 0.0588))
+	var style := _kit_style("ui.panel.dark")
 	panel.add_theme_stylebox_override("panel", style)
 	var label := UiTheme.label(text, 28, UiTheme.C_GOLD)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -483,7 +477,7 @@ func _quest_section(text: String) -> PanelContainer:
 
 func _quest_list() -> Dictionary:
 	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", _quest_texture_style(QUEST_LIST_PANEL, 20, Color(1, 1, 1, 0.784)))
+	panel.add_theme_stylebox_override("panel", _kit_style("ui.panel.dark"))
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 8)
 	panel.add_child(content)
@@ -493,8 +487,8 @@ func _quest_list() -> Dictionary:
 func _quest_card(row_data: Dictionary, quest: Dictionary, interactive: bool) -> PanelContainer:
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(0, 176)
-	var texture: Texture2D = QUEST_PANEL_CLAIM if bool(row_data["ready"]) else QUEST_PANEL_NORMAL
-	panel.add_theme_stylebox_override("panel", _quest_texture_style(texture, 20))
+	var style_id := "ui.panel.highlight" if bool(row_data["ready"]) else "ui.panel.default"
+	panel.add_theme_stylebox_override("panel", _kit_style(style_id))
 	panel.modulate = Color(1, 1, 1, 0.58) if bool(row_data["claimed"]) else Color.WHITE
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 6)
@@ -524,18 +518,13 @@ func _quest_card(row_data: Dictionary, quest: Dictionary, interactive: bool) -> 
 	return panel
 
 
-func _quest_texture_style(texture: Texture2D, margin: float, tint: Color = Color.WHITE) -> StyleBoxTexture:
-	var style := StyleBoxTexture.new()
-	style.texture = texture
-	style.texture_margin_left = margin
-	style.texture_margin_top = margin
-	style.texture_margin_right = margin
-	style.texture_margin_bottom = margin
+## A per-control copy of a kit style with the quest screen's content padding.
+func _kit_style(id: String) -> StyleBox:
+	var style := ArtCatalog.stylebox(id).duplicate() as StyleBox
 	style.content_margin_left = 12
 	style.content_margin_top = 10
 	style.content_margin_right = 12
 	style.content_margin_bottom = 10
-	style.modulate_color = tint
 	return style
 
 

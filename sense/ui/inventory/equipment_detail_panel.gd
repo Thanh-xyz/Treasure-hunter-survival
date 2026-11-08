@@ -3,11 +3,12 @@ extends Control
 
 signal closed
 
-const BUTTON_BLUE := preload("res://assets/treasure_hunter/ui/reference/button_blue.png")
-const ICON_GOLD := preload("res://assets/treasure_hunter/ui/reference/icon_gold.png")
-const ICON_HEALTH := preload("res://assets/treasure_hunter/ui/reference/icon_health.png")
-const ICON_DAMAGE := preload("res://assets/treasure_hunter/ui/reference/icon_damage.png")
-const ICON_SPEED := preload("res://assets/treasure_hunter/ui/reference/icon_speed.png")
+# Original Ember UI kit icons at 2× (32 px) so they scale by an integer (ART_BIBLE.md).
+const STAT_ICON_SIZE := 32
+var ICON_GOLD: Texture2D = ArtCatalog.texture("ui.icon.gold", 2)
+var ICON_HEALTH: Texture2D = ArtCatalog.texture("ui.icon.health", 2)
+var ICON_DAMAGE: Texture2D = ArtCatalog.texture("ui.icon.damage", 2)
+var ICON_SPEED: Texture2D = ArtCatalog.texture("ui.icon.speed", 2)
 
 var inventory_data: InventoryData
 var slot_type := ""
@@ -208,12 +209,12 @@ func _rebuild_stats(item: ItemData) -> void:
 
 func _add_stat_row(icon: Texture2D, value: String) -> void:
 	var row := HBoxContainer.new()
-	row.custom_minimum_size = Vector2(0, 28)
+	row.custom_minimum_size = Vector2(0, STAT_ICON_SIZE)
 	row.add_theme_constant_override("separation", 8)
 	if icon != null:
 		var icon_rect := TextureRect.new()
 		icon_rect.texture = icon
-		icon_rect.custom_minimum_size = Vector2(28, 28)
+		icon_rect.custom_minimum_size = Vector2(STAT_ICON_SIZE, STAT_ICON_SIZE)
 		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -305,20 +306,10 @@ func _item_field_style(rarity: int) -> StyleBoxFlat:
 
 
 func _apply_texture_button_styles(button: Button) -> void:
-	for state in ["normal", "hover", "pressed"]:
-		var style := StyleBoxTexture.new()
-		style.texture = BUTTON_BLUE
-		style.texture_margin_left = 14
-		style.texture_margin_top = 14
-		style.texture_margin_right = 14
-		style.texture_margin_bottom = 14
-		if state == "hover":
-			style.modulate_color = Color(1.08, 1.08, 1.08, 1)
-		elif state == "pressed":
-			style.modulate_color = Color(0.82, 0.82, 0.82, 1)
-		button.add_theme_stylebox_override(state, style)
-	var disabled := _flat_button_style(Color8(54, 58, 65), Color8(92, 94, 99))
-	button.add_theme_stylebox_override("disabled", disabled)
+	button.add_theme_stylebox_override("normal", ArtCatalog.stylebox("ui.button.secondary"))
+	button.add_theme_stylebox_override("hover", ArtCatalog.stylebox("ui.button.secondary.hover"))
+	button.add_theme_stylebox_override("pressed", ArtCatalog.stylebox("ui.button.secondary.pressed"))
+	button.add_theme_stylebox_override("disabled", ArtCatalog.stylebox("ui.button.disabled"))
 
 
 func _apply_flat_button_styles(button: Button, base: Color, border: Color) -> void:

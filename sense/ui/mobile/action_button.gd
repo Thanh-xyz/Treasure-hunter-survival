@@ -21,9 +21,8 @@ var enabled: bool = true
 var _touch_index: int = -1
 var _pressed: bool = false
 const FONT := preload("res://assets/Font/Pixellari.ttf")
-const SLOT_FRAME := preload("res://assets/treasure_hunter/ui/reference/panel_stats.png")
 
-var _frame_style: StyleBoxTexture
+var _frame_style: StyleBox
 
 
 func _ready() -> void:
@@ -31,12 +30,7 @@ func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	custom_minimum_size = Vector2(radius * 2, radius * 2)
 	size = custom_minimum_size
-	_frame_style = StyleBoxTexture.new()
-	_frame_style.texture = SLOT_FRAME
-	_frame_style.texture_margin_left = 6.0
-	_frame_style.texture_margin_top = 6.0
-	_frame_style.texture_margin_right = 6.0
-	_frame_style.texture_margin_bottom = 6.0
+	_frame_style = ArtCatalog.stylebox("ui.frame.action")
 
 
 func _input(event: InputEvent) -> void:

@@ -58,7 +58,7 @@ static func style_ids() -> Array:
 
 
 static func texture_ids() -> Array:
-	return ["ui.joystick.ring", "ui.joystick.handle"]
+	return ["ui.joystick.ring", "ui.joystick.handle", "ui.title.background", "ui.title.logo"]
 
 
 static func stylebox(id: String) -> StyleBox:
@@ -104,6 +104,12 @@ static func texture(id: String) -> Texture2D:
 			img = _circle(32, "o", "m", 0.55, "d", 0.30)
 		"ui.joystick.handle":
 			img = _circle(14, "o", "E", 1.0, "E", 1.0, "Y")
+		"ui.title.background":
+			img = TitleArt.background_image()
+		"ui.title.logo":
+			var logo := TitleArt.logo_image()
+			_textures[id] = ImageTexture.create_from_image(ArtPalette.upscale(logo, 10))
+			return _textures[id]
 		_:
 			return null
 	var tex := ImageTexture.create_from_image(ArtPalette.upscale(img, UI_PX))

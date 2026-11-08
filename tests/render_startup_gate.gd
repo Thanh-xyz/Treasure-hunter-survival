@@ -1,9 +1,8 @@
 extends Node
-## Captures the loading and authentication states for visual comparison.
+## Captures the title screen states (loading, menu, LAN panel) for visual review.
 
 const LOADING_OUTPUT_PATH := "/tmp/emberfield-startup-loading.png"
-const REGISTER_OUTPUT_PATH := "/tmp/emberfield-startup-register.png"
-const LOGIN_OUTPUT_PATH := "/tmp/emberfield-startup-login.png"
+const MENU_OUTPUT_PATH := "/tmp/emberfield-startup-menu.png"
 const LAN_OUTPUT_PATH := "/tmp/emberfield-startup-lan.png"
 
 
@@ -20,12 +19,7 @@ func _capture() -> void:
 		get_tree().quit(1)
 		return
 	await get_tree().create_timer(1.3, true, false, true).timeout
-	if not _save_capture(REGISTER_OUTPUT_PATH):
-		get_tree().quit(1)
-		return
-	main.startup_gate._show_login()
-	await get_tree().process_frame
-	if not _save_capture(LOGIN_OUTPUT_PATH):
+	if not _save_capture(MENU_OUTPUT_PATH):
 		get_tree().quit(1)
 		return
 	main.startup_gate._toggle_network_panel()

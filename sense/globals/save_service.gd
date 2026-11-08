@@ -363,7 +363,9 @@ func _validate_profile(profile: Dictionary) -> bool:
 			for skin: Variant in owned_skins:
 				if not _is_integer(skin) or int(skin) < 0 or int(skin) >= available_skins.size():
 					return false
-			if not owned_skins.has(int(mount.get("skin", -1))):
+			# JSON parses numbers as floats, and Array.has() compares types strictly, so look the
+			# selected skin up numerically.
+			if not _has_integer(owned_skins, int(mount.get("skin", -1))):
 				return false
 	if profile.has("active_mount"):
 		var active_mount := str(profile["active_mount"])
@@ -511,6 +513,13 @@ func _item_fits_slot(item: ItemData, slot_type: String) -> bool:
 		"boots": return item.item_type == ItemData.ItemType.BOOTS
 		"accessory_1", "accessory_2": return item.item_type == ItemData.ItemType.ACCESSORY
 		_: return false
+
+
+func _has_integer(values: Array, target: int) -> bool:
+	for value: Variant in values:
+		if _is_integer(value) and int(value) == target:
+			return true
+	return false
 
 
 func _is_number(value: Variant) -> bool:

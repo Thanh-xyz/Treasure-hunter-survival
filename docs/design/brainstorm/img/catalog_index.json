@@ -1,0 +1,814 @@
+{
+ "C01": [
+  "Character",
+  "Boy"
+ ],
+ "C02": [
+  "Character",
+  "CamouflageGreen"
+ ],
+ "C03": [
+  "Character",
+  "CamouflageRed"
+ ],
+ "C04": [
+  "Character",
+  "CaveLion"
+ ],
+ "C05": [
+  "Character",
+  "CaveLion2"
+ ],
+ "C06": [
+  "Character",
+  "Cavegirl"
+ ],
+ "C07": [
+  "Character",
+  "Cavegirl2"
+ ],
+ "C08": [
+  "Character",
+  "Caveman"
+ ],
+ "C09": [
+  "Character",
+  "Caveman2"
+ ],
+ "C10": [
+  "Character",
+  "Child"
+ ],
+ "C11": [
+  "Character",
+  "DemonGreen"
+ ],
+ "C12": [
+  "Character",
+  "DemonRed"
+ ],
+ "C13": [
+  "Character",
+  "EggBoy"
+ ],
+ "C14": [
+  "Character",
+  "EggGirl"
+ ],
+ "C15": [
+  "Character",
+  "Eskimo"
+ ],
+ "C16": [
+  "Character",
+  "FighterRed"
+ ],
+ "C17": [
+  "Character",
+  "FighterWhite"
+ ],
+ "C18": [
+  "Character",
+  "Flam"
+ ],
+ "C19": [
+  "Character",
+  "GladiatorBlue"
+ ],
+ "C20": [
+  "Character",
+  "GoldStatue"
+ ],
+ "C21": [
+  "Character",
+  "GreenPig"
+ ],
+ "C22": [
+  "Character",
+  "Hunter"
+ ],
+ "C23": [
+  "Character",
+  "Inspector"
+ ],
+ "C24": [
+  "Character",
+  "Knight"
+ ],
+ "C25": [
+  "Character",
+  "KnightGold"
+ ],
+ "C26": [
+  "Character",
+  "Lion"
+ ],
+ "C27": [
+  "Character",
+  "LionBoy"
+ ],
+ "C28": [
+  "Character",
+  "LionOrange"
+ ],
+ "C29": [
+  "Character",
+  "LionYellow"
+ ],
+ "C30": [
+  "Character",
+  "ManGreen"
+ ],
+ "C31": [
+  "Character",
+  "MaskFrog"
+ ],
+ "C32": [
+  "Character",
+  "MaskGoldRacoon"
+ ],
+ "C33": [
+  "Character",
+  "MaskRacoon"
+ ],
+ "C34": [
+  "Character",
+  "Master"
+ ],
+ "C35": [
+  "Character",
+  "Monk"
+ ],
+ "C36": [
+  "Character",
+  "Monk2"
+ ],
+ "C37": [
+  "Character",
+  "Monkey"
+ ],
+ "C38": [
+  "Character",
+  "MonkeyBoxerBlue"
+ ],
+ "C39": [
+  "Character",
+  "MonkeyBoxerRed"
+ ],
+ "C40": [
+  "Character",
+  "NinjaBlue"
+ ],
+ "C41": [
+  "Character",
+  "NinjaBlue2"
+ ],
+ "C42": [
+  "Character",
+  "NinjaBomb"
+ ],
+ "C43": [
+  "Character",
+  "NinjaDark"
+ ],
+ "C44": [
+  "Character",
+  "NinjaEskimo"
+ ],
+ "C45": [
+  "Character",
+  "NinjaFire"
+ ],
+ "C46": [
+  "Character",
+  "NinjaGray"
+ ],
+ "C47": [
+  "Character",
+  "NinjaGreen"
+ ],
+ "C48": [
+  "Character",
+  "NinjaLeaf"
+ ],
+ "C49": [
+  "Character",
+  "NinjaMageBlack"
+ ],
+ "C50": [
+  "Character",
+  "NinjaMageOrange"
+ ],
+ "C51": [
+  "Character",
+  "NinjaMasked"
+ ],
+ "C52": [
+  "Character",
+  "NinjaRed"
+ ],
+ "C53": [
+  "Character",
+  "NinjaRed2"
+ ],
+ "C54": [
+  "Character",
+  "NinjaThunder"
+ ],
+ "C55": [
+  "Character",
+  "NinjaWater"
+ ],
+ "C56": [
+  "Character",
+  "NinjaYellow"
+ ],
+ "C57": [
+  "Character",
+  "Noble"
+ ],
+ "C58": [
+  "Character",
+  "OldMan"
+ ],
+ "C59": [
+  "Character",
+  "OldMan2"
+ ],
+ "C60": [
+  "Character",
+  "OldMan3"
+ ],
+ "C61": [
+  "Character",
+  "OldWoman"
+ ],
+ "C62": [
+  "Character",
+  "Pig"
+ ],
+ "C63": [
+  "Character",
+  "Princess"
+ ],
+ "C64": [
+  "Character",
+  "RedGladiator"
+ ],
+ "C65": [
+  "Character",
+  "RedNinja3"
+ ],
+ "C66": [
+  "Character",
+  "RobotCamouflage"
+ ],
+ "C67": [
+  "Character",
+  "RobotGreen"
+ ],
+ "C68": [
+  "Character",
+  "RobotGrey"
+ ],
+ "C69": [
+  "Character",
+  "Samurai"
+ ],
+ "C70": [
+  "Character",
+  "SamuraiBlue"
+ ],
+ "C71": [
+  "Character",
+  "Shaman"
+ ],
+ "C72": [
+  "Character",
+  "ShamanLion"
+ ],
+ "C73": [
+  "Character",
+  "Skeleton"
+ ],
+ "C74": [
+  "Character",
+  "SkeletonDemon"
+ ],
+ "C75": [
+  "Character",
+  "SorcererBlack"
+ ],
+ "C76": [
+  "Character",
+  "SorcererOrange"
+ ],
+ "C77": [
+  "Character",
+  "Spirit"
+ ],
+ "C78": [
+  "Character",
+  "Statue"
+ ],
+ "C79": [
+  "Character",
+  "Sultan"
+ ],
+ "C80": [
+  "Character",
+  "Sultan2"
+ ],
+ "C81": [
+  "Character",
+  "Tengu"
+ ],
+ "C82": [
+  "Character",
+  "Tengu2"
+ ],
+ "C83": [
+  "Character",
+  "Vampire"
+ ],
+ "C84": [
+  "Character",
+  "Village6"
+ ],
+ "C85": [
+  "Character",
+  "Villager"
+ ],
+ "C86": [
+  "Character",
+  "Villager2"
+ ],
+ "C87": [
+  "Character",
+  "Villager3"
+ ],
+ "C88": [
+  "Character",
+  "Villager4"
+ ],
+ "C89": [
+  "Character",
+  "Villager5"
+ ],
+ "C90": [
+  "Character",
+  "Villager6"
+ ],
+ "C91": [
+  "Character",
+  "Woman"
+ ],
+ "A01": [
+  "Animal",
+  "Cat"
+ ],
+ "A02": [
+  "Animal",
+  "CatBlack"
+ ],
+ "A03": [
+  "Animal",
+  "CatCyclop"
+ ],
+ "A04": [
+  "Animal",
+  "CatOrange"
+ ],
+ "A05": [
+  "Animal",
+  "CatWhite"
+ ],
+ "A06": [
+  "Animal",
+  "Chicken"
+ ],
+ "A07": [
+  "Animal",
+  "Cow"
+ ],
+ "A08": [
+  "Animal",
+  "Dog"
+ ],
+ "A09": [
+  "Animal",
+  "Dog2"
+ ],
+ "A10": [
+  "Animal",
+  "DogBlack"
+ ],
+ "A11": [
+  "Animal",
+  "DogOrange"
+ ],
+ "A12": [
+  "Animal",
+  "DogYellow"
+ ],
+ "A13": [
+  "Animal",
+  "Donkey"
+ ],
+ "A14": [
+  "Animal",
+  "Fish"
+ ],
+ "A15": [
+  "Animal",
+  "Frog"
+ ],
+ "A16": [
+  "Animal",
+  "Hamster"
+ ],
+ "A17": [
+  "Animal",
+  "Horse"
+ ],
+ "A18": [
+  "Animal",
+  "Hyena"
+ ],
+ "A19": [
+  "Animal",
+  "Lion"
+ ],
+ "A20": [
+  "Animal",
+  "LionCub"
+ ],
+ "A21": [
+  "Animal",
+  "Lioness"
+ ],
+ "A22": [
+  "Animal",
+  "Monkey"
+ ],
+ "A23": [
+  "Animal",
+  "Parrot"
+ ],
+ "A24": [
+  "Animal",
+  "Pig"
+ ],
+ "A25": [
+  "Animal",
+  "Racoon"
+ ],
+ "A26": [
+  "Animal",
+  "WildBoar"
+ ],
+ "M01": [
+  "Monster",
+  "Axolot"
+ ],
+ "M02": [
+  "Monster",
+  "AxolotBlue"
+ ],
+ "M03": [
+  "Monster",
+  "Bamboo"
+ ],
+ "M04": [
+  "Monster",
+  "BambooYellow"
+ ],
+ "M05": [
+  "Monster",
+  "Bear"
+ ],
+ "M06": [
+  "Monster",
+  "Beast"
+ ],
+ "M07": [
+  "Monster",
+  "Beast2"
+ ],
+ "M08": [
+  "Monster",
+  "BlueBat"
+ ],
+ "M09": [
+  "Monster",
+  "Butterfly"
+ ],
+ "M10": [
+  "Monster",
+  "ButterflyBlue"
+ ],
+ "M11": [
+  "Monster",
+  "Cyclope"
+ ],
+ "M12": [
+  "Monster",
+  "Cyclope2"
+ ],
+ "M13": [
+  "Monster",
+  "Dragon"
+ ],
+ "M14": [
+  "Monster",
+  "DragonYellow"
+ ],
+ "M15": [
+  "Monster",
+  "Eye"
+ ],
+ "M16": [
+  "Monster",
+  "Eye2"
+ ],
+ "M17": [
+  "Monster",
+  "Fish"
+ ],
+ "M18": [
+  "Monster",
+  "FishRed"
+ ],
+ "M19": [
+  "Monster",
+  "Flam"
+ ],
+ "M20": [
+  "Monster",
+  "Flam2"
+ ],
+ "M21": [
+  "Monster",
+  "GoldRacoon"
+ ],
+ "M22": [
+  "Monster",
+  "GreenOctopus"
+ ],
+ "M23": [
+  "Monster",
+  "Grey Trex"
+ ],
+ "M24": [
+  "Monster",
+  "HeartGreen"
+ ],
+ "M25": [
+  "Monster",
+  "HeartRed"
+ ],
+ "M26": [
+  "Monster",
+  "KappaGreen"
+ ],
+ "M27": [
+  "Monster",
+  "KappaRed"
+ ],
+ "M28": [
+  "Monster",
+  "LanternGreen"
+ ],
+ "M29": [
+  "Monster",
+  "LanternRed"
+ ],
+ "M30": [
+  "Monster",
+  "Larva"
+ ],
+ "M31": [
+  "Monster",
+  "Larva2"
+ ],
+ "M32": [
+  "Monster",
+  "Lizard"
+ ],
+ "M33": [
+  "Monster",
+  "Lizard2"
+ ],
+ "M34": [
+  "Monster",
+  "Mole"
+ ],
+ "M35": [
+  "Monster",
+  "Mole2"
+ ],
+ "M36": [
+  "Monster",
+  "Mollusc"
+ ],
+ "M37": [
+  "Monster",
+  "Mollusc2"
+ ],
+ "M38": [
+  "Monster",
+  "Mouse"
+ ],
+ "M39": [
+  "Monster",
+  "MouseBlack"
+ ],
+ "M40": [
+  "Monster",
+  "Mushroom"
+ ],
+ "M41": [
+  "Monster",
+  "Mushroom2"
+ ],
+ "M42": [
+  "Monster",
+  "Octopus"
+ ],
+ "M43": [
+  "Monster",
+  "Octopus2"
+ ],
+ "M44": [
+  "Monster",
+  "Owl"
+ ],
+ "M45": [
+  "Monster",
+  "Owl2"
+ ],
+ "M46": [
+  "Monster",
+  "Panda"
+ ],
+ "M47": [
+  "Monster",
+  "Racoon"
+ ],
+ "M48": [
+  "Monster",
+  "RedOctopus"
+ ],
+ "M49": [
+  "Monster",
+  "Reptile"
+ ],
+ "M50": [
+  "Monster",
+  "Reptile2"
+ ],
+ "M51": [
+  "Monster",
+  "Skull"
+ ],
+ "M52": [
+  "Monster",
+  "SkullBlue"
+ ],
+ "M53": [
+  "Monster",
+  "Slime"
+ ],
+ "M54": [
+  "Monster",
+  "Slime2"
+ ],
+ "M55": [
+  "Monster",
+  "Slime3"
+ ],
+ "M56": [
+  "Monster",
+  "Slime4"
+ ],
+ "M57": [
+  "Monster",
+  "Snake"
+ ],
+ "M58": [
+  "Monster",
+  "Snake2"
+ ],
+ "M59": [
+  "Monster",
+  "Snake3"
+ ],
+ "M60": [
+  "Monster",
+  "Snake4"
+ ],
+ "M61": [
+  "Monster",
+  "SpiderRed"
+ ],
+ "M62": [
+  "Monster",
+  "SpiderYellow"
+ ],
+ "M63": [
+  "Monster",
+  "Spirit"
+ ],
+ "M64": [
+  "Monster",
+  "Spirit2"
+ ],
+ "M65": [
+  "Monster",
+  "TRex"
+ ],
+ "M66": [
+  "Monster",
+  "YellowsBat"
+ ],
+ "B01": [
+  "Boss",
+  "DemonCyclop"
+ ],
+ "B02": [
+  "Boss",
+  "DemonCyclop2"
+ ],
+ "B03": [
+  "Boss",
+  "DragonBlue"
+ ],
+ "B04": [
+  "Boss",
+  "DragonGreen"
+ ],
+ "B05": [
+  "Boss",
+  "GiantBamboo"
+ ],
+ "B06": [
+  "Boss",
+  "GiantBamboo2"
+ ],
+ "B07": [
+  "Boss",
+  "GiantBlueSamurai"
+ ],
+ "B08": [
+  "Boss",
+  "GiantFlam"
+ ],
+ "B09": [
+  "Boss",
+  "GiantFrog"
+ ],
+ "B10": [
+  "Boss",
+  "GiantFrog2"
+ ],
+ "B11": [
+  "Boss",
+  "GiantRacoon"
+ ],
+ "B12": [
+  "Boss",
+  "GiantRacoonGold"
+ ],
+ "B13": [
+  "Boss",
+  "GiantRedSamurai"
+ ],
+ "B14": [
+  "Boss",
+  "GiantSlime"
+ ],
+ "B15": [
+  "Boss",
+  "GiantSlime2"
+ ],
+ "B16": [
+  "Boss",
+  "GiantSpirit"
+ ],
+ "B17": [
+  "Boss",
+  "SquidGreen"
+ ],
+ "B18": [
+  "Boss",
+  "SquidRed"
+ ],
+ "B19": [
+  "Boss",
+  "TenguBlue"
+ ],
+ "B20": [
+  "Boss",
+  "TenguRed"
+ ]
+}

@@ -42,9 +42,9 @@ All text is newly written. The chain then continues with the existing original `
 
 | ID | Type | Rarity | Stats |
 | --- | --- | --- | --- |
-| `ashwood_blade` | sword | Common | **owner to provide** |
-| `ironbark_cleaver` | axe | Common | **owner to provide** |
-| `ember_spear` | spear | Common | **owner to provide** |
+| `ashwood_blade` | sword | Common | from the equipment formula |
+| `ironbark_cleaver` | axe | Common | from the equipment formula |
+| `ember_dirk` | dagger | Common | from the equipment formula |
 
 Owner decision 2026-11-08: weapon stats will be supplied by the owner later. Implementation keeps
 them as a single data row per weapon in `ItemDatabase` and blocks P0-8 merge until the values
@@ -63,7 +63,7 @@ attack interval 1.2 s, windup 0.5 s, death 0.6 s, gold 3–6, XP 12. Art from P0
 
 | v5 data | v6 result | Notes |
 | --- | --- | --- |
-| item `th_weapon_28` / `_29` / `_30` (bag or equipped) | `ashwood_blade` / `ironbark_cleaver` / `ember_spear` | Keep `level` and `augments`; drop the `reference` block. If the old rolled damage exceeds the new item's attack, grant `(old − new) × 10` gold, logged in `migration_log` |
+| item `th_weapon_28` / `_29` / `_30` (bag or equipped) | `ashwood_blade` / `ironbark_cleaver` / `ember_dirk` | Keep `level` and `augments`; drop the `reference` block. If the old rolled damage exceeds the new item's attack, grant `(old − new) × 10` gold, logged in `migration_log` |
 | any other `reference` block | item kept if its ID still exists; otherwise moved to `lost_and_found` | never dropped |
 | `quests.main_quest_id` `q305…q311` | `t01…t06` (q310→t05, q311→t06) | `main_progress` and `main_ready` kept; `q306` progress counted `turtle` kills, now `mossback` (same count) |
 | `pending_claim.source_id` `q305…q311` | mapped as above, `claim_id` rewritten (`main:t0x`) | Reward payload kept; `th_weapon_*` inside it mapped like bag items |

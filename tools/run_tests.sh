@@ -41,7 +41,7 @@ echo "INFO  provenance gate (release): $(tail -1 "$WORK/logs/provenance_release.
 
 # A GDScript parse error leaves Godot running instead of exiting, so each suite is bounded by a
 # timeout and interrupted with SIGINT (which flushes its log).
-for suite in InventoryTransactionTests SurvivalTests LegacySystemTests ProvenanceTests SaveFixtureTests ArtCatalogTests; do
+for suite in InventoryTransactionTests SurvivalTests LegacySystemTests ProvenanceTests SaveFixtureTests ArtCatalogTests EquipmentSystemTests; do
 	( isolate "$suite"; timeout -s INT 300 "$GODOT" --headless --path "$ROOT" "res://tests/$suite.tscn" >"$WORK/logs/$suite.log" 2>&1 )
 	report "$suite" $?
 done

@@ -1,9 +1,45 @@
 # PROPOSAL — Equipment & Stat System (5 slots × 3 lines, HP / ATK / MOVE SPEED)
 
-- Stage: SCOUT + PLAN proposal · 2026-11-08 · **awaiting owner approval before any code**
+- Stage: PLAN · 2026-11-08 · **approved by the owner 2026-11-08 with the changes in §0**
 - Source: owner brief "Equipment & Stat System Designer" (2026-11-08)
 - Mechanics follow the genre pattern the owner asked for (three stat-focused equipment lines);
   every name, number and formula here is original to Cinderwild.
+
+## 0. Owner decisions (2026-11-08) — these override the sections below where they differ
+
+| Topic | Decision |
+| --- | --- |
+| Formula and table | Approved. Implement now |
+| Lines | **Tank / Damage / Balanced** for helmet, armor, boots, back. The third line is **Balanced** (HP and ATK both mid, low speed), not Mobility |
+| Speed | **Only the Dagger has outstanding move speed.** No other item has a large speed share, so the diminishing-returns rule isn't needed. A data-driven safety cap (`max_equipment_move_speed`) stays |
+| DEF and other stats | Not on base equipment. They come from **stones socketed into equipment**, chosen by the player (the existing augment system becomes stone socketing) |
+| Old equipment (~40 items) | Deleted from the game. Saves get the items' sell value back in gold, logged in `migration_log` (never silent) |
+| Future equippables (later) | Pets, a special skill, and a non-removable **appearance set** (eyes, face, hair, skin) that can only be replaced by wearing a new one |
+
+Balanced line shares: base HP 0.45 / ATK 0.45 / SPD 0.10, growth 0.475 / 0.475 / 0.05.
+
+### Implemented table (computed by `EquipmentBalance`, 2026-11-08)
+
+Dagger growth was raised to HP 0.20 / ATK 0.35 / SPD 0.45 after the tests found that at
+Epic/Legendary levels 7–10 its ATK overtook its speed.
+
+| Item | Slot | Line | L1 Common HP/ATK/SPD | L10 Rare HP/ATK/SPD |
+| --- | --- | --- | --- | --- |
+| Ironbark Helm | helmet | tank | 90 / 3 / 2 | 317 / 7 / 3 |
+| Ember Visor | helmet | damage | 18 / 15 / 2 | 45 / 53 / 3 |
+| Wayfarer Hood | helmet | balanced | 54 / 9 / 2 | 181 / 30 / 3 |
+| Ironbark Plate | armor | tank | 125 / 3 / 2 | 420 / 8 / 4 |
+| Ember Harness | armor | damage | 23 / 20 / 2 | 58 / 69 / 4 |
+| Wayfarer Coat | armor | balanced | 70 / 12 / 2 | 235 / 39 / 4 |
+| Ironbark Greaves | boots | tank | 81 / 3 / 1 | 285 / 7 / 3 |
+| Ember Treads | boots | damage | 16 / 14 / 1 | 40 / 48 / 3 |
+| Wayfarer Boots | boots | balanced | 49 / 8 / 1 | 163 / 27 / 3 |
+| Ashwood Blade | weapon | sword | 62 / 12 / 2 | 219 / 41 / 5 |
+| Ironbark Cleaver | weapon | axe | 8 / 23 / 1 | 25 / 75 / 3 |
+| Ember Dirk | weapon | dagger | 23 / 9 / 10 | 93 / 29 / 29 |
+| Ironbark Pack | back | tank | 90 / 3 / 2 | 317 / 7 / 3 |
+| Ember Quiver | back | damage | 18 / 15 / 2 | 45 / 53 / 3 |
+| Wayfarer Cloak | back | balanced | 54 / 9 / 2 | 181 / 30 / 3 |
 
 ## 1. Findings — how equipment works today
 

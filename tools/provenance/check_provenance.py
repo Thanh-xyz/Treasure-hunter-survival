@@ -81,8 +81,10 @@ def collect_references(root: Path, mode: str, asset_ids: set[str]) -> tuple[dict
         if id_pattern is not None and path.suffix == ".gd":
             for match in id_pattern.findall(text):
                 refs.setdefault(f"id:{match}", set()).add(str(rel))
+        shipped = rel.parts[0] in SHIPPED_ROOTS or str(rel) in SHIPPED_ROOTS
         for token in FORBIDDEN_SOURCES:
-            if token in text and path.suffix in (".gd", ".tscn", ".tres", ".godot"):
+            # Tests may name forbidden sources in assertions; only shipped files are checked.
+            if shipped and token in text and path.suffix in (".gd", ".tscn", ".tres", ".godot"):
                 for lineno, line in enumerate(text.splitlines(), 1):
                     if token in line:
                         forbidden.append(f"{rel}:{lineno}: references external source '{token}'")

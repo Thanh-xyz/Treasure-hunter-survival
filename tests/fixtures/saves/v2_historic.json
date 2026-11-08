@@ -1,0 +1,218 @@
+{
+  "hp": -1,
+  "inventory": {
+    "diamonds": 7,
+    "equipment": {
+      "accessory_1": {
+        "id": "silver_ring",
+        "qty": 1
+      },
+      "armor": {
+        "id": "leather_armor",
+        "qty": 1
+      },
+      "weapon": {
+        "augments": [
+          "flame_augment_t1"
+        ],
+        "id": "fire_blade",
+        "level": 3,
+        "qty": 1
+      }
+    },
+    "gold": 1234,
+    "slots": [
+      {
+        "id": "wood",
+        "qty": 50
+      },
+      {
+        "id": "stone",
+        "qty": 20
+      },
+      {
+        "id": "health_potion",
+        "qty": 5
+      },
+      {
+        "id": "power_augment_t1",
+        "qty": 1
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      }
+    ]
+  },
+  "profile": {
+    "active_mount": "dust_pony",
+    "active_pet": "ember_fox",
+    "boss_kills": {
+      "mire_king": 2
+    },
+    "current_zone": "greenwood",
+    "hero_id": "ranger",
+    "heroes": {
+      "ranger": {
+        "stars": 1
+      },
+      "warden": {
+        "stars": 2
+      }
+    },
+    "kills_total": 250,
+    "level": 12,
+    "mounts": {
+      "dust_pony": {
+        "skin": 1,
+        "skins": [
+          0,
+          1
+        ]
+      }
+    },
+    "pets": {
+      "ember_fox": {
+        "level": 4
+      },
+      "moss_turtle": {
+        "level": 1
+      }
+    },
+    "plots": [
+      {
+        "id": "lumber_mill",
+        "last_collect": 1792990000.0,
+        "level": 2
+      },
+      {
+
+      },
+      {
+        "id": "herb_garden",
+        "last_collect": 1792995000.0,
+        "level": 1
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      }
+    ],
+    "settings": {
+      "compact_hud": false,
+      "damage_numbers": true,
+      "joystick_opacity": 0.7,
+      "left_handed": false,
+      "max_fps": 60
+    },
+    "xp": 340
+  },
+  "quests": {
+    "dailies": {
+      "d_boss": {
+        "claimed": false,
+        "progress": 0
+      },
+      "d_gather": {
+        "claimed": false,
+        "progress": 0
+      },
+      "d_hunt": {
+        "claimed": false,
+        "progress": 0
+      }
+    },
+    "daily_date": "2026-11-01",
+    "main_index": 8,
+    "main_progress": 4,
+    "main_quest_id": "q03",
+    "main_ready": false
+  },
+  "saved_at": 1793000000.0,
+  "version": 2
+}

@@ -1,0 +1,174 @@
+{
+  "hp": -1,
+  "inventory": {
+    "diamonds": 0,
+    "equipment": {
+
+    },
+    "gold": 0,
+    "slots": [
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      }
+    ]
+  },
+  "pending_claim": {
+
+  },
+  "profile": {
+    "active_mount": "",
+    "active_pet": "",
+    "boss_kills": {
+
+    },
+    "current_zone": "town",
+    "hero_id": "warden",
+    "heroes": {
+      "warden": {
+        "stars": 1
+      }
+    },
+    "kills_total": 0,
+    "level": 1,
+    "mounts": {
+
+    },
+    "pets": {
+      "ember_fox": {
+        "level": 1
+      }
+    },
+    "plots": [
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      }
+    ],
+    "settings": {
+      "compact_hud": false,
+      "damage_numbers": true,
+      "joystick_opacity": 0.7,
+      "left_handed": false,
+      "max_fps": 60
+    },
+    "xp": 0
+  },
+  "quests": {
+    "dailies": {
+
+    },
+    "daily_date": "",
+    "main_index": 3,
+    "main_progress": 1,
+    "main_ready": false
+  },
+  "saved_at": 1793000000.0,
+  "version": 5
+}

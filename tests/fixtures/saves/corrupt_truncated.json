@@ -1,0 +1,136 @@
+{
+  "hp": -1,
+  "inventory": {
+    "diamonds": 7,
+    "equipment": {
+      "accessory_1": {
+        "id": "silver_ring",
+        "qty": 1
+      },
+      "armor": {
+        "id": "leather_armor",
+        "qty": 1
+      },
+      "weapon": {
+        "augments": [
+          "flame_augment_t1"
+        ],
+        "id": "fire_blade",
+        "level": 3,
+        "qty": 1
+      }
+    },
+    "gold": 1234,
+    "slots": [
+      {
+        "id": "wood",
+        "qty": 50
+      },
+      {
+        "id": "stone",
+        "qty": 20
+      },
+      {
+        "id": "health_potion",
+        "qty": 5
+      },
+      {
+        "id": "power_augment_t1",
+        "qty": 1
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      }
+    ]
+  },
+  "pending_claim": {
+
+  },
+  "profile": {
+    "active_mount": "dust_pony",
+    "active_pet": "ember_fox",
+    "boss_kills": {
+      "mire_king": 2
+    },
+    "current_zone": "gree

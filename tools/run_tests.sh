@@ -37,8 +37,10 @@ report "provenance gate (dev)" $?
 python3 -I "$ROOT/tools/provenance/check_provenance.py" --mode release --quiet >"$WORK/logs/provenance_release.log" 2>&1
 echo "INFO  provenance gate (release): $(tail -1 "$WORK/logs/provenance_release.log")"
 
-for suite in InventoryTransactionTests SurvivalTests LegacySystemTests ProvenanceTests; do
-	( isolate "$suite"; timeout 600 "$GODOT" --headless --path "$ROOT" "res://tests/$suite.tscn" >"$WORK/logs/$suite.log" 2>&1 )
+# A GDScript parse error leaves Godot running instead of exiting, so each suite is bounded by a
+# timeout and interrupted with SIGINT (which flushes its log).
+for suite in InventoryTransactionTests SurvivalTests LegacySystemTests ProvenanceTests SaveFixtureTests; do
+	( isolate "$suite"; timeout -s INT 300 "$GODOT" --headless --path "$ROOT" "res://tests/$suite.tscn" >"$WORK/logs/$suite.log" 2>&1 )
 	report "$suite" $?
 done
 

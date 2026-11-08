@@ -1,0 +1,208 @@
+{
+  "hp": -1,
+  "inventory": {
+    "diamonds": 0,
+    "equipment": {
+      "weapon": {
+        "id": "th_weapon_28",
+        "qty": 1,
+        "reference": {
+          "asset_id": "item.weapon.card_28.icon",
+          "card_id": 28,
+          "stats": {
+            "damage": 27.5,
+            "health": 11.0,
+            "speed": 0.08
+          }
+        }
+      }
+    },
+    "gold": 0,
+    "slots": [
+      {
+        "id": "th_weapon_29",
+        "qty": 1,
+        "reference": {
+          "asset_id": "item.weapon.card_29.icon",
+          "card_id": 29,
+          "stats": {
+            "damage": 14.0,
+            "health": 85.0,
+            "speed": 0.53
+          }
+        }
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      }
+    ]
+  },
+  "pending_claim": {
+
+  },
+  "profile": {
+    "active_mount": "",
+    "active_pet": "",
+    "boss_kills": {
+
+    },
+    "current_zone": "town",
+    "hero_id": "warden",
+    "heroes": {
+      "warden": {
+        "stars": 1
+      }
+    },
+    "kills_total": 0,
+    "level": 1,
+    "mounts": {
+
+    },
+    "pets": {
+      "ember_fox": {
+        "level": 1
+      }
+    },
+    "plots": [
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      },
+      {
+
+      }
+    ],
+    "settings": {
+      "compact_hud": false,
+      "damage_numbers": true,
+      "joystick_opacity": 0.7,
+      "left_handed": false,
+      "max_fps": 60
+    },
+    "xp": 0
+  },
+  "quests": {
+    "dailies": {
+      "d_boss": {
+        "claimed": false,
+        "progress": 0
+      },
+      "d_gather": {
+        "claimed": false,
+        "progress": 0
+      },
+      "d_hunt": {
+        "claimed": false,
+        "progress": 0
+      }
+    },
+    "daily_date": "2026-11-01",
+    "main_index": 0,
+    "main_progress": 0,
+    "main_quest_id": "q01",
+    "main_ready": false
+  },
+  "saved_at": 1793000000.0,
+  "version": 5
+}

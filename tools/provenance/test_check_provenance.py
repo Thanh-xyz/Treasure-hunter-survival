@@ -81,6 +81,10 @@ class ProvenanceGateTests(unittest.TestCase):
         errors = self.run_check("dev").errors
         self.assertTrue(any("assets-ths" in e for e in errors), errors)
 
+    def test_tests_may_mention_external_source(self):
+        self.scene("tests/t.gd", '_check(not path.contains("assets-ths"), "no external source")')
+        self.assertEqual(self.run_check("dev").errors, [])
+
     def test_missing_target_file_is_reported(self):
         self.records.append(record("a.gone", "gone.png", "original"))
         self.write_manifest()

@@ -27,7 +27,7 @@ func _ready() -> void:
 
 
 func _image_for(id: String) -> Image:
-	if id.begins_with(ArtCatalog.ICON_PREFIX) or id in UiKit.texture_ids():
+	if id.begins_with(ArtCatalog.ICON_PREFIX) or id.begins_with("npc.") or id in UiKit.texture_ids():
 		var tex := ArtCatalog.texture(id)
 		return tex.get_image() if tex != null else null
 	var sb := ArtCatalog.stylebox(id) as StyleBoxTexture
@@ -36,7 +36,7 @@ func _image_for(id: String) -> Image:
 
 func _check_palette(id: String, img: Image) -> void:
 	# Kit textures are integer upscales; one sample per art pixel is enough.
-	var step := 1 if id.begins_with(ArtCatalog.ICON_PREFIX) else UiKit.UI_PX
+	var step := 1 if id.begins_with(ArtCatalog.ICON_PREFIX) or id.begins_with("npc.") else UiKit.UI_PX
 	for y in range(0, img.get_height(), step):
 		for x in range(0, img.get_width(), step):
 			var c := img.get_pixel(x, y)

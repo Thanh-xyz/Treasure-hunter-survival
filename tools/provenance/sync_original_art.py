@@ -49,6 +49,10 @@ def declared_ids() -> dict[str, dict]:
     for name in re.findall(r'"(\w+)"', block(kit_src, "const RARITY_NAMES")):
         ids[f"ui.frame.slot.{name}"] = {"category": "ui_style", "target_path": "sense/art/ui_kit.gd",
                                         "file_format": "gdscript_9slice_pattern", "dimensions": [8, 8]}
+    npc_src = (ROOT / "sense/art/npc_portraits.gd").read_text(encoding="utf-8")
+    for name in re.findall(r'^\t"(\w+)": \[', block(npc_src, "const PORTRAITS"), re.M):
+        ids[f"npc.{name}.portrait"] = {"category": "npc_portrait", "target_path": "sense/art/npc_portraits.gd",
+                                        "file_format": "gdscript_ascii_sprite", "dimensions": None}
     tex_fn = kit_src[kit_src.index("static func texture_ids()"):]
     for name in re.findall(r'"(ui\.[\w.]+)"', tex_fn[:tex_fn.index("\n\n")]):
         ids[name] = {"category": "ui_texture", "target_path": "sense/art/ui_kit.gd",

@@ -5,7 +5,8 @@ extends RefCounted
 ##
 ##   ui.icon.<name>          16×16 icons            → texture(id, scale)
 ##   ui.panel.* / ui.button.* / ui.tab.* / ui.frame.*   9-slice styles → stylebox(id), nine_patch(id)
-##   ui.joystick.ring/handle textures               → texture(id)
+##   ui.joystick.ring/handle, ui.title.*            → texture(id)
+##   npc.<key>.portrait      NPC portraits          → texture(id, scale)
 
 const ICON_PREFIX := "ui.icon."
 
@@ -16,6 +17,8 @@ static func all_ids() -> Array:
 		ids.append(ICON_PREFIX + name)
 	ids.append_array(UiKit.style_ids())
 	ids.append_array(UiKit.texture_ids())
+	for key: String in NpcPortraits.keys():
+		ids.append("npc.%s.portrait" % key)
 	return ids
 
 
@@ -26,6 +29,8 @@ static func has(id: String) -> bool:
 static func texture(id: String, scale: int = 1) -> Texture2D:
 	if id.begins_with(ICON_PREFIX):
 		return UiIcons.texture(id.trim_prefix(ICON_PREFIX), scale)
+	if id.begins_with("npc.") and id.ends_with(".portrait"):
+		return NpcPortraits.texture(id.trim_prefix("npc.").trim_suffix(".portrait"), scale)
 	var tex := UiKit.texture(id)
 	if tex == null:
 		push_warning("[ArtCatalog] unknown texture id: %s" % id)

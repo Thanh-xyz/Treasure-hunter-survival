@@ -33,13 +33,15 @@ python3 -I "$ROOT/tools/provenance/test_check_provenance.py" >"$WORK/logs/proven
 report "provenance gate unit tests" $?
 python3 -I "$ROOT/tools/provenance/check_provenance.py" --mode dev --quiet >"$WORK/logs/provenance_dev.log" 2>&1
 report "provenance gate (dev)" $?
+python3 -I "$ROOT/tools/provenance/sync_original_art.py" --check >"$WORK/logs/art_manifest.log" 2>&1
+report "original art manifest records" $?
 # Release mode is expected to fail until every asset is original/verified; it is reported, not counted.
 python3 -I "$ROOT/tools/provenance/check_provenance.py" --mode release --quiet >"$WORK/logs/provenance_release.log" 2>&1
 echo "INFO  provenance gate (release): $(tail -1 "$WORK/logs/provenance_release.log")"
 
 # A GDScript parse error leaves Godot running instead of exiting, so each suite is bounded by a
 # timeout and interrupted with SIGINT (which flushes its log).
-for suite in InventoryTransactionTests SurvivalTests LegacySystemTests ProvenanceTests SaveFixtureTests; do
+for suite in InventoryTransactionTests SurvivalTests LegacySystemTests ProvenanceTests SaveFixtureTests ArtCatalogTests; do
 	( isolate "$suite"; timeout -s INT 300 "$GODOT" --headless --path "$ROOT" "res://tests/$suite.tscn" >"$WORK/logs/$suite.log" 2>&1 )
 	report "$suite" $?
 done

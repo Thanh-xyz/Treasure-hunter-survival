@@ -4,7 +4,7 @@ extends RefCounted
 ## Resolves one guaranteed weighted reward without mutating gameplay state.
 ## Callers own the RNG so offline and future host-authoritative flows can replay rolls.
 
-const REWARD_KEYS := [&"xp", &"gold", &"diamonds", &"items"]
+const REWARD_KEYS := [&"gold", &"diamonds", &"items"]  ## XP retired in save v7
 const MAX_REWARD_AMOUNT := 9223372036854775807
 
 

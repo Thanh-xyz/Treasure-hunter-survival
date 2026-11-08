@@ -72,7 +72,6 @@ func _build_host_enemy() -> void:
 	enemy.position = Vector2(160, 220)
 	enemy.max_hp = 24
 	enemy.hp = 24
-	enemy.xp_reward = 0
 	enemy.def = enemy.def.duplicate(true)
 	enemy.def["gold"] = Vector2i.ZERO
 	enemy.def["loot"] = []

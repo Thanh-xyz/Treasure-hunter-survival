@@ -6,65 +6,14 @@ extends RefCounted
 ## Every gameplay system reads its numbers from here so balance can be tuned in
 ## one place. Unverified balance values remain placeholders until runtime capture.
 ##
-## Sections: HEROES, HERO_SKILLS, PETS, MOUNTS, MONSTERS, ZONES, BUILDINGS, QUESTS
+## Sections: PLAYER, PETS, MOUNTS, MONSTERS, ZONES, BUILDINGS, QUESTS
 
 # =============================================================================
-# HEROES — collectible playable classes (stars upgrade with hero_shard)
+# PLAYER — the single character (owner decision 2026-11-08: no hero classes,
+# no player level or XP). Equipment adds HP/ATK/move speed, socket stones add DEF
+# and combat stats, pets and mounts add their passives.
 # =============================================================================
-const HEROES := {
-	"warden": {
-		"name": "Warden",
-		"title": "Warden",
-		"desc": "Sturdy frontliner. Melee strikes and crowd control.",
-		"tint": Color(1, 1, 1),
-		"base": {"hp": 120, "atk": 10, "def": 2, "spd": 120.0},
-		"growth": {"hp": 14, "atk": 2, "def": 1},
-		"attack_style": "melee",
-		"skills": ["cleave_spin", "shield_charge", "war_cry"],
-		"unlock": {"gold": 0, "level": 1},
-	},
-	"ranger": {
-		"name": "Ranger",
-		"title": "Ranger",
-		"desc": "Fires a bolt with every strike. Fast and agile.",
-		"tint": Color(0.7, 1.0, 0.7),
-		"base": {"hp": 95, "atk": 12, "def": 1, "spd": 135.0},
-		"growth": {"hp": 10, "atk": 3, "def": 0},
-		"attack_style": "bolt",
-		"skills": ["bolt_fan", "dash_strike", "arrow_rain"],
-		"unlock": {"gold": 1200, "level": 5},
-	},
-	"mystic": {
-		"name": "Mystic",
-		"title": "Mystic",
-		"desc": "Every strike releases a small nova. Powerful area spells.",
-		"tint": Color(0.85, 0.7, 1.0),
-		"base": {"hp": 90, "atk": 14, "def": 1, "spd": 118.0},
-		"growth": {"hp": 9, "atk": 3, "def": 0},
-		"attack_style": "nova",
-		"skills": ["meteor", "frost_ring", "mend"],
-		"unlock": {"gold": 2500, "level": 8},
-	},
-}
-
-const HERO_MAX_STARS := 5
-const HERO_STAR_BONUS := 0.08          ## +8% hp/atk/def per extra star
-const HERO_STAR_COST := [0, 5, 10, 20, 35]  ## hero_shard cost to reach star i+1
-
-# =============================================================================
-# HERO SKILLS — executed by HeroSkillRunner. unlock_level gates usage.
-# =============================================================================
-const HERO_SKILLS := {
-	"cleave_spin": {"name": "Cleave", "type": "spin", "cd": 4.0, "cost": 20.0, "mult": 1.6, "radius": 44.0, "unlock_level": 1},
-	"shield_charge": {"name": "Charge", "type": "dash", "cd": 7.0, "cost": 25.0, "mult": 1.4, "distance": 90.0, "unlock_level": 3},
-	"war_cry": {"name": "War Cry", "type": "buff", "cd": 18.0, "cost": 30.0, "atk_mult": 1.4, "duration": 8.0, "unlock_level": 6},
-	"bolt_fan": {"name": "Volley", "type": "fan", "cd": 3.5, "cost": 18.0, "mult": 1.0, "count": 5, "spread": 0.9, "unlock_level": 1},
-	"dash_strike": {"name": "Dash", "type": "dash", "cd": 5.0, "cost": 18.0, "mult": 1.2, "distance": 110.0, "unlock_level": 3},
-	"arrow_rain": {"name": "Rain", "type": "rain", "cd": 12.0, "cost": 35.0, "mult": 0.9, "radius": 40.0, "hits": 5, "unlock_level": 6},
-	"meteor": {"name": "Meteor", "type": "meteor", "cd": 6.0, "cost": 28.0, "mult": 2.6, "radius": 46.0, "delay": 0.7, "unlock_level": 1},
-	"frost_ring": {"name": "Frost", "type": "ring", "cd": 8.0, "cost": 25.0, "mult": 1.3, "count": 12, "unlock_level": 3},
-	"mend": {"name": "Mend", "type": "heal", "cd": 15.0, "cost": 30.0, "heal_pct": 0.35, "unlock_level": 6},
-}
+const PLAYER_BASE := {"hp": 150, "atk": 12, "def": 0, "spd": 120.0}
 
 # =============================================================================
 # PETS — follow, fight, give passives, level up with pet_treat, evolve at 5/10
@@ -115,25 +64,25 @@ const MOUNTS := {
 		"speed_mult": 1.6, "bonus": {},
 		"skins": ["mount_pony", "mount_pony_snow", "mount_pony_night"],
 		"skin_cost": 300,
-		"unlock": {"gold": 0, "level": 3},
+		"unlock": {"gold": 0},
 	},
 	"tusk_boar": {
 		"name": "Tusk Boar", "category": "attack", "sprite": "mount_boar",
 		"speed_mult": 1.35, "bonus": {"atk": 6},
 		"skins": ["mount_boar"], "skin_cost": 0,
-		"unlock": {"gold": 1000, "level": 6},
+		"unlock": {"gold": 1000},
 	},
 	"shell_tortoise": {
 		"name": "Shell Tortoise", "category": "defense", "sprite": "mount_tortoise",
 		"speed_mult": 1.2, "bonus": {"def": 6, "hp": 40},
 		"skins": ["mount_tortoise"], "skin_cost": 0,
-		"unlock": {"gold": 1000, "level": 6},
+		"unlock": {"gold": 1000},
 	},
 	"gale_stag": {
 		"name": "Gale Stag", "category": "speed", "sprite": "mount_stag",
 		"speed_mult": 1.9, "bonus": {},
 		"skins": ["mount_stag"], "skin_cost": 0,
-		"unlock": {"gold": 3000, "level": 10},
+		"unlock": {"gold": 3000},
 	},
 }
 
@@ -144,85 +93,84 @@ const MOUNTS := {
 const MONSTERS := {
 	"slime": {
 		"name": "Meadow Slime", "visual": "atlas", "asset_id": "actor.monster.ninja.slime",
-		"ai": "flyer", "hp": 30, "dmg": 6, "spd": 38.0, "xp": 8, "level": 1,
+		"ai": "flyer", "hp": 30, "dmg": 6, "spd": 38.0, "level": 1,
 		"range": 16.0, "aggro": 110.0, "scale": 2.0, "gold": Vector2i(1, 4),
 		"loot": [["herb_segment", 30, 1, 2], ["pet_treat", 12, 1, 1], ["health_potion", 6, 1, 1]],
 	},
 	"bat": {
 		"name": "Dusk Bat", "visual": "atlas", "asset_id": "actor.monster.ninja.blue_bat",
-		"ai": "flyer", "hp": 22, "dmg": 5, "spd": 70.0, "xp": 9, "level": 2,
+		"ai": "flyer", "hp": 22, "dmg": 5, "spd": 70.0, "level": 2,
 		"range": 14.0, "aggro": 140.0, "scale": 2.0, "gold": Vector2i(1, 5),
 		"loot": [["spirit_essence", 10, 1, 1], ["pet_treat", 10, 1, 1]],
 	},
 	"shroom": {
 		"name": "Bramble Snake", "visual": "atlas", "asset_id": "actor.monster.ninja.snake",
-		"ai": "melee", "hp": 34, "dmg": 7, "spd": 30.0, "xp": 12, "level": 3,
+		"ai": "melee", "hp": 34, "dmg": 7, "spd": 30.0, "level": 3,
 		"range": 16.0, "aggro": 150.0, "scale": 2.0, "gold": Vector2i(2, 6),
 		"loot": [["venom_gland", 18, 1, 1], ["herb_segment", 25, 1, 2]],
 	},
 	"boar": {
 		"name": "Bristle Boar", "visual": "atlas", "asset_id": "actor.monster.ninja.wild_boar",
-		"ai": "charger", "hp": 60, "dmg": 12, "spd": 34.0, "xp": 16, "level": 4,
+		"ai": "charger", "hp": 60, "dmg": 12, "spd": 34.0, "level": 4,
 		"range": 90.0, "aggro": 140.0, "scale": 2.0, "gold": Vector2i(3, 8),
 		"loot": [["ironbark_plate", 3, 1, 1], ["pet_treat", 15, 1, 2], ["iron_ore", 20, 1, 2]],
 	},
 	# Stationary guard (save v6 replaces the retired "turtle" row). Art: Ninja Adventure (CC0).
 	"mossback": {
 		"name": "Mosscap", "visual": "atlas", "asset_id": "actor.monster.ninja.mushroom",
-		"ai": "stationary_melee", "hp": 90, "dmg": 14, "spd": 0.0, "xp": 12, "level": 1,
+		"ai": "stationary_melee", "hp": 90, "dmg": 14, "spd": 0.0, "level": 1,
 		"range": 60.0, "aggro": 160.0, "scale": 2.0, "gold": Vector2i(3, 6),
 		"loot": [["pet_treat", 10, 1, 1]],
 		"attack_interval": 1.2, "attack_duration": 0.5, "death_duration": 0.6, "knockback_immune": true,
 	},
 	"skeleton_grunt": {
 		"name": "Bone Grunt", "visual": "atlas", "asset_id": "actor.monster.ninja.skull",
-		"ai": "melee", "hp": 70, "dmg": 12, "spd": 46.0, "xp": 20, "level": 6,
+		"ai": "melee", "hp": 70, "dmg": 12, "spd": 46.0, "level": 6,
 		"range": 24.0, "aggro": 150.0, "scale": 2.0, "gold": Vector2i(4, 12),
-		"loot": [["bone", 60, 1, 3], ["fire_shard", 12, 1, 1], ["ashwood_blade", 3, 1, 1], ["hero_shard", 4, 1, 1]],
+		"loot": [["bone", 60, 1, 3], ["fire_shard", 12, 1, 1], ["ashwood_blade", 3, 1, 1], ["stone_guard_1", 4, 1, 1]],
 	},
 	"skeleton_archer": {
 		"name": "Bone Archer", "visual": "atlas", "asset_id": "actor.monster.ninja.skull_blue",
-		"ai": "ranged", "hp": 55, "dmg": 11, "spd": 40.0, "xp": 22, "level": 7,
+		"ai": "ranged", "hp": 55, "dmg": 11, "spd": 40.0, "level": 7,
 		"range": 140.0, "aggro": 170.0, "scale": 2.0, "gold": Vector2i(4, 12),
 		"projectile": "bolt_frost",
-		"loot": [["bone", 50, 1, 2], ["frost_shard", 14, 1, 1], ["ember_dirk", 3, 1, 1], ["hero_shard", 4, 1, 1]],
+		"loot": [["bone", 50, 1, 2], ["frost_shard", 14, 1, 1], ["ember_dirk", 3, 1, 1], ["stone_critical_1", 4, 1, 1]],
 	},
 	"frost_slime": {
 		"name": "Frost Wisp", "visual": "atlas", "asset_id": "actor.monster.ninja.flam2",
-		"ai": "melee", "hp": 80, "dmg": 13, "spd": 44.0, "xp": 22, "level": 8,
+		"ai": "melee", "hp": 80, "dmg": 13, "spd": 44.0, "level": 8,
 		"range": 16.0, "aggro": 120.0, "scale": 2.0, "gold": Vector2i(4, 10),
 		"loot": [["frost_shard", 25, 1, 2], ["pet_treat", 15, 1, 2]],
 	},
 	"magma_slime": {
 		"name": "Magma Flame", "visual": "atlas", "asset_id": "actor.monster.ninja.flam",
-		"ai": "melee", "hp": 110, "dmg": 16, "spd": 46.0, "xp": 30, "level": 10,
+		"ai": "melee", "hp": 110, "dmg": 16, "spd": 46.0, "level": 10,
 		"range": 16.0, "aggro": 120.0, "scale": 2.0, "gold": Vector2i(6, 14),
 		"loot": [["fire_shard", 25, 1, 2], ["inferno_shard", 5, 1, 1]],
 	},
 	# --------------------------------------------------------------- bosses
 	"slime_king": {
 		"name": "Mire King", "visual": "atlas", "asset_id": "actor.boss.ninja.giant_slime",
-		"ai": "boss_slime", "hp": 900, "dmg": 18, "spd": 32.0, "xp": 300, "level": 5,
+		"ai": "boss_slime", "hp": 900, "dmg": 18, "spd": 32.0, "level": 5,
 		"range": 30.0, "aggro": 220.0, "scale": 2.0, "gold": Vector2i(80, 140), "boss": true,
-		"loot": [["hero_shard", 100, 2, 4], ["pet_treat", 100, 3, 6], ["ironbark_cleaver", 25, 1, 1], ["wayfarer_boots", 25, 1, 1], ["boss_core", 100, 1, 1]],
+		"loot": [["stone_guard_1", 100, 2, 4], ["pet_treat", 100, 3, 6], ["ironbark_cleaver", 25, 1, 1], ["wayfarer_boots", 25, 1, 1], ["boss_core", 100, 1, 1]],
 	},
 	"crypt_warden": {
 		"name": "Crypt Warden", "visual": "atlas", "asset_id": "actor.boss.ninja.giant_spirit",
-		"ai": "boss_skeleton", "hp": 650, "dmg": 16, "spd": 42.0, "xp": 220, "level": 5,
+		"ai": "boss_skeleton", "hp": 650, "dmg": 16, "spd": 42.0, "level": 5,
 		"range": 34.0, "aggro": 300.0, "scale": 2.0, "gold": Vector2i(60, 120), "boss": true,
-		"loot": [["hero_shard", 100, 1, 3], ["ashwood_blade", 30, 1, 1], ["ironbark_plate", 25, 1, 1], ["pet_treat", 100, 2, 4]],
+		"loot": [["stone_lifesteal_1", 100, 1, 3], ["ashwood_blade", 30, 1, 1], ["ironbark_plate", 25, 1, 1], ["pet_treat", 100, 2, 4]],
 	},
 	"bone_colossus": {
 		"name": "Cinder Colossus", "visual": "atlas", "asset_id": "actor.boss.ninja.demon_cyclop",
-		"ai": "boss_skeleton", "hp": 1600, "dmg": 24, "spd": 40.0, "xp": 600, "level": 10,
+		"ai": "boss_skeleton", "hp": 1600, "dmg": 24, "spd": 40.0, "level": 10,
 		"range": 40.0, "aggro": 260.0, "scale": 2.0, "gold": Vector2i(150, 260), "boss": true,
-		"loot": [["hero_shard", 100, 3, 6], ["emberforged_blade", 30, 1, 1], ["ember_harness", 25, 1, 1], ["wayfarer_cloak", 20, 1, 1], ["boss_core", 100, 1, 2]],
+		"loot": [["stone_critical_2", 100, 1, 2], ["emberforged_blade", 30, 1, 1], ["ember_harness", 25, 1, 1], ["wayfarer_cloak", 20, 1, 1], ["boss_core", 100, 1, 2]],
 	},
 }
 
 const ELITE_HP_MULT := 2.6
 const ELITE_DMG_MULT := 1.5
-const ELITE_XP_MULT := 3.0
 # Elite chance and caps: data/monsters/spawn_rules.json (SpawnRules).
 # Ground-dig tiles and loot: data/world/dig_tiles.json + loot_tables.json (DigTileCatalog, LootTableData).
 
@@ -297,8 +245,9 @@ const BUILDING_STORAGE_HOURS := 8.0
 
 # =============================================================================
 # QUESTS — main chain (sequential) + daily repeatables
-# objective types: dig, kill, boss, have_item, gather, level, visit, craft, build,
-#                  own_pet, own_mount, pet_level, hero_star, mount_ride
+# objective types: dig, kill, boss, have_item, gather, visit, craft, build, own_pet,
+#                  own_mount, pet_level, mount_ride, socketed_gems, equipped_count,
+#                  equipment_level, equipped_rarity
 # =============================================================================
 const MAIN_QUESTS := [
 	{"id": "q01", "name": "Nhóm lửa đầu tiên", "desc": "Đứng yên trên một ô đất mềm để đào thử.",
@@ -326,52 +275,43 @@ const MAIN_QUESTS := [
 		"obj": {"type": "craft", "target": "any", "count": 1},
 		"reward_table": "smith_kit", "reward_preview": "50 vàng, 2 bình máu"},
 	{"id": "q02", "name": "Slime Cleanup", "desc": "Defeat Meadow Slimes.",
-		"obj": {"type": "kill", "target": "slime", "count": 8}, "reward": {"xp": 60, "gold": 80, "items": {"health_potion": 3}}},
+		"obj": {"type": "kill", "target": "slime", "count": 8}, "reward": {"gold": 80, "items": {"health_potion": 3}}},
 	{"id": "q03", "name": "Timber!", "desc": "Chop trees for wood. Hit a tree to gather.",
-		"obj": {"type": "gather", "target": "wood", "count": 10}, "reward": {"xp": 60, "gold": 60, "items": {"stone": 5}}},
+		"obj": {"type": "gather", "target": "wood", "count": 10}, "reward": {"gold": 60, "items": {"stone": 5}}},
 	{"id": "q04", "name": "A Loyal Friend", "desc": "Equip a pet from the Pet menu.",
-		"obj": {"type": "own_pet", "target": "any", "count": 1}, "reward": {"xp": 50, "items": {"pet_treat": 6}}},
+		"obj": {"type": "own_pet", "target": "any", "count": 1}, "reward": {"items": {"pet_treat": 6}}},
 	{"id": "q05", "name": "Bats in the Dusk", "desc": "Defeat Dusk Bats.",
-		"obj": {"type": "kill", "target": "bat", "count": 6}, "reward": {"xp": 90, "gold": 100}},
-	{"id": "q06", "name": "Saddle Up", "desc": "Reach level 3 and claim a mount.",
-		"obj": {"type": "own_mount", "target": "any", "count": 1}, "reward": {"xp": 80, "gold": 120}},
+		"obj": {"type": "kill", "target": "bat", "count": 6}, "reward": {"gold": 100}},
+	{"id": "q06", "name": "Saddle Up", "desc": "Claim a mount from the Mount menu.",
+		"obj": {"type": "own_mount", "target": "any", "count": 1}, "reward": {"gold": 120}},
 	{"id": "q07", "name": "Homestead", "desc": "Build a Lumber Mill at your Homestead.",
-		"obj": {"type": "build", "target": "lumber_mill", "count": 1}, "reward": {"xp": 120, "gold": 150, "items": {"wood": 20}}},
+		"obj": {"type": "build", "target": "lumber_mill", "count": 1}, "reward": {"gold": 150, "items": {"wood": 20}}},
 	{"id": "q08", "name": "Charging Beasts", "desc": "Defeat Bristle Boars. Dodge their charge!",
-		"obj": {"type": "kill", "target": "boar", "count": 5}, "reward": {"xp": 160, "gold": 160, "items": {"ember_visor": 1}}},
+		"obj": {"type": "kill", "target": "boar", "count": 5}, "reward": {"gold": 160, "items": {"ember_visor": 1}}},
 	{"id": "q09", "name": "Pet Training", "desc": "Raise any pet to level 3.",
-		"obj": {"type": "pet_level", "target": "any", "count": 3}, "reward": {"xp": 120, "items": {"pet_treat": 8}}},
+		"obj": {"type": "pet_level", "target": "any", "count": 3}, "reward": {"items": {"pet_treat": 8}}},
 	{"id": "q10", "name": "The Mire King", "desc": "The world boss rises at the altar. Defeat it!",
-		"obj": {"type": "boss", "target": "slime_king", "count": 1}, "reward": {"xp": 400, "gold": 400, "items": {"hero_shard": 5}}},
+		"obj": {"type": "boss", "target": "slime_king", "count": 1}, "reward": {"gold": 400, "items": {"stone_guard_1": 3}}},
 	{"id": "q11", "name": "Into the Crypt", "desc": "Clear the Crypt Depths dungeon (use the town portal).",
-		"obj": {"type": "kill", "target": "skeleton_grunt", "count": 10}, "reward": {"xp": 400, "gold": 300}},
-	{"id": "q12", "name": "Northern Ruins", "desc": "Reach level 6 and travel to Frostvale.",
-		"obj": {"type": "visit", "target": "frostvale", "count": 1}, "reward": {"xp": 300, "gold": 300}},
+		"obj": {"type": "kill", "target": "skeleton_grunt", "count": 10}, "reward": {"gold": 300}},
+	{"id": "q12", "name": "Northern Ruins", "desc": "Travel north to Frostvale.",
+		"obj": {"type": "visit", "target": "frostvale", "count": 1}, "reward": {"gold": 300}},
 	{"id": "q13", "name": "Bone Archers", "desc": "Defeat Bone Archers.",
-		"obj": {"type": "kill", "target": "skeleton_archer", "count": 10}, "reward": {"xp": 500, "gold": 400, "items": {"hero_shard": 5}}},
-	{"id": "q14", "name": "Star Power", "desc": "Upgrade any hero to 2 stars.",
-		"obj": {"type": "hero_star", "target": "any", "count": 2}, "reward": {"xp": 400, "gold": 500}},
+		"obj": {"type": "kill", "target": "skeleton_archer", "count": 10}, "reward": {"gold": 400, "items": {"stone_critical_1": 3}}},
+	{"id": "q14", "name": "Stone Setter", "desc": "Socket 3 stones into your equipment.",
+		"obj": {"type": "socketed_gems", "target": "any", "count": 3}, "reward": {"gold": 500}},
 	{"id": "q15", "name": "The Colossus", "desc": "Defeat the Cinder Colossus.",
-		"obj": {"type": "boss", "target": "bone_colossus", "count": 1}, "reward": {"xp": 1200, "gold": 1500, "items": {"hero_shard": 10}}},
+		"obj": {"type": "boss", "target": "bone_colossus", "count": 1}, "reward": {"gold": 1500, "items": {"stone_critical_2": 2}}},
 ]
 
 const DAILY_QUESTS := [
 	{"id": "d_hunt", "name": "Daily Hunt", "desc": "Defeat any 30 monsters.",
-		"obj": {"type": "kill", "target": "any", "count": 30}, "reward": {"xp": 150, "gold": 200, "items": {"pet_treat": 4}}},
+		"obj": {"type": "kill", "target": "any", "count": 30}, "reward": {"gold": 200, "items": {"pet_treat": 4}}},
 	{"id": "d_gather", "name": "Daily Gather", "desc": "Gather 25 wood or stone.",
-		"obj": {"type": "gather", "target": "any", "count": 25}, "reward": {"xp": 100, "gold": 150}},
+		"obj": {"type": "gather", "target": "any", "count": 25}, "reward": {"gold": 150}},
 	{"id": "d_boss", "name": "Daily Boss", "desc": "Defeat any boss.",
-		"obj": {"type": "boss", "target": "any", "count": 1}, "reward": {"xp": 300, "gold": 300, "items": {"hero_shard": 3}}},
+		"obj": {"type": "boss", "target": "any", "count": 1}, "reward": {"gold": 300, "items": {"stone_guard_1": 2}}},
 ]
-
-# =============================================================================
-# PROGRESSION
-# =============================================================================
-const MAX_LEVEL := 40
-
-static func xp_to_next(level: int) -> int:
-	return 40 + level * level * 22
-
 
 static func get_main_quest_index(quest_id: String) -> int:
 	for i in range(MAIN_QUESTS.size()):

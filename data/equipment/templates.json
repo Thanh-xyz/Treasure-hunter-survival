@@ -17,6 +17,6 @@
     {"id": "ironbark_pack", "name": "Ironbark Pack", "slot": "back", "line": "tank", "rarity": "common", "icon": "ui.icon.weapon"},
     {"id": "ember_quiver", "name": "Ember Quiver", "slot": "back", "line": "damage", "rarity": "common", "icon": "ui.icon.damage"},
     {"id": "wayfarer_cloak", "name": "Wayfarer Cloak", "slot": "back", "line": "balanced", "rarity": "common", "icon": "ui.icon.skill"},
-    {"id": "emberforged_blade", "name": "Emberforged Blade", "slot": "weapon", "line": "sword", "rarity": "rare", "icon": "ui.icon.attack", "description": "Quenched in a living ember. Holds two runes."}
+    {"id": "emberforged_blade", "name": "Emberforged Blade", "slot": "weapon", "line": "sword", "rarity": "epic", "icon": "ui.icon.attack", "description": "Quenched in a living ember. Holds two runes."}
   ]
 }

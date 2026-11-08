@@ -35,6 +35,21 @@ static func rarities() -> Array:
 	return data().get("rarity_order", [])
 
 
+## Balance rarity name ("epic") -> ItemData.ItemRarity value, or -1. Equipment uses 4 rarities
+## (owner decision 2026-11-08: no Rare), so list positions do not match enum values.
+static func rarity_enum(rarity_name: String) -> int:
+	return int(ItemData.ItemRarity.get(rarity_name.to_upper(), -1))
+
+
+## ItemData.ItemRarity value -> balance rarity name ("" when equipment cannot have it).
+static func rarity_name(rarity_value: int) -> String:
+	var keys: Array = ItemData.ItemRarity.keys()
+	if rarity_value < 0 or rarity_value >= keys.size():
+		return ""
+	var name := str(keys[rarity_value]).to_lower()
+	return name if name in rarities() else ""
+
+
 static func max_level() -> int:
 	return int((data().get("level", {}) as Dictionary).get("max", 1))
 

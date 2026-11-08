@@ -9,7 +9,7 @@ extends Node
 signal saved
 signal loaded
 
-const SAVE_VERSION := 6
+const SAVE_VERSION := 7
 const SAVE_DIR := "user://saves"
 var SAVE_PATH: String = "user://saves/profile.json"  ## tests point this elsewhere
 const AUTOSAVE_INTERVAL := 60.0
@@ -41,6 +41,20 @@ const RETIRED_QUEST_MAP := {"q305": "t01", "q306": "t02", "q307": "t03", "q308":
 const RETIRED_MONSTER_MAP := {"turtle": "mossback", "snailu": "shroom"}
 ## Gold per point of rolled reference damage above the replacement weapon's attack.
 const REFERENCE_DAMAGE_COMPENSATION := 10
+## Save v7: slotted augments became socket stones (same stat family and tier). Augments with no
+## stone equivalent are refunded in gold (they had no shop price; values cover their crafting cost).
+const AUGMENT_TO_STONE := {
+	"flame_augment_t1": "stone_fire_1", "flame_augment_t2": "stone_fire_2", "flame_augment_t3": "stone_fire_3",
+	"frost_augment_t1": "stone_ice_1", "frost_augment_t2": "stone_ice_2",
+	"crit_augment_t1": "stone_critical_1", "crit_augment_t2": "stone_critical_2",
+	"lifesteal_augment_t1": "stone_lifesteal_1", "lifesteal_augment_t2": "stone_lifesteal_2",
+	"power_augment_t1": "stone_critical_damage_1", "power_augment_t2": "stone_critical_damage_2",
+}
+const V6_AUGMENT_SLOTS := [0, 1, 2, 3, 4]  ## save v6 sockets by rarity (common..legendary)
+## Items retired in save v7 and their gold refund per unit (hero shards: their shop price).
+const RETIRED_AUGMENT_GOLD := {"whirlwind_augment": 200, "shield_bash_augment": 200, "hero_shard": 60}
+## Save v7 drops player level/XP and hero classes; XP left in a pending reward becomes gold 1:1.
+const RETIRED_PROFILE_KEYS := ["level", "xp", "hero_id", "heroes"]
 
 
 func _ready() -> void:
@@ -271,6 +285,14 @@ func _migrate(data: Dictionary) -> Dictionary:
 		# Version 6 retires reference-game content and legacy equipment (5-slot system).
 		_migrate_to_v6(data)
 		data["version"] = 6
+		v = 6
+	if v < 7:
+		# Version 7: socket stones replace augments, 4 equipment rarities (no Rare),
+		# a single player character and no player level/XP.
+		if not _retired_profile_fields_valid(data):
+			return {}  # a malformed level/XP is corruption, not something to drop silently
+		_migrate_to_v7(data)
+		data["version"] = 7
 	return data
 
 
@@ -376,6 +398,8 @@ func _migrate_item_entry_v6(entry: Dictionary, log: Array, lost: Array, returned
 		for augment_id: Variant in augments:
 			returned.append({"id": str(augment_id), "qty": 1})
 		return {"entry": {}, "refund": refund}
+	if AUGMENT_TO_STONE.has(id) or RETIRED_AUGMENT_GOLD.has(id):
+		return {"entry": entry.duplicate(true), "refund": 0}  # converted by _migrate_to_v7
 	var item := ItemDatabase.get_item(id)
 	if item == null:
 		lost.append(entry.duplicate(true))
@@ -390,9 +414,10 @@ func _migrate_item_entry_v6(entry: Dictionary, log: Array, lost: Array, returned
 	return {"entry": kept, "refund": 0}
 
 
-## Keeps as many augments as the item has sockets; the rest go back to the bag.
+## Keeps as many augments as the item had sockets in save v6 (by rarity); the rest go back to
+## the bag. Save v7 then turns the kept augments into socket stones.
 func _return_augments(augments: Array, item: ItemData, target: Dictionary, returned: Array, log: Array) -> void:
-	var capacity := item.get_augment_slot_count() if item != null else 0
+	var capacity: int = V6_AUGMENT_SLOTS[clampi(int(item.rarity), 0, V6_AUGMENT_SLOTS.size() - 1)] if item != null and item.is_equippable() else 0
 	var kept: Array = []
 	for augment_id: Variant in augments:
 		if kept.size() < capacity:
@@ -426,6 +451,146 @@ func _migrate_reward_v6(reward: Dictionary, log: Array) -> Dictionary:
 	else:
 		out["items"] = items
 	return out
+
+
+func _migrate_to_v7(data: Dictionary) -> void:
+	var log: Array = data.get("migration_log", []) if data.get("migration_log") is Array else []
+	var lost: Array = data.get("lost_and_found", []) if data.get("lost_and_found") is Array else []
+	var inv: Variant = data.get("inventory", {})
+	if inv is Dictionary:
+		var inventory := inv as Dictionary
+		var gold := int(inventory.get("gold", 0)) if _is_integer(inventory.get("gold", 0)) else 0
+		var to_bag: Array = []
+		var slots: Array = inventory.get("slots", []) if inventory.get("slots") is Array else []
+		for i in range(slots.size()):
+			if slots[i] is Dictionary and not (slots[i] as Dictionary).is_empty():
+				var result := _migrate_item_entry_v7(slots[i], log, to_bag)
+				gold += int(result["refund"])
+				slots[i] = result["entry"]
+		var equipment: Variant = inventory.get("equipment", {})
+		if equipment is Dictionary:
+			for slot_type: Variant in (equipment as Dictionary).keys():
+				if equipment[slot_type] is Dictionary:
+					var result := _migrate_item_entry_v7(equipment[slot_type], log, to_bag)
+					gold += int(result["refund"])
+					if (result["entry"] as Dictionary).is_empty():
+						equipment.erase(slot_type)
+					else:
+						equipment[slot_type] = result["entry"]
+		# Lost & Found entries are converted the same way; refunds go to the wallet.
+		var kept_lost: Array = []
+		for entry: Variant in lost:
+			if not entry is Dictionary:
+				kept_lost.append(entry)
+				continue
+			var result := _migrate_item_entry_v7(entry, log, kept_lost)
+			gold += int(result["refund"])
+			if not (result["entry"] as Dictionary).is_empty():
+				kept_lost.append(result["entry"])
+		lost = kept_lost
+		for entry: Dictionary in to_bag:
+			if not _place_in_bag(slots, entry):
+				lost.append(entry)
+				log.append("Bag full: %s moved to Lost & Found" % entry.get("id", "?"))
+		inventory["slots"] = slots
+		inventory["gold"] = gold
+	var pending: Variant = data.get("pending_claim", {})
+	if pending is Dictionary and (pending as Dictionary).get("reward") is Dictionary:
+		var reward: Dictionary = pending["reward"]
+		if reward.get("items") is Dictionary:
+			var items: Dictionary = reward["items"]
+			for item_id: String in items.keys():
+				if AUGMENT_TO_STONE.has(item_id):
+					var stone: String = AUGMENT_TO_STONE[item_id]
+					items[stone] = int(items.get(stone, 0)) + int(items[item_id])
+					items.erase(item_id)
+				elif RETIRED_AUGMENT_GOLD.has(item_id):
+					reward["gold"] = int(reward.get("gold", 0)) + int(RETIRED_AUGMENT_GOLD[item_id]) * int(items[item_id])
+					items.erase(item_id)
+	_migrate_profile_v7(data, log)
+	data["migration_log"] = log
+	data["lost_and_found"] = lost
+
+
+## Augment ids in a bag stack or in an item's "augments" become stones; returns {"entry", "refund"}.
+func _migrate_item_entry_v7(entry: Dictionary, log: Array, to_bag: Array) -> Dictionary:
+	var id := str(entry.get("id", ""))
+	var qty := int(entry.get("qty", 1)) if _is_integer(entry.get("qty", 1)) else 1
+	if AUGMENT_TO_STONE.has(id):
+		log.append("%s ×%d became %s" % [id, qty, AUGMENT_TO_STONE[id]])
+		return {"entry": {"id": AUGMENT_TO_STONE[id], "qty": qty}, "refund": 0}
+	if RETIRED_AUGMENT_GOLD.has(id):
+		var refund := int(RETIRED_AUGMENT_GOLD[id]) * maxi(qty, 1)
+		log.append("Retired %s ×%d refunded %d gold" % [id, qty, refund])
+		return {"entry": {}, "refund": refund}
+	var kept := entry.duplicate(true)
+	var refund := 0
+	if kept.get("augments") is Array:
+		var sockets: Array = []
+		for augment_id: Variant in kept["augments"]:
+			var aug := str(augment_id)
+			if AUGMENT_TO_STONE.has(aug):
+				sockets.append(AUGMENT_TO_STONE[aug])
+				log.append("%s on %s became socketed %s" % [aug, id, AUGMENT_TO_STONE[aug]])
+			elif RETIRED_AUGMENT_GOLD.has(aug):
+				refund += int(RETIRED_AUGMENT_GOLD[aug])
+				log.append("Retired %s on %s refunded %d gold" % [aug, id, RETIRED_AUGMENT_GOLD[aug]])
+			else:
+				to_bag.append({"id": aug, "qty": 1})
+		kept.erase("augments")
+		if not sockets.is_empty():
+			while sockets.size() < GemCatalog.slots_per_holder():
+				sockets.append("")
+			kept["gems"] = sockets
+	return {"entry": kept, "refund": refund}
+
+
+func _place_in_bag(slots: Array, entry: Dictionary) -> bool:
+	for i in range(slots.size()):
+		if slots[i] is Dictionary and (slots[i] as Dictionary).is_empty():
+			slots[i] = entry
+			return true
+	if slots.size() < InventoryData.INVENTORY_SIZE:
+		slots.append(entry)
+		return true
+	return false
+
+
+func _retired_profile_fields_valid(data: Dictionary) -> bool:
+	var profile: Variant = data.get("profile", {})
+	if not profile is Dictionary:
+		return true  # _validate_snapshot reports it
+	for key in ["level", "xp"]:
+		if (profile as Dictionary).has(key) and not _is_integer(profile[key]):
+			return false
+	for key in ["hero_id"]:
+		if (profile as Dictionary).has(key) and not profile[key] is String:
+			return false
+	if (profile as Dictionary).has("heroes") and not profile["heroes"] is Dictionary:
+		return false
+	return true
+
+
+## Single character and no player level: the profile drops level/XP/hero fields (logged so the
+## player can see what changed); a journalled reward's XP becomes gold.
+func _migrate_profile_v7(data: Dictionary, log: Array) -> void:
+	var profile: Variant = data.get("profile", {})
+	if profile is Dictionary:
+		var p := profile as Dictionary
+		if p.has("level") or p.has("heroes"):
+			var heroes: Array = (p.get("heroes", {}) as Dictionary).keys() if p.get("heroes") is Dictionary else []
+			log.append("Character levels and hero classes retired (was level %s, heroes %s)" % [str(p.get("level", 1)), ", ".join(heroes)])
+		for key: String in RETIRED_PROFILE_KEYS:
+			p.erase(key)
+	var pending: Variant = data.get("pending_claim", {})
+	if pending is Dictionary and (pending as Dictionary).get("reward") is Dictionary:
+		var reward: Dictionary = pending["reward"]
+		if reward.has("xp"):
+			var xp := int(reward["xp"]) if _is_integer(reward["xp"]) else 0
+			reward.erase("xp")
+			if xp > 0:
+				reward["gold"] = int(reward.get("gold", 0)) + xp
+				log.append("Pending reward XP %d became %d gold" % [xp, xp])
 
 
 func _is_valid_save_file(path: String) -> bool:
@@ -494,27 +659,17 @@ func _normalize_pending_claim(record: Dictionary) -> Dictionary:
 
 
 func _validate_profile(profile: Dictionary) -> bool:
-	if profile.has("level") and (not _is_integer(profile["level"]) or int(profile["level"]) < 1 or int(profile["level"]) > GameContent.MAX_LEVEL):
-		return false
-	for key in ["xp", "kills_total"]:
+	for key: String in RETIRED_PROFILE_KEYS:
+		if profile.has(key):
+			return false  # retired in save v7
+	for key in ["kills_total"]:
 		if profile.has(key) and (not _is_integer(profile[key]) or int(profile[key]) < 0):
 			return false
-	for key in ["heroes", "pets", "mounts", "boss_kills", "settings"]:
+	for key in ["pets", "mounts", "boss_kills", "settings"]:
 		if profile.has(key) and not profile[key] is Dictionary:
 			return false
-	for key in ["hero_id", "active_pet", "active_mount", "current_zone"]:
+	for key in ["active_pet", "active_mount", "current_zone"]:
 		if profile.has(key) and not profile[key] is String:
-			return false
-	var heroes: Dictionary = profile.get("heroes", {})
-	for hero_id: Variant in heroes:
-		var hero: Variant = heroes[hero_id]
-		if not GameContent.HEROES.has(str(hero_id)) or not hero is Dictionary:
-			return false
-		if not _is_integer(hero.get("stars", 0)) or int(hero.get("stars", 0)) < 1 or int(hero.get("stars", 0)) > GameContent.HERO_MAX_STARS:
-			return false
-	if profile.has("hero_id"):
-		var selected_hero := str(profile["hero_id"])
-		if not GameContent.HEROES.has(selected_hero) or (profile.has("heroes") and not heroes.has(selected_hero)):
 			return false
 	var pets: Dictionary = profile.get("pets", {})
 	for pet_id: Variant in pets:
@@ -657,19 +812,16 @@ func _validate_item_entry(entry: Dictionary, equipment_slot: String = "") -> boo
 		return false
 	if entry.has("reference"):
 		return false  # reference-card instance data was retired in save v6
-	var augments: Variant = entry.get("augments", [])
-	if not augments is Array or augments.size() > item.get_augment_slot_count():
-		return false
-	var active_skills := 0
-	for augment_id: Variant in augments:
-		if not augment_id is String:
+	if entry.has("augments"):
+		return false  # slotted augments became socket stones in save v7
+	if entry.has("gems"):
+		var gems: Variant = entry["gems"]
+		if not gems is Array or not item.is_equippable() or gems.size() != GemCatalog.slots_per_holder():
 			return false
-		var augment := ItemDatabase.get_item(str(augment_id)) as ItemData
-		if augment == null or not augment.is_augment():
-			return false
-		if augment.augment_type == ItemData.AugmentType.ACTIVE_SKILL:
-			active_skills += 1
-			if active_skills > 1:
+		for stone_id: Variant in gems:
+			if not stone_id is String:
+				return false
+			if not str(stone_id).is_empty() and not GemCatalog.is_stone(str(stone_id)):
 				return false
 	return true
 
@@ -746,23 +898,23 @@ func _item_to_dict(item: ItemData, qty: int) -> Dictionary:
 	var d := {"id": item.id, "qty": qty}
 	if item.enhancement_level > 1:
 		d["level"] = item.enhancement_level
-	if not item.applied_augments.is_empty():
-		d["augments"] = item.applied_augments.duplicate()
+	if item.count_socketed_gems() > 0:
+		d["gems"] = Array(item.get_gem_sockets())
 	return d
 
 
 func _item_from_dict(d: Dictionary) -> ItemData:
 	var id := str(d.get("id", ""))
-	var augments: Array = d.get("augments", [])
+	var gems: Array = d.get("gems", [])
 	var level := int(d.get("level", 1))
-	if augments.is_empty() and level == 1:
+	if gems.is_empty() and level == 1:
 		return ItemDatabase.get_item(id)
 	var item: ItemData = ItemDatabase.get_item_copy(id)
 	if item != null:
 		item.enhancement_level = level
-		item.applied_augments.clear()
-		for a in augments:
-			item.applied_augments.append(str(a))
+		item.gems.clear()
+		for g in gems:
+			item.gems.append(str(g))
 	return item
 
 

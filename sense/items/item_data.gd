@@ -13,7 +13,8 @@ extends Resource
 ## ║  MATERIAL   → Crafting materials, cannot be used directly     ║
 ## ║  QUEST      → Quest items, cannot be dropped or sold          ║
 ## ║  SEGMENT    → Magical crafting drops, stackable max 99        ║
-## ║  AUGMENT    → Crafted buff items, slotted into equipment      ║
+## ║  AUGMENT    → Timed buff consumables (brews, tonics)          ║
+## ║  GEM        → Socket stones, 8 sockets per equipment piece    ║
 ## ╚═══════════════════════════════════════════════════════════════╝
 
 enum ItemType {
@@ -28,14 +29,15 @@ enum ItemType {
 	QUEST,
 	SEGMENT,   ## Magical crafting drops, stackable max 99
 	AUGMENT,   ## Crafted buff items, non-stackable, slotted into equipment
-	BACK       ## Back equipment (cloak, pack, quiver). Appended to keep saved enum values stable
+	BACK,      ## Back equipment (cloak, pack, quiver). Appended to keep saved enum values stable
+	GEM        ## Socket stone (data/gems). Appended to keep saved enum values stable
 }
 
 enum AugmentType {
 	NONE,            ## Not an augment item
 	STAT_BOOST,      ## Pure stat increase (ATK, DEF, HP, SPD)
-	PASSIVE_EFFECT,  ## On-hit / on-damaged passive (life steal, burn, thorns, etc.)
-	ACTIVE_SKILL,    ## Grants an activatable skill when slotted
+	PASSIVE_EFFECT,  ## Retired in save v7 (socket stones replace slotted augments)
+	ACTIVE_SKILL,    ## Retired in save v7
 	TIMED_BUFF       ## Consumable-style — used from inventory for temporary buff
 }
 
@@ -46,7 +48,11 @@ enum PassiveEffect {
 	THORNS,         ## Reflect % damage back to attacker on hit received
 	BURN_ON_HIT,    ## Apply burn DoT on hit
 	FREEZE_ON_HIT,  ## Apply slow on hit
-	POISON_ON_HIT   ## Apply poison DoT on hit
+	POISON_ON_HIT,  ## Apply poison DoT on hit
+	CRIT_DAMAGE,    ## Percentage bonus to the critical multiplier (stones, save v7)
+	DODGE,          ## Percent chance to avoid an incoming hit
+	ACCURACY,       ## Percentage points removed from a target's dodge (PvP)
+	REGENERATION    ## HP restored per second
 }
 
 enum ItemRarity {
@@ -117,9 +123,9 @@ enum ItemRarity {
 @export var active_skill_id: String = ""        ## Links to SkillData.id (e.g. "whirlwind")
 @export var buff_duration: float = 0.0          ## > 0 means timed consumable buff; 0 = permanent augment
 
-## Augments slotted into this equipment instance (array of augment item IDs)
-## Only populated on duplicated equipment instances, never on ItemDatabase templates
-var applied_augments: Array[String] = []
+## Socket stones in this equipment instance: GemCatalog.slots_per_holder() entries, "" = empty.
+## Only populated on duplicated equipment instances, never on ItemDatabase templates.
+var gems: Array[String] = []
 
 
 ## Legacy items without an equipment line scale every bonus by this rate per level.
@@ -148,11 +154,11 @@ func get_equipment_slot() -> String:
 func get_line_stats() -> Dictionary:
 	if equipment_line.is_empty() or get_equipment_slot().is_empty():
 		return {}
-	var rarities := EquipmentBalance.rarities()
-	if rarity < 0 or rarity >= rarities.size():
+	var rarity_key := EquipmentBalance.rarity_name(rarity)
+	if rarity_key.is_empty():
 		return {}
 	var level := clampi(enhancement_level, 1, maxi(max_upgrade_level, 1))
-	return EquipmentBalance.compute(get_equipment_slot(), equipment_line, str(rarities[rarity]), level)
+	return EquipmentBalance.compute(get_equipment_slot(), equipment_line, rarity_key, level)
 
 
 func get_enhancement_multiplier() -> float:
@@ -236,23 +242,25 @@ func is_consumable() -> bool:
 	return item_type == ItemType.CONSUMABLE or is_timed_buff()
 
 
-## Returns how many augment slots this equipment has, based on rarity
-## Only equippable items have slots. Common=0, Uncommon=1, Rare=2, Epic=3, Legendary=4
-func get_augment_slot_count() -> int:
-	if not is_equippable():
-		return 0
-	match rarity:
-		ItemRarity.COMMON:    return 0
-		ItemRarity.UNCOMMON:  return 1
-		ItemRarity.RARE:      return 2
-		ItemRarity.EPIC:      return 3
-		ItemRarity.LEGENDARY: return 4
-		_: return 0
+## Every equipment piece has the same number of sockets (sheet 07 §4.1: 8).
+func get_gem_slot_count() -> int:
+	return GemCatalog.slots_per_holder() if is_equippable() else 0
 
 
-## True if this equipment piece can accept augments (has at least 1 slot and isn't full)
-func is_augmentable() -> bool:
-	return get_augment_slot_count() > 0 and applied_augments.size() < get_augment_slot_count()
+## Socket array padded to the slot count ("" = empty). Read-only view.
+func get_gem_sockets() -> Array[String]:
+	var sockets := GemCatalog.empty_sockets() if is_equippable() else ([] as Array[String])
+	for i in range(mini(gems.size(), sockets.size())):
+		sockets[i] = gems[i]
+	return sockets
+
+
+func count_socketed_gems() -> int:
+	var n := 0
+	for id: String in gems:
+		if not id.is_empty():
+			n += 1
+	return n
 
 
 ## True if this is a SEGMENT or MATERIAL (valid crafting input)
@@ -260,9 +268,9 @@ func is_crafting_material() -> bool:
 	return item_type in [ItemType.SEGMENT, ItemType.MATERIAL]
 
 
-## True if this is an AUGMENT item that can be slotted into equipment
-func is_augment() -> bool:
-	return item_type == ItemType.AUGMENT and augment_type != AugmentType.TIMED_BUFF
+## True for socket stones.
+func is_gem() -> bool:
+	return item_type == ItemType.GEM
 
 
 ## True if this is a timed buff consumable (crafted via AUGMENT type but used like a consumable)

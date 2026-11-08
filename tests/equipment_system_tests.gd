@@ -19,6 +19,7 @@ func _ready() -> void:
 	_test_preview_swap()
 	_test_speed_cap()
 	_test_invalid_inputs()
+	_test_gem_catalog()
 	if _failures.is_empty():
 		print("[EQUIPMENT TEST] ALL PASSED")
 		get_tree().quit(0)
@@ -36,7 +37,12 @@ func _test_tables_complete() -> void:
 	var weapons := EquipmentBalance.lines_for_slot("weapon")
 	weapons.sort()
 	_check(weapons == ["axe", "dagger", "sword"], "weapon lines: %s" % [weapons])
-	_check(EquipmentBalance.rarities().size() == 5, "5 rarities")
+	_check(EquipmentBalance.rarities() == ["common", "uncommon", "epic", "legendary"], "4 rarities, no rare (owner 2026-11-08)")
+	_check(EquipmentBalance.rarity_enum("epic") == ItemData.ItemRarity.EPIC, "epic maps to ItemRarity.EPIC")
+	_check(EquipmentBalance.rarity_name(ItemData.ItemRarity.RARE) == "", "equipment cannot be rare")
+	_check(ItemDatabase.get_item("emberforged_blade").rarity == ItemData.ItemRarity.EPIC, "emberforged blade is epic")
+	var epic_stats := ItemDatabase.get_item("emberforged_blade").get_line_stats()
+	_check(int(epic_stats.get("attack", 0)) == int(EquipmentBalance.compute("weapon", "sword", "epic", 1)["attack"]), "epic item uses epic multiplier")
 	for line: String in EquipmentBalance.data()["lines"]:
 		var spec: Dictionary = EquipmentBalance.data()["lines"][line]
 		for share_key in ["base_share", "growth_share"]:
@@ -141,7 +147,7 @@ func _test_calculator_sums() -> void:
 	var expected := base.duplicate()
 	for slot: String in EquipmentBalance.slots():
 		var line: String = EquipmentBalance.lines_for_slot(slot)[0]
-		var s := EquipmentBalance.compute(slot, line, "rare", 5)
+		var s := EquipmentBalance.compute(slot, line, "epic", 5)
 		equipped[slot] = s
 		expected["hp"] += s["hp"]
 		expected["attack"] += s["attack"]
@@ -166,7 +172,7 @@ func _test_no_double_counting() -> void:
 			equipped.erase(slot)
 		else:
 			var lines := EquipmentBalance.lines_for_slot(slot)
-			var rarity: String = EquipmentBalance.rarities()[rng.randi_range(0, 4)]
+			var rarity: String = EquipmentBalance.rarities()[rng.randi_range(0, EquipmentBalance.rarities().size() - 1)]
 			equipped[slot] = EquipmentBalance.compute(slot, lines[rng.randi_range(0, lines.size() - 1)], rarity, rng.randi_range(1, 10))
 		var total := CharacterStatCalculator.compute(base, equipped)
 		var hp := int(base["hp"])
@@ -224,6 +230,38 @@ func _main_stat(s: Dictionary) -> String:
 			best_points = points
 			best = stat
 	return best
+
+
+## Socket stones (brainstorm sheet 07 §4): 11 types × 4 tiers, 8 sockets, 6 → 1 fusion,
+## capped stats and a DEF curve that never makes the player immune.
+func _test_gem_catalog() -> void:
+	var errors := GemCatalog.validate()
+	_check(errors.is_empty(), "gem data valid: %s" % [errors])
+	_check(GemCatalog.slots_per_holder() == 8 and GemCatalog.fuse_cost() == 6, "8 sockets, fuse 6 to 1")
+	for type_id: String in GemCatalog.types():
+		for tier in range(1, 4):
+			var id := GemCatalog.item_id(type_id, tier)
+			_check(GemCatalog.fuse_result(id) == GemCatalog.item_id(type_id, tier + 1), "%s fuses up one tier" % id)
+			_check(GemCatalog.value_of(GemCatalog.item_id(type_id, tier + 1)) > GemCatalog.value_of(id), "%s next tier is stronger" % id)
+		_check(GemCatalog.fuse_result(GemCatalog.item_id(type_id, 4)) == "", "%s gold tier is final" % type_id)
+	_check(GemCatalog.parse("stone_critical_damage_3") == {"type": "stone_critical_damage", "tier": 3}, "parse keeps underscores in the type")
+	_check(GemCatalog.parse("stone_guard_5").is_empty() and GemCatalog.parse("wood").is_empty(), "parse rejects bad ids")
+	# 40 sockets of tier IV crit cannot exceed the cap
+	var all_crit: Array = []
+	for i in range(5):
+		var sockets: Array = []
+		for j in range(8):
+			sockets.append("stone_critical_4")
+		all_crit.append(sockets)
+	var capped := GemCatalog.total_stats(all_crit)
+	_check(float(capped["crit_chance"]) == float(GemCatalog.data()["caps"]["crit_chance"]), "crit is capped")
+	var prev := 1000
+	for def in [0, 10, 50, 150, 600, 5000, 100000]:
+		var hit := GemCatalog.mitigate(1000, def)
+		_check(hit <= prev and hit >= 1, "DEF %d reduces damage monotonically (%d)" % [def, hit])
+		prev = hit
+	_check(GemCatalog.mitigate(1000, 100000) == 250, "DEF reduction is capped at 75%")
+	_check(GemCatalog.mitigate(1, 100000) == 1 and GemCatalog.mitigate(0, 0) == 0, "a hit always does at least 1")
 
 
 func _check(condition: bool, message: String) -> void:

@@ -97,15 +97,11 @@ func _test_pixel_art() -> void:
 
 func _test_progression() -> void:
 	GameState.reset_profile()
-	_check(GameState.level == 1, "fresh profile is level 1")
-	var need := GameState.xp_needed()
-	GameState.add_xp(need + 5)
-	_check(GameState.level == 2, "levels up after enough XP")
-	_check(GameState.xp == 5, "XP carries over")
+	_check(not ("level" in GameState) and not ("xp" in GameState) and not ("heroes" in GameState), "single character has no level, XP or hero roster")
+	_check(not GameState.to_dict().has("level") and not GameState.to_dict().has("hero_id"), "profile no longer saves level or hero")
 	var s := GameState.compute_base_stats()
-	var base: Dictionary = GameContent.HEROES["warden"]["base"]
-	var growth: Dictionary = GameContent.HEROES["warden"]["growth"]
-	_check(s["hp"] == int(base["hp"]) + int(growth["hp"]), "level 2 HP includes growth")
+	var base: Dictionary = GameContent.PLAYER_BASE
+	_check(s["hp"] == int(base["hp"]) and s["atk"] == int(base["atk"]) and s["def"] == int(base["def"]), "base stats come from PLAYER_BASE")
 	GameState.equip_pet("ember_fox")
 	var s2 := GameState.compute_base_stats()
 	_check(s2["atk"] > s["atk"], "pet passive adds attack")
@@ -119,7 +115,7 @@ func _test_inventory_transactions() -> void:
 	var inv := InventoryData.new()
 	var fire_shard := ItemDatabase.get_item("fire_shard")
 	var iron_ore := ItemDatabase.get_item("iron_ore")
-	var output := ItemDatabase.get_item_copy("flame_augment_t1")
+	var output := ItemDatabase.get_item_copy("stone_fire_1")
 	inv.add_item(fire_shard, 4)
 	inv.add_item(iron_ore, 3)
 	inv.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE - 2)
@@ -131,13 +127,13 @@ func _test_inventory_transactions() -> void:
 	_check(not inv.transact_items(removals, additions), "full inventory rejects atomic craft transaction")
 	_check(inv.get_item_count("fire_shard") == 4, "failed transaction preserves first ingredient")
 	_check(inv.get_item_count("iron_ore") == 3, "failed transaction preserves second ingredient")
-	_check(inv.get_item_count("flame_augment_t1") == 0, "failed transaction does not add output")
+	_check(inv.get_item_count("stone_fire_1") == 0, "failed transaction does not add output")
 
 	inv.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
 	_check(inv.transact_items(removals, additions), "transaction succeeds when output fits")
 	_check(inv.get_item_count("fire_shard") == 1, "successful transaction consumes first ingredient")
 	_check(inv.get_item_count("iron_ore") == 1, "successful transaction consumes second ingredient")
-	_check(inv.get_item_count("flame_augment_t1") == 1, "successful transaction adds output")
+	_check(inv.get_item_count("stone_fire_1") == 1, "successful transaction adds output")
 
 	var remove_inv := InventoryData.new()
 	remove_inv.add_item(ItemDatabase.get_item("wood"), 5)
@@ -152,25 +148,15 @@ func _test_economy_and_collections() -> void:
 	var inv: InventoryData = _stub_player.inventory
 	inv.gold = 0
 	_check(not GameState.spend({"gold": 10}), "cannot spend without gold")
-	GameState.grant({"gold": 5000, "items": {"hero_shard": 20, "pet_treat": 30}})
+	GameState.grant({"gold": 5000, "items": {"stone_guard_1": 20, "pet_treat": 30}})
 	_check(inv.gold == 5000, "grant adds gold")
-	_check(inv.get_item_count("hero_shard") == 20, "grant adds items")
+	_check(inv.get_item_count("stone_guard_1") == 20, "grant adds items")
 	var gold_before_cost := inv.gold
 	var treats_before_cost := inv.get_item_count("pet_treat")
 	_check(not GameState.spend({"gold": 25, "pet_treat": treats_before_cost + 1}), "mixed cost rejects insufficient items")
 	_check(inv.gold == gold_before_cost and inv.get_item_count("pet_treat") == treats_before_cost, "failed mixed cost is atomic")
 	_check(GameState.spend({"gold": 25, "pet_treat": 1}), "valid mixed cost succeeds")
 	_check(inv.gold == gold_before_cost - 25 and inv.get_item_count("pet_treat") == treats_before_cost - 1, "valid mixed cost charges exactly")
-
-	# Heroes
-	GameState.level = 5
-	_check(GameState.unlock_hero("ranger"), "unlock ranger at Lv.5 with gold")
-	_check(GameState.select_hero("ranger"), "select owned hero")
-	var before: int = GameState.compute_base_stats()["atk"]
-	_check(GameState.upgrade_hero_star("ranger"), "star up with shards")
-	_check(GameState.heroes["ranger"]["stars"] == 2, "ranger is 2 stars")
-	_check(GameState.compute_base_stats()["atk"] >= before, "stars do not reduce attack")
-	_check(not GameState.unlock_hero("mystic"), "mystic locked below Lv.8")
 
 	# Pets
 	_check(GameState.unlock_pet("moss_turtle"), "adopt turtle")
@@ -180,9 +166,8 @@ func _test_economy_and_collections() -> void:
 	_check(GameState.pets["moss_turtle"]["level"] == 5, "turtle reaches Lv.5")
 	_check(GameState.pet_stage("moss_turtle") == 1, "turtle evolved at Lv.5")
 
-	# Mounts
-	GameState.level = 3
-	_check(GameState.unlock_mount("dust_pony"), "claim pony at Lv.3")
+	# Mounts (no level gate since save v7)
+	_check(GameState.unlock_mount("dust_pony"), "claim pony with gold")
 	var slow: float = GameState.compute_base_stats()["speed_mult"]
 	GameState.set_mounted(true)
 	_check(GameState.compute_base_stats()["speed_mult"] > slow, "mounting increases speed")
@@ -257,12 +242,10 @@ func _test_quests() -> void:
 	_check(q["id"] == "q01", "first main quest is q01")
 	_check(int(q["obj"]["count"]) == 1, "active dig tutorial does not match the runtime 0/1 objective")
 	_check(q["reward"] == {"gold": 100}, "first dig quest reward drifted")
-	var q01_xp_before: int = GameState.xp
 	var q01_gold_before: int = int(_stub_player.inventory.gold)
 	GameEvent.ground_dug.emit("stone", 1)
 	_check(QuestService.main_ready, "dig objective completes")
 	_check(QuestService.claim("q01"), "claim q01")
-	_check(GameState.xp == q01_xp_before, "q01 granted unexpected XP")
 	_check(_stub_player.inventory.gold == q01_gold_before + 100, "q01 did not grant exactly 100 gold")
 	var inv: InventoryData = _stub_player.inventory
 	_check(QuestService.get_main_quest()["id"] == "t01", "q01 did not advance to tutorial t01")
@@ -365,11 +348,10 @@ func _test_quests() -> void:
 	var full_inv := InventoryData.new()
 	full_inv.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE)
 	_stub_player.inventory = full_inv
-	var xp_before := GameState.xp
 	var gold_before := full_inv.gold
 	_check(not QuestService.claim("q02"), "full inventory rejects quest item reward")
 	_check(QuestService.main_index == q02_index and QuestService.main_ready, "failed claim preserves quest state")
-	_check(GameState.xp == xp_before and full_inv.gold == gold_before, "failed claim grants no partial XP or gold")
+	_check(full_inv.gold == gold_before, "failed claim grants no partial gold")
 	full_inv.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
 	_check(QuestService.claim("q02"), "quest claim succeeds after freeing a slot")
 	_check(QuestService.main_index == q02_index + 1, "successful claim advances quest")
@@ -438,7 +420,6 @@ func _test_save_roundtrip() -> void:
 	enhanced_weapon.enhancement_level = 3
 	_check(enhanced_weapon != null and inv.add_item(enhanced_weapon, 1) == 0, "enhanced equipment setup failed")
 	inv.equip_item(_find_slot(inv, "ashwood_blade"))
-	GameState.level = 7
 	_check(GameState.unlock_pet("lucky_cat"), "adopt lucky cat for save test")
 	inv.gold = 1234
 	inv.diamonds = 17
@@ -469,7 +450,6 @@ func _test_save_roundtrip() -> void:
 	inv.diamonds = 0
 	SaveService.deserialize_inventory(inv, {"gold": 0, "slots": [], "equipment": {}})
 	_check(SaveService.load_game(), "load succeeds")
-	_check(GameState.level == 7, "level restored")
 	_check(GameState.pets.has("lucky_cat"), "pets restored")
 	_check(GameState.plots[2].get("id", "") == "stable", "buildings restored")
 	_check(bool(GameState.settings.get("compact_hud", false)), "compact HUD setting restored")
@@ -704,11 +684,9 @@ func _test_monster_kill() -> void:
 	var elite := Monster.create("slime", true)
 	_check(elite.max_hp > m.max_hp, "elite has more HP")
 	elite.free()
-	var xp_before := GameState.xp
 	m.apply_hit(9999, Vector2.ZERO, false)
 	_check(m.is_dead(), "monster dies at 0 HP")
 	_check(killed.has("slime"), "enemy_killed emitted")
-	_check(GameState.xp > xp_before or GameState.level > 1, "kill grants XP")
 	GameEvent.enemy_killed.disconnect(cb)
 
 	var boss := Monster.create("slime_king")
@@ -857,17 +835,23 @@ func _test_player_combat_modifiers() -> void:
 	_check(local_player.attack_hitbox.resolves_damage, "player melee uses resolved-hit path")
 	local_player.inventory.add_item(ItemDatabase.get_item_copy("emberforged_blade"), 1)
 	local_player.inventory.equip_item(0)
-	local_player.inventory.add_item(ItemDatabase.get_item("crit_augment_t1"), 1)
-	local_player.inventory.add_item(ItemDatabase.get_item("lifesteal_augment_t1"), 1)
-	var crit_slot := _find_slot(local_player.inventory, "crit_augment_t1")
-	var life_slot := _find_slot(local_player.inventory, "lifesteal_augment_t1")
-	_check(local_player.inventory.apply_augment("weapon", crit_slot), "crit augment applies")
-	life_slot = _find_slot(local_player.inventory, "lifesteal_augment_t1")
-	_check(local_player.inventory.apply_augment("weapon", life_slot), "lifesteal augment applies")
+	for stone_id: String in ["stone_critical_2", "stone_lifesteal_2", "stone_critical_damage_1", "stone_dodge_1", "stone_regeneration_2"]:
+		local_player.inventory.add_item(ItemDatabase.get_item(stone_id), 1)
+	var socket := 0
+	for stone_id: String in ["stone_critical_2", "stone_lifesteal_2", "stone_critical_damage_1", "stone_dodge_1", "stone_regeneration_2"]:
+		_check(local_player.inventory.socket_gem("weapon", socket, _find_slot(local_player.inventory, stone_id)), "%s sockets" % stone_id)
+		socket += 1
 	var modifiers: Dictionary = local_player.get_lan_combat_modifiers()
-	_check(is_equal_approx(float(modifiers["crit_chance"]), 8.0), "equipped crit augment reaches combat resolver")
-	_check(is_equal_approx(float(modifiers["life_steal"]), 5.0), "equipped lifesteal reaches authority profile")
-	_check(is_equal_approx(local_player.attack_hitbox.bonus_crit_chance_percent, 8.0), "melee hitbox refreshes crit chance")
+	var crit := GemCatalog.value_of("stone_critical_2")
+	_check(is_equal_approx(float(modifiers["crit_chance"]), crit), "socketed crit stone reaches combat resolver")
+	_check(is_equal_approx(float(modifiers["life_steal"]), GemCatalog.value_of("stone_lifesteal_2")), "socketed lifesteal reaches authority profile")
+	_check(is_equal_approx(float(modifiers["crit_damage"]), GemCatalog.value_of("stone_critical_damage_1")), "crit damage reaches authority profile")
+	_check(is_equal_approx(float(modifiers["dodge"]), GemCatalog.value_of("stone_dodge_1")), "dodge reaches authority profile")
+	_check(is_equal_approx(local_player.attack_hitbox.bonus_crit_chance_percent, crit), "melee hitbox refreshes crit chance")
+	_check(is_equal_approx(local_player.attack_hitbox.bonus_crit_damage_percent, GemCatalog.value_of("stone_critical_damage_1")), "melee hitbox refreshes crit damage")
+	local_player.stats.current_health = 10
+	var healed: int = local_player.passive_processor.tick_regeneration(1.0)
+	_check(healed == int(GemCatalog.value_of("stone_regeneration_2")) and local_player.stats.current_health == 10 + healed, "renewal stone regenerates HP")
 	var attack_before_upgrade: int = local_player.stats.attack_damage
 	var upgrade_event := {"seen": false, "level": 0, "cost": 0}
 	var on_equipment_upgraded := func(slot_type: String, item_id: String, level: int, cost: int) -> void:

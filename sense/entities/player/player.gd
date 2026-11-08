@@ -184,8 +184,6 @@ var passive_processor: PassiveEffectProcessor
 var skill_component: SkillComponent
 ## SkillExecutor — spawns skill hitboxes/effects in the world
 var skill_executor: SkillExecutor
-## HeroSkillRunner — the active hero's three signature skills
-var hero_skills: HeroSkillRunner
 
 # =============================================================================
 # SURVIVAL RPG: mount / pet / auto-aim
@@ -270,6 +268,9 @@ func _physics_process(delta: float) -> void:
 	
 	# Hồi stamina theo thời gian
 	stats.regen_stamina(delta)
+	# Renewal Stone HP regeneration (the LAN host owns client HP)
+	if passive_processor != null and LanSession.mode != LanSession.Mode.CLIENT:
+		passive_processor.tick_regeneration(delta)
 	if _respawn_invuln > 0.0:
 		_respawn_invuln -= delta
 	
@@ -565,7 +566,6 @@ func _play_attack_animation() -> void:
 	# Bật hitbox để gây damage
 	refresh_hitbox_damage()
 	_enable_attack_hitbox()
-	_on_basic_attack()
 	
 	# Tắt loop để animation_finished signal được emit khi xong
 	anim.sprite_frames.set_animation_loop(anim_name, false)
@@ -710,6 +710,10 @@ func take_damage(amount: int) -> void:
 		return
 	if invincibility_timer > 0:
 		return
+	# Wind Stone: a dodged hit deals nothing and grants no iframes.
+	if passive_processor != null and Combat.roll_dodge(passive_processor.get_dodge_percent()):
+		DamageNumber.spawn(get_tree(), global_position + Vector2(0, -20), "Miss", Color(0.75, 0.9, 1.0))
+		return
 	
 	# Áp dụng damage thông qua hệ thống internal
 	_apply_damage(amount)
@@ -843,19 +847,11 @@ func _add_starter_items() -> void:
 	if herb_segment:
 		inventory.add_item(herb_segment, 12)
 
-	# --- Skill demo items ---
-	# Rare weapon with 2 augment slots + Whirlwind Rune + Shield Bash Rune
-	var rune_blade := ItemDatabase.get_item("emberforged_blade")
-	if rune_blade:
-		inventory.add_item(rune_blade, 1)
-
-	var whirlwind_rune := ItemDatabase.get_item("whirlwind_augment")
-	if whirlwind_rune:
-		inventory.add_item(whirlwind_rune, 1)
-
-	var shield_bash_rune := ItemDatabase.get_item("shield_bash_augment")
-	if shield_bash_rune:
-		inventory.add_item(shield_bash_rune, 1)
+	# --- Starter socket stones (tutorial t06 teaches socketing) ---
+	for stone_id: String in ["stone_guard_1", "stone_critical_1"]:
+		var stone := ItemDatabase.get_item(stone_id)
+		if stone:
+			inventory.add_item(stone, 2)
 
 	# Timed buff consumables for testing
 	var speed_elixir := ItemDatabase.get_item("speed_elixir_t1")
@@ -965,11 +961,6 @@ func restore_stamina_from_pickup(amount: float) -> void:
 		stats.restore_stamina(amount)
 
 
-## Add XP from pickup
-func add_xp(amount: int) -> void:
-	GameState.add_xp(amount)
-
-
 # =============================================================================
 # COMPONENT SETUP (BuffComponent, PassiveEffectProcessor, SkillComponent, SkillExecutor)
 # =============================================================================
@@ -996,7 +987,8 @@ func _setup_components() -> void:
 	skill_component = SkillComponent.new()
 	skill_component.name = "SkillComponent"
 	add_child(skill_component)
-	skill_component.get_active_skills_func = func() -> Array: return inventory.get_all_augment_active_skills()
+	# Slotted skill runes were retired in save v7; the future "special skill" slot will feed this.
+	skill_component.get_active_skills_func = func() -> Array: return []
 	skill_component.use_stamina_func = func(cost: float) -> bool: return stats.use_stamina(cost)
 	skill_component.skill_activated.connect(_on_skill_activated)
 
@@ -1016,12 +1008,12 @@ func _setup_components() -> void:
 		passive_processor.on_damage_received(amount, knockback, from_pos)
 	)
 
-	# --- Wire equipment/augment changes to rebuild skills ---
-	inventory.augments_changed.connect(func(_slot: String) -> void:
+	# --- Socket stone or equipment changes refresh combat modifiers ---
+	inventory.gems_changed.connect(func(_slot: String) -> void: _refresh_combat_modifiers())
+	inventory.equipment_changed.connect(func(_slot: String) -> void:
 		skill_component.rebuild_skills()
 		_refresh_combat_modifiers()
 	)
-	inventory.equipment_changed.connect(func(_slot: String) -> void: skill_component.rebuild_skills())
 
 	# --- Wire buff/skill components to HUD ---
 	_connect_components_to_hud.call_deferred()
@@ -1078,12 +1070,12 @@ func _on_skill_effect_finished(_skill_id: String) -> void:
 		_change_state(State.IDLE)
 
 
-## Aggregate passive effects from augments + active timed buffs
+## Aggregate passive effects from socket stones + active timed buffs
 ## Used by PassiveEffectProcessor via injected Callable
 func _get_all_passive_effects() -> Array[Dictionary]:
 	var effects: Array[Dictionary] = []
 	if inventory:
-		effects.append_array(inventory.get_all_augment_passive_effects())
+		effects.append_array(inventory.get_all_gem_passive_effects())
 	if buff_component:
 		effects.append_array(buff_component.get_active_passive_effects())
 	return effects
@@ -1093,14 +1085,18 @@ func _refresh_combat_modifiers() -> void:
 	if attack_hitbox == null or passive_processor == null:
 		return
 	attack_hitbox.bonus_crit_chance_percent = passive_processor.get_crit_chance_bonus_percent()
+	attack_hitbox.bonus_crit_damage_percent = passive_processor.get_crit_damage_bonus_percent()
 
 
 func get_lan_combat_modifiers() -> Dictionary:
 	if passive_processor == null:
-		return {"crit_chance": 0.0, "life_steal": 0.0}
+		return {"crit_chance": 0.0, "life_steal": 0.0, "crit_damage": 0.0, "dodge": 0.0, "regeneration": 0.0}
 	return {
 		"crit_chance": passive_processor.get_crit_chance_bonus_percent(),
 		"life_steal": passive_processor.get_life_steal_percent(),
+		"crit_damage": passive_processor.get_crit_damage_bonus_percent(),
+		"dodge": passive_processor.get_dodge_percent(),
+		"regeneration": passive_processor.get_regeneration_per_second(),
 	}
 
 
@@ -1215,11 +1211,6 @@ func _draw() -> void:
 
 func _setup_survival() -> void:
 	_build_survival_nameplate()
-	hero_skills = HeroSkillRunner.new()
-	hero_skills.name = "HeroSkillRunner"
-	hero_skills.player = self
-	add_child(hero_skills)
-
 	mount_sprite = Sprite2D.new()
 	mount_sprite.name = "MountSprite"
 	mount_sprite.visible = false
@@ -1229,12 +1220,9 @@ func _setup_survival() -> void:
 	move_child(mount_sprite, 0)
 
 	GameState.stats_dirty.connect(refresh_profile_stats)
-	GameState.hero_changed.connect(func(_h: String) -> void: _apply_hero_visual())
 	GameState.mount_changed.connect(func(_m: String, _r: bool) -> void: _update_mount_visual())
 	GameState.pet_changed.connect(func(_p: String) -> void: _spawn_pet.call_deferred())
-	GameState.leveled_up.connect(_on_level_up)
 	refresh_profile_stats()
-	_apply_hero_visual()
 	_update_mount_visual()
 	_spawn_pet.call_deferred()
 
@@ -1290,7 +1278,7 @@ func _update_survival_nameplate(current: int, maximum: int) -> void:
 	_survival_hp_bar.value = current
 
 
-## Recompute base stats from hero/level/pet/mount/buildings
+## Recompute base stats from the character, pet, mount and buildings
 func refresh_profile_stats() -> void:
 	GameState.apply_to_stats(stats)
 	refresh_hitbox_damage()
@@ -1299,19 +1287,6 @@ func refresh_profile_stats() -> void:
 func refresh_hitbox_damage() -> void:
 	if attack_hitbox != null and stats != null:
 		attack_hitbox.damage = stats.attack_damage
-
-
-func _apply_hero_visual() -> void:
-	var hero: Dictionary = GameContent.HEROES.get(GameState.hero_id, {})
-	anim.self_modulate = hero.get("tint", Color.WHITE)
-
-
-func _on_level_up(new_level: int) -> void:
-	stats.current_health = stats.max_health
-	stats.current_stamina = stats.max_stamina
-	RingFX.spawn(get_tree(), global_position + Vector2(0, 8), 34.0, Color(1, 0.9, 0.4), 0.6)
-	DamageNumber.spawn(get_tree(), global_position + Vector2(0, -28), "LEVEL %d!" % new_level, Color(1, 0.9, 0.3), true)
-	GameEvent.toast.emit("Level up! Lv.%d" % new_level, Color(1, 0.9, 0.3))
 
 
 # --- Mount ------------------------------------------------------------------
@@ -1441,26 +1416,6 @@ func _auto_aim() -> void:
 		var dir := (target.global_position - global_position).normalized()
 		if dir.length() > 0.01:
 			last_dir = dir
-	if not _mount_allows_combat():
-		GameState.set_mounted(false)
-
-
-## Hero attack style extras on top of the melee swing
-func _on_basic_attack() -> void:
-	var hero: Dictionary = GameContent.HEROES.get(GameState.hero_id, {})
-	match hero.get("attack_style", "melee"):
-		"bolt":
-			var target := Combat.nearest_monster(get_tree(), global_position, 170.0)
-			var dir := last_dir
-			if target != null:
-				dir = (target.global_position + Vector2(0, -6) - global_position).normalized()
-			Projectile.fire(get_tree(), global_position, dir, 260.0, stats.attack_damage * 0.8, "player", "bolt")
-		"nova":
-			Combat.hit_monsters_in_radius(get_tree(), global_position + Vector2(0, 8), 26.0, stats.attack_damage * 0.6)
-			RingFX.spawn(get_tree(), global_position + Vector2(0, 8), 26.0, Color(0.8, 0.6, 1.0), 0.25)
-
-
-func on_hero_skill_cast() -> void:
 	if not _mount_allows_combat():
 		GameState.set_mounted(false)
 

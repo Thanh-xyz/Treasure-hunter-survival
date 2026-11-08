@@ -163,7 +163,6 @@ var hitbox_active: bool = false  ## Theo dõi trạng thái hitbox cho visualiza
 ## Survival RPG integration: content id used for quests/XP, and target radius
 @export var monster_id: String = "skeleton_grunt"
 var body_radius: float = 14.0
-const XP_REWARD := 20
 
 # =============================================================================
 # LIFECYCLE METHODS
@@ -524,8 +523,6 @@ func _on_died() -> void:
 	if current_state == State.DEATH:
 		return
 	remove_from_group("monster")
-	GameState.add_xp(XP_REWARD)
-	DamageNumber.spawn(get_tree(), global_position + Vector2(0, -50), "+%d XP" % XP_REWARD, Color(0.75, 0.55, 1.0))
 	GameState.register_kill(monster_id, false)
 	GameEvent.enemy_killed.emit(monster_id, global_position, false)
 	_change_state(State.DEATH)

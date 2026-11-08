@@ -274,7 +274,7 @@ func _scatter_world() -> void:
 		if p.x >= 0:
 			var chest: GameItem = preload("res://sense/items/game_item.tscn").instantiate()
 			chest.position = p
-			chest.setup_chest(["health_potion", "pet_treat", "hero_shard"], 60)
+			chest.setup_chest(["health_potion", "pet_treat", "stone_guard_1"], 60)
 			add_child(chest)
 
 

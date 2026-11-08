@@ -112,7 +112,7 @@ func clear_equipment_bonuses() -> void:
 
 
 func take_damage(amount: int) -> void:
-	var actual_damage := maxi(amount - defense, 1)
+	var actual_damage := GemCatalog.mitigate(amount, defense)
 	current_health -= actual_damage
 
 

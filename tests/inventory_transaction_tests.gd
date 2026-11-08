@@ -70,7 +70,7 @@ func _test_inventory_transaction() -> void:
 		{"item": ItemDatabase.get_item("iron_ore"), "quantity": 2},
 	]
 	var additions: Array[Dictionary] = [
-		{"item": ItemDatabase.get_item_copy("flame_augment_t1"), "quantity": 1},
+		{"item": ItemDatabase.get_item_copy("stone_fire_1"), "quantity": 1},
 	]
 	_check(not inventory.transact_items(removals, additions), "full inventory accepted a transaction")
 	_check(int(signal_count["value"]) == 0, "failed transaction emitted an inventory change")
@@ -80,7 +80,7 @@ func _test_inventory_transaction() -> void:
 	signal_count["value"] = 0
 	_check(inventory.transact_items(removals, additions), "transaction failed after freeing a slot")
 	_check(int(signal_count["value"]) == 1, "successful transaction did not emit exactly one change")
-	_check(inventory.get_item_count("flame_augment_t1") == 1, "successful transaction omitted output")
+	_check(inventory.get_item_count("stone_fire_1") == 1, "successful transaction omitted output")
 
 
 func _test_inventory_add_signals() -> void:
@@ -110,7 +110,7 @@ func _test_reward_box_resolver() -> void:
 	var entries: Array[Dictionary] = [
 		{"weight": 34.0, "reward": {"gold": 100}},
 		{"weight": 33.0, "reward": {"diamonds": 1}},
-		{"weight": 33.0, "reward": {"xp": 5, "items": {"wood": 2}}},
+		{"weight": 33.0, "reward": {"gold": 5, "items": {"wood": 2}}},
 	]
 	var first_rng := RandomNumberGenerator.new()
 	var replay_rng := RandomNumberGenerator.new()
@@ -128,21 +128,21 @@ func _test_reward_box_resolver() -> void:
 	_check(RewardBoxResolver.resolve_roll(entries, 34) == {"gold": 100}, "roll 34 missed first reward boundary")
 	_check(RewardBoxResolver.resolve_roll(entries, 35) == {"diamonds": 1}, "roll 35 missed second reward boundary")
 	_check(RewardBoxResolver.resolve_roll(entries, 67) == {"diamonds": 1}, "roll 67 missed second reward boundary")
-	_check(RewardBoxResolver.resolve_roll(entries, 68) == {"xp": 5, "items": {"wood": 2}}, "roll 68 missed third reward boundary")
-	_check(RewardBoxResolver.resolve_roll(entries, 100) == {"xp": 5, "items": {"wood": 2}}, "roll 100 missed third reward boundary")
+	_check(RewardBoxResolver.resolve_roll(entries, 68) == {"gold": 5, "items": {"wood": 2}}, "roll 68 missed third reward boundary")
+	_check(RewardBoxResolver.resolve_roll(entries, 100) == {"gold": 5, "items": {"wood": 2}}, "roll 100 missed third reward boundary")
 	_check(RewardBoxResolver.resolve_roll(entries, 0).is_empty(), "reward box accepted roll zero")
 	_check(RewardBoxResolver.resolve_roll(entries, 101).is_empty(), "reward box accepted roll above total")
 
 	var normalized_rng := RandomNumberGenerator.new()
 	normalized_rng.seed = 1
-	var source_reward := {"xp": 0, "gold": 5.0, "items": {"wood": 2.0}}
+	var source_reward := {"diamonds": 0, "gold": 5.0, "items": {"wood": 2.0}}
 	var normalized := RewardBoxResolver.resolve([
 		{"weight": 1, "reward": source_reward},
 	], normalized_rng)
 	_check(normalized == {"gold": 5, "items": {"wood": 2}}, "reward normalization changed the payload")
 	normalized["gold"] = 999
 	(normalized["items"] as Dictionary)["wood"] = 999
-	_check(source_reward == {"xp": 0, "gold": 5.0, "items": {"wood": 2.0}}, "resolved reward shared source state")
+	_check(source_reward == {"diamonds": 0, "gold": 5.0, "items": {"wood": 2.0}}, "resolved reward shared source state")
 
 	var source_stats := {"health": 13.9, "damage": 29.8, "speed": 0.08}
 	# Equipment rewards are ordinary items since save v6; the retired "equipment" key is invalid.
@@ -400,7 +400,7 @@ func _test_shop_purchase_transaction() -> void:
 	_player.inventory.gold = 49
 	_check(not shop.process_purchase({"id": "ember_dirk", "name": "Ember Dirk", "price": 1}), "shop purchase ignored insufficient authoritative gold")
 	_check(_player.inventory.gold == 49 and _player.inventory.get_item_count("ember_dirk") == 0, "failed shop purchase changed inventory")
-	_check(not shop.process_purchase({"id": "flame_augment_t1", "price": -100}), "shop accepted an item without a catalog price")
+	_check(not shop.process_purchase({"id": "vitality_tonic_t1", "price": -100}), "shop accepted an item without a catalog price")
 	_check(not shop.process_purchase({"id": "missing_item", "price": -100}), "shop accepted an unknown item")
 	shop.queue_free()
 
@@ -438,7 +438,7 @@ func _test_sale_transaction() -> void:
 	_check(inventory.gold == wood.sell_price and inventory.get_item_count("wood") == 1, "rejected stale sale changed inventory")
 	_check(int(inventory_signals["value"]) == 0 and int(gold_signals["value"]) == 0, "rejected stale sale emitted changes")
 
-	var unsellable := ItemDatabase.get_item_copy("flame_augment_t1")
+	var unsellable := ItemDatabase.get_item_copy("vitality_tonic_t1")
 	inventory.inventory_slots[1] = {"item": unsellable, "quantity": 1}
 	_check(inventory.sell_item_at(1, unsellable.id) == 0, "unsellable item credited gold")
 	_check(inventory.get_item_at(1).item == unsellable, "failed unsellable sale removed the item")
@@ -451,19 +451,19 @@ func _test_equipment_transactions() -> void:
 	inventory.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE)
 	var inventory_signals := {"value": 0}
 	var equipment_signals := {"value": 0}
-	var augment_signals := {"value": 0}
-	var observed := {"inventory_has_weapon": false, "equipment_empty": false, "augment_consumed": false}
+	var gem_signals := {"value": 0}
+	var observed := {"inventory_has_weapon": false, "equipment_empty": false, "gem_consumed": false}
 	var on_inventory_changed := func() -> void: inventory_signals["value"] += 1
 	var on_equipment_changed := func(_slot: String) -> void:
 		equipment_signals["value"] += 1
 		observed["inventory_has_weapon"] = inventory.get_item_count("emberforged_blade") == 1
 		observed["equipment_empty"] = inventory.get_equipped("weapon") == null
-	var on_augments_changed := func(_slot: String) -> void:
-		augment_signals["value"] += 1
-		observed["augment_consumed"] = inventory.get_item_count("flame_augment_t1") == 0
+	var on_gems_changed := func(_slot: String) -> void:
+		gem_signals["value"] += 1
+		observed["gem_consumed"] = inventory.get_item_count("stone_fire_1") == 0
 	inventory.inventory_changed.connect(on_inventory_changed)
 	inventory.equipment_changed.connect(on_equipment_changed)
-	inventory.augments_changed.connect(on_augments_changed)
+	inventory.gems_changed.connect(on_gems_changed)
 
 	_check(not inventory.unequip_item("weapon"), "full inventory accepted unequip")
 	_check(inventory.get_equipped("weapon") != null, "failed unequip lost equipment")
@@ -485,32 +485,49 @@ func _test_equipment_transactions() -> void:
 	inventory = InventoryData.new()
 	inventory.inventory_changed.connect(on_inventory_changed)
 	inventory.equipment_changed.connect(on_equipment_changed)
-	inventory.augments_changed.connect(on_augments_changed)
+	inventory.gems_changed.connect(on_gems_changed)
 	inventory.add_item(ItemDatabase.get_item("emberforged_blade"), 1)
 	inventory.equip_item(0)
-	inventory.add_item(ItemDatabase.get_item("flame_augment_t1"), 1)
+	inventory.add_item(ItemDatabase.get_item("stone_fire_1"), 1)
 	inventory_signals["value"] = 0
 	equipment_signals["value"] = 0
-	augment_signals["value"] = 0
-	observed["augment_consumed"] = false
-	_check(inventory.apply_augment("weapon", 0), "valid augment application failed")
-	_check(int(inventory_signals["value"]) == 1 and int(equipment_signals["value"]) == 1 and int(augment_signals["value"]) == 1, "augment application emitted duplicate or missing signals")
-	_check(bool(observed["augment_consumed"]), "augment signal exposed an unconsumed item")
+	gem_signals["value"] = 0
+	observed["gem_consumed"] = false
+	_check(not inventory.socket_gem("weapon", 8, 0), "socket index past the 8 sockets was accepted")
+	_check(not inventory.socket_gem("weapon", 0, 5), "empty bag slot was socketed")
+	_check(inventory.socket_gem("weapon", 3, 0), "valid stone socketing failed")
+	_check(int(inventory_signals["value"]) == 1 and int(equipment_signals["value"]) == 1 and int(gem_signals["value"]) == 1, "socketing emitted duplicate or missing signals")
+	_check(bool(observed["gem_consumed"]), "gem signal exposed an unconsumed stone")
+	_check(inventory.get_equipped("weapon").get_gem_sockets()[3] == "stone_fire_1", "stone landed in the wrong socket")
+	inventory.add_item(ItemDatabase.get_item("stone_fire_1"), 1)
+	_check(not inventory.socket_gem("weapon", 3, _find_item(inventory, "stone_fire_1")), "occupied socket accepted a second stone")
 
 	inventory.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE)
 	inventory_signals["value"] = 0
 	equipment_signals["value"] = 0
-	augment_signals["value"] = 0
-	_check(not inventory.remove_augment("weapon", 0), "full inventory accepted augment removal")
-	_check(inventory.get_equipped("weapon").applied_augments.size() == 1, "failed augment removal changed equipment")
-	_check(int(inventory_signals["value"]) == 0 and int(equipment_signals["value"]) == 0 and int(augment_signals["value"]) == 0, "failed augment removal emitted changes")
+	gem_signals["value"] = 0
+	inventory.remove_item_at(_find_item(inventory, "stone_fire_1"))
+	inventory.add_item(ItemDatabase.get_item("ashwood_blade"), 1)
+	inventory_signals["value"] = 0
+	_check(not inventory.unsocket_gem("weapon", 3), "full inventory accepted stone removal")
+	_check(inventory.get_equipped("weapon").count_socketed_gems() == 1, "failed stone removal changed equipment")
+	_check(int(inventory_signals["value"]) == 0 and int(equipment_signals["value"]) == 0 and int(gem_signals["value"]) == 0, "failed stone removal emitted changes")
 	inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
 	inventory_signals["value"] = 0
 	equipment_signals["value"] = 0
-	augment_signals["value"] = 0
-	_check(inventory.remove_augment("weapon", 0), "augment removal failed after freeing capacity")
-	_check(inventory.get_item_count("flame_augment_t1") == 1 and inventory.get_equipped("weapon").applied_augments.is_empty(), "augment removal did not commit final state")
-	_check(int(inventory_signals["value"]) == 1 and int(equipment_signals["value"]) == 1 and int(augment_signals["value"]) == 1, "augment removal emitted duplicate or missing signals")
+	gem_signals["value"] = 0
+	_check(inventory.unsocket_gem("weapon", 3), "stone removal failed after freeing capacity")
+	_check(inventory.get_item_count("stone_fire_1") == 1 and inventory.get_equipped("weapon").count_socketed_gems() == 0, "stone removal did not commit final state")
+	_check(int(inventory_signals["value"]) == 1 and int(equipment_signals["value"]) == 1 and int(gem_signals["value"]) == 1, "stone removal emitted duplicate or missing signals")
+	_check(not inventory.unsocket_gem("weapon", 3), "empty socket unsocketed")
+
+
+func _find_item(inventory: InventoryData, item_id: String) -> int:
+	for i in range(inventory.inventory_slots.size()):
+		var item: ItemData = inventory.inventory_slots[i].get("item")
+		if item != null and item.id == item_id:
+			return i
+	return -1
 
 
 func _test_equipment_enhancement() -> void:
@@ -518,8 +535,8 @@ func _test_equipment_enhancement() -> void:
 	var template := ItemDatabase.get_item("emberforged_blade")
 	inventory.add_item(template, 1)
 	_check(inventory.equip_item(0), "enhancement equipment setup failed")
-	inventory.add_item(ItemDatabase.get_item("flame_augment_t1"), 1)
-	_check(inventory.apply_augment("weapon", 0), "enhancement augment setup failed")
+	inventory.add_item(ItemDatabase.get_item("stone_fire_1"), 1)
+	_check(inventory.socket_gem("weapon", 0, 0), "enhancement stone setup failed")
 
 	var weapon := inventory.get_equipped("weapon")
 	var base_attack := weapon.get_scaled_attack_bonus()
@@ -530,7 +547,7 @@ func _test_equipment_enhancement() -> void:
 	stats.apply_equipment_bonuses(inventory)
 	var attack_before := stats.attack_damage
 	var signal_counts := {"gold": 0, "equipment": 0, "upgraded": 0}
-	var observed := {"level": 0, "gold": -1, "augments": 0}
+	var observed := {"level": 0, "gold": -1, "gems": 0}
 	inventory.gold_changed.connect(func(amount: int) -> void:
 		signal_counts["gold"] += 1
 		observed["level"] = inventory.get_equipped("weapon").enhancement_level
@@ -543,32 +560,26 @@ func _test_equipment_enhancement() -> void:
 	inventory.equipment_upgraded.connect(func(_slot: String, _id: String, level: int, _cost: int) -> void:
 		signal_counts["upgraded"] += 1
 		observed["level"] = level
-		observed["augments"] = inventory.get_equipped("weapon").applied_augments.size()
+		observed["gems"] = inventory.get_equipped("weapon").count_socketed_gems()
 	)
 
 	_check(inventory.upgrade_equipment("weapon"), "valid equipment upgrade failed")
 	weapon = inventory.get_equipped("weapon")
 	_check(weapon.enhancement_level == 2, "upgrade did not increase displayed level")
 	_check(inventory.gold == 25, "upgrade charged the wrong gold cost")
-	_check(weapon.get_scaled_attack_bonus() == int(EquipmentBalance.compute("weapon", "sword", "rare", 2)["attack"]), "level-2 attack did not follow the equipment formula")
+	_check(weapon.get_scaled_attack_bonus() == int(EquipmentBalance.compute("weapon", "sword", "epic", 2)["attack"]), "level-2 attack did not follow the equipment formula")
 	_check(weapon.get_scaled_attack_bonus() > base_attack and stats.attack_damage > attack_before, "upgrade did not increase character attack")
-	_check(weapon.applied_augments == ["flame_augment_t1"], "upgrade lost applied augments")
-	_check(template.enhancement_level == 1 and template.applied_augments.is_empty(), "upgrade mutated the catalog template")
+	_check(weapon.get_gem_sockets()[0] == "stone_fire_1", "upgrade lost socketed stones")
+	_check(template.enhancement_level == 1 and template.gems.is_empty(), "upgrade mutated the catalog template")
 	_check(int(signal_counts["gold"]) == 1 and int(signal_counts["equipment"]) == 1 and int(signal_counts["upgraded"]) == 1, "upgrade emitted duplicate or missing signals")
-	_check(int(observed["level"]) == 2 and int(observed["gold"]) == 25 and int(observed["augments"]) == 1, "upgrade signal exposed partial state")
+	_check(int(observed["level"]) == 2 and int(observed["gold"]) == 25 and int(observed["gems"]) == 1, "upgrade signal exposed partial state")
 	_check(inventory.count_equipment_at_or_above_level(2) == 1, "level query missed upgraded equipment")
-	var augment_slot := inventory.get_item_count("flame_augment_t1")
-	_check(inventory.remove_augment("weapon", 0), "upgraded equipment could not remove its augment")
-	_check(inventory.get_equipped("weapon").enhancement_level == 2, "augment removal reset enhancement level")
-	_check(inventory.get_item_count("flame_augment_t1") == augment_slot + 1, "augment removal did not return the augment")
-	var returned_augment_index := -1
-	for i in range(inventory.inventory_slots.size()):
-		var slot: Dictionary = inventory.inventory_slots[i]
-		if slot.item != null and slot.item.id == "flame_augment_t1":
-			returned_augment_index = i
-			break
-	_check(inventory.apply_augment("weapon", returned_augment_index), "upgraded equipment could not reapply its augment")
-	_check(inventory.get_equipped("weapon").enhancement_level == 2, "augment application reset enhancement level")
+	var stones_before := inventory.get_item_count("stone_fire_1")
+	_check(inventory.unsocket_gem("weapon", 0), "upgraded equipment could not remove its stone")
+	_check(inventory.get_equipped("weapon").enhancement_level == 2, "stone removal reset enhancement level")
+	_check(inventory.get_item_count("stone_fire_1") == stones_before + 1, "stone removal did not return the stone")
+	_check(inventory.socket_gem("weapon", 0, _find_item(inventory, "stone_fire_1")), "upgraded equipment could not resocket its stone")
+	_check(inventory.get_equipped("weapon").enhancement_level == 2, "stone socketing reset enhancement level")
 
 	weapon = inventory.get_equipped("weapon")
 	inventory.gold = weapon.get_upgrade_cost() - 1
@@ -583,7 +594,7 @@ func _test_equipment_enhancement() -> void:
 	_check(not inventory.upgrade_equipment("missing"), "invalid equipment slot upgraded")
 
 	var capped := weapon.duplicate() as ItemData
-	capped.applied_augments = weapon.applied_augments.duplicate()
+	capped.gems = weapon.gems.duplicate()
 	capped.enhancement_level = capped.max_upgrade_level
 	inventory._set_equipped("weapon", capped)
 	inventory.gold = 999999
@@ -600,7 +611,7 @@ func _test_equipment_enhancement() -> void:
 func _test_equipment_quest_objectives() -> void:
 	var inventory := InventoryData.new()
 	var rare_weapon := ItemDatabase.get_item_copy("emberforged_blade")
-	rare_weapon.rarity = ItemData.ItemRarity.RARE
+	rare_weapon.rarity = ItemData.ItemRarity.UNCOMMON
 	rare_weapon.enhancement_level = 5
 	var epic_armor := ItemDatabase.get_item_copy("ironbark_plate")
 	epic_armor.rarity = ItemData.ItemRarity.EPIC
@@ -613,7 +624,7 @@ func _test_equipment_quest_objectives() -> void:
 	inventory._set_equipped("helmet", common_helmet)
 
 	_check(inventory.count_equipped_items() == 3, "equipped-count query returned the wrong total")
-	_check(inventory.count_equipment_at_or_above_rarity(ItemData.ItemRarity.RARE) == 2, "rare equipment query missed rare-or-better items")
+	_check(inventory.count_equipment_at_or_above_rarity(ItemData.ItemRarity.UNCOMMON) == 2, "uncommon equipment query missed uncommon-or-better items")
 	_check(inventory.count_equipment_at_or_above_rarity(ItemData.ItemRarity.EPIC) == 1, "epic equipment query returned the wrong total")
 	_check(inventory.count_equipment_at_or_above_rarity(-1) == 0, "invalid rarity query was accepted")
 	_check(inventory.count_equipment_at_or_above_level(3) == 2, "level-3 equipment query returned the wrong total")
@@ -621,7 +632,7 @@ func _test_equipment_quest_objectives() -> void:
 	_check(inventory.count_equipment_at_or_above_level(0) == 0, "invalid equipment-level query was accepted")
 
 	_check(QuestService.get_state_objective_value({"type": "equipped_count", "target": "any"}, inventory) == 3, "equipped-count quest objective returned the wrong value")
-	_check(QuestService.get_state_objective_value({"type": "equipped_rarity", "target": ItemData.ItemRarity.RARE}, inventory) == 2, "rarity quest objective returned the wrong value")
+	_check(QuestService.get_state_objective_value({"type": "equipped_rarity", "target": ItemData.ItemRarity.UNCOMMON}, inventory) == 2, "rarity quest objective returned the wrong value")
 	_check(QuestService.get_state_objective_value({"type": "equipment_level", "target": 3}, inventory) == 2, "equipment-level quest objective returned the wrong value")
 	_check(QuestService.get_state_objective_value({"type": "equipped_rarity", "target": ItemData.ItemRarity.LEGENDARY + 1}, inventory) == -1, "out-of-range rarity objective was accepted")
 	_check(QuestService.get_state_objective_value({"type": "equipment_level", "target": 0}, inventory) == -1, "zero equipment-level target was accepted")
@@ -658,7 +669,7 @@ func _test_inventory_removal_invariants() -> void:
 
 func _test_recipe_catalog_validation() -> void:
 	var all_recipes := RecipeDatabase.get_all_recipes()
-	_check(all_recipes.size() == 10, "recipe catalog changed unexpectedly")
+	_check(all_recipes.size() == 9, "recipe catalog changed unexpectedly")
 	for recipe: CraftingRecipe in all_recipes:
 		_check(recipe.evidence_status == CraftingRecipe.EvidenceStatus.PROVISIONAL, "%s is missing its provisional evidence label" % recipe.id)
 		_check(not recipe.evidence_source.is_empty(), "%s is missing its evidence source" % recipe.id)
@@ -690,23 +701,23 @@ func _test_recipe_catalog_validation() -> void:
 	_check(not RecipeDatabase.register_recipe(invalid, false), "invalid recipe entered the catalog")
 	_check(RecipeDatabase.get_recipe(invalid.id) == null, "rejected recipe remained registered")
 
-	var existing := RecipeDatabase.get_recipe("flame_augment")
+	var existing := RecipeDatabase.get_recipe("stone_fire")
 	_check(not RecipeDatabase.register_recipe(existing, false), "duplicate recipe id overwrote the catalog")
-	_check(RecipeDatabase.get_recipe("flame_augment") == existing, "duplicate registration replaced the original recipe")
+	_check(RecipeDatabase.get_recipe("stone_fire") == existing, "duplicate registration replaced the original recipe")
 
 
 func _test_crafting_transaction() -> void:
 	var inventory := _full_inventory_with_craft_materials()
 	var panel := CraftingPanel.new()
 	panel.player_inventory = inventory
-	panel.selected_recipe = RecipeDatabase.get_recipe("flame_augment")
+	panel.selected_recipe = RecipeDatabase.get_recipe("stone_fire")
 	panel.selected_tier = 1
 	_check(not panel._execute_craft(), "craft succeeded without output capacity")
 	_check(inventory.get_item_count("fire_shard") == 4, "failed craft consumed fire shards")
 	_check(inventory.get_item_count("iron_ore") == 3, "failed craft consumed iron ore")
 	inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
 	_check(panel._execute_craft(), "craft failed after freeing a slot")
-	_check(inventory.get_item_count("flame_augment_t1") == 1, "craft did not add its output")
+	_check(inventory.get_item_count("stone_fire_1") == 1, "craft did not add its output")
 	panel.free()
 
 
@@ -765,10 +776,8 @@ func _test_quest_claim_transaction() -> void:
 	QuestService.main_index = q02_index
 	QuestService.main_progress = int(GameContent.MAIN_QUESTS[q02_index]["obj"]["count"])
 	QuestService.main_ready = true
-	var xp_before := GameState.xp
 	_check(not QuestService.claim("q02"), "quest advanced without reward capacity")
 	_check(QuestService.main_index == q02_index and QuestService.main_ready, "failed quest claim changed state")
-	_check(GameState.xp == xp_before, "failed quest claim granted partial XP")
 	_check(SaveService.get_pending_claim().get("claim_id", "") == "main:q02", "failed claim did not persist its resolved journal")
 
 	# Loading the prepared snapshot retries the same reward but keeps it pending
@@ -803,12 +812,10 @@ func _test_quest_claim_transaction() -> void:
 func _test_daily_claim_recovery() -> void:
 	SaveService.delete_save()
 	GameState.reset_profile()
-	GameState.level = GameContent.MAX_LEVEL
 	QuestService.reset()
 	_player.inventory = InventoryData.new()
 	_player.inventory.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE)
 	QuestService.dailies["d_boss"]["progress"] = 1
-	var xp_before := GameState.xp
 	var gold_before := _player.inventory.gold
 	_check(not QuestService.claim("d_boss"), "daily claim advanced without reward capacity")
 	_check(
@@ -833,20 +840,19 @@ func _test_daily_claim_recovery() -> void:
 	_check(SaveService.load_game(), "stale pending daily claim did not reload")
 	_check(QuestService.daily_date == stale_date, "load reset a daily before its pending claim recovered")
 	_check(not SaveService.get_pending_claim().is_empty(), "failed automatic daily retry lost its journal")
-	_check(GameState.xp == xp_before and _player.inventory.gold == gold_before, "failed automatic daily retry granted a partial reward")
+	_check(_player.inventory.gold == gold_before, "failed automatic daily retry granted a partial reward")
 
 	_player.inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
 	_check(QuestService.claim("d_boss"), "stale pending daily claim did not retry")
-	_check(GameState.level == GameContent.MAX_LEVEL and GameState.xp == xp_before, "daily retry bypassed the max-level XP cap")
 	_check(_player.inventory.gold == gold_before + 300, "daily retry granted incorrect gold")
-	_check(_player.inventory.get_item_count("hero_shard") == 3, "daily retry omitted its item reward")
+	_check(_player.inventory.get_item_count("stone_guard_1") == 2, "daily retry omitted its item reward")
 	_check(bool(QuestService.dailies["d_boss"]["claimed"]), "daily retry did not mark the saved quest claimed")
 	_check(SaveService.get_pending_claim().is_empty(), "successful daily retry did not clear its journal")
 
 	QuestService.get_tracker_rows()
 	_check(QuestService.daily_date != stale_date, "completed stale daily state did not reset")
 	_check(not QuestService.claim("d_boss"), "completed daily journal granted twice after reset")
-	_check(_player.inventory.get_item_count("hero_shard") == 3, "duplicate daily claim changed the reward")
+	_check(_player.inventory.get_item_count("stone_guard_1") == 2, "duplicate daily claim changed the reward")
 
 
 func _test_building_collection_transaction() -> void:

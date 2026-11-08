@@ -8,7 +8,7 @@ signal closed
 
 const TABS := ["hero", "pet", "mount", "quest", "map", "village", "system"]
 const TAB_TITLES := {
-	"hero": "Heroes", "pet": "Pets", "mount": "Mounts", "quest": "Quests",
+	"hero": "Character", "pet": "Pets", "mount": "Mounts", "quest": "Quests",
 	"map": "World Map", "village": "Homestead", "system": "System",
 }
 # Quest screen art comes from the original Ember UI kit (ArtCatalog IDs, ART_BIBLE.md §6).
@@ -92,7 +92,7 @@ func _ready() -> void:
 
 	GameState.collection_changed.connect(_mark_dirty)
 	GameState.buildings_changed.connect(_mark_dirty)
-	GameState.xp_changed.connect(func(_a: int, _b: int, _c: int) -> void: _mark_dirty())
+	GameState.stats_dirty.connect(_mark_dirty)
 	QuestService.quests_changed.connect(_mark_dirty)
 
 
@@ -201,45 +201,30 @@ func _act(ok: bool, fail_msg: String) -> void:
 	_rebuild()
 
 
-# --- Heroes -------------------------------------------------------------------
+# --- Character ----------------------------------------------------------------
+## The single Kindler (owner decision 2026-11-08): no classes, no level. Shows the live stat sheet.
 func _build_heroes() -> void:
-	_content.add_child(UiTheme.label("Lv.%d  —  stats grow with level and stars" % GameState.level, 20, UiTheme.C_MUTED))
-	for id in GameContent.HEROES:
-		var h: Dictionary = GameContent.HEROES[id]
-		var v := _card()
-		var row := _row(v)
-		row.add_child(_icon(hero_portrait(), 80, h["tint"]))
-		var info := VBoxContainer.new()
-		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(info)
-		var owned := GameState.is_hero_owned(id)
-		var stars: int = GameState.heroes.get(id, {}).get("stars", 0)
-		var star_txt := ""
-		for i in range(GameContent.HERO_MAX_STARS):
-			star_txt += "*" if i < stars else "-"
-		info.add_child(UiTheme.label("%s  [%s]  %s" % [h["name"], h["title"], star_txt if owned else ""], 26, UiTheme.C_GOLD))
-		info.add_child(UiTheme.label(h["desc"], 18, UiTheme.C_MUTED))
-		var b: Dictionary = h["base"]
-		info.add_child(UiTheme.label("HP %d  ATK %d  DEF %d  SPD %d" % [b["hp"], b["atk"], b["def"], int(b["spd"])], 18))
-		var skill_names: Array[String] = []
-		for sk in h["skills"]:
-			var sd: Dictionary = GameContent.HERO_SKILLS[sk]
-			skill_names.append("%s(Lv%d)" % [sd["name"], sd["unlock_level"]])
-		info.add_child(UiTheme.label("Skills: " + ", ".join(skill_names), 18, Color(0.75, 0.85, 1)))
-		var actions := _row(v)
-		if not owned:
-			var u: Dictionary = h["unlock"]
-			actions.add_child(UiTheme.button("Recruit (%d gold, Lv.%d)" % [u["gold"], u["level"]],
-				func() -> void: _act(GameState.unlock_hero(id), "Need more gold or level")))
-		else:
-			if GameState.hero_id == id:
-				actions.add_child(UiTheme.label("  IN PARTY", 22, UiTheme.C_GOOD))
-			else:
-				actions.add_child(UiTheme.button("Select", func() -> void: _act(GameState.select_hero(id), "")))
-			var cost := GameState.hero_star_cost(id)
-			if cost > 0:
-				actions.add_child(UiTheme.button("Star up (%d shards, have %d)" % [cost, _count("hero_shard")],
-					func() -> void: _act(GameState.upgrade_hero_star(id), "Not enough Hero Shards")))
+	var v := _card()
+	var row := _row(v)
+	row.add_child(_icon(hero_portrait(), 80, Color.WHITE))
+	var info := VBoxContainer.new()
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(info)
+	info.add_child(UiTheme.label("Kindler", 26, UiTheme.C_GOLD))
+	info.add_child(UiTheme.label("Power comes from equipment, socket stones, pets and mounts.", 18, UiTheme.C_MUTED))
+	var player := GameState.get_player()
+	var stats: CharacterStats = player.get("stats") if player != null else null
+	if stats != null:
+		info.add_child(UiTheme.label("HP %d  ATK %d  DEF %d  SPD %d" % [stats.max_health, stats.attack_damage, stats.defense, int(stats.move_speed)], 18))
+	var inv := GameState.get_inventory()
+	if inv != null:
+		var gem_stats := inv.get_gem_stats()
+		var parts: Array[String] = []
+		for stat: String in ["crit_chance", "crit_damage", "life_steal", "dodge", "regeneration", "reflection"]:
+			if float(gem_stats.get(stat, 0.0)) > 0.0:
+				parts.append("%s %.1f" % [stat.replace("_", " "), float(gem_stats[stat])])
+		if not parts.is_empty():
+			info.add_child(UiTheme.label(", ".join(parts), 18, Color(0.75, 0.85, 1)))
 
 
 # --- Pets ---------------------------------------------------------------------
@@ -534,8 +519,6 @@ func _reward_text(quest: Dictionary) -> String:
 		return preview
 	var r := quest.get("reward", {}) as Dictionary
 	var parts: Array[String] = []
-	if r.has("xp"):
-		parts.append("%d XP" % int(r["xp"]))
 	if r.has("gold"):
 		parts.append("%d gold" % int(r["gold"]))
 	var items: Dictionary = r.get("items", {})
@@ -556,15 +539,12 @@ func _build_map() -> void:
 		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(info)
 		info.add_child(UiTheme.label(z["name"], 26, UiTheme.C_GOLD))
-		var extra := "Safe zone" if z.get("safe", false) else "Recommended Lv.%d" % int(z["level"])
+		var extra := "Safe zone" if z.get("safe", false) else "Monster level %d" % int(z["level"])
 		if z.has("world_boss"):
 			extra += "  -  World boss: %s" % GameContent.MONSTERS[z["world_boss"]]["name"]
 		info.add_child(UiTheme.label(extra, 18, UiTheme.C_MUTED))
-		var locked := GameState.level < int(z["level"]) - 2
 		if id == GameState.current_zone:
 			row.add_child(UiTheme.label("HERE ", 22, UiTheme.C_GOOD))
-		elif locked:
-			row.add_child(UiTheme.label("Lv.%d " % (int(z["level"]) - 2), 22, UiTheme.C_BAD))
 		else:
 			row.add_child(UiTheme.button("Travel", _travel.bind(String(id)), Vector2(120, 52)))
 
@@ -616,7 +596,7 @@ func _build_village() -> void:
 func _build_system() -> void:
 	var v := _card()
 	v.add_child(UiTheme.label("SETTINGS", 30, UiTheme.C_GOLD))
-	v.add_child(UiTheme.label("Profile: Lv.%d, %d kills, bosses: %s" % [GameState.level, GameState.kills_total, str(GameState.boss_kills)], 18, UiTheme.C_MUTED))
+	v.add_child(UiTheme.label("Profile: %d kills, bosses: %s" % [GameState.kills_total, str(GameState.boss_kills)], 18, UiTheme.C_MUTED))
 	v.add_child(UiTheme.label("Session: %s" % LanSession.role_text(), 18, UiTheme.C_MUTED))
 	if LanSession.is_active():
 		v.add_child(UiTheme.button("Disconnect Wi-Fi", func() -> void:

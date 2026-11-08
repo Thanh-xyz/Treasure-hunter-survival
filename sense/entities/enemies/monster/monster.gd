@@ -32,7 +32,6 @@ var max_hp: int = 10
 var hp: int = 10
 var damage: int = 1
 var speed: float = 30.0
-var xp_reward: int = 1
 var level: int = 1
 var attack_range: float = 16.0
 var aggro_range: float = 120.0
@@ -87,14 +86,12 @@ func setup(id: String, p_elite: bool) -> void:
 	max_hp = int(def["hp"])
 	damage = int(def["dmg"])
 	speed = float(def["spd"])
-	xp_reward = int(def["xp"])
 	level = int(def.get("level", 1))
 	attack_range = float(def.get("range", 16.0))
 	aggro_range = float(def.get("aggro", 120.0))
 	if elite:
 		max_hp = int(max_hp * GameContent.ELITE_HP_MULT)
 		damage = int(damage * GameContent.ELITE_DMG_MULT)
-		xp_reward = int(xp_reward * GameContent.ELITE_XP_MULT)
 		level += 2
 	hp = max_hp
 
@@ -656,12 +653,6 @@ func apply_network_death() -> void:
 
 func _grant_rewards(killer_peer_id: int = 1) -> void:
 	var pos := global_position
-	if xp_reward > 0:
-		if LanSession.is_host() and killer_peer_id != 1:
-			LanSession.grant_peer_xp(killer_peer_id, xp_reward)
-		else:
-			GameState.add_xp(xp_reward)
-			DamageNumber.spawn(get_tree(), pos + Vector2(0, -visual_height - 10), "+%d XP" % xp_reward, Color(0.75, 0.55, 1.0))
 	# Gold
 	var bonus: Dictionary = GameState.compute_base_stats()
 	var g: Vector2i = def.get("gold", Vector2i(0, 0))

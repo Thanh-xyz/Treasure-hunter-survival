@@ -1,15 +1,13 @@
 extends Node
 ## GameState — the local player profile (autoload).
 ##
-## Owns progression (level/XP), hero collection, pets, mounts, homestead
-## buildings and counters. Gold and items live in the player's InventoryData;
+## Owns the single character's collection (pets, mounts), homestead buildings and
+## counters. There is no player level or XP (owner decision 2026-11-08, save v7): power comes
+## from equipment, socket stones, pets and mounts. Gold and items live in the player's InventoryData;
 ## helpers here (can_afford / spend / grant) operate on it.
 ##
 ## Everything here is plain data so SaveService can serialize it as JSON.
 
-signal xp_changed(level: int, xp: int, xp_needed: int)
-signal leveled_up(new_level: int)
-signal hero_changed(hero_id: String)
 signal collection_changed
 signal pet_changed(pet_id: String)
 signal mount_changed(mount_id: String, mounted: bool)
@@ -18,10 +16,6 @@ signal stats_dirty   ## Something that affects player stats changed
 
 const PLOT_COUNT := 6
 
-var level: int = 1
-var xp: int = 0
-var hero_id: String = "warden"
-var heroes: Dictionary = {}        ## hero_id -> {"stars": int}
 var pets: Dictionary = {}          ## pet_id -> {"level": int}
 var active_pet: String = ""
 var mounts: Dictionary = {}        ## mount_id -> {"skin": int, "skins": Array[int]}
@@ -46,10 +40,6 @@ func _ready() -> void:
 
 ## Fresh profile (new game)
 func reset_profile() -> void:
-	level = 1
-	xp = 0
-	hero_id = "warden"
-	heroes = {"warden": {"stars": 1}}
 	pets = {"ember_fox": {"level": 1}}
 	active_pet = ""
 	mounts = {}
@@ -70,7 +60,6 @@ func reset_profile() -> void:
 
 func to_dict() -> Dictionary:
 	return {
-		"level": level, "xp": xp, "hero_id": hero_id, "heroes": heroes,
 		"pets": pets, "active_pet": active_pet,
 		"mounts": mounts, "active_mount": active_mount,
 		"plots": plots, "boss_kills": boss_kills, "kills_total": kills_total,
@@ -80,12 +69,6 @@ func to_dict() -> Dictionary:
 
 func from_dict(d: Dictionary) -> void:
 	reset_profile()
-	level = int(d.get("level", 1))
-	xp = int(d.get("xp", 0))
-	hero_id = str(d.get("hero_id", "warden"))
-	heroes = _int_values(d.get("heroes", heroes))
-	if not GameContent.HEROES.has(hero_id) or not heroes.has(hero_id):
-		hero_id = "warden"
 	pets = _int_values(d.get("pets", pets))
 	active_pet = str(d.get("active_pet", ""))
 	if active_pet != "" and not pets.has(active_pet):
@@ -145,8 +128,6 @@ func _int_values(src: Variant) -> Dictionary:
 
 
 func _emit_all() -> void:
-	xp_changed.emit(level, xp, xp_needed())
-	hero_changed.emit(hero_id)
 	pet_changed.emit(active_pet)
 	mount_changed.emit(active_mount, mounted)
 	collection_changed.emit()
@@ -155,45 +136,17 @@ func _emit_all() -> void:
 
 
 # =============================================================================
-# PROGRESSION
-# =============================================================================
-
-func xp_needed() -> int:
-	return GameContent.xp_to_next(level)
-
-
-func add_xp(amount: int) -> void:
-	if amount <= 0 or level >= GameContent.MAX_LEVEL:
-		return
-	xp += amount
-	var leveled := false
-	while level < GameContent.MAX_LEVEL and xp >= xp_needed():
-		xp -= xp_needed()
-		level += 1
-		leveled = true
-		leveled_up.emit(level)
-	xp_changed.emit(level, xp, xp_needed())
-	if leveled:
-		stats_dirty.emit()
-
-
-# =============================================================================
 # STATS AGGREGATION
 # =============================================================================
 
-## Combined base stats from hero + level + stars + pet + mount + buildings.
-## Equipment and timed buffs are layered on top by CharacterStats itself.
+## Combined base stats from the character + pet + mount + buildings.
+## Equipment, socket stones and timed buffs are layered on top by CharacterStats itself.
 func compute_base_stats() -> Dictionary:
-	var hero: Dictionary = GameContent.HEROES.get(hero_id, GameContent.HEROES["warden"])
-	var base: Dictionary = hero["base"]
-	var growth: Dictionary = hero["growth"]
-	var lv := level - 1
-	var stars: int = heroes.get(hero_id, {}).get("stars", 1)
-	var star_mult: float = 1.0 + GameContent.HERO_STAR_BONUS * float(stars - 1)
-	var hp: float = (float(base["hp"]) + growth["hp"] * lv) * star_mult
-	var atk: float = (float(base["atk"]) + growth["atk"] * lv) * star_mult
-	var def: float = (float(base["def"]) + growth["def"] * lv) * star_mult
-	var spd: float = base["spd"]
+	var base: Dictionary = GameContent.PLAYER_BASE
+	var hp: float = float(base["hp"])
+	var atk: float = float(base["atk"])
+	var def: float = float(base["def"])
+	var spd: float = float(base["spd"])
 	var gold_pct := 0.0
 	var magnet := 0.0
 
@@ -329,7 +282,7 @@ func spend(cost: Dictionary) -> bool:
 	return inv.transact(removals, [], -gold_cost, -diamond_cost)
 
 
-## rewards: {"xp": int, "gold": int, "diamonds": int, "items": {id: qty},
+## rewards: {"gold": int, "diamonds": int, "items": {id: qty},
 ##           (equipment is granted as ordinary items)}
 ## Item and exact equipment rewards are all-or-nothing.
 func grant(rewards: Dictionary) -> bool:
@@ -352,8 +305,6 @@ func grant(rewards: Dictionary) -> bool:
 		additions.append({"item": item, "quantity": quantity})
 	if inv != null and not inv.transact([], additions, gold_reward, diamond_reward):
 		return false
-	if rewards.has("xp"):
-		add_xp(int(rewards["xp"]))
 	return true
 
 
@@ -371,60 +322,6 @@ func format_cost(cost: Dictionary) -> String:
 			var item: ItemData = ItemDatabase.get_item(key)
 			parts.append("%d %s" % [amount, item.name if item else key])
 	return ", ".join(parts) if not parts.is_empty() else "free"
-
-
-# =============================================================================
-# HEROES
-# =============================================================================
-
-func is_hero_owned(id: String) -> bool:
-	return heroes.has(id)
-
-
-func unlock_hero(id: String) -> bool:
-	if is_hero_owned(id) or not GameContent.HEROES.has(id):
-		return false
-	var unlock: Dictionary = GameContent.HEROES[id]["unlock"]
-	if level < int(unlock.get("level", 1)):
-		return false
-	if not spend({"gold": int(unlock.get("gold", 0))}):
-		return false
-	heroes[id] = {"stars": 1}
-	collection_changed.emit()
-	return true
-
-
-func select_hero(id: String) -> bool:
-	if not is_hero_owned(id):
-		return false
-	hero_id = id
-	hero_changed.emit(id)
-	stats_dirty.emit()
-	return true
-
-
-func hero_star_cost(id: String) -> int:
-	var stars: int = heroes.get(id, {}).get("stars", 1)
-	if stars >= GameContent.HERO_MAX_STARS:
-		return -1
-	return GameContent.HERO_STAR_COST[stars]
-
-
-func upgrade_hero_star(id: String) -> bool:
-	var cost := hero_star_cost(id)
-	if cost < 0 or not spend({"hero_shard": cost}):
-		return false
-	heroes[id]["stars"] = int(heroes[id]["stars"]) + 1
-	collection_changed.emit()
-	stats_dirty.emit()
-	return true
-
-
-func max_hero_stars() -> int:
-	var best := 0
-	for id in heroes:
-		best = maxi(best, int(heroes[id].get("stars", 1)))
-	return best
 
 
 # =============================================================================
@@ -491,8 +388,6 @@ func unlock_mount(id: String) -> bool:
 	if mounts.has(id) or not GameContent.MOUNTS.has(id):
 		return false
 	var unlock: Dictionary = GameContent.MOUNTS[id]["unlock"]
-	if level < int(unlock.get("level", 1)):
-		return false
 	if not spend({"gold": int(unlock.get("gold", 0))}):
 		return false
 	mounts[id] = {"skin": 0, "skins": [0]}

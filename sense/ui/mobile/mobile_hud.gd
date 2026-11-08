@@ -43,7 +43,6 @@ var game_menu: GameMenu
 var joystick: VirtualJoystick
 var attack_btn: ActionButton
 var auto_farm_btn: ActionButton
-var skill_btns: Array[ActionButton] = []
 var gear_btn: ActionButton
 var potion_btn: ActionButton
 var mount_btn: ActionButton
@@ -111,10 +110,8 @@ func _ready() -> void:
 	GameEvent.boss_state_changed.connect(_on_boss_state)
 	GameEvent.world_boss_timer.connect(_on_world_boss_timer)
 	GameEvent.zone_entered.connect(_on_zone_entered)
-	GameState.xp_changed.connect(func(_l: int, _x: int, _n: int) -> void: _refresh_card())
-	GameState.hero_changed.connect(func(_h: String) -> void: _refresh_card())
+	GameState.stats_dirty.connect(_refresh_card)
 	GameState.mount_changed.connect(func(_m: String, _r: bool) -> void: _refresh_controls())
-	GameState.leveled_up.connect(func(_l: int) -> void: _refresh_controls())
 	QuestService.quests_changed.connect(_refresh_quests)
 	QuestService.quest_completed.connect(func(_id: String, qname: String) -> void: show_toast("Reward claimed: %s" % qname, UiTheme.C_GOLD))
 
@@ -132,9 +129,6 @@ func bind_player(p: Node, hud: CanvasLayer) -> void:
 	var inv: InventoryData = p.get_inventory()
 	inv.gold_changed.connect(_on_gold_changed)
 	_on_gold_changed(inv.gold)
-	var runner: HeroSkillRunner = p.get("hero_skills")
-	if runner:
-		runner.cooldowns_changed.connect(_refresh_controls)
 	_refresh_card()
 	_refresh_controls()
 	_refresh_quests()
@@ -196,7 +190,7 @@ func _fit_legacy_popup(node) -> void:
 		return
 	var vp := get_viewport_rect().size
 	var design_w := 1280.0
-	if c.name == "InventoryPanel" or c is AugmentPanel:
+	if c.name == "InventoryPanel" or c is GemPanel:
 		design_w = 760.0
 	var s := minf(1.0, vp.x / design_w)
 	if s >= 1.0:
@@ -735,8 +729,6 @@ func _process(delta: float) -> void:
 
 
 func _refresh_card() -> void:
-	var hero: Dictionary = GameContent.HEROES.get(GameState.hero_id, {})
-	_portrait.self_modulate = hero.get("tint", Color.WHITE)
 	if player:
 		var stats: CharacterStats = player.get("stats")
 		if stats:
@@ -758,18 +750,6 @@ func _refresh_world_info() -> void:
 func _refresh_controls() -> void:
 	if player == null:
 		return
-	var runner: HeroSkillRunner = player.get("hero_skills")
-	if runner:
-		for i in range(skill_btns.size()):
-			var b := skill_btns[i]
-			var d := runner.get_skill_def(i)
-			b.caption = d.get("name", "")
-			b.locked = not runner.is_unlocked(i)
-			b.cooldown_ratio = runner.get_cooldown_ratio(i)
-			var cd := runner.get_cooldown(i)
-			b.cooldown_text = str(ceili(cd)) if cd > 0.0 else ""
-			if b.locked:
-				b.cooldown_text = "Lv%d" % int(d.get("unlock_level", 1))
 	var sc: SkillComponent = player.get("skill_component")
 	if gear_btn:
 		gear_btn.locked = sc == null or sc.available_skills.is_empty()

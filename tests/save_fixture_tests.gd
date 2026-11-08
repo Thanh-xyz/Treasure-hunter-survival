@@ -1,14 +1,15 @@
 extends Node
 ## Save fixture suite: every historic save format (v0–v5) must load under the current code
 ## without losing player value. The fixtures are frozen v5-era files (their generator was retired
-## with save v6; see git history), so these tests describe the v6 migration results:
-## retired equipment → gold refund, reference weapons → starter weapons, q305–q311 → t01–t06.
+## with save v6; see git history), so these tests describe the v6 + v7 migration results:
+## retired equipment → gold refund, reference weapons → starter weapons, q305–q311 → t01–t06,
+## and (v7) augments → socket stones, no player level/XP or hero classes.
 
 const FIXTURE_DIR := "res://tests/fixtures/saves"
 const SAVE_PATH := "user://saves/fixture_profile.json"
 const HISTORIC := ["v0_legacy", "v1_historic", "v2_historic", "v3_historic", "v4_historic", "v5_full_original"]
 const INVALID := ["corrupt_truncated", "future_version", "bad_types"]
-const SCENARIOS := ["v5_reference_items", "v5_quest_q306_progress", "v5_pending_claim_q311", "v5_legacy_index_quest"]
+const SCENARIOS := ["v5_reference_items", "v5_quest_q306_progress", "v5_pending_claim_q311", "v5_legacy_index_quest", "v6_stones_and_heroes"]
 
 var _failures: Array[String] = []
 var _player: StubPlayer
@@ -36,6 +37,7 @@ func _ready() -> void:
 	_test_quest_q306()
 	_test_pending_claim_q311()
 	_test_legacy_index_quest()
+	_test_v6_stones_and_heroes()
 	_test_mount_owner_can_save_and_reload()
 	_test_unknown_item_goes_to_lost_and_found()
 	_test_migration_is_idempotent()
@@ -71,8 +73,7 @@ func _test_full_profile_loads(name: String) -> void:
 		_fail("%s: load_game failed (%s)" % [name, _explain(name)])
 		return
 	var inv := _player.inventory
-	_check(GameState.level == 12 and GameState.xp == 340, "%s: level/xp" % name)
-	_check(GameState.hero_id == "ranger" and int(GameState.heroes["warden"]["stars"]) == 2, "%s: heroes" % name)
+	_check(not GameState.to_dict().has("level") and not GameState.to_dict().has("heroes"), "%s: level/heroes retired" % name)
 	_check(int(GameState.pets["ember_fox"]["level"]) == 4 and GameState.active_pet == "ember_fox", "%s: pets" % name)
 	_check(GameState.active_mount == "dust_pony" and int(GameState.mounts["dust_pony"]["skin"]) == 1, "%s: mounts" % name)
 	_check(str(GameState.plots[0].get("id", "")) == "lumber_mill" and int(GameState.plots[0].get("level", 0)) == 2, "%s: plot 0" % name)
@@ -80,14 +81,46 @@ func _test_full_profile_loads(name: String) -> void:
 	_check(GameState.kills_total == 250 and GameState.current_zone == "greenwood", "%s: counters/zone" % name)
 	_check(inv.gold == FULL_PROFILE_GOLD_AFTER_V6 and inv.diamonds == 7, "%s: currencies after refunds (gold %d)" % [name, inv.gold])
 	_check(inv.get_item_count("wood") == 50 and inv.get_item_count("stone") == 20, "%s: materials" % name)
-	_check(inv.get_item_count("health_potion") == 5 and inv.get_item_count("power_augment_t1") == 1, "%s: consumables" % name)
-	_check(inv.get_item_count("flame_augment_t1") == 1, "%s: augment from the retired blade was not returned" % name)
+	_check(inv.get_item_count("health_potion") == 5, "%s: consumables" % name)
+	_check(inv.get_item_count("stone_critical_damage_1") == 1, "%s: power augment did not become a Ravager Stone" % name)
+	_check(inv.get_item_count("stone_fire_1") == 1, "%s: augment from the retired blade did not return as a stone" % name)
 	for slot: String in InventoryData.EQUIPMENT_SLOTS:
 		_check(inv.get_equipped(slot) == null, "%s: retired equipment still equipped in %s" % [name, slot])
 	_check(str(QuestService.get_main_quest().get("id", "")) == "q03" and QuestService.main_progress == 4, "%s: main quest" % name)
 	_check(SaveService.get_pending_claim().is_empty(), "%s: unexpected pending claim" % name)
 	_check(SaveService.get_lost_and_found().is_empty(), "%s: nothing should be lost" % name)
 	_check(SaveService.get_migration_log().size() >= 3, "%s: refunds were not logged" % name)
+
+
+## v6 → v7: socketed augments become socket stones in the same sockets' order, runes and hero
+## shards are refunded in gold, level/XP/hero fields are dropped and logged, pending XP becomes gold.
+func _test_v6_stones_and_heroes() -> void:
+	_install("v6_stones_and_heroes")
+	if not SaveService.load_game():
+		_fail("v6 stones: load failed (%s)" % _explain("v6_stones_and_heroes"))
+		return
+	var inv := _player.inventory
+	var weapon := inv.get_equipped("weapon")
+	_check(weapon != null and weapon.id == "emberforged_blade" and weapon.rarity == ItemData.ItemRarity.EPIC, "v6 stones: rare blade is now epic")
+	var sockets := weapon.get_gem_sockets() if weapon else ([] as Array[String])
+	_check(sockets.size() == 8 and sockets[0] == "stone_critical_2" and sockets[1] == "stone_lifesteal_1", "v6 stones: socketed augments became stones (%s)" % [sockets])
+	_check(weapon != null and weapon.count_socketed_gems() == 2, "v6 stones: whirlwind rune left a stone behind")
+	_check(inv.get_item_count("stone_fire_3") == 2, "v6 stones: bag augments did not become stones")
+	_check(inv.get_item_count("hero_shard") == 0, "v6 stones: hero shards kept")
+	# 500 base + 200 whirlwind rune + 7 hero shards × 60 + recovered q02 claim (80 gold + 60 XP → gold)
+	_check(inv.gold == 500 + 200 + 7 * 60 + 80 + 60, "v6 stones: refunds wrong (gold %d)" % inv.gold)
+	_check(inv.get_item_count("health_potion") == 3, "v6 stones: recovered claim items missing")
+	_check(SaveService.get_pending_claim().is_empty() and str(QuestService.get_main_quest().get("id", "")) == "q03", "v6 stones: pending claim was not recovered")
+	var log := SaveService.get_migration_log()
+	var logged_levels := false
+	for line: Variant in log:
+		logged_levels = logged_levels or str(line).contains("Character levels")
+	_check(logged_levels, "v6 stones: retired level/heroes were not logged")
+	_check(SaveService.get_lost_and_found().is_empty(), "v6 stones: something was lost")
+	_check(SaveService.save_game(), "v6 stones: resave failed")
+	_reset()
+	_check(SaveService.load_game(), "v6 stones: reload failed")
+	_check(_player.inventory.get_equipped("weapon").get_gem_sockets()[0] == "stone_critical_2", "v6 stones: sockets did not survive a round trip")
 
 
 ## A migrated save, written and read back, must reproduce the same profile and inventory.
@@ -182,13 +215,13 @@ func _test_unknown_item_goes_to_lost_and_found() -> void:
 	_check(lost.size() == 1 and str(lost[0].get("id", "")) == "mystery_relic" and int(lost[0].get("qty", 0)) == 2, "unknown item not kept in Lost & Found: %s" % [lost])
 
 
-## Running the migration chain on an already-migrated v6 save changes nothing.
+## Running the migration chain on an already-migrated save changes nothing.
 func _test_migration_is_idempotent() -> void:
 	_install("v5_full_original")
 	var migrated := SaveService.read_snapshot()
 	_check(int(migrated.get("version", 0)) == SaveService.SAVE_VERSION, "fixture did not migrate to the current version")
 	var again := SaveService._migrate(migrated.duplicate(true))
-	_check(_json(again) == _json(migrated), "migrating a v6 save again changed it")
+	_check(_json(again) == _json(migrated), "migrating a current save again changed it")
 
 
 ## An invalid main file must fall back to a valid .bak, and saving must never overwrite that backup.
@@ -197,7 +230,7 @@ func _test_invalid_falls_back_to_backup(name: String) -> void:
 	var backup_text := FileAccess.get_file_as_string(_fixture_path("v5_full_original"))
 	_write_user(SAVE_PATH + ".bak", backup_text)
 	_check(SaveService.load_game(), "%s: did not fall back to backup" % name)
-	_check(GameState.level == 12 and _player.inventory.gold == FULL_PROFILE_GOLD_AFTER_V6, "%s: backup state not loaded" % name)
+	_check(GameState.kills_total == 250 and _player.inventory.gold == FULL_PROFILE_GOLD_AFTER_V6, "%s: backup state not loaded" % name)
 	_check(SaveService.save_game(), "%s: save after fallback failed" % name)
 	_check(FileAccess.get_file_as_string(SAVE_PATH + ".bak") == backup_text, "%s: good backup was overwritten" % name)
 

@@ -11,15 +11,29 @@ const CRIT_MULT := 1.6
 const VARIANCE := 0.12
 
 
-## Returns {"amount": int, "crit": bool}. Bonus crit is expressed in percentage
-## points because equipment data exposes values such as 8.0 for +8%.
-static func roll(base: float, bonus_crit_chance_percent: float = 0.0) -> Dictionary:
+## Returns {"amount": int, "crit": bool}. Bonus crit chance is in percentage points
+## (8.0 = +8%); bonus crit damage adds percent of base damage to the multiplier (Ravager Stone).
+static func roll(base: float, bonus_crit_chance_percent: float = 0.0, bonus_crit_damage_percent: float = 0.0) -> Dictionary:
 	var v := base * randf_range(1.0 - VARIANCE, 1.0 + VARIANCE)
 	var crit_chance := clampf(CRIT_CHANCE + bonus_crit_chance_percent / 100.0, 0.0, 1.0)
 	var crit := randf() < crit_chance
 	if crit:
-		v *= CRIT_MULT
+		v *= crit_multiplier(bonus_crit_damage_percent)
 	return {"amount": maxi(1, int(round(v))), "crit": crit}
+
+
+static func crit_multiplier(bonus_crit_damage_percent: float) -> float:
+	return CRIT_MULT + maxf(bonus_crit_damage_percent, 0.0) / 100.0
+
+
+## Dodge chance after the attacker's accuracy, as a 0..1 probability.
+static func dodge_probability(dodge_percent: float, attacker_accuracy_percent: float = 0.0) -> float:
+	return clampf((dodge_percent - maxf(attacker_accuracy_percent, 0.0)) / 100.0, 0.0, 1.0)
+
+
+static func roll_dodge(dodge_percent: float, attacker_accuracy_percent: float = 0.0) -> bool:
+	var p := dodge_probability(dodge_percent, attacker_accuracy_percent)
+	return p > 0.0 and randf() < p
 
 
 static func is_alive_target(n) -> bool:

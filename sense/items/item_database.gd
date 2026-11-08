@@ -32,7 +32,7 @@ func _create_all_items() -> void:
 	_create_consumables()
 	_create_materials()
 	_create_segments()
-	_create_augments()
+	_create_gems()
 	_create_timed_buffs()
 	_create_survival_items()
 
@@ -47,7 +47,7 @@ func _create_equipment() -> void:
 		for type: int in ItemData.SLOT_BY_TYPE:
 			if ItemData.SLOT_BY_TYPE[type] == slot:
 				item_type = type
-		var rarity := maxi(EquipmentBalance.rarities().find(str(t["rarity"])), 0)
+		var rarity := maxi(EquipmentBalance.rarity_enum(str(t["rarity"])), 0)
 		var item := ItemHelper.create_item({
 			"id": template_id,
 			"name": str(t.get("name", template_id)),
@@ -194,128 +194,21 @@ func _create_segments() -> void:
 	})
 
 
-func _create_augments() -> void:
-	# --- Flame augments ---
-	items["flame_augment_t1"] = ItemHelper.create_item({
-		"id": "flame_augment_t1", "name": "Flame Augment I",
-		"description": "Imbue equipment with fire. Burns enemies on hit.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.UNCOMMON,
-		"stackable": false, "max_stack": 1, "attack": 5,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.BURN_ON_HIT, "passive_value": 3.0,
-		"icon_name": "flame_augment"
-	})
-	items["flame_augment_t2"] = ItemHelper.create_item({
-		"id": "flame_augment_t2", "name": "Flame Augment II",
-		"description": "Stronger fire imbue. Sears enemies on hit.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.RARE,
-		"stackable": false, "max_stack": 1, "attack": 12,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.BURN_ON_HIT, "passive_value": 5.0,
-		"icon_name": "flame_augment"
-	})
-	items["flame_augment_t3"] = ItemHelper.create_item({
-		"id": "flame_augment_t3", "name": "Flame Augment III",
-		"description": "Infernal fire imbue. Incinerates enemies on hit.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.EPIC,
-		"stackable": false, "max_stack": 1, "attack": 20,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.BURN_ON_HIT, "passive_value": 8.0,
-		"icon_name": "flame_augment"
-	})
-	# --- Frost augments ---
-	items["frost_augment_t1"] = ItemHelper.create_item({
-		"id": "frost_augment_t1", "name": "Frost Augment I",
-		"description": "Imbue equipment with ice. Slows enemies on hit.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.UNCOMMON,
-		"stackable": false, "max_stack": 1, "attack": 3,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.FREEZE_ON_HIT, "passive_value": 1.5,
-		"icon_name": "frost_augment"
-	})
-	items["frost_augment_t2"] = ItemHelper.create_item({
-		"id": "frost_augment_t2", "name": "Frost Augment II",
-		"description": "Stronger ice imbue. Freezes enemies on hit.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.RARE,
-		"stackable": false, "max_stack": 1, "attack": 8,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.FREEZE_ON_HIT, "passive_value": 3.0,
-		"icon_name": "frost_augment"
-	})
-	# --- Power augments ---
-	items["power_augment_t1"] = ItemHelper.create_item({
-		"id": "power_augment_t1", "name": "Power Augment I",
-		"description": "Raw strength increase.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.UNCOMMON,
-		"stackable": false, "max_stack": 1, "attack": 8,
-		"augment_type": ItemData.AugmentType.STAT_BOOST,
-		"icon_name": "power_augment"
-	})
-	items["power_augment_t2"] = ItemHelper.create_item({
-		"id": "power_augment_t2", "name": "Power Augment II",
-		"description": "Greater strength increase.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.RARE,
-		"stackable": false, "max_stack": 1, "attack": 15,
-		"augment_type": ItemData.AugmentType.STAT_BOOST,
-		"icon_name": "power_augment"
-	})
-	# --- Lifesteal augments ---
-	items["lifesteal_augment_t1"] = ItemHelper.create_item({
-		"id": "lifesteal_augment_t1", "name": "Lifesteal Augment I",
-		"description": "Drain 5% of damage dealt as health.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.UNCOMMON,
-		"stackable": false, "max_stack": 1,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.LIFE_STEAL, "passive_value": 5.0,
-		"icon_name": "lifesteal_augment"
-	})
-	items["lifesteal_augment_t2"] = ItemHelper.create_item({
-		"id": "lifesteal_augment_t2", "name": "Lifesteal Augment II",
-		"description": "Drain 10% of damage dealt as health.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.RARE,
-		"stackable": false, "max_stack": 1,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.LIFE_STEAL, "passive_value": 10.0,
-		"icon_name": "lifesteal_augment"
-	})
-	# --- Crit augments ---
-	items["crit_augment_t1"] = ItemHelper.create_item({
-		"id": "crit_augment_t1", "name": "Critical Augment I",
-		"description": "Increase critical chance by 8 percentage points.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.UNCOMMON,
-		"stackable": false, "max_stack": 1,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.CRIT_CHANCE, "passive_value": 8.0,
-		"icon_name": "crit_augment"
-	})
-	items["crit_augment_t2"] = ItemHelper.create_item({
-		"id": "crit_augment_t2", "name": "Critical Augment II",
-		"description": "Increase critical chance by 15 percentage points.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.RARE,
-		"stackable": false, "max_stack": 1,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.CRIT_CHANCE, "passive_value": 15.0,
-		"icon_name": "crit_augment"
-	})
-	# --- Skill augments ---
-	items["whirlwind_augment"] = ItemHelper.create_item({
-		"id": "whirlwind_augment", "name": "Whirlwind Rune",
-		"description": "Grants the Whirlwind skill when slotted into equipment.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.EPIC,
-		"stackable": false, "max_stack": 1, "attack": 5,
-		"augment_type": ItemData.AugmentType.ACTIVE_SKILL,
-		"active_skill_id": "whirlwind",
-		"icon_name": "whirlwind_augment"
-	})
-	items["shield_bash_augment"] = ItemHelper.create_item({
-		"id": "shield_bash_augment", "name": "Shield Bash Rune",
-		"description": "Grants the Shield Bash skill when slotted into equipment.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.EPIC,
-		"stackable": false, "max_stack": 1, "defense": 5,
-		"augment_type": ItemData.AugmentType.ACTIVE_SKILL,
-		"active_skill_id": "shield_bash",
-		"icon_name": "shield_bash_augment"
-	})
+## Socket stones (data/gems): 11 types × 4 tiers. Icons are placeholders until the
+## Ninja Adventure item icons are assigned (plan phase F, NEEDS_ASSET).
+func _create_gems() -> void:
+	for stone_id: String in GemCatalog.all_item_ids():
+		var p := GemCatalog.parse(stone_id)
+		var tier := GemCatalog.tier_def(int(p["tier"]))
+		items[stone_id] = ItemHelper.create_item({
+			"id": stone_id, "name": GemCatalog.display_name(stone_id),
+			"description": "%s %s" % [GemCatalog.type_def(p["type"]).get("description", ""), GemCatalog.describe(stone_id)],
+			"type": ItemData.ItemType.GEM,
+			"rarity": maxi(EquipmentBalance.rarity_enum(str(tier.get("rarity", "common"))), 0),
+			"stackable": true, "max_stack": 99,
+			"price": int(tier.get("sell_price", 10)) * 2, "sell_price": int(tier.get("sell_price", 10)),
+			"icon_name": "diamond",
+		})
 
 
 func _create_timed_buffs() -> void:
@@ -389,13 +282,6 @@ func _create_survival_items() -> void:
 		"stackable": true, "max_stack": 999, "price": 15,
 		"rarity": ItemData.ItemRarity.UNCOMMON,
 		"icon_name": "heart"
-	})
-	items["hero_shard"] = ItemHelper.create_item({
-		"id": "hero_shard", "name": "Hero Shard",
-		"description": "Crystallized valor. Upgrades hero stars.",
-		"stackable": true, "max_stack": 999, "price": 60,
-		"rarity": ItemData.ItemRarity.RARE,
-		"icon_name": "diamond"
 	})
 	items["boss_core"] = ItemHelper.create_item({
 		"id": "boss_core", "name": "Boss Core",

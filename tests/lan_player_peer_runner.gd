@@ -80,7 +80,6 @@ func _build_enemy() -> void:
 	enemy.position = Vector2(165, 220)
 	enemy.max_hp = 100
 	enemy.hp = 100
-	enemy.xp_reward = 0
 	enemy.def = enemy.def.duplicate(true)
 	enemy.def["gold"] = Vector2i.ZERO
 	enemy.def["loot"] = []
@@ -114,14 +113,14 @@ func _process_host() -> void:
 		_attack_profile_seen = _attack_profile_seen and _enemy_initial_hp - enemy.hp >= 26
 	if not _profile_seen:
 		return
-	_healing_seen = _healing_seen or (_damage_step >= 1 and int(state.get("hp", 0)) == 85)
+	_healing_seen = _healing_seen or (_damage_step >= 1 and int(state.get("hp", 0)) == _after_hit() + 50)
 	if _elapsed >= 1.3 and _damage_step == 0:
 		LanSession.damage_peer(_client_peer_id, 70)
 		var after_first: Dictionary = LanSession.player_states[_client_peer_id]
-		_damage_seen = int(after_first["hp"]) == 35
+		_damage_seen = int(after_first["hp"]) == _after_hit()
 		LanSession.damage_peer(_client_peer_id, 20)
 		var after_second: Dictionary = LanSession.player_states[_client_peer_id]
-		_iframe_rejected = int(after_second["hp"]) == 35
+		_iframe_rejected = int(after_second["hp"]) == _after_hit()
 		_damage_step = 1
 	if _elapsed >= 2.6 and _damage_step == 1 and _healing_seen:
 		LanSession.damage_peer(_client_peer_id, 999)
@@ -151,12 +150,12 @@ func _process_client() -> void:
 		_respawn_request_sent = true
 		LanSession.request_player_respawn()
 	_respawn_seen = _respawn_seen or (_player.respawn_seen and not _player.dead and _player.stats.current_health == _player.stats.max_health and _player.global_position.distance_to(get_lan_spawn_position()) < 0.1)
-	_damage_seen = _damage_seen or (_player.stats.current_health == 35)
-	if _player.stats.current_health == 35 and not _healing_requested:
+	_damage_seen = _damage_seen or (_player.stats.current_health == _after_hit())
+	if _player.stats.current_health == _after_hit() and not _healing_requested:
 		var result := _player.inventory.use_item(0)
 		if result.get("success", false):
 			_healing_requested = LanSession.request_consumable_use(String(result.get("item_id", "")))
-	_healing_seen = _healing_seen or (_healing_requested and _player.stats.current_health == 85)
+	_healing_seen = _healing_seen or (_healing_requested and _player.stats.current_health == _after_hit() + 50)
 	if _healing_seen and not _consumption_restore_seen:
 		var rewards := LanSession.take_earned_rewards()
 		SaveService.deserialize_inventory(_player.inventory, {"gold": 0, "slots": [{"id": "health_potion", "qty": 1}], "equipment": {}})
@@ -206,3 +205,8 @@ func _parse_args() -> void:
 			_role = arg.trim_prefix("--role=")
 		elif arg.begins_with("--output="):
 			_output = arg.trim_prefix("--output=")
+
+
+## HP left after the host's 70-damage hit on a 100 HP client with 5 DEF (save v7 mitigation).
+func _after_hit() -> int:
+	return 100 - GemCatalog.mitigate(70, 5)

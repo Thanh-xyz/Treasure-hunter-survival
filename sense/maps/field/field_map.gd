@@ -17,7 +17,8 @@ var map_size_px: Vector2 = Vector2.ZERO
 var spawn_point: Vector2 = Vector2.ZERO
 var altar_point: Vector2 = Vector2.ZERO
 
-var _rng := RandomNumberGenerator.new()
+var _rng := RandomNumberGenerator.new()          ## seeded: same layout on every LAN peer
+var _spawn_rng := RandomNumberGenerator.new()    ## unseeded: elite rolls on the authority
 var _camps: Array[Dictionary] = []   ## {id, pos, monster, timer}
 var _boss: Monster = null
 var _boss_timer: float = 0.0
@@ -183,7 +184,7 @@ func _build_dig_spots() -> void:
 	# Source-like starter plots stay outside the monster bands so the first
 	# "Đào đất" objective can be learned safely after entering the field.
 	for offset in [Vector2(-76, -40), Vector2(-38, -40), Vector2(-76, -78), Vector2(58, -58)]:
-		_add_dig_spot(spawn_point + offset)
+		_add_dig_spot(spawn_point + offset, DigTileCatalog.starter_tile())
 	var remaining := int(cfg.get("dig_spots", 36))
 	while remaining > 0:
 		var anchor := _free_spot(54.0, 40.0)
@@ -196,8 +197,10 @@ func _build_dig_spots() -> void:
 		remaining -= cluster_size
 
 
-func _add_dig_spot(pos: Vector2) -> void:
-	var spot := DigSpot.create(int(_rng.randi()))
+func _add_dig_spot(pos: Vector2, tile_id: String = "") -> void:
+	if tile_id == "":
+		tile_id = DigTileCatalog.pick_tile(DigTileCatalog.region_for_field(zone_id), _rng)
+	var spot := DigSpot.create(int(_rng.randi()), tile_id)
 	spot.position = pos
 	add_child(spot)
 	_occupied.append(pos)
@@ -294,8 +297,17 @@ func _build_camps() -> void:
 		_spawn_camp(camp)
 
 
+func _elites_alive() -> int:
+	var count := 0
+	for camp: Dictionary in _camps:
+		var m: Variant = camp.get("monster")
+		if m != null and is_instance_valid(m) and (m as Monster).elite:
+			count += 1
+	return count
+
+
 func _spawn_camp(camp: Dictionary) -> void:
-	var elite := randf() < GameContent.ELITE_CHANCE
+	var elite := SpawnRules.roll_elite(_spawn_rng, _elites_alive())
 	var m := Monster.create(camp["id"], elite)
 	m.network_zone_id = zone_id
 	m.position = camp["pos"] + Vector2(randf_range(-16, 16), randf_range(-16, 16))

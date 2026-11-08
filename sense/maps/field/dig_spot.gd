@@ -2,14 +2,20 @@ class_name DigSpot
 extends Area2D
 ## Non-blocking field plot. Standing still on it automatically digs once,
 ## grants a weighted local reward, then leaves the plot depleted until respawn.
+## Tile type, durability, respawn range and loot table come from
+## res://data/world/dig_tiles.json via DigTileCatalog (plan phase A).
 
 const PLOT_SIZE := Vector2(38.0, 38.0)
 const START_DELAY := 0.45
+const DIG_INTERVAL := 0.7
 
-var hits_required: int = GameContent.DIG_HITS
-var dig_interval: float = GameContent.DIG_INTERVAL
-var respawn_time: float = GameContent.DIG_RESPAWN_TIME
+var tile_id: String = ""
+var hits_required: int = 3
+var dig_interval: float = DIG_INTERVAL
+var respawn_time: float = 60.0
+## Optional explicit pool (tests); empty means the tile's loot table is used.
 var reward_pool: Array = []
+var _fill_color := Color("93a171")
 
 var _rng := RandomNumberGenerator.new()
 var _player: Node2D = null
@@ -21,11 +27,23 @@ var _depleted: bool = false
 var _variant: int = 0
 
 
-static func create(seed_value: int) -> DigSpot:
+static func create(seed_value: int, tile: String = "") -> DigSpot:
 	var spot := DigSpot.new()
 	spot._rng.seed = seed_value
 	spot._variant = abs(seed_value) % 3
+	spot.configure_tile(tile if tile != "" else DigTileCatalog.starter_tile())
 	return spot
+
+
+func configure_tile(id: String) -> void:
+	var tile := DigTileCatalog.get_tile(id)
+	if tile.is_empty():
+		push_warning("DigSpot: unknown tile '%s'" % id)
+		return
+	tile_id = id
+	hits_required = maxi(int(tile.get("hits", 3)), 1)
+	respawn_time = DigTileCatalog.roll_respawn(id, _rng)
+	_fill_color = Color(String(tile.get("color", "93a171")))
 
 
 func _ready() -> void:
@@ -35,8 +53,6 @@ func _ready() -> void:
 	collision_mask = CollisionLayers.Layer.PLAYER
 	monitoring = true
 	monitorable = false
-	if reward_pool.is_empty():
-		reward_pool = GameContent.DIG_LOOT.duplicate(true)
 	var shape_node := CollisionShape2D.new()
 	var shape := RectangleShape2D.new()
 	shape.size = PLOT_SIZE - Vector2(4, 4)
@@ -91,31 +107,35 @@ func _finish_dig() -> void:
 	monitoring = false
 	var reward := _roll_reward()
 	var item_id: String = reward.get("item_id", "stone")
-	var quantity := _rng.randi_range(int(reward.get("min", 1)), int(reward.get("max", 1)))
+	var quantity: int = reward.get("quantity", 1)
 	_award_reward(_player, item_id, quantity)
 	GameEvent.ground_dug.emit(item_id, quantity)
 	RingFX.spawn(get_tree(), global_position, 18.0, Color(0.95, 0.78, 0.3), 0.3)
 	queue_redraw()
 
 
+## {"item_id", "quantity"}; the explicit pool wins over the tile's loot table.
 func _roll_reward() -> Dictionary:
-	var total := 0
-	for entry: Dictionary in reward_pool:
-		total += maxi(int(entry.get("weight", 0)), 0)
-	if total <= 0:
-		return {"item_id": "stone", "min": 1, "max": 1}
-	var roll := _rng.randi_range(1, total)
-	for entry: Dictionary in reward_pool:
-		roll -= maxi(int(entry.get("weight", 0)), 0)
-		if roll <= 0:
-			return entry
-	return reward_pool.back()
+	if not reward_pool.is_empty():
+		var entry := LootTableData.pick(reward_pool, _rng)
+		if not entry.is_empty():
+			return {"item_id": entry["item_id"], "quantity": _rng.randi_range(int(entry.get("min", 1)), int(entry.get("max", 1)))}
+	var table_id := String(DigTileCatalog.get_tile(tile_id).get("loot", ""))
+	var rolled := LootTableData.roll(table_id, _rng)
+	return rolled if not rolled.is_empty() else {"item_id": "stone", "quantity": 1}
 
 
 func _award_reward(player: Node2D, item_id: String, quantity: int) -> void:
 	if player == null or not player.has_method("get_inventory"):
 		return
 	var inventory: InventoryData = player.get_inventory()
+	if inventory != null and LootTableData.is_currency(item_id):
+		var gold := quantity if item_id == "gold" else 0
+		var diamonds := quantity if item_id == "diamonds" else 0
+		if inventory.transact([], [], gold, diamonds):
+			var label := "+%d %s" % [quantity, "Gold" if gold > 0 else "Diamond"]
+			DamageNumber.spawn(get_tree(), global_position + Vector2(0, -22), label, Color(1.0, 0.86, 0.35))
+		return
 	var item: ItemData = ItemDatabase.get_item(item_id)
 	if inventory == null or item == null:
 		return
@@ -133,6 +153,7 @@ func _restore() -> void:
 	_depleted = false
 	_hits = 0
 	_dig_timer = START_DELAY
+	respawn_time = DigTileCatalog.roll_respawn(tile_id, _rng) if tile_id != "" else respawn_time
 	monitoring = true
 	queue_redraw()
 
@@ -150,8 +171,7 @@ func _on_body_exited(body: Node2D) -> void:
 
 
 func _draw() -> void:
-	var fills := [Color("93a171"), Color("a8b0aa"), Color("765c4b")]
-	var fill: Color = fills[_variant]
+	var fill: Color = _fill_color.darkened(0.06 * _variant)
 	if _depleted:
 		fill = Color("403a32")
 	draw_colored_polygon(_plot_polygon(0.0), Color("29251f"))
@@ -160,7 +180,7 @@ func _draw() -> void:
 	for p in [Vector2(-13, -10), Vector2(11, -11), Vector2(-10, 11), Vector2(14, 8)]:
 		draw_rect(Rect2(p, Vector2(2, 2)), Color(0.2, 0.17, 0.12, 0.45), true)
 	if _hits > 0 or _depleted:
-		_draw_cracks(_hits if not _depleted else hits_required)
+		_draw_cracks(_crack_stage())
 	if _impact_time > 0.0:
 		var alpha := _impact_time / 0.22
 		for angle in range(0, 360, 45):
@@ -198,3 +218,10 @@ func _draw_cracks(stage: int) -> void:
 	if stage >= 3:
 		draw_line(Vector2(-7, -7), Vector2(-13, -4), c, 1.5)
 		draw_line(Vector2(5, -5), Vector2(12, -10), c, 1.5)
+
+
+## Crack drawing has 3 stages whatever the tile's durability.
+func _crack_stage() -> int:
+	if _depleted:
+		return 3
+	return clampi(ceili(3.0 * float(_hits) / float(hits_required)), 1, 3)

@@ -1,5 +1,8 @@
 # Phiếu 2 — NPC
 
+> Owner duyệt 2026-11-08: các tên NPC lấy từ game tham chiếu đã đổi (Tamsin, Wren, Pell, Marta);
+> hai NPC Artifact và Undead hoãn. Xem `docs/plans/BRAINSTORM_CONSOLIDATED_PLAN.md` C1.
+
 Ảnh danh mục: [img/characters.png](img/characters.png) (mỗi ô có kèm chân dung faceset để dùng trong hội thoại)
 
 ## Hiện tại trong game
@@ -72,9 +75,9 @@ Sử dụng các nhân vật trong danh mục có sẵn. Mỗi NPC cần có:
 
 "Chào người bạn trẻ! Hàng hóa của ta luôn thay đổi. Nếu tìm được thứ gì quý giá, cứ mang đến đây, ta sẵn sàng trả giá tốt!"
 
-### 4. Donx — Chuyên gia ghép đá
+### 4. Tamsin — Chuyên gia ghép đá
 
-- **Tên:** Donx (tên tham chiếu).
+- **Tên:** Tamsin (đổi từ tên tham chiếu, owner duyệt 2026-11-08).
 - **Art chọn:** Nhân vật thợ thủ công hoặc pháp sư luyện kim, có dụng cụ chế tác và đá phát sáng.
 - **Ở đâu:** Khu chế tác đá tại Hearthmoor.
 - **Tính cách:** Tỉ mỉ, bí ẩn, ít nói nhưng rất am hiểu các loại nguyên liệu.
@@ -92,9 +95,9 @@ Sử dụng các nhân vật trong danh mục có sẵn. Mỗi NPC cần có:
 
 Lưu ý: Cần phân biệt cấp đá với màu phẩm chất của trang bị. Tên màu trên là hệ thống tham chiếu theo quan sát trong game.
 
-### 5. Kai — Người quản lý nhiệm vụ mùa
+### 5. Wren — Người quản lý nhiệm vụ mùa
 
-- **Tên:** Kai.
+- **Tên:** Wren.
 - **Art chọn:** Nhân vật nam trẻ, trang phục nhà thám hiểm hoặc chiến binh, có bảng nhiệm vụ.
 - **Ở đâu:** Quảng trường Hearthmoor hoặc khu vực bảng nhiệm vụ.
 - **Tính cách:** Năng động, nhiệt tình, thích thử thách và luôn cập nhật các hoạt động mới.
@@ -109,9 +112,9 @@ Lưu ý: Cần phân biệt cấp đá với màu phẩm chất của trang bị
 
 "Một mùa mới lại bắt đầu! Những thử thách lần này sẽ không dễ dàng đâu. Hãy chứng minh khả năng của ngươi!"
 
-### 6. Mirai — Người bán hộp quà
+### 6. Pell — Người bán hộp quà
 
-- **Tên:** Mirai (tên tham chiếu, cần xác minh lại với tên Mira trong Wiki).
+- **Tên:** Pell (đổi từ tên tham chiếu, owner duyệt 2026-11-08).
 - **Art chọn:** Nhân vật nữ thương nhân, trang phục nổi bật, có hộp quà và túi kim cương.
 - **Ở đâu:** Khu thương mại Hearthmoor.
 - **Tính cách:** Thân thiện, vui vẻ, bí ẩn và thích tạo bất ngờ.
@@ -216,9 +219,9 @@ Các NPC sau được đưa vào danh sách nghiên cứu để quyết định 
 
 | NPC | Chức năng tham chiếu | Đề xuất |
 |---|---|---|
-| Diana | Đổi điểm Arena lấy vật phẩm hỗ trợ | Giữ nếu có Arena |
-| Anbe | Hệ thống Artifact | Giữ nếu có Artifact |
-| Boney | Lối vào khu Undead | Giữ nếu có khu Undead |
+| Marta | Đổi điểm Arena lấy vật phẩm hỗ trợ | Giữ nếu có Arena |
+| _(hoãn, cần tên mới)_ | Hệ thống Artifact | Hoãn: Artifact chưa có trong thiết kế |
+| _(hoãn, cần tên mới)_ | Lối vào khu Undead | Hoãn: khu Undead chưa có trong thiết kế |
 
 Đây là các NPC có tên xuất hiện trong Wiki của game tham chiếu, không phải NPC mới được xác nhận trong bản game đang phát triển.
 
@@ -245,7 +248,7 @@ Các NPC sau được đưa vào danh sách nghiên cứu để quyết định 
 - Hiển thị chi phí, tỷ lệ thành công và kết quả.
 - Mỗi Campfire có thể sử dụng cùng một hệ thống giao diện, nhưng bố trí ở các khu vực khác nhau.
 
-**Lưu ý:** Campfire là đối tượng tương tác trong thế giới game, không phải NPC. Donx là nhân vật hướng dẫn hoặc phụ trách chuyên môn ghép đá; không bắt buộc người chơi phải tìm Donx mỗi lần chế tạo.
+**Lưu ý:** Campfire là đối tượng tương tác trong thế giới game, không phải NPC. Tamsin là nhân vật hướng dẫn hoặc phụ trách chuyên môn ghép đá; không bắt buộc người chơi phải tìm Tamsin mỗi lần chế tạo.
 
 ---
 

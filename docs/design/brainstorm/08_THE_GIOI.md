@@ -292,7 +292,7 @@ Làng là khu vực chung, tập trung NPC và các hoạt động:
 - Orla: hướng dẫn và hoạt động Warden.
 - Blacksmith: trang bị.
 - Merchant: mua bán vật phẩm.
-- Donx: ép đá và hợp nhất nguyên liệu.
+- Tamsin: ép đá và hợp nhất nguyên liệu.
 - Stable Keeper: mount.
 - Pet Keeper: pet.
 - Seasonal NPC: phần thưởng và cửa hàng mùa.

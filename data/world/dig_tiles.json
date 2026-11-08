@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "comment": "Breakable ground tiles (brainstorm sheet 08 §4). Provisional balance: tune after playtests. weight = chance this tile is chosen for a plot in its region; loot weights are relative within the table.",
+  "field_regions": {"greenwood": "meadow", "frostvale": "snow"},
+  "starter_tile": "soft_soil",
+  "regions": {
+    "meadow": {"name": "Greenwood", "tiles": ["soft_soil", "forest_root", "stone_block", "ancient_ruin"]},
+    "ash": {"name": "Cinderwaste", "tiles": ["ashen_soil", "burnt_root", "volcanic_rock", "corrupted_relic"]},
+    "snow": {"name": "Frostvale", "tiles": ["frozen_soil", "ice_crystal", "frost_rock", "ancient_ice_relic"]}
+  },
+  "tiles": {
+    "soft_soil":         {"name": "Soft Soil", "weight": 45, "hits": 3, "respawn": [45, 90], "color": "93a171", "loot": "meadow_soil"},
+    "forest_root":       {"name": "Forest Root", "weight": 25, "hits": 3, "respawn": [45, 90], "color": "765c4b", "loot": "meadow_root"},
+    "stone_block":       {"name": "Stone Block", "weight": 22, "hits": 4, "respawn": [60, 120], "color": "a8b0aa", "loot": "meadow_stone"},
+    "ancient_ruin":      {"name": "Ancient Ruin", "weight": 8, "hits": 5, "respawn": [150, 240], "color": "b49a6a", "loot": "meadow_ruin"},
+    "ashen_soil":        {"name": "Ashen Soil", "weight": 45, "hits": 4, "respawn": [50, 100], "color": "7d746c", "loot": "ash_soil"},
+    "burnt_root":        {"name": "Burnt Root", "weight": 25, "hits": 4, "respawn": [50, 100], "color": "5a4034", "loot": "ash_root"},
+    "volcanic_rock":     {"name": "Volcanic Rock", "weight": 22, "hits": 5, "respawn": [70, 130], "color": "4a4048", "loot": "ash_rock"},
+    "corrupted_relic":   {"name": "Corrupted Relic", "weight": 8, "hits": 6, "respawn": [180, 270], "color": "8a5a4a", "loot": "ash_relic"},
+    "frozen_soil":       {"name": "Frozen Soil", "weight": 45, "hits": 5, "respawn": [60, 110], "color": "b9c8d4", "loot": "snow_soil"},
+    "ice_crystal":       {"name": "Ice Crystal", "weight": 25, "hits": 5, "respawn": [60, 110], "color": "9fd0e6", "loot": "snow_crystal"},
+    "frost_rock":        {"name": "Frost Rock", "weight": 22, "hits": 6, "respawn": [80, 140], "color": "8c9aa8", "loot": "snow_rock"},
+    "ancient_ice_relic": {"name": "Ancient Ice Relic", "weight": 8, "hits": 7, "respawn": [210, 300], "color": "c8b8e0", "loot": "snow_relic"}
+  }
+}

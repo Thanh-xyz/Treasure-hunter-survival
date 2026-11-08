@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "comment": "Loot tables (brainstorm sheets 05 §12, 07 §5, 08 §4.3). Entry = item_id, weight, min, max; the ids gold and diamonds grant currency. Provisional balance. Gems, summon cards and region ingredients join these tables when their items exist (plan phases B and E).",
+  "tables": {
+    "meadow_soil":  [["herb_segment", 30, 1, 2], ["stone", 25, 1, 2], ["wood", 20, 1, 2], ["health_potion", 10, 1, 1], ["gold", 15, 1, 3]],
+    "meadow_root":  [["wood", 40, 1, 3], ["herb_segment", 30, 1, 2], ["health_potion", 15, 1, 1], ["pet_treat", 15, 1, 1]],
+    "meadow_stone": [["stone", 40, 1, 3], ["iron_ore", 30, 1, 2], ["gold", 20, 2, 4], ["gold_ore", 10, 1, 1]],
+    "meadow_ruin":  [["gold", 30, 3, 6], ["ashwood_blade", 10, 1, 1], ["ironbark_helm", 10, 1, 1], ["wayfarer_coat", 10, 1, 1], ["wayfarer_boots", 10, 1, 1], ["ember_dirk", 8, 1, 1], ["power_fragment", 17, 1, 1], ["diamonds", 5, 1, 1]],
+    "ash_soil":     [["stone", 30, 1, 3], ["fire_shard", 25, 1, 2], ["gold", 25, 2, 4], ["health_potion", 20, 1, 1]],
+    "ash_root":     [["wood", 35, 1, 3], ["fire_shard", 25, 1, 2], ["bone", 25, 1, 2], ["large_health_potion", 15, 1, 1]],
+    "ash_rock":     [["iron_ore", 35, 1, 3], ["gold_ore", 25, 1, 2], ["inferno_shard", 15, 1, 1], ["gold", 25, 3, 6]],
+    "ash_relic":    [["gold", 25, 5, 9], ["ember_harness", 10, 1, 1], ["ember_visor", 10, 1, 1], ["ironbark_cleaver", 10, 1, 1], ["hellfire_shard", 10, 1, 1], ["greater_power_fragment", 25, 1, 1], ["diamonds", 10, 1, 1]],
+    "snow_soil":    [["stone", 30, 1, 3], ["frost_shard", 30, 1, 2], ["gold", 25, 3, 5], ["large_health_potion", 15, 1, 1]],
+    "snow_crystal": [["frost_shard", 45, 1, 3], ["blizzard_shard", 15, 1, 1], ["spirit_essence", 20, 1, 1], ["gold", 20, 3, 6]],
+    "snow_rock":    [["iron_ore", 30, 2, 3], ["gold_ore", 30, 1, 2], ["frost_shard", 20, 1, 2], ["gold", 20, 4, 7]],
+    "snow_relic":   [["gold", 25, 6, 12], ["ironbark_plate", 10, 1, 1], ["wayfarer_cloak", 10, 1, 1], ["ember_quiver", 10, 1, 1], ["blizzard_shard", 15, 1, 1], ["greater_power_fragment", 20, 1, 2], ["diamonds", 10, 1, 2]]
+  }
+}

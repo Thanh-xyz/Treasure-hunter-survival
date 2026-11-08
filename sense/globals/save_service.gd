@@ -9,7 +9,7 @@ extends Node
 signal saved
 signal loaded
 
-const SAVE_VERSION := 5
+const SAVE_VERSION := 6
 const SAVE_DIR := "user://saves"
 var SAVE_PATH: String = "user://saves/profile.json"  ## tests point this elsewhere
 const AUTOSAVE_INTERVAL := 60.0
@@ -19,6 +19,28 @@ var enabled: bool = true   ## tests disable autosave
 var _pending_claim: Dictionary = {}
 var _pending_claim_checkpoint: Dictionary = {}
 var _last_written_snapshot: Dictionary = {}
+## Items that couldn't be placed or recognised during a migration, kept for the player (never dropped).
+var _lost_and_found: Array = []
+## Human-readable record of what migrations changed (refunds, replacements, moves).
+var _migration_log: Array = []
+
+# --- save v6: retirement of reference-game content and legacy equipment (P0-8 / E3-E4) ---
+## Sell value refunded for each retired legacy equipment item (values from the pre-v6 ItemDatabase).
+const RETIRED_EQUIPMENT_SELL_VALUE := {
+	"wooden_sword": 25, "iron_sword": 50, "steel_sword": 150, "platinum_sword": 150, "fire_blade": 500,
+	"pirate_blade": 60, "battle_axe": 125, "dagger": 45, "war_hammer": 200, "thron_mace": 110,
+	"hunting_bow": 90, "leather_armor": 40, "chainmail": 125, "iron_armor": 200, "plate_armor": 300,
+	"leather_cap": 15, "iron_helmet": 30, "steel_helmet": 60, "wooden_shield": 25, "iron_shield": 75,
+	"kite_shield": 150, "leather_boots": 20, "iron_boots": 40, "swift_boots": 75, "silver_ring": 100,
+	"gold_ring": 175, "diamond_ring": 400, "strength_amulet": 140, "gold_necklace": 250,
+}
+## Reference-card weapons become the original starter weapons (level kept).
+const REFERENCE_WEAPON_MAP := {"th_weapon_28": "ashwood_blade", "th_weapon_29": "ironbark_cleaver", "th_weapon_30": "ember_dirk"}
+const REFERENCE_CARD_MAP := {28: "ashwood_blade", 29: "ironbark_cleaver", 30: "ember_dirk"}
+const RETIRED_QUEST_MAP := {"q305": "t01", "q306": "t02", "q307": "t03", "q308": "t04", "q310": "t05", "q311": "t06"}
+const RETIRED_MONSTER_MAP := {"turtle": "mossback", "snailu": "shroom"}
+## Gold per point of rolled reference damage above the replacement weapon's attack.
+const REFERENCE_DAMAGE_COMPENSATION := 10
 
 
 func _ready() -> void:
@@ -58,6 +80,8 @@ func build_snapshot() -> Dictionary:
 		"inventory": {},
 		"hp": -1,
 		"pending_claim": _pending_claim.duplicate(true),
+		"lost_and_found": _lost_and_found.duplicate(true),
+		"migration_log": _migration_log.duplicate(true),
 	}
 	var player := GameState.get_player()
 	if player != null:
@@ -129,6 +153,14 @@ func _write_live_snapshot() -> bool:
 	_last_written_snapshot = data.duplicate(true)
 	saved.emit()
 	return true
+
+
+func get_lost_and_found() -> Array:
+	return _lost_and_found.duplicate(true)
+
+
+func get_migration_log() -> Array:
+	return _migration_log.duplicate(true)
 
 
 func get_pending_claim() -> Dictionary:
@@ -234,7 +266,166 @@ func _migrate(data: Dictionary) -> Dictionary:
 	if v < 5:
 		# Version 5 permits exact reference-equipment instances in reward journals.
 		data["version"] = 5
+		v = 5
+	if v < 6:
+		# Version 6 retires reference-game content and legacy equipment (5-slot system).
+		_migrate_to_v6(data)
+		data["version"] = 6
 	return data
+
+
+func _migrate_to_v6(data: Dictionary) -> void:
+	var log: Array = data.get("migration_log", []) if data.get("migration_log") is Array else []
+	var lost: Array = data.get("lost_and_found", []) if data.get("lost_and_found") is Array else []
+	var inv: Variant = data.get("inventory", {})
+	if inv is Dictionary:
+		var inventory := inv as Dictionary
+		var gold := int(inventory.get("gold", 0)) if _is_integer(inventory.get("gold", 0)) else 0
+		var returned: Array = []
+		var slots: Array = inventory.get("slots", []) if inventory.get("slots") is Array else []
+		for i in range(slots.size()):
+			if slots[i] is Dictionary and not (slots[i] as Dictionary).is_empty():
+				var result := _migrate_item_entry_v6(slots[i], log, lost, returned)
+				gold += int(result["refund"])
+				slots[i] = result["entry"]
+		var new_equipment := {}
+		var raw_equipment: Variant = inventory.get("equipment", {})
+		if raw_equipment is Dictionary:
+			for slot_type: Variant in raw_equipment:
+				var entry: Variant = raw_equipment[slot_type]
+				if not entry is Dictionary:
+					continue
+				var result := _migrate_item_entry_v6(entry, log, lost, returned)
+				gold += int(result["refund"])
+				var kept: Dictionary = result["entry"]
+				if kept.is_empty():
+					continue
+				var item := ItemDatabase.get_item(str(kept["id"]))
+				if item != null and item.get_equipment_slot() == str(slot_type):
+					new_equipment[str(slot_type)] = kept
+				else:
+					returned.append(kept)
+		for entry: Dictionary in returned:
+			var placed := false
+			for i in range(slots.size()):
+				if slots[i] is Dictionary and (slots[i] as Dictionary).is_empty():
+					slots[i] = entry
+					placed = true
+					break
+			if not placed and slots.size() < InventoryData.INVENTORY_SIZE:
+				slots.append(entry)
+				placed = true
+			if not placed:
+				lost.append(entry)
+				log.append("Bag full: %s moved to Lost & Found" % entry.get("id", "?"))
+		inventory["slots"] = slots
+		inventory["equipment"] = new_equipment
+		inventory["gold"] = gold
+	var quests: Variant = data.get("quests", {})
+	if quests is Dictionary:
+		var quest_id := str((quests as Dictionary).get("main_quest_id", ""))
+		if RETIRED_QUEST_MAP.has(quest_id):
+			quests["main_quest_id"] = RETIRED_QUEST_MAP[quest_id]
+			log.append("Tutorial quest %s continues as %s" % [quest_id, RETIRED_QUEST_MAP[quest_id]])
+	var pending: Variant = data.get("pending_claim", {})
+	if pending is Dictionary and not (pending as Dictionary).is_empty():
+		var claim := pending as Dictionary
+		var source_id := str(claim.get("source_id", ""))
+		if str(claim.get("source_kind", "")) == "main" and RETIRED_QUEST_MAP.has(source_id):
+			claim["source_id"] = RETIRED_QUEST_MAP[source_id]
+			claim["claim_id"] = "main:%s" % RETIRED_QUEST_MAP[source_id]
+		if claim.get("reward") is Dictionary:
+			claim["reward"] = _migrate_reward_v6(claim["reward"], log)
+	var profile: Variant = data.get("profile", {})
+	if profile is Dictionary and (profile as Dictionary).get("boss_kills") is Dictionary:
+		var kills: Dictionary = profile["boss_kills"]
+		for old_id: String in RETIRED_MONSTER_MAP:
+			if kills.has(old_id):
+				var new_id: String = RETIRED_MONSTER_MAP[old_id]
+				kills[new_id] = int(kills.get(new_id, 0)) + int(kills[old_id])
+				kills.erase(old_id)
+	data["migration_log"] = log
+	data["lost_and_found"] = lost
+
+
+## Returns {"entry": migrated entry or {}, "refund": gold}. Augments that no longer fit are added to `returned`.
+func _migrate_item_entry_v6(entry: Dictionary, log: Array, lost: Array, returned: Array) -> Dictionary:
+	var id := str(entry.get("id", ""))
+	var qty := int(entry.get("qty", 1)) if _is_integer(entry.get("qty", 1)) else 1
+	var augments: Array = entry.get("augments", []) if entry.get("augments") is Array else []
+	if REFERENCE_WEAPON_MAP.has(id):
+		var new_id: String = REFERENCE_WEAPON_MAP[id]
+		var level := clampi(int(entry.get("level", 1)) if _is_integer(entry.get("level", 1)) else 1, 1, EquipmentBalance.max_level())
+		var migrated := {"id": new_id, "qty": 1}
+		if level > 1:
+			migrated["level"] = level
+		var refund := 0
+		var reference: Variant = entry.get("reference", {})
+		if reference is Dictionary and (reference as Dictionary).get("stats") is Dictionary:
+			var old_damage := float((reference["stats"] as Dictionary).get("damage", 0.0))
+			var template := ItemDatabase.get_item_copy(new_id)
+			if template != null:
+				template.enhancement_level = level
+				refund = maxi(0, roundi((old_damage - template.get_scaled_attack_bonus()) * REFERENCE_DAMAGE_COMPENSATION))
+		log.append("%s became %s (level %d)%s" % [id, new_id, level, (", +%d gold compensation" % refund) if refund > 0 else ""])
+		_return_augments(augments, ItemDatabase.get_item(new_id), migrated, returned, log)
+		return {"entry": migrated, "refund": refund}
+	if RETIRED_EQUIPMENT_SELL_VALUE.has(id):
+		var refund := int(RETIRED_EQUIPMENT_SELL_VALUE[id]) * maxi(qty, 1)
+		log.append("Retired %s ×%d refunded %d gold" % [id, qty, refund])
+		for augment_id: Variant in augments:
+			returned.append({"id": str(augment_id), "qty": 1})
+		return {"entry": {}, "refund": refund}
+	var item := ItemDatabase.get_item(id)
+	if item == null:
+		lost.append(entry.duplicate(true))
+		log.append("Unknown item %s moved to Lost & Found" % id)
+		return {"entry": {}, "refund": 0}
+	var kept := entry.duplicate(true)
+	if kept.has("reference"):
+		kept.erase("reference")
+		log.append("Removed reference data from %s" % id)
+	kept.erase("augments")
+	_return_augments(augments, item, kept, returned, log)
+	return {"entry": kept, "refund": 0}
+
+
+## Keeps as many augments as the item has sockets; the rest go back to the bag.
+func _return_augments(augments: Array, item: ItemData, target: Dictionary, returned: Array, log: Array) -> void:
+	var capacity := item.get_augment_slot_count() if item != null else 0
+	var kept: Array = []
+	for augment_id: Variant in augments:
+		if kept.size() < capacity:
+			kept.append(str(augment_id))
+		else:
+			returned.append({"id": str(augment_id), "qty": 1})
+			log.append("Augment %s returned to the bag" % augment_id)
+	if not kept.is_empty():
+		target["augments"] = kept
+
+
+## Reference equipment and retired items inside a journalled reward become their replacements.
+func _migrate_reward_v6(reward: Dictionary, log: Array) -> Dictionary:
+	var out := reward.duplicate(true)
+	var items: Dictionary = out.get("items", {}) if out.get("items") is Dictionary else {}
+	if out.get("equipment") is Array:
+		for entry: Variant in out["equipment"]:
+			if entry is Dictionary and _is_integer((entry as Dictionary).get("card_id", -1)):
+				var new_id: String = REFERENCE_CARD_MAP.get(int(entry["card_id"]), "")
+				if not new_id.is_empty():
+					items[new_id] = int(items.get(new_id, 0)) + 1
+					log.append("Pending reward card %d became %s" % [entry["card_id"], new_id])
+		out.erase("equipment")
+	for item_id: String in items.keys():
+		if RETIRED_EQUIPMENT_SELL_VALUE.has(item_id):
+			out["gold"] = int(out.get("gold", 0)) + int(RETIRED_EQUIPMENT_SELL_VALUE[item_id]) * int(items[item_id])
+			items.erase(item_id)
+			log.append("Pending reward %s converted to gold" % item_id)
+	if items.is_empty():
+		out.erase("items")
+	else:
+		out["items"] = items
+	return out
 
 
 func _is_valid_save_file(path: String) -> bool:
@@ -261,6 +452,9 @@ func _validate_snapshot(data: Dictionary) -> bool:
 		return false
 	if data.has("saved_at") and (not _is_number(data["saved_at"]) or float(data["saved_at"]) < 0.0):
 		return false
+	for key in ["lost_and_found", "migration_log"]:
+		if data.has(key) and not data[key] is Array:
+			return false
 	if not data.get("pending_claim", {}) is Dictionary:
 		return false
 	var quests := data.get("quests", {}) as Dictionary
@@ -461,32 +655,8 @@ func _validate_item_entry(entry: Dictionary, equipment_slot: String = "") -> boo
 		return false
 	if level > 1 and not item.has_valid_upgrade_configuration():
 		return false
-	var reference: Variant = entry.get("reference", {})
-	if not reference is Dictionary:
-		return false
-	var reference_card_id := ReferenceEquipmentCatalog.get_card_id_for_runtime_item(item.id)
-	if reference_card_id > 0 and reference.is_empty():
-		return false
-	if not reference.is_empty():
-		if not item.is_equippable():
-			return false
-		if not _is_integer(reference.get("card_id", -1)) or int(reference.get("card_id", -1)) <= 0:
-			return false
-		if not reference.get("asset_id") is String or str(reference.get("asset_id", "")).is_empty():
-			return false
-		if not reference.get("stats") is Dictionary or not ItemData.is_valid_reference_stats(reference.get("stats", {})):
-			return false
-		var source_card_id := int(reference.get("card_id", -1))
-		if reference_card_id > 0:
-			if not ReferenceEquipmentCatalog.is_valid_instance_data(
-				item.id,
-				source_card_id,
-				str(reference.get("asset_id", "")),
-				reference.get("stats", {})
-			):
-				return false
-		elif ReferenceEquipmentCatalog.has_card(source_card_id):
-			return false
+	if entry.has("reference"):
+		return false  # reference-card instance data was retired in save v6
 	var augments: Variant = entry.get("augments", [])
 	if not augments is Array or augments.size() > item.get_augment_slot_count():
 		return false
@@ -505,14 +675,7 @@ func _validate_item_entry(entry: Dictionary, equipment_slot: String = "") -> boo
 
 
 func _item_fits_slot(item: ItemData, slot_type: String) -> bool:
-	match slot_type:
-		"helmet": return item.item_type == ItemData.ItemType.HELMET
-		"armor": return item.item_type == ItemData.ItemType.ARMOR
-		"weapon": return item.item_type == ItemData.ItemType.WEAPON
-		"shield": return item.item_type == ItemData.ItemType.SHIELD
-		"boots": return item.item_type == ItemData.ItemType.BOOTS
-		"accessory_1", "accessory_2": return item.item_type == ItemData.ItemType.ACCESSORY
-		_: return false
+	return EQUIP_SLOTS.has(slot_type) and item.get_equipment_slot() == slot_type
 
 
 func _has_integer(values: Array, target: int) -> bool:
@@ -544,6 +707,8 @@ func _apply_snapshot(data: Dictionary, recover_pending: bool = false) -> void:
 	var raw_pending := data.get("pending_claim", {}) as Dictionary
 	_pending_claim = _normalize_pending_claim(raw_pending) if not raw_pending.is_empty() else {}
 	_pending_claim_checkpoint = data.duplicate(true) if not _pending_claim.is_empty() else {}
+	_lost_and_found = (data.get("lost_and_found", []) as Array).duplicate(true) if data.get("lost_and_found") is Array else []
+	_migration_log = (data.get("migration_log", []) as Array).duplicate(true) if data.get("migration_log") is Array else []
 	GameState.from_dict(data.get("profile", {}))
 	QuestService.from_dict(data.get("quests", {}))
 	var player := GameState.get_player()
@@ -566,13 +731,15 @@ func delete_save() -> void:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	discard_pending_claim()
+	_lost_and_found = []
+	_migration_log = []
 
 
 # =============================================================================
 # INVENTORY (DE)SERIALIZATION
 # =============================================================================
 
-const EQUIP_SLOTS := ["helmet", "armor", "weapon", "shield", "boots", "accessory_1", "accessory_2"]
+const EQUIP_SLOTS := InventoryData.EQUIPMENT_SLOTS
 
 
 func _item_to_dict(item: ItemData, qty: int) -> Dictionary:
@@ -581,12 +748,6 @@ func _item_to_dict(item: ItemData, qty: int) -> Dictionary:
 		d["level"] = item.enhancement_level
 	if not item.applied_augments.is_empty():
 		d["augments"] = item.applied_augments.duplicate()
-	if item.has_reference_instance_data():
-		d["reference"] = {
-			"card_id": item.source_card_id,
-			"asset_id": item.source_asset_id,
-			"stats": item.get_reference_stats(),
-		}
 	return d
 
 
@@ -594,8 +755,7 @@ func _item_from_dict(d: Dictionary) -> ItemData:
 	var id := str(d.get("id", ""))
 	var augments: Array = d.get("augments", [])
 	var level := int(d.get("level", 1))
-	var reference: Dictionary = d.get("reference", {})
-	if augments.is_empty() and level == 1 and reference.is_empty():
+	if augments.is_empty() and level == 1:
 		return ItemDatabase.get_item(id)
 	var item: ItemData = ItemDatabase.get_item_copy(id)
 	if item != null:
@@ -603,12 +763,6 @@ func _item_from_dict(d: Dictionary) -> ItemData:
 		item.applied_augments.clear()
 		for a in augments:
 			item.applied_augments.append(str(a))
-		if not reference.is_empty():
-			item.set_reference_instance_data(
-				int(reference.get("card_id", -1)),
-				str(reference.get("asset_id", "")),
-				reference.get("stats", {})
-			)
 	return item
 
 

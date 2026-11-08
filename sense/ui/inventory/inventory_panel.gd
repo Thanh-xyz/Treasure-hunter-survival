@@ -250,11 +250,12 @@ func _setup_equipment_slots() -> void:
 		"helmet": helmet_slot,
 		"weapon": weapon_slot,
 		"armor": armor_slot,
-		"shield": shield_slot,
 		"boots": boots_slot,
-		"accessory_1": accessory1_slot,
-		"accessory_2": accessory2_slot
+		# The legacy scene's shield placeholder hosts the Back slot; accessory slots were retired (save v6).
+		"back": shield_slot,
 	}
+	accessory1_slot.visible = false
+	accessory2_slot.visible = false
 	
 	# Replace Panel placeholders with InventorySlotUI nodes
 	for slot_type in slot_mapping:
@@ -512,21 +513,7 @@ func _item_fits_slot(check_item: ItemData, check_slot_type: String) -> bool:
 	if check_item == null:
 		return true
 	
-	match check_slot_type:
-		"helmet":
-			return check_item.item_type == ItemData.ItemType.HELMET
-		"armor":
-			return check_item.item_type == ItemData.ItemType.ARMOR
-		"weapon":
-			return check_item.item_type == ItemData.ItemType.WEAPON
-		"shield":
-			return check_item.item_type == ItemData.ItemType.SHIELD
-		"boots":
-			return check_item.item_type == ItemData.ItemType.BOOTS
-		"accessory_1", "accessory_2":
-			return check_item.item_type == ItemData.ItemType.ACCESSORY
-		_:
-			return false
+	return check_item.get_equipment_slot() == check_slot_type
 
 
 func _on_inventory_slot_right_clicked(index: int) -> void:
@@ -659,8 +646,7 @@ func _get_item_type_string(type: ItemData.ItemType) -> String:
 		ItemData.ItemType.ARMOR: return "Armor"
 		ItemData.ItemType.HELMET: return "Helmet"
 		ItemData.ItemType.BOOTS: return "Boots"
-		ItemData.ItemType.SHIELD: return "Shield"
-		ItemData.ItemType.ACCESSORY: return "Accessory"
+		ItemData.ItemType.BACK: return "Back"
 		ItemData.ItemType.CONSUMABLE: return "Consumable"
 		ItemData.ItemType.MATERIAL: return "Material"
 		ItemData.ItemType.QUEST: return "Quest Item"
@@ -673,13 +659,13 @@ func _get_item_stats_string(item: ItemData) -> String:
 	var stats := []
 	if item.is_equippable() and item.can_upgrade:
 		stats.append("Level %d / %d" % [item.enhancement_level, item.max_upgrade_level])
-	if item.attack_bonus > 0:
+	if item.get_scaled_attack_bonus() > 0:
 		stats.append("⚔️ +%d ATK" % item.get_scaled_attack_bonus())
-	if item.defense_bonus > 0:
+	if item.get_scaled_defense_bonus() > 0:
 		stats.append("🛡️ +%d DEF" % item.get_scaled_defense_bonus())
-	if item.health_bonus > 0:
+	if item.get_scaled_health_bonus() > 0:
 		stats.append("❤️ +%d HP" % item.get_scaled_health_bonus())
-	if item.speed_bonus > 0:
+	if item.get_scaled_speed_bonus() > 0:
 		stats.append("👟 +%.1f SPD" % item.get_scaled_speed_bonus())
 	if item.heal_amount > 0:
 		stats.append("💚 Heals %d HP" % item.heal_amount)

@@ -88,14 +88,14 @@ func _update_stats() -> void:
 		return
 
 	var parts: Array[String] = []
-	if equipment_item.attack_bonus > 0:
-		parts.append("ATK: %d" % equipment_item.attack_bonus)
-	if equipment_item.defense_bonus > 0:
-		parts.append("DEF: %d" % equipment_item.defense_bonus)
-	if equipment_item.health_bonus > 0:
-		parts.append("HP: %d" % equipment_item.health_bonus)
-	if equipment_item.speed_bonus > 0:
-		parts.append("SPD: %.0f" % equipment_item.speed_bonus)
+	if equipment_item.get_scaled_attack_bonus() > 0:
+		parts.append("ATK: %d" % equipment_item.get_scaled_attack_bonus())
+	if equipment_item.get_scaled_defense_bonus() > 0:
+		parts.append("DEF: %d" % equipment_item.get_scaled_defense_bonus())
+	if equipment_item.get_scaled_health_bonus() > 0:
+		parts.append("HP: %d" % equipment_item.get_scaled_health_bonus())
+	if equipment_item.get_scaled_speed_bonus() > 0:
+		parts.append("SPD: %.0f" % equipment_item.get_scaled_speed_bonus())
 	stats_label.text = "  ".join(parts) if parts.size() > 0 else "No base stats"
 
 

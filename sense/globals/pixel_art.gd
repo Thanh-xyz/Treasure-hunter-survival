@@ -309,6 +309,19 @@ const SPRITES := {
 		"..#dd#.#dd#.#dd#....",
 		"...##...##...##.....",
 	],
+	# Mossback Tortoise (Normal zone guard, original). ArtPalette colours.
+	"mossback": [
+		"......oooooooo......",
+		"....oovvvVvvvvoo....",
+		"...ovvVvvgvvVvvvo...",
+		"..ovgvvvvvvvgvvvvo..",
+		"..ovvvgvvVvvvvgvvo..",
+		".onvvvvvvvvvvvvvvno.",
+		"onggggggggggggggnoTo",
+		".onnnnnnnnnnnnnnnno.",
+		"oTTo.oTTo..oTTo.oTTo",
+		"oooo.oooo..oooo.oooo",
+	],
 	"mushroom": [
 		"....########....",
 		"..##rrrwwrrr##..",
@@ -614,6 +627,7 @@ const PALETTES := {
 		"#": Color("1b1420"), "b": Color("8a5a3c"), "h": Color("b98563"), "d": Color("4f2f22"),
 		"w": Color("f4f1e8"), "k": Color("1b1420"),
 	},
+	"mossback": {"o": Color("14101a"), "v": Color("5ea04f"), "V": Color("a3d16b"), "g": Color("356b3c"), "n": Color("6a4426"), "T": Color("9b6a3c")},
 	"mushroom": {
 		"#": Color("1b1420"), "r": Color("c8413c"), "w": Color("f4f1e8"), "b": Color("e8d7b0"),
 		"d": Color("b39a6e"), "k": Color("1b1420"),

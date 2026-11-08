@@ -1,99 +1,47 @@
 class_name RewardBoxCatalog
 extends RefCounted
 
-## Evidence-backed Treasure Hunter reward boxes that do not depend on unmapped items.
-## Numeric keys preserve the source Box.json IDs for later quest/content migration.
+## Original Cinderwild reward tables, keyed by stable string IDs. Quest rows name a table with
+## `reward_table`; the roll is materialized into the pending-claim journal before it is granted.
+## (Replaces the reference game's numeric box IDs, retired in save v6.)
 
-const _BOXES := {
-	98: [
+const _TABLES := {
+	"starter_weapon": [
+		{"weight": 1, "reward": {"items": {"ashwood_blade": 1}}},
+		{"weight": 1, "reward": {"items": {"ironbark_cleaver": 1}}},
+		{"weight": 1, "reward": {"items": {"ember_dirk": 1}}},
+	],
+	"diamond_1": [
 		{"weight": 100, "reward": {"diamonds": 1}},
 	],
-	150: [
-		{"weight": 100, "reward": {"gold": 100}},
+	"mossback_bounty": [
+		{"weight": 100, "reward": {"gold": 30, "diamonds": 1}},
 	],
-	151: [
+	"gold_200": [
 		{"weight": 100, "reward": {"gold": 200}},
 	],
-	152: [
-		{"weight": 100, "reward": {"gold": 300}},
-	],
-}
-
-## Equipment boxes keep selection separate from materialization. Verified local
-## generators may act as the offline/host authority for a specific box and rarity.
-const _EQUIPMENT_BOXES := {
-	149: [
-		{"weight": 34, "card_id": 28},
-		{"weight": 33, "card_id": 29},
-		{"weight": 33, "card_id": 30},
+	"smith_kit": [
+		{"weight": 100, "reward": {"gold": 50, "items": {"health_potion": 2}}},
 	],
 }
 
 
-static func has_box(box_id: int) -> bool:
-	return _BOXES.has(box_id)
+static func has_table(table_id: String) -> bool:
+	return _TABLES.has(table_id)
 
 
-static func get_entries(box_id: int) -> Array[Dictionary]:
+static func table_ids() -> Array:
+	return _TABLES.keys()
+
+
+static func get_entries(table_id: String) -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
-	if not _BOXES.has(box_id):
+	if not _TABLES.has(table_id):
 		return entries
-	for value: Variant in _BOXES[box_id]:
+	for value: Variant in _TABLES[table_id]:
 		entries.append((value as Dictionary).duplicate(true))
 	return entries
 
 
-static func resolve(box_id: int, rng: RandomNumberGenerator) -> Dictionary:
-	return RewardBoxResolver.resolve(get_entries(box_id), rng)
-
-
-static func has_equipment_box(box_id: int) -> bool:
-	return _EQUIPMENT_BOXES.has(box_id)
-
-
-static func get_equipment_options(box_id: int) -> Array[Dictionary]:
-	var options: Array[Dictionary] = []
-	if not _EQUIPMENT_BOXES.has(box_id):
-		return options
-	for value: Variant in _EQUIPMENT_BOXES[box_id]:
-		options.append((value as Dictionary).duplicate(true))
-	return options
-
-
-static func select_equipment(box_id: int, rng: RandomNumberGenerator) -> Dictionary:
-	var selection := ReferenceEquipmentRewardResolver.select(get_equipment_options(box_id), rng)
-	if selection.is_empty():
-		return {}
-	selection["box_id"] = box_id
-	return selection
-
-
-static func select_equipment_roll(box_id: int, roll: int) -> Dictionary:
-	var selection := ReferenceEquipmentRewardResolver.select_roll(get_equipment_options(box_id), roll)
-	if selection.is_empty():
-		return {}
-	selection["box_id"] = box_id
-	return selection
-
-
-static func finalize_equipment_reward(selection: Dictionary, stats: Dictionary) -> Dictionary:
-	if selection.size() != 3 or not selection.get("box_id") is int:
-		return {}
-	var box_id := int(selection["box_id"])
-	var resolver_selection := selection.duplicate(true)
-	resolver_selection.erase("box_id")
-	return ReferenceEquipmentRewardResolver.finalize(
-		get_equipment_options(box_id),
-		resolver_selection,
-		stats,
-	)
-
-
-static func resolve_common_equipment(box_id: int, rng: RandomNumberGenerator) -> Dictionary:
-	var selection := select_equipment(box_id, rng)
-	if selection.is_empty():
-		return {}
-	var stats := ReferenceEquipmentStatGenerator.generate_common(int(selection["card_id"]), rng)
-	if stats.is_empty():
-		return {}
-	return finalize_equipment_reward(selection, stats)
+static func resolve(table_id: String, rng: RandomNumberGenerator) -> Dictionary:
+	return RewardBoxResolver.resolve(get_entries(table_id), rng)

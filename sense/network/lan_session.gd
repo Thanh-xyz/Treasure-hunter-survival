@@ -9,7 +9,7 @@ signal host_zone_requested(zone_id: String)
 
 const PORT := 24567
 const MAX_CLIENTS := 3
-const PROTOCOL_VERSION := 5
+const PROTOCOL_VERSION := 6  # v6: 5-slot equipment, retired reference items/monsters (save v6)
 const SEND_INTERVAL := 0.05
 const ZONE_INTERVAL := 1.0
 const ENEMY_SEND_INTERVAL := 0.10

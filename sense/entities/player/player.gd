@@ -827,13 +827,13 @@ func _add_starter_items() -> void:
 	if health_potion:
 		inventory.add_item(health_potion, 5)
 	
-	var iron_sword := ItemDatabase.get_item("iron_sword")
-	if iron_sword:
-		inventory.add_item(iron_sword, 1)
-	
-	var leather_armor := ItemDatabase.get_item("leather_armor")
-	if leather_armor:
-		inventory.add_item(leather_armor, 1)
+	var starter_weapon := ItemDatabase.get_item("ashwood_blade")
+	if starter_weapon:
+		inventory.add_item(starter_weapon, 1)
+
+	var starter_armor := ItemDatabase.get_item("wayfarer_coat")
+	if starter_armor:
+		inventory.add_item(starter_armor, 1)
 	
 	var iron_ore := ItemDatabase.get_item("iron_ore")
 	if iron_ore:
@@ -845,9 +845,9 @@ func _add_starter_items() -> void:
 
 	# --- Skill demo items ---
 	# Rare weapon with 2 augment slots + Whirlwind Rune + Shield Bash Rune
-	var fire_blade := ItemDatabase.get_item("fire_blade")
-	if fire_blade:
-		inventory.add_item(fire_blade, 1)
+	var rune_blade := ItemDatabase.get_item("emberforged_blade")
+	if rune_blade:
+		inventory.add_item(rune_blade, 1)
 
 	var whirlwind_rune := ItemDatabase.get_item("whirlwind_augment")
 	if whirlwind_rune:

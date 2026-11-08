@@ -41,9 +41,9 @@ func _test_phase1() -> void:
 	assert(tonic.is_consumable())
 	
 	# Test augment slots by rarity
-	var common_sword = ItemDatabase.get_item("iron_sword")
+	var common_sword = ItemDatabase.get_item("ashwood_blade")
 	assert(common_sword.get_augment_slot_count() == 0, "Common = 0 slots")
-	var rare_blade = ItemDatabase.get_item("fire_blade")
+	var rare_blade = ItemDatabase.get_item("emberforged_blade")
 	assert(rare_blade.get_augment_slot_count() == 2, "Rare = 2 slots")
 	
 	# Test recipe database
@@ -181,7 +181,7 @@ func _test_phase3() -> void:
 	var inv := InventoryData.new()
 
 	# Give the player a Rare weapon (2 augment slots) by equipping it
-	var fire_blade := ItemDatabase.get_item("fire_blade")
+	var fire_blade := ItemDatabase.get_item("emberforged_blade")
 	assert(fire_blade != null, "fire_blade should exist in ItemDatabase")
 	assert(fire_blade.get_augment_slot_count() == 2, "Rare weapon = 2 augment slots")
 	inv.add_item(fire_blade, 1)
@@ -219,12 +219,12 @@ func _test_phase3() -> void:
 	assert(not inv.equipped_weapon.is_augmentable(), "Weapon should be full (not augmentable)")
 
 	# Stat bonuses should include augments
-	# fire_blade base attack + flame_augment_t1 attack (5) + power_augment_t1 attack (8)
+	# weapon attack (equipment formula) + flame_augment_t1 attack (5) + power_augment_t1 attack (8)
 	var total_atk := inv.get_total_attack_bonus()
-	var expected_atk := fire_blade.attack_bonus + flame_aug.attack_bonus + power_aug.attack_bonus
+	var expected_atk := fire_blade.get_scaled_attack_bonus() + flame_aug.attack_bonus + power_aug.attack_bonus
 	assert(total_atk == expected_atk,
 		"Total ATK = weapon base (%d) + flame aug (%d) + power aug (%d) = %d, got %d" %
-		[fire_blade.attack_bonus, flame_aug.attack_bonus, power_aug.attack_bonus, expected_atk, total_atk])
+		[fire_blade.get_scaled_attack_bonus(), flame_aug.attack_bonus, power_aug.attack_bonus, expected_atk, total_atk])
 
 	# Passive effects from augments
 	var passives := inv.get_all_augment_passive_effects()
@@ -247,7 +247,7 @@ func _test_phase3() -> void:
 
 	# ── Rarity gating: Common has 0 slots ──
 	var inv2 := InventoryData.new()
-	var iron_sword := ItemDatabase.get_item("iron_sword")
+	var iron_sword := ItemDatabase.get_item("ashwood_blade")
 	assert(iron_sword.get_augment_slot_count() == 0, "Common = 0 slots")
 	inv2.add_item(iron_sword, 1)
 	inv2.equip_item(0)
@@ -466,7 +466,7 @@ func _test_phase4() -> void:
 
 	# ── use_item on non-consumable returns failure ──
 	var inv4 := InventoryData.new()
-	inv4.add_item(ItemDatabase.get_item("iron_sword"), 1)
+	inv4.add_item(ItemDatabase.get_item("ashwood_blade"), 1)
 	var fail_result := inv4.use_item(0)
 	assert(fail_result.success == false, "Cannot use non-consumable")
 
@@ -481,8 +481,8 @@ func _test_phase5() -> void:
 	# ── Inventory: equip Rare weapon + apply whirlwind augment ──
 	var inv := InventoryData.new()
 
-	# fire_blade is Rare (2 augment slots)
-	var fire_blade := ItemDatabase.get_item("fire_blade")
+	# emberforged_blade is Rare (2 augment slots)
+	var fire_blade := ItemDatabase.get_item("emberforged_blade")
 	inv.add_item(fire_blade, 1)
 	inv.equip_item(0)
 	assert(inv.equipped_weapon != null, "Weapon equipped")
@@ -629,7 +629,7 @@ func _test_phase5() -> void:
 	# PassiveEffectProcessor: aggregation from augmented equipment
 	# ══════════════════════════════════════════════════════════════
 	var inv3 := InventoryData.new()
-	var fire_blade2 := ItemDatabase.get_item("fire_blade")
+	var fire_blade2 := ItemDatabase.get_item("emberforged_blade")
 	inv3.add_item(fire_blade2, 1)
 	inv3.equip_item(0)
 
@@ -660,7 +660,7 @@ func _test_phase5() -> void:
 	# ── Multiple skills from different equipment slots ──
 	var inv4 := InventoryData.new()
 	# Equip fire_blade (Rare, 2 slots) in weapon
-	inv4.add_item(ItemDatabase.get_item("fire_blade"), 1)
+	inv4.add_item(ItemDatabase.get_item("emberforged_blade"), 1)
 	inv4.equip_item(0)
 
 	# Apply whirlwind augment to weapon
@@ -726,7 +726,7 @@ func _test_phase6() -> void:
 	table.gold_range = Vector2i(5, 15)
 	table.add_entry("bone", 100, 1, 3)
 	table.add_entry("health_potion", 30, 1, 1)
-	table.add_entry("iron_sword", 5, 1, 1)
+	table.add_entry("ashwood_blade", 5, 1, 1)
 	table.add_entry("herb_segment", 18, 1, 2)
 	table.add_entry("fire_shard", 15, 1, 2)
 	table.add_entry("frost_shard", 15, 1, 2)
@@ -868,7 +868,7 @@ func _test_phase6() -> void:
 
 	# Verify augment slot tooltip data for equipped items
 	var inv := InventoryData.new()
-	var fire_blade := ItemDatabase.get_item("fire_blade")
+	var fire_blade := ItemDatabase.get_item("emberforged_blade")
 	inv.add_item(fire_blade, 1)
 	inv.equip_item(0)
 	assert(inv.equipped_weapon != null, "Weapon equipped")
@@ -1020,7 +1020,7 @@ func _test_phase7() -> void:
 	var blocked_inv := InventoryData.new()
 	blocked_inv.add_item(fire_shard, 4)
 	blocked_inv.add_item(iron_ore, 3)
-	blocked_inv.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE - 2)
+	blocked_inv.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE - 2)
 	cp.player_inventory = blocked_inv
 	assert(not cp._execute_craft(), "Craft fails when output cannot fit")
 	assert(blocked_inv.get_item_count("fire_shard") == 4, "Failed craft preserves fire shards")
@@ -1043,7 +1043,7 @@ func _test_phase7() -> void:
 
 	# Setup: inventory with equipped rare weapon + augment item
 	var aug_inv := InventoryData.new()
-	var rare_weapon := ItemDatabase.get_item("fire_blade")
+	var rare_weapon := ItemDatabase.get_item("emberforged_blade")
 	aug_inv.add_item(rare_weapon, 1)
 	aug_inv.equip_item(0)
 	assert(aug_inv.equipped_weapon != null, "Weapon equipped for augment test")

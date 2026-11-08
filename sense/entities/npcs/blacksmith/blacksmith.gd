@@ -12,9 +12,8 @@ var shop_categories: Array[ItemData.ItemType] = [
 	ItemData.ItemType.WEAPON,
 	ItemData.ItemType.ARMOR,
 	ItemData.ItemType.HELMET,
-	ItemData.ItemType.SHIELD,
 	ItemData.ItemType.BOOTS,
-	ItemData.ItemType.ACCESSORY
+	ItemData.ItemType.BACK
 ]
 
 func _ready() -> void:

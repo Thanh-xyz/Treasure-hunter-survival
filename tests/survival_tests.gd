@@ -68,8 +68,7 @@ func run_all() -> bool:
 	await _test_resource_node_overflow()
 	_test_save_roundtrip()
 	await _test_monster_kill()
-	await _test_turtle_runtime()
-	await _test_snailu_runtime()
+	await _test_mossback_runtime()
 	await _test_menu_keeps_world_running()
 	await _test_auto_farm_toggle()
 	_test_combat_roll()
@@ -90,7 +89,7 @@ func run_all() -> bool:
 
 
 func _test_pixel_art() -> void:
-	for key in ["slime", "bat", "boar", "mushroom", "mosquito", "snail", "field_stump", "hud_helmet", "hud_heart", "hud_sword", "hud_boot", "hud_world", "hud_coin", "pet_fox", "pet_turtle", "pet_owl", "pet_cat", "mount_pony", "mount_stag", "mount_boar", "mount_tortoise", "altar", "bolt"]:
+	for key in ["slime", "bat", "boar", "mushroom", "mosquito", "snail", "mossback", "field_stump", "hud_helmet", "hud_heart", "hud_sword", "hud_boot", "hud_world", "hud_coin", "pet_fox", "pet_turtle", "pet_owl", "pet_cat", "mount_pony", "mount_stag", "mount_boar", "mount_tortoise", "altar", "bolt"]:
 		var tex := PixelArt.get_texture(key)
 		_check(tex != null and tex.get_width() > 4 and tex.get_height() > 4, "pixel art %s builds" % key)
 	_check(PixelArt.get_texture("slime", "slime_king") != PixelArt.get_texture("slime"), "palette variants are distinct textures")
@@ -123,7 +122,7 @@ func _test_inventory_transactions() -> void:
 	var output := ItemDatabase.get_item_copy("flame_augment_t1")
 	inv.add_item(fire_shard, 4)
 	inv.add_item(iron_ore, 3)
-	inv.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE - 2)
+	inv.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE - 2)
 	var removals: Array[Dictionary] = [
 		{"item": fire_shard, "quantity": 3},
 		{"item": iron_ore, "quantity": 2},
@@ -212,7 +211,7 @@ func _test_buildings() -> void:
 
 	# A full bag must not discard stored production or reset its timer.
 	var full_inv := InventoryData.new()
-	full_inv.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	full_inv.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE)
 	_stub_player.inventory = full_inv
 	GameState.plots[2] = {
 		"id": "lumber_mill",
@@ -232,7 +231,7 @@ func _test_buildings() -> void:
 	upgrade_inv.gold = 500
 	upgrade_inv.add_item(ItemDatabase.get_item("wood"), 999)
 	upgrade_inv.add_item(ItemDatabase.get_item("stone"), 20)
-	upgrade_inv.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE - 2)
+	upgrade_inv.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE - 2)
 	_stub_player.inventory = upgrade_inv
 	GameState.plots[0] = {
 		"id": "lumber_mill",
@@ -257,92 +256,97 @@ func _test_quests() -> void:
 	var q := QuestService.get_main_quest()
 	_check(q["id"] == "q01", "first main quest is q01")
 	_check(int(q["obj"]["count"]) == 1, "active dig tutorial does not match the runtime 0/1 objective")
-	_check(q["reward"] == {"gold": 100}, "active dig tutorial reward does not match box 150")
+	_check(q["reward"] == {"gold": 100}, "first dig quest reward drifted")
 	var q01_xp_before: int = GameState.xp
 	var q01_gold_before: int = int(_stub_player.inventory.gold)
 	GameEvent.ground_dug.emit("stone", 1)
 	_check(QuestService.main_ready, "dig objective completes")
 	_check(QuestService.claim("q01"), "claim q01")
-	_check(GameState.xp == q01_xp_before, "q01 granted XP absent from box 150")
+	_check(GameState.xp == q01_xp_before, "q01 granted unexpected XP")
 	_check(_stub_player.inventory.gold == q01_gold_before + 100, "q01 did not grant exactly 100 gold")
-	_check(QuestService.get_main_quest()["id"] == "q305", "q01 did not advance to source quest 305")
+	var inv: InventoryData = _stub_player.inventory
+	_check(QuestService.get_main_quest()["id"] == "t01", "q01 did not advance to tutorial t01")
 	for i in range(9):
 		GameEvent.ground_dug.emit("stone", 1)
-	_check(QuestService.main_progress == 9 and not QuestService.main_ready, "q305 completed before ten digs")
+	_check(QuestService.main_progress == 9 and not QuestService.main_ready, "t01 completed before ten digs")
 	GameEvent.ground_dug.emit("stone", 1)
-	_check(QuestService.main_ready, "ten digs did not complete q305")
-	var q305_rng := RandomNumberGenerator.new()
-	q305_rng.seed = 305
-	QuestService.set_reward_authority_rng(q305_rng)
-	_check(QuestService.claim("q305"), "claim q305")
-	_check(QuestService.get_main_quest()["id"] == "q306", "q305 did not advance to q306")
+	_check(QuestService.main_ready, "ten digs did not complete t01")
+	var t01_rng := RandomNumberGenerator.new()
+	t01_rng.seed = 305
+	QuestService.set_reward_authority_rng(t01_rng)
+	_check(QuestService.claim("t01"), "claim t01")
+	_check(QuestService.get_main_quest()["id"] == "t02", "t01 did not advance to t02")
 	_check(
-		_stub_player.inventory.get_item_count("th_weapon_28")
-		+ _stub_player.inventory.get_item_count("th_weapon_29")
-		+ _stub_player.inventory.get_item_count("th_weapon_30") == 1,
-		"q305 did not grant exactly one Box 149 weapon",
+		inv.get_item_count("ashwood_blade") + inv.get_item_count("ironbark_cleaver") + inv.get_item_count("ember_dirk") == 1,
+		"t01 did not grant exactly one starter weapon",
 	)
 	GameEvent.enemy_killed.emit("slime", Vector2.ZERO, false)
-	_check(QuestService.main_progress == 0 and not QuestService.main_ready, "wrong monster completed q306")
-	GameEvent.enemy_killed.emit("turtle", Vector2.ZERO, false)
-	_check(QuestService.main_progress == 1 and QuestService.main_ready, "Turtle kill did not complete q306")
-	_stub_player.inventory._set_equipped("weapon", ItemDatabase.get_item_copy("iron_sword"))
-	_stub_player.inventory._set_equipped("helmet", ItemDatabase.get_item_copy("iron_helmet"))
-	var diamonds_before: int = _stub_player.inventory.diamonds
-	_check(QuestService.claim("q306"), "claim q306")
-	_check(_stub_player.inventory.diamonds == diamonds_before + 1, "q306 did not grant exactly one Diamond")
-	_check(QuestService.get_main_quest()["id"] == "q307", "q306 did not advance to q307")
-	_check(QuestService.main_progress == 2 and not QuestService.main_ready, "q307 ignored the two equipped items on activation")
-	_check(not QuestService.claim("q306") and _stub_player.inventory.diamonds == diamonds_before + 1, "q306 granted twice")
-	_stub_player.inventory._set_equipped("armor", ItemDatabase.get_item_copy("leather_armor"))
-	QuestService.refresh_state_objectives(_stub_player.inventory)
-	_check(QuestService.main_progress == 3 and QuestService.main_ready, "third equipped item did not complete q307")
-	var q307_diamonds_before: int = _stub_player.inventory.diamonds
-	_check(QuestService.claim("q307"), "claim q307")
-	_check(_stub_player.inventory.diamonds == q307_diamonds_before + 1, "q307 did not grant exactly one Diamond")
-	_check(QuestService.get_main_quest()["id"] == "q308", "q307 did not advance to q308")
-	_check(QuestService.main_progress == 0 and not QuestService.main_ready, "level-1 equipment completed q308")
-	_check(not QuestService.claim("q307") and _stub_player.inventory.diamonds == q307_diamonds_before + 1, "q307 granted twice")
-	var q308_upgrade_cost: int = _stub_player.inventory.get_equipped("weapon").get_upgrade_cost()
-	var gold_before_upgrade: int = _stub_player.inventory.gold
-	_check(_stub_player.inventory.upgrade_equipment("weapon"), "authoritative equipment upgrade failed for q308")
-	_check(_stub_player.inventory.get_equipped("weapon").enhancement_level == 2, "q308 upgrade did not reach displayed level 2")
-	_check(_stub_player.inventory.gold == gold_before_upgrade - q308_upgrade_cost, "q308 setup upgrade charged the wrong Gold")
-	QuestService.refresh_state_objectives(_stub_player.inventory)
-	_check(QuestService.main_progress == 1 and QuestService.main_ready, "level-2 equipment did not complete q308")
-	var q308_gold_before: int = _stub_player.inventory.gold
-	_check(QuestService.claim("q308"), "claim q308")
-	_check(_stub_player.inventory.gold == q308_gold_before + 200, "q308 did not grant exactly 200 Gold")
-	_check(QuestService.get_main_quest()["id"] == "q310", "q308 did not advance to q310")
-	_check(not QuestService.claim("q308") and _stub_player.inventory.gold == q308_gold_before + 200, "q308 granted twice")
+	_check(QuestService.main_progress == 0 and not QuestService.main_ready, "wrong monster completed t02")
+	GameEvent.enemy_killed.emit("mossback", Vector2.ZERO, false)
+	_check(QuestService.main_progress == 1 and QuestService.main_ready, "Mossback kill did not complete t02")
+	inv._set_equipped("weapon", ItemDatabase.get_item_copy("ashwood_blade"))
+	inv._set_equipped("helmet", ItemDatabase.get_item_copy("ironbark_helm"))
+	var diamonds_before: int = inv.diamonds
+	var gold_before_t02: int = inv.gold
+	_check(QuestService.claim("t02"), "claim t02")
+	_check(inv.diamonds == diamonds_before + 1 and inv.gold == gold_before_t02 + 30, "t02 bounty was not 30 gold + 1 diamond")
+	_check(QuestService.get_main_quest()["id"] == "t03", "t02 did not advance to t03")
+	_check(QuestService.main_progress == 2 and not QuestService.main_ready, "t03 ignored the two equipped items on activation")
+	_check(not QuestService.claim("t02") and inv.diamonds == diamonds_before + 1, "t02 granted twice")
+	inv._set_equipped("armor", ItemDatabase.get_item_copy("wayfarer_coat"))
+	QuestService.refresh_state_objectives(inv)
+	_check(QuestService.main_progress == 3 and QuestService.main_ready, "third equipped item did not complete t03")
+	var t03_diamonds_before: int = inv.diamonds
+	_check(QuestService.claim("t03"), "claim t03")
+	_check(inv.diamonds == t03_diamonds_before + 1, "t03 did not grant exactly one diamond")
+	_check(QuestService.get_main_quest()["id"] == "t04", "t03 did not advance to t04")
+	_check(QuestService.main_progress == 0 and not QuestService.main_ready, "level-1 equipment completed t04")
+	var upgrade_cost: int = inv.get_equipped("weapon").get_upgrade_cost()
+	inv.gold += upgrade_cost
+	var gold_before_upgrade: int = inv.gold
+	_check(inv.upgrade_equipment("weapon"), "authoritative equipment upgrade failed for t04")
+	_check(inv.get_equipped("weapon").enhancement_level == 2, "t04 upgrade did not reach level 2")
+	_check(inv.gold == gold_before_upgrade - upgrade_cost, "t04 setup upgrade charged the wrong gold")
+	QuestService.refresh_state_objectives(inv)
+	_check(QuestService.main_progress == 1 and QuestService.main_ready, "level-2 equipment did not complete t04")
+	var t04_gold_before: int = inv.gold
+	_check(QuestService.claim("t04"), "claim t04")
+	_check(inv.gold == t04_gold_before + 200, "t04 did not grant exactly 200 gold")
+	_check(QuestService.get_main_quest()["id"] == "t05", "t04 did not advance to t05")
+	GameEvent.enemy_killed.emit("slime", Vector2.ZERO, false)
+	_check(QuestService.main_progress == 0, "wrong monster advanced t05")
 	GameEvent.enemy_killed.emit("shroom", Vector2.ZERO, false)
-	_check(QuestService.main_progress == 0 and not QuestService.main_ready, "legacy shroom kill completed q310")
-	GameEvent.enemy_killed.emit("snailu", Vector2.ZERO, false)
-	GameEvent.enemy_killed.emit("snailu", Vector2.ZERO, false)
-	_check(QuestService.main_progress == 2 and not QuestService.main_ready, "q310 completed before three Snailu kills")
-	GameEvent.enemy_killed.emit("snailu", Vector2.ZERO, false)
-	_check(QuestService.main_progress == 3 and QuestService.main_ready, "three Snailu kills did not complete q310")
-	var q310_diamonds_before: int = _stub_player.inventory.diamonds
-	_check(QuestService.claim("q310"), "claim q310")
-	_check(_stub_player.inventory.diamonds == q310_diamonds_before + 1, "q310 did not grant exactly one Diamond")
-	_check(QuestService.get_main_quest()["id"] == "q311", "q310 did not advance to q311")
-	_check(QuestService.main_progress == 0 and not QuestService.main_ready, "Common equipment completed q311")
-	_check(not QuestService.claim("q310") and _stub_player.inventory.diamonds == q310_diamonds_before + 1, "q310 granted twice")
-	_check(_stub_player.inventory.add_item(ItemDatabase.get_item_copy("fire_blade"), 1) == 0, "q311 Rare equipment setup failed")
+	GameEvent.enemy_killed.emit("shroom", Vector2.ZERO, false)
+	_check(QuestService.main_progress == 2 and not QuestService.main_ready, "t05 completed before three Bramble Snails")
+	GameEvent.enemy_killed.emit("shroom", Vector2.ZERO, false)
+	_check(QuestService.main_ready, "three Bramble Snails did not complete t05")
+	var t05_diamonds_before: int = inv.diamonds
+	_check(QuestService.claim("t05"), "claim t05")
+	_check(inv.diamonds == t05_diamonds_before + 1, "t05 did not grant exactly one diamond")
+	_check(QuestService.get_main_quest()["id"] == "t06", "t05 did not advance to t06")
+	_check(QuestService.main_progress == 0 and not QuestService.main_ready, "Common equipment completed t06")
+	_check(inv.add_item(ItemDatabase.get_item_copy("emberforged_blade"), 1) == 0, "t06 Rare equipment setup failed")
 	var rare_weapon_index := -1
-	for i in range(_stub_player.inventory.inventory_slots.size()):
-		var slot_item: ItemData = _stub_player.inventory.get_item_at(i).item
-		if slot_item != null and slot_item.id == "fire_blade":
+	for i in range(inv.inventory_slots.size()):
+		var slot_item: ItemData = inv.get_item_at(i).item
+		if slot_item != null and slot_item.id == "emberforged_blade":
 			rare_weapon_index = i
 			break
-	_check(rare_weapon_index >= 0 and _stub_player.inventory.equip_item(rare_weapon_index), "q311 could not equip Rare equipment")
-	QuestService.refresh_state_objectives(_stub_player.inventory)
-	_check(QuestService.main_progress == 1 and QuestService.main_ready, "Rare equipment did not complete q311")
-	var q311_diamonds_before: int = _stub_player.inventory.diamonds
-	_check(QuestService.claim("q311"), "claim q311")
-	_check(_stub_player.inventory.diamonds == q311_diamonds_before + 1, "q311 did not grant exactly one Diamond")
-	_check(QuestService.get_main_quest()["id"] == "q02", "q311 did not advance to q02")
-	_check(not QuestService.claim("q311") and _stub_player.inventory.diamonds == q311_diamonds_before + 1, "q311 granted twice")
+	_check(rare_weapon_index >= 0 and inv.equip_item(rare_weapon_index), "t06 could not equip Rare equipment")
+	QuestService.refresh_state_objectives(inv)
+	_check(QuestService.main_progress == 1 and QuestService.main_ready, "Uncommon-or-better equipment did not complete t06")
+	var t06_diamonds_before: int = inv.diamonds
+	_check(QuestService.claim("t06"), "claim t06")
+	_check(inv.diamonds == t06_diamonds_before + 1, "t06 did not grant exactly one diamond")
+	_check(QuestService.get_main_quest()["id"] == "t07", "t06 did not advance to t07")
+	GameEvent.item_crafted.emit("any_recipe", 1)
+	_check(QuestService.main_ready, "a craft did not complete t07")
+	var t07_gold_before: int = inv.gold
+	var potions_before := inv.get_item_count("health_potion")
+	_check(QuestService.claim("t07"), "claim t07")
+	_check(inv.gold == t07_gold_before + 50 and inv.get_item_count("health_potion") == potions_before + 2, "t07 smith kit reward drifted")
+	_check(QuestService.get_main_quest()["id"] == "q02", "t07 did not advance to q02")
+	_check(not QuestService.claim("t07"), "t07 granted twice")
 	for i in range(8):
 		GameEvent.enemy_killed.emit("slime", Vector2.ZERO, false)
 	_check(QuestService.main_ready, "kill 8 slimes completes q02")
@@ -359,7 +363,7 @@ func _test_quests() -> void:
 	QuestService.main_progress = int(GameContent.MAIN_QUESTS[q02_index]["obj"]["count"])
 	QuestService.main_ready = true
 	var full_inv := InventoryData.new()
-	full_inv.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	full_inv.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE)
 	_stub_player.inventory = full_inv
 	var xp_before := GameState.xp
 	var gold_before := full_inv.gold
@@ -393,7 +397,7 @@ func _test_ground_dig() -> void:
 func _test_resource_node_overflow() -> void:
 	var previous_inventory: InventoryData = _stub_player.inventory
 	var full_inventory := InventoryData.new()
-	full_inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	full_inventory.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE)
 	_stub_player.inventory = full_inventory
 	var gathered := {"quantity": 0}
 	var on_gathered := func(gathered_item_id: String, quantity: int) -> void:
@@ -430,14 +434,10 @@ func _test_save_roundtrip() -> void:
 	SaveService.deserialize_inventory(inv, {"gold": 5000, "slots": [], "equipment": {}})
 	_check(inv.diamonds == 0, "legacy inventory without diamonds did not default to zero")
 	inv.add_item(ItemDatabase.get_item("wood"), 42)
-	var enhanced_weapon := ReferenceEquipmentCatalog.materialize(
-		28,
-		{"health": 13.9, "damage": 29.8, "speed": 0.08}
-	)
-	_check(enhanced_weapon != null and inv.add_item(enhanced_weapon, 1) == 0, "reference equipment setup failed")
-	inv.equip_item(_find_slot(inv, "th_weapon_28"))
-	enhanced_weapon = inv.get_equipped("weapon").duplicate() as ItemData
-	inv._set_equipped("weapon", enhanced_weapon)
+	var enhanced_weapon := ItemDatabase.get_item_copy("ashwood_blade")
+	enhanced_weapon.enhancement_level = 3
+	_check(enhanced_weapon != null and inv.add_item(enhanced_weapon, 1) == 0, "enhanced equipment setup failed")
+	inv.equip_item(_find_slot(inv, "ashwood_blade"))
 	GameState.level = 7
 	_check(GameState.unlock_pet("lucky_cat"), "adopt lucky cat for save test")
 	inv.gold = 1234
@@ -453,19 +453,11 @@ func _test_save_roundtrip() -> void:
 	var snap := SaveService.read_snapshot()
 	_check(snap.get("version", 0) == SaveService.SAVE_VERSION, "snapshot has version")
 	_check(snap.get("quests", {}).get("main_quest_id", "") == "q04", "snapshot stores stable main quest id")
-	var level_one_inventory := InventoryData.new()
-	_check(SaveService.deserialize_inventory(level_one_inventory, {
+	_check(not SaveService._validate_inventory({
 		"gold": 0,
-		"slots": [{"id": "th_weapon_28", "qty": 1, "reference": {
-			"card_id": 28,
-			"asset_id": "item.weapon.card_28.icon",
-			"stats": {"health": 13.9, "damage": 29.8, "speed": 0.08},
-		}}],
+		"slots": [{"id": "ashwood_blade", "qty": 1, "reference": {"card_id": 28}}],
 		"equipment": {},
-	}), "level-one reference equipment payload hydrates")
-	var level_one_item := level_one_inventory.get_item_at(0).get("item") as ItemData
-	_check(level_one_item != null and level_one_item != ItemDatabase.get_item("th_weapon_28"), "level-one reference equipment reused catalog template")
-	_check(level_one_item != null and level_one_item.source_card_id == 28, "level-one reference equipment lost source identity")
+	}), "v6 inventory accepted retired reference instance data")
 
 	# Wipe live state then load
 	GameState.reset_profile()
@@ -487,17 +479,11 @@ func _test_save_roundtrip() -> void:
 	_check(inv.gold == 1234, "gold restored")
 	_check(inv.diamonds == 17, "diamonds restored")
 	_check(inv.get_item_count("wood") == 42, "items restored")
-	_check(inv.get_equipped("weapon") != null and inv.get_equipped("weapon").id == "th_weapon_28", "equipment restored")
-	_check(inv.get_equipped("weapon").enhancement_level == 1, "equipment enhancement level restored")
-	_check(inv.get_equipped("weapon") != ItemDatabase.get_item("th_weapon_28"), "enhanced save reused the catalog template")
-	_check(inv.get_equipped("weapon").source_card_id == 28, "reference card identity restored")
-	_check(inv.get_equipped("weapon").source_asset_id == "item.weapon.card_28.icon", "reference asset identity restored")
-	_check(inv.get_equipped("weapon").get_reference_stats() == {
-		"health": 13.9,
-		"damage": 29.8,
-		"speed": 0.08,
-	}, "reference decimal stat payload restored")
-	_check(ItemDatabase.get_item("th_weapon_28").source_card_id == -1, "reference payload mutated catalog template")
+	_check(inv.get_equipped("weapon") != null and inv.get_equipped("weapon").id == "ashwood_blade", "equipment restored")
+	_check(inv.get_equipped("weapon").enhancement_level == 3, "equipment enhancement level restored")
+	_check(inv.get_equipped("weapon") != ItemDatabase.get_item("ashwood_blade"), "enhanced save reused the catalog template")
+	_check(inv.get_equipped("weapon").get_scaled_attack_bonus() == int(EquipmentBalance.compute("weapon", "sword", "common", 3)["attack"]), "restored equipment stats drifted")
+	_check(ItemDatabase.get_item("ashwood_blade").enhancement_level == 1, "enhanced save mutated the catalog template")
 
 	# Corrupt main file -> backup is used
 	SaveService.enabled = true
@@ -612,10 +598,10 @@ func _test_save_roundtrip() -> void:
 
 	QuestService.from_dict({"main_index": 0, "main_quest_id": "q04", "main_progress": 0, "main_ready": false})
 	_check(QuestService.main_index == GameContent.get_main_quest_index("q04"), "stable quest id takes precedence over stale index")
-	QuestService.from_dict({"main_index": 0, "main_quest_id": "q311", "main_progress": 0, "main_ready": false})
-	_check(QuestService.main_index == GameContent.get_main_quest_index("q311"), "stable q311 save did not restore by quest id")
+	QuestService.from_dict({"main_index": 0, "main_quest_id": "t06", "main_progress": 0, "main_ready": false})
+	_check(QuestService.main_index == GameContent.get_main_quest_index("t06"), "stable t06 save did not restore by quest id")
 	QuestService.from_dict({"main_index": 2, "main_progress": 0, "main_ready": false})
-	_check(QuestService.main_index == 8, "legacy quest save did not shift across inserted q305-q311")
+	_check(QuestService.main_index == 9, "legacy quest save did not shift across the seven tutorial rows")
 	QuestService.from_dict({"main_index": 1, "main_quest_id": "removed_quest", "main_progress": 0, "main_ready": false})
 	_check(QuestService.main_index == 1, "unknown stable quest id did not preserve explicit fallback index")
 
@@ -639,7 +625,7 @@ func _test_save_roundtrip() -> void:
 	_check(not SaveService.deserialize_inventory(inv, {
 		"gold": 999,
 		"slots": [{"id": "wood", "qty": 1000}],
-		"equipment": {"helmet": {"id": "iron_sword", "qty": 1}},
+		"equipment": {"helmet": {"id": "ashwood_blade", "qty": 1}},
 	}), "invalid inventory hydration is rejected")
 	_check(not SaveService.deserialize_inventory(inv, {
 		"gold": 999,
@@ -650,53 +636,20 @@ func _test_save_roundtrip() -> void:
 		_check(not SaveService.deserialize_inventory(inv, {
 			"gold": 999,
 			"slots": [],
-			"equipment": {"weapon": {"id": "iron_sword", "qty": 1, "level": invalid_level}},
+			"equipment": {"weapon": {"id": "ashwood_blade", "qty": 1, "level": invalid_level}},
 		}), "invalid equipment enhancement level was accepted: %s" % str(invalid_level))
 	_check(not SaveService.deserialize_inventory(inv, {
 		"gold": 999,
 		"slots": [{"id": "wood", "qty": 1, "level": 2}],
 		"equipment": {},
 	}), "non-upgradeable item accepted an enhancement level")
-	var invalid_references: Array = [
-		{"card_id": 0, "asset_id": "item.weapon.card_28.icon", "stats": {"health": 1, "damage": 1, "speed": 0.1}},
-		{"card_id": 28, "asset_id": "", "stats": {"health": 1, "damage": 1, "speed": 0.1}},
-		{"card_id": 28, "asset_id": "item.weapon.card_28.icon", "stats": {"health": 1, "damage": 1}},
-		{"card_id": 28, "asset_id": "item.weapon.card_28.icon", "stats": {"health": 1, "damage": 1, "speed": "fast"}},
-		{"card_id": 28, "asset_id": "item.weapon.card_28.icon", "stats": {"health": 1, "damage": 1, "speed": 0.1, "defense": 2}},
-	]
-	for invalid_reference: Dictionary in invalid_references:
-		_check(not SaveService.deserialize_inventory(inv, {
-			"gold": 999,
-			"slots": [],
-			"equipment": {"weapon": {"id": "iron_sword", "qty": 1, "reference": invalid_reference}},
-		}), "invalid reference equipment payload was accepted: %s" % str(invalid_reference))
-	var mismatched_reference_items: Array[Dictionary] = [
-		{"id": "iron_sword", "reference": {"card_id": 28, "asset_id": "item.weapon.card_28.icon", "stats": {"health": 13.9, "damage": 29.8, "speed": 0.08}}},
-		{"id": "th_weapon_28", "reference": {"card_id": 999, "asset_id": "item.weapon.card_28.icon", "stats": {"health": 13.9, "damage": 29.8, "speed": 0.08}}},
-		{"id": "th_weapon_28", "reference": {"card_id": 29, "asset_id": "item.weapon.card_29.icon", "stats": {"health": 20, "damage": 3, "speed": 0.05}}},
-		{"id": "th_weapon_28", "reference": {"card_id": 28, "asset_id": "item.weapon.card_29.icon", "stats": {"health": 13.9, "damage": 29.8, "speed": 0.08}}},
-		{"id": "th_weapon_28", "reference": {"card_id": 28, "asset_id": "item.weapon.card_28.icon", "stats": {"health": 20.1, "damage": 29.8, "speed": 0.08}}},
-	]
-	for mismatched: Dictionary in mismatched_reference_items:
-		_check(not SaveService.deserialize_inventory(inv, {
-			"gold": 999,
-			"slots": [{"id": mismatched["id"], "qty": 1, "reference": mismatched["reference"]}],
-			"equipment": {},
-		}), "mismatched reference identity was accepted: %s" % str(mismatched))
-	_check(not SaveService.deserialize_inventory(inv, {
-		"gold": 999,
-		"slots": [{"id": "th_weapon_28", "qty": 1}],
-		"equipment": {},
-	}), "reference runtime item was accepted without instance data")
-	_check(not SaveService.deserialize_inventory(inv, {
-		"gold": 999,
-		"slots": [{"id": "wood", "qty": 1, "reference": {
-			"card_id": 28,
-			"asset_id": "item.weapon.card_28.icon",
-			"stats": {"health": 1, "damage": 1, "speed": 0.1},
-		}}],
-		"equipment": {},
-	}), "non-equipment item accepted a reference equipment payload")
+	for entry: Dictionary in [
+		{"id": "ashwood_blade", "qty": 1, "reference": {"card_id": 28}},
+		{"id": "wood", "qty": 1, "reference": {}},
+		{"id": "th_weapon_28", "qty": 1},
+	]:
+		_check(not SaveService.deserialize_inventory(inv, {"gold": 999, "slots": [entry], "equipment": {}}),
+			"retired reference data was accepted after v6: %s" % str(entry))
 	_check(inv.gold == protected_gold and inv.diamonds == protected_diamonds and inv.get_item_count("wood") == protected_wood, "rejected hydration preserves live inventory")
 	_check(inv.get_equipped("weapon").enhancement_level == protected_weapon_level, "rejected hydration changed enhanced equipment")
 
@@ -768,174 +721,40 @@ func _test_monster_kill() -> void:
 	boss.queue_free()
 
 
-func _test_turtle_runtime() -> void:
-	var asset_id := "actor.monster.turtle.default"
-	_check(MonsterVisualCatalog.has_asset(asset_id), "Turtle stable art ID is not registered")
-	var definition := MonsterVisualCatalog.get_definition(asset_id)
-	_check(definition.get("frame_size", Vector2i.ZERO) == Vector2i(64, 64), "Turtle frame size drifted")
-	var frames := MonsterVisualCatalog.get_frames(asset_id)
-	_check(frames != null, "Turtle atlas did not build SpriteFrames")
-	var expected := {
-		"idle": {"row": 0, "frames": [0, 1, 2, 3, 0], "duration": 0.7083333731, "loop": true},
-		"move": {"row": 1, "frames": [0, 1, 2, 3, 4, 5], "duration": 0.4583333135, "loop": true},
-		"attack": {"row": 2, "frames": [0, 1, 2, 4, 4, 5], "duration": 0.6666666865, "loop": true},
-		"death": {"row": 3, "frames": [0, 1, 2, 3, 4, 5], "duration": 0.75, "loop": false},
-	}
-	for animation_name: String in expected:
-		var expected_animation: Dictionary = expected[animation_name]
-		var sequence: Array = expected_animation["frames"]
-		_check(frames.has_animation(animation_name), "Turtle animation missing: %s" % animation_name)
-		_check(frames.get_frame_count(animation_name) == sequence.size(), "Turtle frame count drifted: %s" % animation_name)
-		_check(frames.get_animation_loop(animation_name) == bool(expected_animation["loop"]), "Turtle loop flag drifted: %s" % animation_name)
-		_check(is_equal_approx(frames.get_animation_speed(animation_name), float(sequence.size()) / float(expected_animation["duration"])), "Turtle clip duration drifted: %s" % animation_name)
-		for frame_index in range(sequence.size()):
-			var atlas := frames.get_frame_texture(animation_name, frame_index) as AtlasTexture
-			var expected_region := Rect2(float(int(sequence[frame_index]) * 64), float(int(expected_animation["row"]) * 64), 64.0, 64.0)
-			_check(atlas != null and atlas.region == expected_region, "Turtle atlas region drifted: %s[%d]" % [animation_name, frame_index])
-
-	var turtle_def: Dictionary = GameContent.MONSTERS["turtle"]
-	_check(int(turtle_def.get("source_card_id", 0)) == 33, "Turtle source Card ID drifted")
-	_check(int(turtle_def["hp"]) == 100 and int(turtle_def["dmg"]) == 20, "Turtle source stats drifted")
-	_check(float(turtle_def["spd"]) == 0.0, "Turtle must remain stationary")
-	_check(float(turtle_def["range"]) == 70.0 and float(turtle_def["aggro"]) == 200.0, "Turtle source-scaled ranges drifted")
-	_check(is_equal_approx(float(turtle_def["attack_interval"]), 1.0), "Turtle attack gate drifted")
-
-	var turtle := Monster.create("turtle")
-	turtle.position = Vector2(300, 300)
-	turtle.set_physics_process(false)
-	add_child(turtle)
-	_check(turtle.visual is AnimatedSprite2D, "Turtle does not use the atlas visual")
-	_check((turtle.visual as AnimatedSprite2D).sprite_frames == frames, "Turtle visual did not consume the stable catalog")
-	_check(turtle.max_hp == 100 and turtle.damage == 20 and turtle.speed == 0.0, "Turtle runtime stats drifted")
-	_check(is_equal_approx(turtle.attack_cooldown, 1.0), "Turtle initial attack gate drifted")
-
+## Mossback Tortoise: the original stationary guard that replaced the retired reference "turtle".
+func _test_mossback_runtime() -> void:
+	_check(not GameContent.MONSTERS.has("turtle") and not GameContent.MONSTERS.has("snailu"), "retired reference monsters are still registered")
+	var def: Dictionary = GameContent.MONSTERS["mossback"]
+	_check(float(def["spd"]) == 0.0 and str(def["ai"]) == "stationary_melee", "Mossback must be a stationary guard")
+	_check(not def.has("source_card_id") and not def.has("texture"), "Mossback carries reference data")
+	var mossback := Monster.create("mossback")
+	mossback.position = Vector2(300, 300)
+	mossback.set_physics_process(false)
+	add_child(mossback)
+	_check(mossback.max_hp == int(def["hp"]) and mossback.damage == int(def["dmg"]) and mossback.speed == 0.0, "Mossback runtime stats drifted")
+	var reach := float(def["range"])
 	_stub_player.damage_taken = 0
-	_stub_player.global_position = turtle.global_position + Vector2(71, 0)
-	turtle.target = _stub_player
-	turtle.attack_cooldown = 0.0
-	turtle._think_stationary_melee(0.0)
-	_check(_stub_player.damage_taken == 0 and turtle.state == "idle", "Turtle attacked outside its range")
-	_check(turtle.velocity == Vector2.ZERO and turtle.global_position == Vector2(300, 300), "Turtle moved while targeting")
-
-	_stub_player.global_position = turtle.global_position + Vector2(70, 0)
-	turtle._think_stationary_melee(0.0)
-	_check(_stub_player.damage_taken == 20 and turtle.state == "windup", "Turtle did not attack when its 1.0s gate opened")
-	turtle._think_stationary_melee(0.0)
-	_check(_stub_player.damage_taken == 20, "Turtle attacked twice during one attack clip")
-	turtle.state_time = float(turtle_def["attack_duration"])
-	turtle._think_stationary_melee(0.0)
-	_check(turtle.state == "idle", "Turtle attack state did not end after one verified clip")
-
-	var turtle_position := turtle.global_position
-	turtle.apply_hit(1, turtle.global_position - Vector2(20, 0))
-	_check(turtle._knock == Vector2.ZERO and turtle.global_position == turtle_position, "Turtle accepted knockback")
+	_stub_player.global_position = mossback.global_position + Vector2(reach + 1.0, 0)
+	mossback.target = _stub_player
+	mossback.attack_cooldown = 0.0
+	mossback._think_stationary_melee(0.0)
+	_check(_stub_player.damage_taken == 0 and mossback.state == "idle", "Mossback attacked outside its range")
+	_check(mossback.velocity == Vector2.ZERO and mossback.global_position == Vector2(300, 300), "Mossback moved while targeting")
+	_stub_player.global_position = mossback.global_position + Vector2(reach, 0)
+	mossback._think_stationary_melee(0.0)
+	_check(_stub_player.damage_taken == int(def["dmg"]) and mossback.state == "windup", "Mossback did not attack in range")
+	mossback._think_stationary_melee(0.0)
+	_check(_stub_player.damage_taken == int(def["dmg"]), "Mossback attacked twice during one attack")
+	var position_before := mossback.global_position
+	mossback.apply_hit(1, mossback.global_position - Vector2(20, 0))
+	_check(mossback._knock == Vector2.ZERO and mossback.global_position == position_before, "Mossback accepted knockback")
 	var killed: Array[String] = []
 	var cb := func(id: String, _position: Vector2, _is_boss: bool) -> void: killed.append(id)
 	GameEvent.enemy_killed.connect(cb)
-	var xp_before := GameState.xp
-	turtle.apply_hit(turtle.hp, Vector2.ZERO)
-	_check(turtle.is_dead() and killed.has("turtle"), "Turtle death did not emit its stable gameplay ID")
-	_check(GameState.xp == xp_before, "Turtle granted unverified XP")
+	mossback.apply_hit(mossback.hp, Vector2.ZERO)
+	_check(mossback.is_dead() and killed.has("mossback"), "Mossback death did not emit its stable gameplay ID")
 	GameEvent.enemy_killed.disconnect(cb)
-	await get_tree().create_timer(float(turtle_def["death_duration"]) + 0.05).timeout
-
-
-func _test_snailu_runtime() -> void:
-	var asset_id := "actor.monster.snailu.atlas"
-	_check(MonsterVisualCatalog.has_asset(asset_id), "Snailu stable art ID is not registered")
-	var definition := MonsterVisualCatalog.get_definition(asset_id)
-	_check(definition.get("frame_size", Vector2i.ZERO) == Vector2i(64, 64), "Snailu frame size drifted")
-	var frames := MonsterVisualCatalog.get_frames(asset_id)
-	_check(frames != null, "Snailu atlas did not build SpriteFrames")
-	var expected := {
-		"idle": {"row": 0, "frames": [0, 1, 2, 3, 0], "duration": 0.7083333731, "loop": true},
-		"move": {
-			"row": 1,
-			"frames": [Vector2i(0, 1), Vector2i(1, 0), Vector2i(2, 1), Vector2i(3, 1), Vector2i(4, 1), Vector2i(5, 1)],
-			"duration": 0.4583333135,
-			"loop": true,
-		},
-		"attack": {"row": 2, "frames": [0, 1, 2, 3, 4, 5], "duration": 0.6666666865, "loop": true},
-		"death": {"row": 3, "frames": [0, 1, 2, 3, 4, 5], "duration": 0.75, "loop": false},
-	}
-	for animation_name: String in expected:
-		var expected_animation: Dictionary = expected[animation_name]
-		var sequence: Array = expected_animation["frames"]
-		_check(frames.has_animation(animation_name), "Snailu animation missing: %s" % animation_name)
-		_check(frames.get_frame_count(animation_name) == sequence.size(), "Snailu frame count drifted: %s" % animation_name)
-		_check(frames.get_animation_loop(animation_name) == bool(expected_animation["loop"]), "Snailu loop flag drifted: %s" % animation_name)
-		_check(is_equal_approx(frames.get_animation_speed(animation_name), float(sequence.size()) / float(expected_animation["duration"])), "Snailu clip duration drifted: %s" % animation_name)
-		for frame_index in range(sequence.size()):
-			var frame_value: Variant = sequence[frame_index]
-			var coordinates: Vector2i
-			if frame_value is Vector2i:
-				coordinates = frame_value
-			else:
-				coordinates = Vector2i(int(frame_value), int(expected_animation["row"]))
-			var atlas := frames.get_frame_texture(animation_name, frame_index) as AtlasTexture
-			var expected_region := Rect2(float(coordinates.x * 64), float(coordinates.y * 64), 64.0, 64.0)
-			_check(atlas != null and atlas.region == expected_region, "Snailu atlas region drifted: %s[%d]" % [animation_name, frame_index])
-
-	var snailu_def: Dictionary = GameContent.MONSTERS["snailu"]
-	_check(GameContent.MONSTERS.has("shroom") and GameContent.MONSTERS["shroom"] != snailu_def, "legacy shroom identity was replaced by Snailu")
-	_check(int(snailu_def.get("source_card_id", 0)) == 34, "Snailu source Card ID drifted")
-	_check(int(snailu_def["hp"]) == 200 and int(snailu_def["dmg"]) == 30, "Snailu source stats drifted")
-	_check(float(snailu_def["range"]) == 70.0 and float(snailu_def["aggro"]) == 200.0, "Snailu source-scaled ranges drifted")
-	_check(is_equal_approx(float(snailu_def["attack_interval"]), 1.0), "Snailu attack gate drifted")
-	_check(snailu_def["gold"] == Vector2i(40, 50) and snailu_def["loot"].is_empty(), "Snailu approved loot boundary drifted")
-
-	var snailu := Monster.create("snailu")
-	snailu.position = Vector2(300, 300)
-	snailu.set_physics_process(false)
-	add_child(snailu)
-	_check(snailu.visual is AnimatedSprite2D, "Snailu does not use the atlas visual")
-	_check((snailu.visual as AnimatedSprite2D).sprite_frames == frames, "Snailu visual did not consume the stable catalog")
-	_check(snailu.max_hp == 200 and snailu.damage == 30 and snailu.xp_reward == 0, "Snailu runtime stats drifted")
-	var body_shape: CollisionShape2D = null
-	for child in snailu.get_children():
-		if child is CollisionShape2D:
-			body_shape = child
-			break
-	_check(body_shape != null and body_shape.shape is CircleShape2D and is_equal_approx((body_shape.shape as CircleShape2D).radius, 30.0), "Snailu source collider radius drifted")
-
-	_stub_player.global_position = snailu.global_position + Vector2(71, 0)
-	snailu.target = _stub_player
-	snailu.attack_cooldown = 0.0
-	snailu._think_reference_melee(0.0)
-	_check(snailu.state == "idle" and snailu.velocity.length() > 0.0, "Snailu did not chase outside exact attack range")
-	_stub_player.global_position = snailu.global_position + Vector2(70, 0)
-	snailu.velocity = Vector2.ZERO
-	snailu._think_reference_melee(0.0)
-	_check(snailu.state == "windup" and is_equal_approx(snailu.attack_cooldown, 1.0), "Snailu did not open its 1.0s attack gate at exact range")
-	var damage_before: int = _stub_player.damage_taken
-	snailu.state_time = 0.4
-	snailu._think_reference_melee(0.0)
-	snailu._think_reference_melee(0.0)
-	_check(_stub_player.damage_taken == damage_before + 30 and snailu.state == "windup", "Snailu attack did not apply exactly one hit during the full clip")
-	snailu.state_time = float(snailu_def["attack_duration"])
-	snailu._think_reference_melee(0.0)
-	_check(snailu.state == "recover", "Snailu attack clip did not finish at the verified duration")
-
-	var killed: Array[String] = []
-	var cb := func(id: String, _position: Vector2, _is_boss: bool) -> void: killed.append(id)
-	GameEvent.enemy_killed.connect(cb)
-	var xp_before := GameState.xp
-	snailu.apply_hit(snailu.hp, Vector2.ZERO)
-	_check(snailu.is_dead() and killed.has("snailu"), "Snailu death did not emit its stable gameplay ID")
-	_check(GameState.xp == xp_before, "Snailu invented an unverified XP reward")
-	await get_tree().process_frame
-	var dropped_gold := 0
-	var spawned_gold: Array[GameItem] = []
-	for child in get_tree().current_scene.get_children():
-		if child is GameItem and child.content_type == GameItem.ContentType.GOLD and child.global_position.distance_to(snailu.global_position) < 80.0:
-			spawned_gold.append(child)
-			dropped_gold += child.value
-	_check(dropped_gold >= 40 and dropped_gold <= 50, "Snailu Gold drop escaped the verified 40-50 range")
-	for item in spawned_gold:
-		item.queue_free()
-	await get_tree().create_timer(float(snailu_def["death_duration"]) + 0.05).timeout
-	GameEvent.enemy_killed.disconnect(cb)
-	_stub_player.global_position = Vector2.ZERO
+	await get_tree().create_timer(float(def["death_duration"]) + 0.05).timeout
 
 
 func _test_menu_keeps_world_running() -> void:
@@ -1036,7 +855,7 @@ func _test_player_combat_modifiers() -> void:
 	add_child(local_player)
 	await get_tree().process_frame
 	_check(local_player.attack_hitbox.resolves_damage, "player melee uses resolved-hit path")
-	local_player.inventory.add_item(ItemDatabase.get_item_copy("fire_blade"), 1)
+	local_player.inventory.add_item(ItemDatabase.get_item_copy("emberforged_blade"), 1)
 	local_player.inventory.equip_item(0)
 	local_player.inventory.add_item(ItemDatabase.get_item("crit_augment_t1"), 1)
 	local_player.inventory.add_item(ItemDatabase.get_item("lifesteal_augment_t1"), 1)
@@ -1052,7 +871,7 @@ func _test_player_combat_modifiers() -> void:
 	var attack_before_upgrade: int = local_player.stats.attack_damage
 	var upgrade_event := {"seen": false, "level": 0, "cost": 0}
 	var on_equipment_upgraded := func(slot_type: String, item_id: String, level: int, cost: int) -> void:
-		if slot_type == "weapon" and item_id == "fire_blade":
+		if slot_type == "weapon" and item_id == "emberforged_blade":
 			upgrade_event["seen"] = true
 			upgrade_event["level"] = level
 			upgrade_event["cost"] = cost

@@ -4,7 +4,6 @@ extends Node
 ## Use this to get item data by ID
 
 var items: Dictionary = {}
-var _reference_items: Dictionary = {}
 
 ## Path to the item icons sprite sheet
 const ICON_SHEET_PATH := "res://assets/items/item_icons.png"
@@ -29,12 +28,7 @@ func _init_icon_atlas() -> void:
 
 
 func _create_all_items() -> void:
-	_create_weapons()
-	_create_armor()
-	_create_helmets()
-	_create_shields()
-	_create_boots()
-	_create_accessories()
+	_create_equipment()
 	_create_consumables()
 	_create_materials()
 	_create_segments()
@@ -43,223 +37,30 @@ func _create_all_items() -> void:
 	_create_survival_items()
 
 
-func _create_weapons() -> void:
-	items["wooden_sword"] = ItemHelper.create_item({
-		"id": "wooden_sword", "name": "Wooden Sword",
-		"description": "A basic wooden sword. Not very effective but better than nothing.",
-		"type": ItemData.ItemType.WEAPON, "price": 50, "attack": 5,
-		"icon_name": "wooden_sword"
-	})
-	items["iron_sword"] = ItemHelper.create_item({
-		"id": "iron_sword", "name": "Iron Sword",
-		"description": "A basic iron sword. Reliable but nothing special.",
-		"type": ItemData.ItemType.WEAPON, "price": 100, "attack": 15,
-		"icon_name": "iron_sword"
-	})
-	items["steel_sword"] = ItemHelper.create_item({
-		"id": "steel_sword", "name": "Steel Sword",
-		"description": "A well-crafted steel sword with a sharp edge.",
-		"type": ItemData.ItemType.WEAPON, "price": 300, "attack": 25,
-		"icon_name": "iron_sword"
-	})
-	items["platinum_sword"] = ItemHelper.create_item({
-		"id": "platinum_sword", "name": "Platinum Sword",
-		"description": "A finely crafted platinum sword. Light and deadly.",
-		"type": ItemData.ItemType.WEAPON, "price": 300, "attack": 25, "speed": 5.0,
-		"icon_name": "platinum_sword"
-	})
-	items["fire_blade"] = ItemHelper.create_item({
-		"id": "fire_blade", "name": "Flame Blade",
-		"description": "A magical blade imbued with fire essence. Burns with eternal flame.",
-		"type": ItemData.ItemType.WEAPON, "rarity": ItemData.ItemRarity.RARE,
-		"price": 1000, "attack": 40,
-		"icon_name": "iron_sword"
-	})
-	items["pirate_blade"] = ItemHelper.create_item({
-		"id": "pirate_blade", "name": "Pirate Blade",
-		"description": "A curved blade favored by pirates. Fast but less powerful.",
-		"type": ItemData.ItemType.WEAPON, "price": 120, "attack": 12, "speed": 10.0,
-		"icon_name": "pirate_blade"
-	})
-	items["battle_axe"] = ItemHelper.create_item({
-		"id": "battle_axe", "name": "Battle Axe",
-		"description": "A heavy axe that deals massive damage.",
-		"type": ItemData.ItemType.WEAPON, "price": 250, "attack": 30, "speed": -5.0,
-		"icon_name": "battle_axe"
-	})
-	items["dagger"] = ItemHelper.create_item({
-		"id": "dagger", "name": "Dagger",
-		"description": "A quick, light blade for swift attacks.",
-		"type": ItemData.ItemType.WEAPON, "price": 90, "attack": 10, "speed": 15.0,
-		"icon_name": "dagger"
-	})
-	items["war_hammer"] = ItemHelper.create_item({
-		"id": "war_hammer", "name": "War Hammer",
-		"description": "A crushing weapon that breaks through armor.",
-		"type": ItemData.ItemType.WEAPON, "price": 400, "attack": 35, "speed": -10.0,
-		"icon_name": "thron_mace"
-	})
-	items["thron_mace"] = ItemHelper.create_item({
-		"id": "thron_mace", "name": "Thron Mace",
-		"description": "A heavy mace that can crush armor.",
-		"type": ItemData.ItemType.WEAPON, "price": 220, "attack": 28, "speed": -10.0,
-		"icon_name": "thron_mace"
-	})
-	items["hunting_bow"] = ItemHelper.create_item({
-		"id": "hunting_bow", "name": "Hunting Bow",
-		"description": "A reliable bow for ranged combat.",
-		"type": ItemData.ItemType.WEAPON, "price": 180, "attack": 20,
-		"icon_name": "hunting_bow"
-	})
-	_create_reference_weapons()
-
-
-func _create_reference_weapons() -> void:
-	for card_id: int in ReferenceEquipmentCatalog.get_card_ids():
-		var definition := ReferenceEquipmentCatalog.get_definition(card_id)
-		var runtime_item_id := str(definition["runtime_item_id"])
-		_reference_items[runtime_item_id] = ItemHelper.create_item({
-			"id": runtime_item_id,
-			"name": str(definition["source_name"]),
-			"description": "",
-			"type": ItemData.ItemType.WEAPON,
-			"rarity": ItemData.ItemRarity.COMMON,
-			"price": 10,
-			"sell_price": 0,
-			"attack": 0,
-			"health": 0,
-			"speed": 0.0,
-			# Source upgrade metadata remains in ReferenceEquipmentCatalog. Runtime
-			# upgrade stays disabled until reference stats participate in the rule.
-			"can_upgrade": false,
-			"upgrade_base_cost": 0,
-			"upgrade_cost_rate": 1.0,
-			"max_upgrade_level": 1,
+## Equipment comes from data/equipment/templates.json; stats are computed by EquipmentBalance.
+## The pre-2026-11-08 equipment (swords, armours, shields, rings…) was retired with save v6.
+func _create_equipment() -> void:
+	for template_id: String in EquipmentCatalog.ids():
+		var t := EquipmentCatalog.get_template(template_id)
+		var slot := str(t["slot"])
+		var item_type: int = ItemData.ItemType.WEAPON
+		for type: int in ItemData.SLOT_BY_TYPE:
+			if ItemData.SLOT_BY_TYPE[type] == slot:
+				item_type = type
+		var rarity := maxi(EquipmentBalance.rarities().find(str(t["rarity"])), 0)
+		var item := ItemHelper.create_item({
+			"id": template_id,
+			"name": str(t.get("name", template_id)),
+			"description": str(t.get("description", "")),
+			"type": item_type,
+			"rarity": rarity,
+			"price": int(t.get("price", 60 + 40 * rarity)),
+			"max_upgrade_level": EquipmentBalance.max_level(),
 			"use_atlas": false,
 		})
-
-
-func _create_armor() -> void:
-	items["leather_armor"] = ItemHelper.create_item({
-		"id": "leather_armor", "name": "Leather Armor",
-		"description": "Light leather armor that provides basic protection.",
-		"type": ItemData.ItemType.ARMOR, "price": 80, "defense": 10,
-		"icon_name": "leather_armor"
-	})
-	items["chainmail"] = ItemHelper.create_item({
-		"id": "chainmail", "name": "Chainmail Armor",
-		"description": "Flexible armor made of interlocking rings.",
-		"type": ItemData.ItemType.ARMOR, "price": 250, "defense": 18, "speed": -5.0,
-		"icon_row": 7, "icon_col": 3
-	})
-	items["iron_armor"] = ItemHelper.create_item({
-		"id": "iron_armor", "name": "Iron Armor",
-		"description": "Sturdy iron armor. Heavy but protective.",
-		"type": ItemData.ItemType.ARMOR, "price": 400, "defense": 25, "speed": -10.0,
-		"icon_name": "iron_armor"
-	})
-	items["plate_armor"] = ItemHelper.create_item({
-		"id": "plate_armor", "name": "Plate Armor",
-		"description": "Heavy full plate armor. Maximum protection.",
-		"type": ItemData.ItemType.ARMOR, "price": 600, "defense": 35, "speed": -15.0,
-		"icon_name": "plate_armor"
-	})
-
-
-func _create_helmets() -> void:
-	items["leather_cap"] = ItemHelper.create_item({
-		"id": "leather_cap", "name": "Leather Cap",
-		"description": "A simple leather hood for basic protection.",
-		"type": ItemData.ItemType.HELMET, "price": 30, "defense": 4,
-		"icon_name": "leather_cap"
-	})
-	items["iron_helmet"] = ItemHelper.create_item({
-		"id": "iron_helmet", "name": "Iron Helmet",
-		"description": "A sturdy iron helmet to protect your head.",
-		"type": ItemData.ItemType.HELMET, "price": 60, "defense": 8,
-		"icon_name": "iron_helmet"
-	})
-	items["steel_helmet"] = ItemHelper.create_item({
-		"id": "steel_helmet", "name": "Steel Helmet",
-		"description": "A well-crafted steel helmet for superior protection.",
-		"type": ItemData.ItemType.HELMET, "price": 120, "defense": 15,
-		"icon_name": "steel_helmet"
-	})
-
-
-func _create_shields() -> void:
-	items["wooden_shield"] = ItemHelper.create_item({
-		"id": "wooden_shield", "name": "Wooden Shield",
-		"description": "A simple wooden shield. Better than nothing.",
-		"type": ItemData.ItemType.SHIELD, "price": 50, "defense": 12,
-		"icon_name": "wooden_shield"
-	})
-	items["iron_shield"] = ItemHelper.create_item({
-		"id": "iron_shield", "name": "Iron Shield",
-		"description": "A sturdy iron shield for better protection.",
-		"type": ItemData.ItemType.SHIELD, "price": 150, "defense": 20,
-		"icon_name": "iron_shield"
-	})
-	items["kite_shield"] = ItemHelper.create_item({
-		"id": "kite_shield", "name": "Kite Shield",
-		"description": "Large shield providing excellent defensive coverage.",
-		"type": ItemData.ItemType.SHIELD, "price": 300, "defense": 28, "speed": -5.0,
-		"icon_name": "kite_shield"
-	})
-
-
-func _create_boots() -> void:
-	items["leather_boots"] = ItemHelper.create_item({
-		"id": "leather_boots", "name": "Leather Boots",
-		"description": "Comfortable leather boots for long journeys.",
-		"type": ItemData.ItemType.BOOTS, "price": 40, "defense": 5, "speed": 10.0,
-		"icon_name": "leather_boots"
-	})
-	items["iron_boots"] = ItemHelper.create_item({
-		"id": "iron_boots", "name": "Iron Boots",
-		"description": "Heavy iron boots that provide good protection.",
-		"type": ItemData.ItemType.BOOTS, "price": 80, "defense": 10, "speed": -5.0,
-		"icon_row": 7, "icon_col": 1
-	})
-	items["swift_boots"] = ItemHelper.create_item({
-		"id": "swift_boots", "name": "Swift Boots",
-		"description": "Light boots enchanted for speed.",
-		"type": ItemData.ItemType.BOOTS, "price": 150, "defense": 3, "speed": 20.0,
-		"icon_name": "swift_boots"
-	})
-
-
-func _create_accessories() -> void:
-	items["silver_ring"] = ItemHelper.create_item({
-		"id": "silver_ring", "name": "Silver Ring",
-		"description": "A simple silver ring with minor enchantments.",
-		"type": ItemData.ItemType.ACCESSORY, "price": 200, "attack": 5, "defense": 5,
-		"icon_row": 8, "icon_col": 2
-	})
-	items["gold_ring"] = ItemHelper.create_item({
-		"id": "gold_ring", "name": "Gold Ring",
-		"description": "An elegant golden ring that boosts vitality.",
-		"type": ItemData.ItemType.ACCESSORY, "price": 350, "health": 20, "defense": 8,
-		"icon_row": 8, "icon_col": 4
-	})
-	items["diamond_ring"] = ItemHelper.create_item({
-		"id": "diamond_ring", "name": "Diamond Ring",
-		"description": "A sparkling diamond ring that enhances all stats.",
-		"type": ItemData.ItemType.ACCESSORY, "price": 800, "attack": 10, "defense": 10, "health": 30,
-		"icon_row": 8, "icon_col": 5
-	})
-	items["strength_amulet"] = ItemHelper.create_item({
-		"id": "strength_amulet", "name": "Strength Amulet",
-		"description": "An amulet that enhances physical power.",
-		"type": ItemData.ItemType.ACCESSORY, "price": 280, "attack": 12,
-		"icon_row": 8, "icon_col": 6
-	})
-	items["gold_necklace"] = ItemHelper.create_item({
-		"id": "gold_necklace", "name": "Gold Necklace",
-		"description": "A beautiful gold necklace that increases defense.",
-		"type": ItemData.ItemType.ACCESSORY, "price": 500, "defense": 15,
-		"icon_row": 8, "icon_col": 6
-	})
+		item.equipment_line = str(t["line"])
+		item.icon_asset_id = str(t.get("icon", ""))
+		items[template_id] = item
 
 
 func _create_consumables() -> void:
@@ -609,8 +410,6 @@ func _create_survival_items() -> void:
 func get_item(item_id: String) -> ItemData:
 	if items.has(item_id):
 		return items[item_id]
-	if _reference_items.has(item_id):
-		return _reference_items[item_id]
 	return null
 
 

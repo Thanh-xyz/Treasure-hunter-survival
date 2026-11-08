@@ -18,9 +18,7 @@ extends Node
 ## ║  │ armor augment     │ E key │                                        ║
 ## ║  │ helmet augment    │ R key │                                        ║
 ## ║  │ boots augment     │ F key │                                        ║
-## ║  │ shield augment    │ Q key │ (fallback)                             ║
-## ║  │ accessory_1       │ E key │ (fallback)                             ║
-## ║  │ accessory_2       │ R key │ (fallback)                             ║
+## ║  │ back augment      │ Q key │ (fallback)                             ║
 ## ║  └───────────────────┴───────┘                                        ║
 ## ╚═══════════════════════════════════════════════════════════════════════╝
 
@@ -44,9 +42,7 @@ const SLOT_INPUT_MAP: Dictionary = {
 	"armor": "skill_2",       # E key
 	"helmet": "skill_3",      # R key
 	"boots": "skill_4",       # F key
-	"shield": "skill_1",
-	"accessory_1": "skill_2",
-	"accessory_2": "skill_3",
+	"back": "skill_1",        # interim: shares Q with the weapon until the P3-5 skill redesign
 }
 
 

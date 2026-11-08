@@ -89,7 +89,7 @@ func _build_host_enemy() -> void:
 
 
 func _fill_client_inventory() -> void:
-	var sword := ItemDatabase.get_item("iron_sword")
+	var sword := ItemDatabase.get_item("ashwood_blade")
 	for i in range(_player.inventory.inventory_slots.size()):
 		_player.inventory.inventory_slots[i] = {"item": sword, "quantity": 1}
 	_player.inventory.inventory_changed.emit()

@@ -330,16 +330,14 @@ func spend(cost: Dictionary) -> bool:
 
 
 ## rewards: {"xp": int, "gold": int, "diamonds": int, "items": {id: qty},
-##           "equipment": [{"card_id": int, "stats": Dictionary}]}
+##           (equipment is granted as ordinary items)}
 ## Item and exact equipment rewards are all-or-nothing.
 func grant(rewards: Dictionary) -> bool:
 	var inv := get_inventory()
 	var items: Dictionary = rewards.get("items", {})
-	var raw_equipment: Variant = rewards.get("equipment", [])
-	if not raw_equipment is Array or (raw_equipment as Array).size() > InventoryData.INVENTORY_SIZE:
-		return false
-	var equipment := raw_equipment as Array
-	if inv == null and (not items.is_empty() or not equipment.is_empty() or rewards.has("gold") or rewards.has("diamonds")):
+	if rewards.has("equipment"):
+		return false  # reference-card equipment rewards were retired in save v6
+	if inv == null and (not items.is_empty() or rewards.has("gold") or rewards.has("diamonds")):
 		return false
 	var gold_reward := int(rewards.get("gold", 0))
 	var diamond_reward := int(rewards.get("diamonds", 0))
@@ -352,16 +350,6 @@ func grant(rewards: Dictionary) -> bool:
 		if item == null or quantity <= 0:
 			return false
 		additions.append({"item": item, "quantity": quantity})
-	for value: Variant in equipment:
-		if not value is Dictionary:
-			return false
-		var entry := value as Dictionary
-		if entry.size() != 2 or not entry.get("card_id") is int or not entry.get("stats") is Dictionary:
-			return false
-		var item := ReferenceEquipmentCatalog.materialize(entry["card_id"], entry["stats"])
-		if item == null:
-			return false
-		additions.append({"item": item, "quantity": 1})
 	if inv != null and not inv.transact([], additions, gold_reward, diamond_reward):
 		return false
 	if rewards.has("xp"):

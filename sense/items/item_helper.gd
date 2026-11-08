@@ -63,8 +63,8 @@ static func create_item(data: Dictionary) -> ItemData:
 ##
 ## func _create_sample_items() -> void:
 ##     # Weapons
-##     items["iron_sword"] = ItemHelper.create_item({
-##         "id": "iron_sword",
+##     items["ashwood_blade"] = ItemHelper.create_item({
+##         "id": "ashwood_blade",
 ##         "name": "Iron Sword",
 ##         "description": "A basic iron sword.",
 ##         "type": ItemData.ItemType.WEAPON,

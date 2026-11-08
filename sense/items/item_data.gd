@@ -6,11 +6,9 @@ extends Resource
 ## ╔═══════════════════════════════════════════════════════════════╗
 ## ║                    ITEM TYPE DIAGRAM                          ║
 ## ╠═══════════════════════════════════════════════════════════════╣
-## ║  WEAPON     → Equipped in weapon slot, adds attack damage     ║
-## ║  ARMOR      → Equipped in armor slot, adds defense            ║
-## ║  HELMET     → Equipped in helmet slot, adds defense           ║
-## ║  BOOTS      → Equipped in boots slot, adds speed              ║
-## ║  ACCESSORY  → Equipped in accessory slots (2 slots)           ║
+## ║  HELMET / ARMOR / BOOTS / WEAPON / BACK → the 5 equipment     ║
+## ║    slots. Stats come from data/equipment (EquipmentBalance).  ║
+## ║  SHIELD / ACCESSORY → retired (save v6); kept for enum values ║
 ## ║  CONSUMABLE → Used from inventory, applies effect             ║
 ## ║  MATERIAL   → Crafting materials, cannot be used directly     ║
 ## ║  QUEST      → Quest items, cannot be dropped or sold          ║
@@ -29,7 +27,8 @@ enum ItemType {
 	MATERIAL,
 	QUEST,
 	SEGMENT,   ## Magical crafting drops, stackable max 99
-	AUGMENT    ## Crafted buff items, non-stackable, slotted into equipment
+	AUGMENT,   ## Crafted buff items, non-stackable, slotted into equipment
+	BACK       ## Back equipment (cloak, pack, quiver). Appended to keep saved enum values stable
 }
 
 enum AugmentType {
@@ -99,13 +98,12 @@ enum ItemRarity {
 ## equipment is stored on duplicated item instances.
 @export_storage var enhancement_level: int = 1
 
-@export_category("Reference Instance Data")
-## Exact source identity and rolled values for equipment materialized from
-## Treasure Hunter card data. These values are evidence only until a later
-## feature explicitly maps them into Emberfield's runtime stat calculations.
-@export_storage var source_card_id: int = -1
-@export_storage var source_asset_id: String = ""
-@export_storage var reference_stats: Dictionary = {}
+@export_category("Equipment Line")
+## Balance line from data/equipment/balance.json (tank, damage, balanced, sword, axe, dagger).
+## When set, HP/ATK/move-speed come from EquipmentBalance by slot, line, rarity and level.
+@export var equipment_line: String = ""
+## ArtCatalog asset ID for the icon (original art); empty uses the atlas or `icon`.
+@export var icon_asset_id: String = ""
 
 @export_category("Consumable Effects")
 @export var heal_amount: int = 0
@@ -124,72 +122,69 @@ enum ItemRarity {
 var applied_augments: Array[String] = []
 
 
-## The extracted client confirms per-item cost/rate data and levels 1-10. The
-## 1.1 stat curve is provisional supporting evidence until server behavior is
-## directly verified.
-const PROVISIONAL_STAT_GROWTH_RATE := 1.1
-const REFERENCE_STAT_KEYS := [&"health", &"damage", &"speed"]
+## Legacy items without an equipment line scale every bonus by this rate per level.
+const LEGACY_STAT_GROWTH_RATE := 1.1
+
+const SLOT_BY_TYPE := {
+	ItemType.HELMET: "helmet",
+	ItemType.ARMOR: "armor",
+	ItemType.BOOTS: "boots",
+	ItemType.WEAPON: "weapon",
+	ItemType.BACK: "back",
+}
 
 
-func set_reference_instance_data(card_id: int, asset_id: String, stats: Dictionary) -> bool:
-	if card_id <= 0 or asset_id.is_empty() or not is_valid_reference_stats(stats):
-		return false
-	source_card_id = card_id
-	source_asset_id = asset_id
-	reference_stats = _normalize_reference_stats(stats)
-	return true
+## Equipment slot id for an item type ("" if it can't be equipped).
+static func slot_for_type(type: int) -> String:
+	return SLOT_BY_TYPE.get(type, "")
 
 
-func has_reference_instance_data() -> bool:
-	return source_card_id > 0 and not source_asset_id.is_empty() and is_valid_reference_stats(reference_stats)
+func get_equipment_slot() -> String:
+	return slot_for_type(item_type)
 
 
-func get_reference_stats() -> Dictionary:
-	return reference_stats.duplicate(true)
-
-
-static func is_valid_reference_stats(stats: Dictionary) -> bool:
-	if stats.size() != REFERENCE_STAT_KEYS.size():
-		return false
-	for key: StringName in REFERENCE_STAT_KEYS:
-		if not stats.has(key) and not stats.has(String(key)):
-			return false
-		var value: Variant = stats.get(key, stats.get(String(key)))
-		if (not value is int and not value is float) or not is_finite(float(value)) or float(value) < 0.0:
-			return false
-	for raw_key: Variant in stats:
-		if not raw_key is String and not raw_key is StringName:
-			return false
-		if StringName(raw_key) not in REFERENCE_STAT_KEYS:
-			return false
-	return true
-
-
-static func _normalize_reference_stats(stats: Dictionary) -> Dictionary:
-	var normalized := {}
-	for key: StringName in REFERENCE_STAT_KEYS:
-		normalized[String(key)] = float(stats.get(key, stats.get(String(key))))
-	return normalized
+## {"hp", "attack", "move_speed"} at the current level, from the equipment formula.
+## Empty for items without an equipment line.
+func get_line_stats() -> Dictionary:
+	if equipment_line.is_empty() or get_equipment_slot().is_empty():
+		return {}
+	var rarities := EquipmentBalance.rarities()
+	if rarity < 0 or rarity >= rarities.size():
+		return {}
+	var level := clampi(enhancement_level, 1, maxi(max_upgrade_level, 1))
+	return EquipmentBalance.compute(get_equipment_slot(), equipment_line, str(rarities[rarity]), level)
 
 
 func get_enhancement_multiplier() -> float:
 	var safe_level := clampi(enhancement_level, 1, maxi(max_upgrade_level, 1))
-	return pow(PROVISIONAL_STAT_GROWTH_RATE, safe_level - 1)
+	return pow(LEGACY_STAT_GROWTH_RATE, safe_level - 1)
 
 
 func get_scaled_attack_bonus() -> int:
+	var line := get_line_stats()
+	if not line.is_empty():
+		return int(line["attack"])
 	return roundi(attack_bonus * get_enhancement_multiplier())
 
 
+## Base equipment never carries DEF (owner decision 2026-11-08); it comes from socketed stones.
 func get_scaled_defense_bonus() -> int:
+	if not equipment_line.is_empty():
+		return 0
 	return roundi(defense_bonus * get_enhancement_multiplier())
 
 
 func get_scaled_health_bonus() -> int:
+	var line := get_line_stats()
+	if not line.is_empty():
+		return int(line["hp"])
 	return roundi(health_bonus * get_enhancement_multiplier())
 
 
 func get_scaled_speed_bonus() -> float:
+	var line := get_line_stats()
+	if not line.is_empty():
+		return float(line["move_speed"])
 	return speed_bonus * get_enhancement_multiplier()
 
 
@@ -233,14 +228,7 @@ func get_rarity_color() -> Color:
 
 ## Check if this item can be equipped
 func is_equippable() -> bool:
-	return item_type in [
-		ItemType.WEAPON,
-		ItemType.ARMOR,
-		ItemType.HELMET,
-		ItemType.BOOTS,
-		ItemType.SHIELD,
-		ItemType.ACCESSORY
-	]
+	return SLOT_BY_TYPE.has(item_type)
 
 
 ## Check if this item is consumable
@@ -284,6 +272,8 @@ func is_timed_buff() -> bool:
 
 ## Get the icon texture (supports both direct texture and atlas)
 func get_icon() -> Texture2D:
+	if not icon_asset_id.is_empty():
+		return ArtCatalog.texture(icon_asset_id, 2)
 	if use_atlas_icon:
 		# Debug: Check if atlas is initialized
 		if ItemIconAtlas.sprite_sheet == null:

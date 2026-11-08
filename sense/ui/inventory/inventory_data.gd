@@ -27,16 +27,15 @@ signal gold_changed(amount: int)
 signal diamonds_changed(amount: int)
 
 const INVENTORY_SIZE: int = 32  # 8 columns x 4 rows
-const EQUIPMENT_SLOTS := ["helmet", "armor", "weapon", "shield", "boots", "accessory_1", "accessory_2"]
+## The five equipment slots (EQUIPMENT_SYSTEM_PROPOSAL.md). Shield and accessories were retired in save v6.
+const EQUIPMENT_SLOTS := ["helmet", "armor", "boots", "weapon", "back"]
 
 # Equipment slots
 var equipped_helmet: ItemData = null
 var equipped_armor: ItemData = null
-var equipped_weapon: ItemData = null
-var equipped_shield: ItemData = null
 var equipped_boots: ItemData = null
-var equipped_accessory_1: ItemData = null
-var equipped_accessory_2: ItemData = null
+var equipped_weapon: ItemData = null
+var equipped_back: ItemData = null
 
 # Inventory grid - array of {item: ItemData, quantity: int}
 var inventory_slots: Array[Dictionary] = []
@@ -325,9 +324,8 @@ func _get_sort_type_order(item_type: ItemData.ItemType) -> int:
 		ItemData.ItemType.WEAPON:     return 0
 		ItemData.ItemType.ARMOR:      return 1
 		ItemData.ItemType.HELMET:     return 2
-		ItemData.ItemType.SHIELD:     return 3
-		ItemData.ItemType.BOOTS:      return 4
-		ItemData.ItemType.ACCESSORY:  return 5
+		ItemData.ItemType.BOOTS:      return 3
+		ItemData.ItemType.BACK:       return 4
 		ItemData.ItemType.CONSUMABLE: return 6
 		ItemData.ItemType.MATERIAL:   return 7
 		ItemData.ItemType.QUEST:      return 8
@@ -359,44 +357,12 @@ func equip_item(inventory_index: int) -> bool:
 	var equipped_item: ItemData = null
 	var slot_type := ""
 	
-	# Determine which slot to equip to
-	match item.item_type:
-		ItemData.ItemType.HELMET:
-			equipped_item = equipped_helmet
-			equipped_helmet = item
-			slot_type = "helmet"
-		ItemData.ItemType.ARMOR:
-			equipped_item = equipped_armor
-			equipped_armor = item
-			slot_type = "armor"
-		ItemData.ItemType.WEAPON:
-			equipped_item = equipped_weapon
-			equipped_weapon = item
-			slot_type = "weapon"
-		ItemData.ItemType.SHIELD:
-			equipped_item = equipped_shield
-			equipped_shield = item
-			slot_type = "shield"
-		ItemData.ItemType.BOOTS:
-			equipped_item = equipped_boots
-			equipped_boots = item
-			slot_type = "boots"
-		ItemData.ItemType.ACCESSORY:
-			# Try first slot, then second
-			if equipped_accessory_1 == null:
-				equipped_accessory_1 = item
-				slot_type = "accessory_1"
-			elif equipped_accessory_2 == null:
-				equipped_accessory_2 = item
-				slot_type = "accessory_2"
-			else:
-				# Swap with first accessory
-				equipped_item = equipped_accessory_1
-				equipped_accessory_1 = item
-				slot_type = "accessory_1"
-		_:
-			return false
-	
+	slot_type = item.get_equipment_slot()
+	if slot_type.is_empty():
+		return false
+	equipped_item = get_equipped(slot_type)
+	_set_equipped(slot_type, item)
+
 	# Remove item from inventory
 	inventory_slots[inventory_index].item = null
 	inventory_slots[inventory_index].quantity = 0
@@ -449,25 +415,16 @@ func _set_equipped(slot_type: String, item: ItemData) -> void:
 	match slot_type:
 		"helmet": equipped_helmet = item
 		"armor": equipped_armor = item
-		"weapon": equipped_weapon = item
-		"shield": equipped_shield = item
 		"boots": equipped_boots = item
-		"accessory_1": equipped_accessory_1 = item
-		"accessory_2": equipped_accessory_2 = item
+		"weapon": equipped_weapon = item
+		"back": equipped_back = item
 
 
 ## Check if item fits in slot type
 func _item_fits_slot(item: ItemData, slot_type: String) -> bool:
 	if item == null:
 		return true
-	match slot_type:
-		"helmet": return item.item_type == ItemData.ItemType.HELMET
-		"armor": return item.item_type == ItemData.ItemType.ARMOR
-		"weapon": return item.item_type == ItemData.ItemType.WEAPON
-		"shield": return item.item_type == ItemData.ItemType.SHIELD
-		"boots": return item.item_type == ItemData.ItemType.BOOTS
-		"accessory_1", "accessory_2": return item.item_type == ItemData.ItemType.ACCESSORY
-		_: return false
+	return EQUIPMENT_SLOTS.has(slot_type) and item.get_equipment_slot() == slot_type
 
 
 ## Swap equipment between two equipment slots
@@ -494,11 +451,9 @@ func get_equipped(slot_type: String) -> ItemData:
 	match slot_type:
 		"helmet": return equipped_helmet
 		"armor": return equipped_armor
-		"weapon": return equipped_weapon
-		"shield": return equipped_shield
 		"boots": return equipped_boots
-		"accessory_1": return equipped_accessory_1
-		"accessory_2": return equipped_accessory_2
+		"weapon": return equipped_weapon
+		"back": return equipped_back
 		_: return null
 
 
@@ -561,8 +516,7 @@ func count_equipment_at_or_above_rarity(minimum_rarity: int) -> int:
 ## Calculate total equipment bonuses (includes augment stat contributions)
 func get_total_attack_bonus() -> int:
 	var total := 0
-	for item: ItemData in [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
-				 equipped_shield, equipped_accessory_1, equipped_accessory_2]:
+	for item: ItemData in _equipped_items():
 		if item != null:
 			total += item.get_scaled_attack_bonus()
 			total += _get_augment_stat_sum(item, "attack_bonus")
@@ -571,8 +525,7 @@ func get_total_attack_bonus() -> int:
 
 func get_total_defense_bonus() -> int:
 	var total := 0
-	for item: ItemData in [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
-				 equipped_shield, equipped_accessory_1, equipped_accessory_2]:
+	for item: ItemData in _equipped_items():
 		if item != null:
 			total += item.get_scaled_defense_bonus()
 			total += _get_augment_stat_sum(item, "defense_bonus")
@@ -581,22 +534,33 @@ func get_total_defense_bonus() -> int:
 
 func get_total_health_bonus() -> int:
 	var total := 0
-	for item: ItemData in [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
-				 equipped_shield, equipped_accessory_1, equipped_accessory_2]:
+	for item: ItemData in _equipped_items():
 		if item != null:
 			total += item.get_scaled_health_bonus()
 			total += _get_augment_stat_sum(item, "health_bonus")
 	return total
 
 
+## Equipment move speed is capped by data (max_equipment_move_speed); stone/augment speed is not.
 func get_total_speed_bonus() -> float:
-	var total := 0.0
-	for item: ItemData in [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
-				 equipped_shield, equipped_accessory_1, equipped_accessory_2]:
+	var equipment := 0.0
+	var stones := 0.0
+	for item: ItemData in _equipped_items():
 		if item != null:
-			total += item.get_scaled_speed_bonus()
-			total += _get_augment_stat_sum_float(item, "speed_bonus")
-	return total
+			equipment += item.get_scaled_speed_bonus()
+			stones += _get_augment_stat_sum_float(item, "speed_bonus")
+	var cap := EquipmentBalance.max_equipment_move_speed()
+	if cap > 0:
+		equipment = minf(equipment, float(cap))
+	return equipment + stones
+
+
+## Equipped items in slot order (null for empty slots).
+func _equipped_items() -> Array[ItemData]:
+	var out: Array[ItemData] = []
+	for slot: String in EQUIPMENT_SLOTS:
+		out.append(get_equipped(slot))
+	return out
 
 
 ## Helper: sum an int stat field from all augments applied to an equipment item
@@ -663,7 +627,7 @@ func use_item(index: int) -> Dictionary:
 
 ## Apply an augment item to an equipped item's augment slot
 ## augment_inventory_index = index of the AUGMENT item in inventory_slots
-## equip_slot = "weapon", "armor", "helmet", "boots", "shield", "accessory_1", "accessory_2"
+## equip_slot = "helmet", "armor", "boots", "weapon", "back"
 ## Returns true on success, false if slot full or invalid
 func apply_augment(equip_slot: String, augment_inventory_index: int) -> bool:
 	var augment_slot := get_item_at(augment_inventory_index)
@@ -738,8 +702,7 @@ func remove_augment(equip_slot: String, augment_index: int) -> bool:
 ## Returns Array[Dictionary] of {effect: PassiveEffect, value: float}
 func get_all_augment_passive_effects() -> Array[Dictionary]:
 	var effects: Array[Dictionary] = []
-	for item: ItemData in [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
-				 equipped_shield, equipped_accessory_1, equipped_accessory_2]:
+	for item: ItemData in _equipped_items():
 		if item == null:
 			continue
 		for augment_id: String in item.applied_augments:
@@ -753,9 +716,8 @@ func get_all_augment_passive_effects() -> Array[Dictionary]:
 ## Returns Array[Dictionary] of {skill_id: String, source_equip_slot: String}
 func get_all_augment_active_skills() -> Array[Dictionary]:
 	var skills: Array[Dictionary] = []
-	var slot_names := ["weapon", "helmet", "armor", "boots", "shield", "accessory_1", "accessory_2"]
-	var slot_items: Array[ItemData] = [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
-					   equipped_shield, equipped_accessory_1, equipped_accessory_2]
+	var slot_names: Array = EQUIPMENT_SLOTS
+	var slot_items: Array[ItemData] = _equipped_items()
 	for i: int in range(slot_items.size()):
 		var item: ItemData = slot_items[i]
 		if item == null:

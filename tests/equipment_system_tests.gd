@@ -118,16 +118,19 @@ func _test_no_line_dominates() -> void:
 
 func _test_templates() -> void:
 	var ids := EquipmentCatalog.ids()
-	_check(ids.size() == 15, "15 base templates, got %d" % ids.size())
+	var commons := 0
 	var seen := {}
 	for id: String in ids:
 		var t := EquipmentCatalog.get_template(id)
-		var key := "%s/%s" % [t["slot"], t["line"]]
+		if str(t["rarity"]) == "common":
+			commons += 1
+		var key := "%s/%s/%s" % [t["slot"], t["line"], t["rarity"]]
 		_check(not seen.has(key), "two templates for %s" % key)
 		seen[key] = true
 		_check(EquipmentBalance.is_valid(str(t["slot"]), str(t["line"]), str(t["rarity"]), 1), "%s invalid placement" % id)
 		_check(not EquipmentCatalog.stats_for(id).is_empty(), "%s has no stats" % id)
 		_check(not str(t.get("name", "")).is_empty() and ArtCatalog.has(str(t.get("icon", ""))), "%s needs a name and a known icon id" % id)
+	_check(commons == 15, "15 common base templates (5 slots x 3 lines), got %d" % commons)
 	for starter in ["ashwood_blade", "ironbark_cleaver", "ember_dirk"]:
 		_check(EquipmentCatalog.has(starter), "starter weapon %s missing" % starter)
 

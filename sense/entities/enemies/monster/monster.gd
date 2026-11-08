@@ -8,7 +8,7 @@ extends CharacterBody2D
 ##   ranged  — keeps distance, fires projectiles
 ##   charger — telegraphs a line, then dashes through the target
 ##   stationary_melee — scans and attacks without moving or chasing
-##   reference_melee — source-scaled range/cadence with a complete attack clip
+##   timed_melee — source-scaled range/cadence with a complete attack clip
 ##   boss_*  — handled by Boss (subclass)
 ##
 ## Damage in:  player hitbox -> HurtboxComponent -> apply_hit()
@@ -289,8 +289,8 @@ func _think(delta: float) -> void:
 	match def.get("ai", "melee"):
 		"stationary_melee":
 			_think_stationary_melee(delta)
-		"reference_melee":
-			_think_reference_melee(delta)
+		"timed_melee":
+			_think_timed_melee(delta)
 		"ranged":
 			_think_ranged(delta)
 		"charger":
@@ -388,7 +388,7 @@ func _think_stationary_melee(_delta: float) -> void:
 	_play_anim("attack")
 
 
-func _think_reference_melee(_delta: float) -> void:
+func _think_timed_melee(_delta: float) -> void:
 	var attack_interval := float(def.get("attack_interval", 1.1))
 	var attack_duration := float(def.get("attack_duration", 0.4))
 	match state:

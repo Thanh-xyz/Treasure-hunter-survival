@@ -31,15 +31,11 @@ func _ready() -> void:
 	_test_reward_box_resolver()
 	_test_reward_box_checkbox_resolver()
 	_test_reward_box_catalog()
-	_test_reference_equipment_reward_resolver()
-	_test_reference_equipment_stat_generator()
 	_test_quest_reward_resolver()
-	_test_reference_equipment_catalog()
 	_test_crafting_transaction()
-	_test_quest305_claim_transaction()
+	_test_tutorial_t01_claim_transaction()
 	_test_quest_claim_transaction()
 	_test_daily_claim_recovery()
-	_test_exact_equipment_reward_transaction()
 	_test_building_collection_transaction()
 	_test_building_upgrade_transaction()
 	SaveService.delete_save()
@@ -61,7 +57,7 @@ func _full_inventory_with_craft_materials() -> InventoryData:
 	var inventory := InventoryData.new()
 	inventory.add_item(ItemDatabase.get_item("fire_shard"), 4)
 	inventory.add_item(ItemDatabase.get_item("iron_ore"), 3)
-	inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE - 2)
+	inventory.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE - 2)
 	return inventory
 
 
@@ -91,7 +87,7 @@ func _test_inventory_add_signals() -> void:
 	var inventory := InventoryData.new()
 	var signals := {"value": 0}
 	inventory.inventory_changed.connect(func() -> void: signals["value"] += 1)
-	var sword := ItemDatabase.get_item("iron_sword")
+	var sword := ItemDatabase.get_item("ashwood_blade")
 	var wood := ItemDatabase.get_item("wood")
 
 	_check(inventory.add_item(sword, InventoryData.INVENTORY_SIZE) == 0, "inventory setup did not fill all slots")
@@ -149,16 +145,8 @@ func _test_reward_box_resolver() -> void:
 	_check(source_reward == {"xp": 0, "gold": 5.0, "items": {"wood": 2.0}}, "resolved reward shared source state")
 
 	var source_stats := {"health": 13.9, "damage": 29.8, "speed": 0.08}
-	var equipment_reward := {"equipment": [{"card_id": 28, "stats": source_stats}]}
-	var normalized_equipment := RewardBoxResolver.normalize_reward(equipment_reward)
-	_check(normalized_equipment == {"equipment": [{"card_id": 28, "stats": source_stats}]}, "exact equipment reward normalization drifted")
-	((normalized_equipment["equipment"] as Array)[0]["stats"] as Dictionary)["damage"] = 49.0
-	_check(is_equal_approx(float(source_stats["damage"]), 29.8), "normalized equipment reward shared source stats")
-	_check(
-		RewardBoxResolver.resolve_roll([{"weight": 1, "reward": equipment_reward}], 1)
-		== {"equipment": [{"card_id": 28, "stats": source_stats}]},
-		"weighted reward did not preserve exact equipment",
-	)
+	# Equipment rewards are ordinary items since save v6; the retired "equipment" key is invalid.
+	_check(RewardBoxResolver.normalize_reward({"equipment": [{"card_id": 28, "stats": source_stats}]}).is_empty(), "retired equipment reward kind was accepted")
 
 	var invalid_cases: Array = [
 		[],
@@ -235,12 +223,6 @@ func _test_reward_box_checkbox_resolver() -> void:
 	normalized["gold"] = 999
 	(normalized["items"] as Dictionary)["wood"] = 999
 	_check(source_reward == {"gold": 10.0, "items": {"wood": 2.0}}, "checkbox reward shared source state")
-	var equipment_stats := {"health": 13.9, "damage": 29.8, "speed": 0.08}
-	var merged_equipment := RewardBoxResolver.resolve_checkbox_rolls([
-		{"chance": 100, "reward": {"equipment": [{"card_id": 28, "stats": equipment_stats}]}},
-		{"chance": 100, "reward": {"equipment": [{"card_id": 30, "stats": {"health": 12.0, "damage": 20.0, "speed": 1.25}}]}},
-	], [100, 100])
-	_check((merged_equipment.get("equipment", []) as Array).size() == 2, "checkbox reward did not merge exact equipment instances")
 
 	var invalid_cases: Array = [
 		[],
@@ -273,237 +255,36 @@ func _test_reward_box_checkbox_resolver() -> void:
 
 
 func _test_reward_box_catalog() -> void:
-	var expected := {
-		98: {"diamonds": 1},
-		150: {"gold": 100},
-		151: {"gold": 200},
-		152: {"gold": 300},
+	var fixed := {
+		"diamond_1": {"diamonds": 1},
+		"gold_200": {"gold": 200},
+		"mossback_bounty": {"gold": 30, "diamonds": 1},
 	}
-	for box_id: int in expected:
-		_check(RewardBoxCatalog.has_box(box_id), "verified reward box %d is missing" % box_id)
-		var entries := RewardBoxCatalog.get_entries(box_id)
-		_check(entries == [{"weight": 100, "reward": expected[box_id]}], "reward box %d data drifted" % box_id)
+	for table_id: String in fixed:
+		_check(RewardBoxCatalog.has_table(table_id), "reward table %s is missing" % table_id)
+		var entries := RewardBoxCatalog.get_entries(table_id)
 		var rng := RandomNumberGenerator.new()
-		rng.seed = box_id
-		_check(RewardBoxCatalog.resolve(box_id, rng) == expected[box_id], "reward box %d resolved incorrectly" % box_id)
+		rng.seed = 7
+		_check(RewardBoxCatalog.resolve(table_id, rng) == fixed[table_id], "reward table %s resolved incorrectly" % table_id)
 		(entries[0]["reward"] as Dictionary).clear()
-		_check(RewardBoxCatalog.get_entries(box_id) == [{"weight": 100, "reward": expected[box_id]}], "reward box %d exposed mutable catalog state" % box_id)
-	_check(not RewardBoxCatalog.has_box(149), "unmapped Box 149 was registered prematurely")
-	_check(RewardBoxCatalog.get_entries(149).is_empty(), "unknown reward box returned entries")
+		_check(RewardBoxCatalog.get_entries(table_id)[0]["reward"] == fixed[table_id], "reward table %s exposed mutable state" % table_id)
+	var seen := {}
+	var starter_rng := RandomNumberGenerator.new()
+	starter_rng.seed = 101
+	for _i in range(60):
+		var reward := RewardBoxCatalog.resolve("starter_weapon", starter_rng)
+		for item_id: String in reward.get("items", {}):
+			seen[item_id] = true
+	var starters := seen.keys()
+	starters.sort()
+	_check(starters == ["ashwood_blade", "ember_dirk", "ironbark_cleaver"], "starter weapon table did not reach every weapon: %s" % [starters])
+	for table_id: String in RewardBoxCatalog.table_ids():
+		for entry: Dictionary in RewardBoxCatalog.get_entries(table_id):
+			_check(not RewardBoxResolver.normalize_reward(entry["reward"]).is_empty(), "reward table %s holds an invalid reward" % table_id)
+	_check(not RewardBoxCatalog.has_table("149") and RewardBoxCatalog.get_entries("missing").is_empty(), "unknown reward table registered")
 	var missing_rng := RandomNumberGenerator.new()
-	missing_rng.seed = 149
-	_check(RewardBoxCatalog.resolve(149, missing_rng).is_empty(), "unknown reward box resolved a reward")
-
-
-func _test_reference_equipment_reward_resolver() -> void:
-	var options: Array = [
-		{"weight": 34, "card_id": 28},
-		{"weight": 33, "card_id": 29},
-		{"weight": 33, "card_id": 30},
-	]
-	_check(RewardBoxCatalog.has_equipment_box(149), "verified equipment Box 149 is missing")
-	_check(not RewardBoxCatalog.has_box(149), "equipment Box 149 leaked into direct canonical boxes")
-	_check(RewardBoxCatalog.get_equipment_options(149) == options, "Box 149 equipment options drifted")
-	_check(RewardBoxCatalog.select_equipment_roll(149, 1) == {"box_id": 149, "roll": 1, "card_id": 28}, "Box 149 roll 1 missed card 28")
-	_check(RewardBoxCatalog.select_equipment_roll(149, 34)["card_id"] == 28, "Box 149 roll 34 missed card 28")
-	_check(RewardBoxCatalog.select_equipment_roll(149, 35)["card_id"] == 29, "Box 149 roll 35 missed card 29")
-	_check(RewardBoxCatalog.select_equipment_roll(149, 67)["card_id"] == 29, "Box 149 roll 67 missed card 29")
-	_check(RewardBoxCatalog.select_equipment_roll(149, 68)["card_id"] == 30, "Box 149 roll 68 missed card 30")
-	_check(RewardBoxCatalog.select_equipment_roll(149, 100)["card_id"] == 30, "Box 149 roll 100 missed card 30")
-	_check(RewardBoxCatalog.select_equipment_roll(149, 0).is_empty(), "Box 149 accepted roll zero")
-	_check(RewardBoxCatalog.select_equipment_roll(149, 101).is_empty(), "Box 149 accepted roll above total")
-	_check(RewardBoxCatalog.select_equipment_roll(999, 1).is_empty(), "unknown equipment box selected a card")
-	var mutable_options := RewardBoxCatalog.get_equipment_options(149)
-	mutable_options[0]["card_id"] = 30
-	_check(RewardBoxCatalog.get_equipment_options(149) == options, "Box 149 exposed mutable option state")
-
-	var first_rng := RandomNumberGenerator.new()
-	var second_rng := RandomNumberGenerator.new()
-	first_rng.seed = 149
-	second_rng.seed = 149
-	_check(
-		RewardBoxCatalog.select_equipment(149, first_rng) == RewardBoxCatalog.select_equipment(149, second_rng),
-		"Box 149 seeded selection was not deterministic",
-	)
-	var invalid_cases: Array = [
-		[],
-		[{"weight": 34, "card_id": 28}, {"weight": 33, "card_id": 28}],
-		[{"weight": 100, "card_id": 999}],
-		[{"weight": 0, "card_id": 28}],
-		[{"weight": 100, "card_id": 28, "stats": {}}],
-		[{"weight": 9223372036854775807, "card_id": 28}, {"weight": 1, "card_id": 29}],
-	]
-	for invalid: Array in invalid_cases:
-		var invalid_rng := RandomNumberGenerator.new()
-		invalid_rng.seed = 149
-		var initial_state := invalid_rng.state
-		_check(ReferenceEquipmentRewardResolver.select(invalid, invalid_rng).is_empty(), "invalid equipment options selected a card: %s" % [invalid])
-		_check(invalid_rng.state == initial_state, "invalid equipment options consumed RNG state")
-	_check(ReferenceEquipmentRewardResolver.select(options, null).is_empty(), "equipment selection accepted missing RNG")
-
-	var source_stats := {"health": 13.9, "damage": 29.8, "speed": 0.08}
-	var selection := RewardBoxCatalog.select_equipment_roll(149, 34)
-	var finalized := RewardBoxCatalog.finalize_equipment_reward(selection, source_stats)
-	_check(finalized == {"equipment": [{"card_id": 28, "stats": source_stats}]}, "Box 149 exact reward finalized incorrectly")
-	_check(
-		RewardBoxCatalog.finalize_equipment_reward(
-			RewardBoxCatalog.select_equipment_roll(149, 35),
-			{"health": 20, "damage": 3, "speed": 0.05},
-		)["equipment"][0]["card_id"] == 29,
-		"Box 149 did not finalize selected card 29",
-	)
-	_check(
-		RewardBoxCatalog.finalize_equipment_reward(
-			RewardBoxCatalog.select_equipment_roll(149, 68),
-			{"health": 2, "damage": 3, "speed": 0.1},
-		)["equipment"][0]["card_id"] == 30,
-		"Box 149 did not finalize selected card 30",
-	)
-	source_stats["damage"] = 49.0
-	_check(is_equal_approx(float(finalized["equipment"][0]["stats"]["damage"]), 29.8), "finalized Box 149 reward retained caller stats")
-	var changed_card := selection.duplicate(true)
-	changed_card["card_id"] = 29
-	_check(RewardBoxCatalog.finalize_equipment_reward(changed_card, {"health": 20, "damage": 3, "speed": 0.05}).is_empty(), "Box 149 finalized a card that did not match its roll")
-	var changed_roll := selection.duplicate(true)
-	changed_roll["roll"] = 35
-	_check(RewardBoxCatalog.finalize_equipment_reward(changed_roll, {"health": 2, "damage": 5, "speed": 0.05}).is_empty(), "Box 149 finalized a roll that did not match its card")
-	var unknown_box := selection.duplicate(true)
-	unknown_box["box_id"] = 999
-	_check(RewardBoxCatalog.finalize_equipment_reward(unknown_box, {"health": 2, "damage": 5, "speed": 0.05}).is_empty(), "unknown box finalized equipment")
-	_check(RewardBoxCatalog.finalize_equipment_reward(selection, {"health": 1, "damage": 5, "speed": 0.05}).is_empty(), "Box 149 finalized invalid exact stats")
-
-
-func _test_reference_equipment_catalog() -> void:
-	var expected := {
-		28: {"runtime_item_id": "th_weapon_28", "source_name": "Weapons_0", "asset_id": "item.weapon.card_28.icon", "can_upgrade": true, "upgrade_base_cost": 10, "upgrade_rate": 1.4},
-		29: {"runtime_item_id": "th_weapon_29", "source_name": "Weapons_1", "asset_id": "item.weapon.card_29.icon", "can_upgrade": true, "upgrade_base_cost": 10, "upgrade_rate": 1.4},
-		30: {"runtime_item_id": "th_weapon_30", "source_name": "Weapons_2", "asset_id": "item.weapon.card_30.icon", "can_upgrade": true, "upgrade_base_cost": 10, "upgrade_rate": 1.4},
-	}
-	_check(ReferenceEquipmentCatalog.get_card_ids() == [28, 29, 30], "reference weapon card IDs drifted")
-	for card_id: int in expected:
-		var definition := ReferenceEquipmentCatalog.get_definition(card_id)
-		for key: String in expected[card_id]:
-			_check(definition.get(key) == expected[card_id][key], "reference weapon %d %s drifted" % [card_id, key])
-		var template := ItemDatabase.get_item(str(expected[card_id]["runtime_item_id"]))
-		_check(template != null and template.item_type == ItemData.ItemType.WEAPON, "reference weapon %d template is missing" % card_id)
-		_check(not ItemDatabase.items.has(str(expected[card_id]["runtime_item_id"])), "reference weapon %d leaked into public shop items" % card_id)
-		_check(template != null and template.rarity == ItemData.ItemRarity.COMMON, "reference weapon %d rarity drifted" % card_id)
-		_check(template != null and not template.can_upgrade and template.max_upgrade_level == 1, "reference weapon %d exposed incomplete runtime upgrades" % card_id)
-		_check(template != null and not template.has_reference_instance_data(), "reference weapon %d polluted its catalog template" % card_id)
-
-	var rolled_stats := {"health": 13.9, "damage": 29.8, "speed": 0.08}
-	var first := ReferenceEquipmentCatalog.materialize(28, rolled_stats)
-	var second := ReferenceEquipmentCatalog.materialize(28, rolled_stats)
-	_check(first != null and first.id == "th_weapon_28", "card 28 did not materialize its runtime identity")
-	_check(first != null and first.source_card_id == 28 and first.source_asset_id == "item.weapon.card_28.icon", "card 28 lost source identity")
-	_check(first != null and first.get_reference_stats() == rolled_stats, "card 28 exact stats changed during materialization")
-	_check(first != null and second != null and first != second, "reference weapon materialization reused an instance")
-	rolled_stats["damage"] = 49.0
-	_check(first != null and is_equal_approx(float(first.get_reference_stats().get("damage", 0.0)), 29.8), "materialized stats retained caller state")
-	var inventory := InventoryData.new()
-	_check(first != null and inventory.add_item(first, 1) == 0, "materialized reference weapon did not enter inventory")
-	var restored_inventory := InventoryData.new()
-	_check(SaveService.deserialize_inventory(restored_inventory, SaveService.serialize_inventory(inventory)), "materialized reference weapon did not survive save hydration")
-	var restored := restored_inventory.get_item_at(0).get("item") as ItemData
-	_check(restored != null and restored.id == "th_weapon_28" and restored.get_reference_stats() == first.get_reference_stats(), "materialized reference weapon changed during save hydration")
-	var upgrade_inventory := InventoryData.new()
-	var upgrade_candidate := ReferenceEquipmentCatalog.materialize(28, {"health": 13.9, "damage": 29.8, "speed": 0.08})
-	_check(upgrade_candidate != null and upgrade_inventory.add_item(upgrade_candidate, 1) == 0, "reference upgrade rejection setup failed")
-	_check(upgrade_inventory.equip_item(0), "reference upgrade rejection could not equip weapon")
-	upgrade_inventory.gold = 100
-	var upgrade_signals := {"gold": 0, "equipment": 0, "upgraded": 0}
-	upgrade_inventory.gold_changed.connect(func(_amount: int) -> void: upgrade_signals["gold"] += 1)
-	upgrade_inventory.equipment_changed.connect(func(_slot: String) -> void: upgrade_signals["equipment"] += 1)
-	upgrade_inventory.equipment_upgraded.connect(func(_slot: String, _id: String, _level: int, _cost: int) -> void: upgrade_signals["upgraded"] += 1)
-	_check(not upgrade_inventory.upgrade_equipment("weapon"), "reference weapon exposed an incomplete runtime upgrade")
-	_check(upgrade_inventory.gold == 100 and upgrade_inventory.get_equipped("weapon").enhancement_level == 1, "rejected reference upgrade changed state")
-	_check(upgrade_signals == {"gold": 0, "equipment": 0, "upgraded": 0}, "rejected reference upgrade emitted changes")
-
-	_check(ReferenceEquipmentCatalog.materialize(28, {"health": 2, "damage": 5, "speed": 0.05}) != null, "card 28 rejected inclusive minimums")
-	_check(ReferenceEquipmentCatalog.materialize(28, {"health": 20, "damage": 50, "speed": 0.1}) != null, "card 28 rejected inclusive maximums")
-	_check(ReferenceEquipmentCatalog.materialize(29, {"health": 20, "damage": 3, "speed": 0.05}) != null, "card 29 exact payload was rejected")
-	_check(ReferenceEquipmentCatalog.materialize(30, {"health": 20, "damage": 35, "speed": 2.0}) != null, "card 30 exact payload was rejected")
-	_check(ReferenceEquipmentCatalog.materialize(28, {"health": 0, "damage": 5, "speed": 0}) != null, "card 28 rejected verified suppressed stats")
-	var invalid_payloads: Array[Dictionary] = [
-		{"health": 0, "damage": 0, "speed": 0},
-		{"health": 1.9, "damage": 5, "speed": 0.05},
-		{"health": 20.1, "damage": 5, "speed": 0.05},
-		{"health": 2, "damage": 4.9, "speed": 0.05},
-		{"health": 2, "damage": 50.1, "speed": 0.05},
-		{"health": 2, "damage": 5, "speed": 0.049},
-		{"health": 2, "damage": 5, "speed": 0.101},
-		{"health": 2, "damage": 5},
-		{"health": 2, "damage": 5, "speed": 0.05, "defense": 1},
-	]
-	for payload: Dictionary in invalid_payloads:
-		_check(ReferenceEquipmentCatalog.materialize(28, payload) == null, "card 28 accepted invalid payload: %s" % str(payload))
-	_check(ReferenceEquipmentCatalog.materialize(999, {"health": 2, "damage": 5, "speed": 0.05}) == null, "unknown reference card materialized")
-	var mutable_definition := ReferenceEquipmentCatalog.get_definition(28)
-	mutable_definition["runtime_item_id"] = "changed"
-	_check(ReferenceEquipmentCatalog.get_runtime_item_id(28) == "th_weapon_28", "reference catalog exposed mutable state")
-
-
-func _test_reference_equipment_stat_generator() -> void:
-	var one_stat := ReferenceEquipmentStatGenerator.replay_common(28, [499, 0, 1, 5000])
-	_check(one_stat == {"health": 0.0, "speed": 0.0, "damage": 5.0}, "Common duplicate-free suppression did not leave one stat")
-	var duplicate_suppression := ReferenceEquipmentStatGenerator.replay_common(28, [0, 0, 0, 50, 5000])
-	_check(duplicate_suppression == {"health": 0.0, "speed": 0.05, "damage": 5.0}, "Common duplicate suppression did not leave two stats")
-	var two_stats_low := ReferenceEquipmentStatGenerator.replay_common(28, [500, 2, 2000, 50])
-	var two_stats_high := ReferenceEquipmentStatGenerator.replay_common(28, [899, 2, 6499, 61])
-	_check(two_stats_low == {"health": 2.0, "speed": 0.05, "damage": 0.0}, "Common outer roll 500 used the wrong suppression branch")
-	_check(two_stats_high == {"health": 6.499, "speed": 0.061, "damage": 0.0}, "Common outer roll 899 or exclusive upper bounds drifted")
-	var three_stats_low := ReferenceEquipmentStatGenerator.replay_common(28, [900, 2000, 50, 5000])
-	var three_stats_high := ReferenceEquipmentStatGenerator.replay_common(28, [999, 6499, 61, 16249])
-	_check(three_stats_low == {"health": 2.0, "speed": 0.05, "damage": 5.0}, "Common outer roll 900 did not keep all stats")
-	_check(three_stats_high == {"health": 6.499, "speed": 0.061, "damage": 16.249}, "card 28 Common maximum draws drifted")
-	_check(
-		ReferenceEquipmentStatGenerator.replay_common(29, [900, 52499, 286, 8499]) == {"health": 52.499, "speed": 0.286, "damage": 8.499},
-		"card 29 Common domains drifted",
-	)
-	_check(
-		ReferenceEquipmentStatGenerator.replay_common(30, [900, 6499, 574, 10999]) == {"health": 6.499, "speed": 0.574, "damage": 10.999},
-		"card 30 Common domains drifted",
-	)
-	for value: float in three_stats_high.values():
-		_check(is_equal_approx(value * 1000.0, round(value * 1000.0)), "Common stat was not quantized to 0.001")
-
-	var invalid_draws: Array[Array] = [
-		[],
-		[-1, 0, 0, 50, 5000],
-		[1000, 2000, 50, 5000],
-		[499, 0, 1],
-		[499, 0, 3, 5000],
-		[900, 6500, 61, 16249],
-		[900, 6499, 62, 16249],
-		[900, 6499, 61, 16250],
-		[900, 6499, 61, 16249, 1],
-	]
-	for draws: Array in invalid_draws:
-		_check(ReferenceEquipmentStatGenerator.replay_common(28, draws).is_empty(), "Common replay accepted invalid draws: %s" % [draws])
-	_check(ReferenceEquipmentStatGenerator.replay_common(999, [900, 2000, 50, 5000]).is_empty(), "Common replay accepted an unknown card")
-	_check(ReferenceEquipmentStatGenerator.generate_common(28, null).is_empty(), "Common generation accepted a missing RNG")
-	var invalid_rng := RandomNumberGenerator.new()
-	invalid_rng.seed = 149
-	var invalid_state := invalid_rng.state
-	_check(ReferenceEquipmentStatGenerator.generate_common(999, invalid_rng).is_empty(), "Common generation accepted an unknown card")
-	_check(invalid_rng.state == invalid_state, "invalid Common generation consumed RNG state")
-
-	var first_rng := RandomNumberGenerator.new()
-	var second_rng := RandomNumberGenerator.new()
-	first_rng.seed = 149
-	second_rng.seed = 149
-	var first_reward := RewardBoxCatalog.resolve_common_equipment(149, first_rng)
-	var second_reward := RewardBoxCatalog.resolve_common_equipment(149, second_rng)
-	_check(not first_reward.is_empty() and first_reward == second_reward, "Box 149 Common resolution was not deterministic")
-	_check(RewardBoxResolver.normalize_reward(first_reward) == first_reward, "generated Box 149 reward was not canonical")
-	_check(RewardBoxCatalog.resolve_common_equipment(999, first_rng).is_empty(), "unknown box generated Common equipment")
-	var generated_equipment := first_reward.get("equipment", []) as Array
-	if not generated_equipment.is_empty():
-		var generated_entry := generated_equipment[0] as Dictionary
-		_check(
-			ReferenceEquipmentCatalog.materialize(int(generated_entry["card_id"]), generated_entry["stats"]) != null,
-			"generated Box 149 reward did not materialize",
-		)
+	missing_rng.seed = 1
+	_check(RewardBoxCatalog.resolve("missing", missing_rng).is_empty(), "unknown reward table resolved a reward")
 
 
 func _test_quest_reward_resolver() -> void:
@@ -517,16 +298,16 @@ func _test_quest_reward_resolver() -> void:
 	var second_rng := RandomNumberGenerator.new()
 	first_rng.seed = 305
 	second_rng.seed = 305
-	var box_quest := {"id": "q305", "reward_box_id": 149}
+	var box_quest := {"id": "t01", "reward_table": "starter_weapon"}
 	var first := QuestRewardResolver.resolve(box_quest, first_rng)
-	_check(not first.is_empty() and first == QuestRewardResolver.resolve(box_quest, second_rng), "quest Box 149 reward was not deterministic")
-	_check(RewardBoxResolver.normalize_reward(first) == first, "quest Box 149 reward was not canonical")
+	_check(not first.is_empty() and first == QuestRewardResolver.resolve(box_quest, second_rng), "quest reward table roll was not deterministic")
+	_check(RewardBoxResolver.normalize_reward(first) == first, "quest reward table roll was not canonical")
 	var invalid: Array[Dictionary] = [
 		{},
-		{"reward": [], "reward_box_id": 149},
-		{"reward": {"gold": 1}, "reward_box_id": 149},
-		{"reward_box_id": 999},
-		{"reward_box_id": "149"},
+		{"reward": [], "reward_table": "starter_weapon"},
+		{"reward": {"gold": 1}, "reward_table": "starter_weapon"},
+		{"reward_table": "missing"},
+		{"reward_table": 149},
 	]
 	for quest: Dictionary in invalid:
 		var invalid_rng := RandomNumberGenerator.new()
@@ -585,7 +366,7 @@ func _test_economy_transaction() -> void:
 
 	var full_inventory := InventoryData.new()
 	full_inventory.diamonds = 5
-	full_inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	full_inventory.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE)
 	_player.inventory = full_inventory
 	_check(not GameState.grant({"gold": 10, "diamonds": 1, "items": {"wood": 1}}), "full inventory accepted a mixed reward")
 	_check(full_inventory.gold == 0 and full_inventory.diamonds == 5, "failed mixed reward partially changed currencies")
@@ -602,22 +383,23 @@ func _test_shop_purchase_transaction() -> void:
 	var observed := {"gold": -1, "items": -1}
 	_player.inventory.gold_changed.connect(func(amount: int) -> void:
 		observed["gold"] = amount
-		observed["items"] = _player.inventory.get_item_count("iron_sword")
+		observed["items"] = _player.inventory.get_item_count("ashwood_blade")
 	)
 
-	_check(shop.process_purchase({"id": "iron_sword", "name": "Iron Sword", "price": -500}), "shop rejected a valid catalog item")
-	_check(_player.inventory.gold == 100, "shop trusted a spoofed client price")
-	_check(_player.inventory.get_item_count("iron_sword") == 1, "shop purchase omitted the item")
-	_check(int(observed["gold"]) == 100 and int(observed["items"]) == 1, "shop signals exposed a partial purchase state")
+	_check(shop.process_purchase({"id": "ashwood_blade", "name": "Ashwood Blade", "price": -500}), "shop rejected a valid catalog item")
+	var price := ItemDatabase.get_item("ashwood_blade").buy_price
+	_check(price > 0 and _player.inventory.gold == 200 - price, "shop trusted a spoofed client price")
+	_check(_player.inventory.get_item_count("ashwood_blade") == 1, "shop purchase omitted the item")
+	_check(int(observed["gold"]) == 200 - price and int(observed["items"]) == 1, "shop signals exposed a partial purchase state")
 
-	_player.inventory.add_item(ItemDatabase.get_item("wooden_sword"), InventoryData.INVENTORY_SIZE - 1)
-	_check(not shop.process_purchase({"id": "wooden_sword", "name": "Wooden Sword", "price": 1}), "full inventory accepted a shop purchase")
-	_check(_player.inventory.gold == 100, "failed full-inventory purchase consumed gold")
+	_player.inventory.add_item(ItemDatabase.get_item("ember_dirk"), InventoryData.INVENTORY_SIZE - 1)
+	_check(not shop.process_purchase({"id": "ember_dirk", "name": "Ember Dirk", "price": 1}), "full inventory accepted a shop purchase")
+	_check(_player.inventory.gold == 200 - price, "failed full-inventory purchase consumed gold")
 
 	_player.inventory = InventoryData.new()
 	_player.inventory.gold = 49
-	_check(not shop.process_purchase({"id": "wooden_sword", "name": "Wooden Sword", "price": 1}), "shop purchase ignored insufficient authoritative gold")
-	_check(_player.inventory.gold == 49 and _player.inventory.get_item_count("wooden_sword") == 0, "failed shop purchase changed inventory")
+	_check(not shop.process_purchase({"id": "ember_dirk", "name": "Ember Dirk", "price": 1}), "shop purchase ignored insufficient authoritative gold")
+	_check(_player.inventory.gold == 49 and _player.inventory.get_item_count("ember_dirk") == 0, "failed shop purchase changed inventory")
 	_check(not shop.process_purchase({"id": "flame_augment_t1", "price": -100}), "shop accepted an item without a catalog price")
 	_check(not shop.process_purchase({"id": "missing_item", "price": -100}), "shop accepted an unknown item")
 	shop.queue_free()
@@ -626,7 +408,7 @@ func _test_shop_purchase_transaction() -> void:
 func _test_sale_transaction() -> void:
 	var inventory := InventoryData.new()
 	var wood := ItemDatabase.get_item("wood")
-	var sword := ItemDatabase.get_item("iron_sword")
+	var sword := ItemDatabase.get_item("ashwood_blade")
 	var spoofed_wood := ItemDatabase.get_item_copy("wood")
 	spoofed_wood.sell_price = 999999
 	inventory.add_item(spoofed_wood, 2)
@@ -664,9 +446,9 @@ func _test_sale_transaction() -> void:
 
 func _test_equipment_transactions() -> void:
 	var inventory := InventoryData.new()
-	inventory.add_item(ItemDatabase.get_item("fire_blade"), 1)
+	inventory.add_item(ItemDatabase.get_item("emberforged_blade"), 1)
 	_check(inventory.equip_item(0), "equipment setup failed")
-	inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	inventory.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE)
 	var inventory_signals := {"value": 0}
 	var equipment_signals := {"value": 0}
 	var augment_signals := {"value": 0}
@@ -674,7 +456,7 @@ func _test_equipment_transactions() -> void:
 	var on_inventory_changed := func() -> void: inventory_signals["value"] += 1
 	var on_equipment_changed := func(_slot: String) -> void:
 		equipment_signals["value"] += 1
-		observed["inventory_has_weapon"] = inventory.get_item_count("fire_blade") == 1
+		observed["inventory_has_weapon"] = inventory.get_item_count("emberforged_blade") == 1
 		observed["equipment_empty"] = inventory.get_equipped("weapon") == null
 	var on_augments_changed := func(_slot: String) -> void:
 		augment_signals["value"] += 1
@@ -693,18 +475,18 @@ func _test_equipment_transactions() -> void:
 	_check(int(inventory_signals["value"]) == 1 and int(equipment_signals["value"]) == 1, "unequip emitted duplicate or missing signals")
 	_check(bool(observed["inventory_has_weapon"]) and bool(observed["equipment_empty"]), "unequip signal exposed partial state")
 	var swap_inventory := InventoryData.new()
-	swap_inventory.add_item(ItemDatabase.get_item("iron_sword"), 1)
+	swap_inventory.add_item(ItemDatabase.get_item("ashwood_blade"), 1)
 	swap_inventory.equip_item(0)
-	swap_inventory.add_item(ItemDatabase.get_item("fire_blade"), 1)
+	swap_inventory.add_item(ItemDatabase.get_item("emberforged_blade"), 1)
 	_check(swap_inventory.unequip_item("weapon", 0), "target-slot equipment swap failed")
-	_check(swap_inventory.get_equipped("weapon").id == "fire_blade", "target-slot swap equipped the wrong item")
-	_check(swap_inventory.get_item_at(0).item.id == "iron_sword", "target-slot swap lost the previous equipment")
+	_check(swap_inventory.get_equipped("weapon").id == "emberforged_blade", "target-slot swap equipped the wrong item")
+	_check(swap_inventory.get_item_at(0).item.id == "ashwood_blade", "target-slot swap lost the previous equipment")
 
 	inventory = InventoryData.new()
 	inventory.inventory_changed.connect(on_inventory_changed)
 	inventory.equipment_changed.connect(on_equipment_changed)
 	inventory.augments_changed.connect(on_augments_changed)
-	inventory.add_item(ItemDatabase.get_item("fire_blade"), 1)
+	inventory.add_item(ItemDatabase.get_item("emberforged_blade"), 1)
 	inventory.equip_item(0)
 	inventory.add_item(ItemDatabase.get_item("flame_augment_t1"), 1)
 	inventory_signals["value"] = 0
@@ -715,7 +497,7 @@ func _test_equipment_transactions() -> void:
 	_check(int(inventory_signals["value"]) == 1 and int(equipment_signals["value"]) == 1 and int(augment_signals["value"]) == 1, "augment application emitted duplicate or missing signals")
 	_check(bool(observed["augment_consumed"]), "augment signal exposed an unconsumed item")
 
-	inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	inventory.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE)
 	inventory_signals["value"] = 0
 	equipment_signals["value"] = 0
 	augment_signals["value"] = 0
@@ -733,14 +515,14 @@ func _test_equipment_transactions() -> void:
 
 func _test_equipment_enhancement() -> void:
 	var inventory := InventoryData.new()
-	var template := ItemDatabase.get_item("fire_blade")
+	var template := ItemDatabase.get_item("emberforged_blade")
 	inventory.add_item(template, 1)
 	_check(inventory.equip_item(0), "enhancement equipment setup failed")
 	inventory.add_item(ItemDatabase.get_item("flame_augment_t1"), 1)
 	_check(inventory.apply_augment("weapon", 0), "enhancement augment setup failed")
 
 	var weapon := inventory.get_equipped("weapon")
-	var base_attack := weapon.attack_bonus
+	var base_attack := weapon.get_scaled_attack_bonus()
 	var cost := weapon.get_upgrade_cost()
 	_check(cost == int(weapon.upgrade_base_cost * pow(weapon.upgrade_cost_rate, 1)), "level-1 upgrade cost did not follow configured curve")
 	inventory.gold = cost + 25
@@ -768,7 +550,7 @@ func _test_equipment_enhancement() -> void:
 	weapon = inventory.get_equipped("weapon")
 	_check(weapon.enhancement_level == 2, "upgrade did not increase displayed level")
 	_check(inventory.gold == 25, "upgrade charged the wrong gold cost")
-	_check(weapon.get_scaled_attack_bonus() == roundi(base_attack * 1.1), "level-2 attack did not follow the provisional growth curve")
+	_check(weapon.get_scaled_attack_bonus() == int(EquipmentBalance.compute("weapon", "sword", "rare", 2)["attack"]), "level-2 attack did not follow the equipment formula")
 	_check(weapon.get_scaled_attack_bonus() > base_attack and stats.attack_damage > attack_before, "upgrade did not increase character attack")
 	_check(weapon.applied_augments == ["flame_augment_t1"], "upgrade lost applied augments")
 	_check(template.enhancement_level == 1 and template.applied_augments.is_empty(), "upgrade mutated the catalog template")
@@ -808,7 +590,7 @@ func _test_equipment_enhancement() -> void:
 	_check(not inventory.upgrade_equipment("weapon"), "max-level equipment upgraded")
 	_check(capped.enhancement_level == capped.max_upgrade_level, "max-level rejection changed equipment")
 
-	var locked := ItemDatabase.get_item_copy("iron_sword")
+	var locked := ItemDatabase.get_item_copy("ashwood_blade")
 	locked.can_upgrade = false
 	locked.max_upgrade_level = 1
 	inventory._set_equipped("weapon", locked)
@@ -817,13 +599,13 @@ func _test_equipment_enhancement() -> void:
 
 func _test_equipment_quest_objectives() -> void:
 	var inventory := InventoryData.new()
-	var rare_weapon := ItemDatabase.get_item_copy("fire_blade")
+	var rare_weapon := ItemDatabase.get_item_copy("emberforged_blade")
 	rare_weapon.rarity = ItemData.ItemRarity.RARE
 	rare_weapon.enhancement_level = 5
-	var epic_armor := ItemDatabase.get_item_copy("leather_armor")
+	var epic_armor := ItemDatabase.get_item_copy("ironbark_plate")
 	epic_armor.rarity = ItemData.ItemRarity.EPIC
 	epic_armor.enhancement_level = 3
-	var common_helmet := ItemDatabase.get_item_copy("iron_helmet")
+	var common_helmet := ItemDatabase.get_item_copy("ironbark_helm")
 	common_helmet.rarity = ItemData.ItemRarity.COMMON
 	common_helmet.enhancement_level = 2
 	inventory._set_equipped("weapon", rare_weapon)
@@ -928,15 +710,15 @@ func _test_crafting_transaction() -> void:
 	panel.free()
 
 
-func _test_quest305_claim_transaction() -> void:
+func _test_tutorial_t01_claim_transaction() -> void:
 	SaveService.delete_save()
 	GameState.reset_profile()
 	QuestService.reset()
-	var quest_index := GameContent.get_main_quest_index("q305")
-	var next_index := GameContent.get_main_quest_index("q306")
-	_check(quest_index == 1 and next_index == 2, "quest 305/306 chain position drifted")
+	var quest_index := GameContent.get_main_quest_index("t01")
+	var next_index := GameContent.get_main_quest_index("t02")
+	_check(quest_index == 1 and next_index == 2, "tutorial t01/t02 chain position drifted")
 	_player.inventory = InventoryData.new()
-	_player.inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	_player.inventory.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE)
 	QuestService.main_index = quest_index
 	QuestService.main_progress = 10
 	QuestService.main_ready = true
@@ -944,42 +726,41 @@ func _test_quest305_claim_transaction() -> void:
 	authority_rng.seed = 305
 	var expected_rng := RandomNumberGenerator.new()
 	expected_rng.seed = 305
-	var expected_reward := RewardBoxCatalog.resolve_common_equipment(149, expected_rng)
+	var expected_reward := RewardBoxCatalog.resolve("starter_weapon", expected_rng)
 	_check(QuestService.set_reward_authority_rng(authority_rng), "quest reward authority RNG injection failed")
 	GameState.current_zone = "invalid_zone"
 	var state_before_failed_prepare := authority_rng.state
-	_check(not QuestService.claim("q305"), "invalid snapshot prepared quest 305")
-	_check(authority_rng.state == state_before_failed_prepare, "failed quest 305 prepare consumed RNG")
-	_check(SaveService.get_pending_claim().is_empty(), "failed quest 305 prepare left a journal")
+	_check(not QuestService.claim("t01"), "invalid snapshot prepared t01")
+	_check(authority_rng.state == state_before_failed_prepare, "failed t01 prepare consumed RNG")
+	_check(SaveService.get_pending_claim().is_empty(), "failed t01 prepare left a journal")
 	GameState.current_zone = "town"
-	_check(not QuestService.claim("q305"), "full inventory accepted quest 305 equipment")
+	_check(not QuestService.claim("t01"), "full inventory accepted the t01 weapon")
 	var pending := SaveService.get_pending_claim()
-	_check(pending.get("claim_id", "") == "main:q305", "quest 305 did not prepare its journal")
-	_check(pending.get("reward", {}) == expected_reward, "quest 305 journal did not preserve the resolved Box 149 reward")
+	_check(pending.get("claim_id", "") == "main:t01", "t01 did not prepare its journal")
+	_check(pending.get("reward", {}) == expected_reward, "t01 journal did not preserve the rolled starter weapon")
 	var state_after_prepare := authority_rng.state
-	_check(not QuestService.claim("q305"), "full inventory retried quest 305 successfully")
-	_check(authority_rng.state == state_after_prepare, "quest 305 retry rerolled its reward")
+	_check(not QuestService.claim("t01"), "full inventory retried t01 successfully")
+	_check(authority_rng.state == state_after_prepare, "t01 retry rerolled its reward")
 
 	_player.inventory = InventoryData.new()
 	QuestService.reset()
-	_check(SaveService.load_game(), "quest 305 pending claim did not reload")
-	_check(QuestService.main_index == quest_index and QuestService.main_ready, "quest 305 state did not recover")
-	_check(SaveService.get_pending_claim().get("reward", {}) == expected_reward, "quest 305 reward changed after reload")
+	_check(SaveService.load_game(), "t01 pending claim did not reload")
+	_check(QuestService.main_index == quest_index and QuestService.main_ready, "t01 state did not recover")
+	_check(SaveService.get_pending_claim().get("reward", {}) == expected_reward, "t01 reward changed after reload")
 	_player.inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
-	_check(QuestService.claim("q305"), "quest 305 did not retry after freeing capacity")
-	_check(QuestService.main_index == next_index and SaveService.get_pending_claim().is_empty(), "quest 305 did not advance to q306")
-	var expected_entry := (expected_reward["equipment"] as Array)[0] as Dictionary
+	_check(QuestService.claim("t01"), "t01 did not retry after freeing capacity")
+	_check(QuestService.main_index == next_index and SaveService.get_pending_claim().is_empty(), "t01 did not advance to t02")
+	var expected_id: String = (expected_reward["items"] as Dictionary).keys()[0]
 	var rewarded := _player.inventory.get_item_at(InventoryData.INVENTORY_SIZE - 1).get("item") as ItemData
-	_check(rewarded != null and rewarded.source_card_id == int(expected_entry["card_id"]), "quest 305 granted the wrong card")
-	_check(rewarded != null and rewarded.get_reference_stats() == expected_entry["stats"], "quest 305 rerolled exact stats")
-	_check(not QuestService.claim("q305"), "completed quest 305 granted twice")
+	_check(rewarded != null and rewarded.id == expected_id, "t01 granted the wrong starter weapon")
+	_check(not QuestService.claim("t01"), "completed t01 granted twice")
 
 
 func _test_quest_claim_transaction() -> void:
 	GameState.reset_profile()
 	QuestService.reset()
 	_player.inventory = InventoryData.new()
-	_player.inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	_player.inventory.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE)
 	var q02_index := GameContent.get_main_quest_index("q02")
 	QuestService.main_index = q02_index
 	QuestService.main_progress = int(GameContent.MAIN_QUESTS[q02_index]["obj"]["count"])
@@ -1025,7 +806,7 @@ func _test_daily_claim_recovery() -> void:
 	GameState.level = GameContent.MAX_LEVEL
 	QuestService.reset()
 	_player.inventory = InventoryData.new()
-	_player.inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	_player.inventory.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE)
 	QuestService.dailies["d_boss"]["progress"] = 1
 	var xp_before := GameState.xp
 	var gold_before := _player.inventory.gold
@@ -1068,59 +849,10 @@ func _test_daily_claim_recovery() -> void:
 	_check(_player.inventory.get_item_count("hero_shard") == 3, "duplicate daily claim changed the reward")
 
 
-func _test_exact_equipment_reward_transaction() -> void:
-	SaveService.delete_save()
-	GameState.reset_profile()
-	QuestService.reset()
-	_player.inventory = InventoryData.new()
-	var valid_stats := ReferenceEquipmentStatGenerator.replay_common(28, [0, 0, 0, 50, 5000])
-	_check(not GameState.grant({"equipment": [{"card_id": "28", "stats": valid_stats}]}), "direct grant accepted a string equipment card ID")
-	_check(not GameState.grant({"equipment": [{"card_id": 28, "stats": valid_stats, "level": 10}]}), "direct grant accepted an unapproved equipment field")
-	_check(_player.inventory.get_item_count("th_weapon_28") == 0, "invalid direct equipment grant changed inventory")
-	_player.inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
-	var q02_index := GameContent.get_main_quest_index("q02")
-	QuestService.main_index = q02_index
-	QuestService.main_progress = int(GameContent.MAIN_QUESTS[q02_index]["obj"]["count"])
-	QuestService.main_ready = true
-	var source_stats := valid_stats.duplicate(true)
-	var exact_reward := {"gold": 25, "equipment": [{"card_id": 28, "stats": source_stats}]}
-	var record := {
-		"version": 1,
-		"claim_id": "main:q02",
-		"source_kind": "main",
-		"source_id": "q02",
-		"reward": exact_reward,
-	}
-	_check(SaveService.prepare_pending_claim(record), "exact equipment claim did not prepare")
-	source_stats["damage"] = 49.0
-	_check(
-		is_equal_approx(float(SaveService.get_pending_claim()["reward"]["equipment"][0]["stats"]["damage"]), 5.0),
-		"prepared equipment claim retained caller stats",
-	)
-	_check(not QuestService.retry_pending_claim(), "full inventory accepted exact equipment claim")
-	_check(_player.inventory.gold == 0 and QuestService.main_index == q02_index, "failed equipment claim partially changed state")
-
-	_player.inventory = InventoryData.new()
-	QuestService.reset()
-	_check(SaveService.load_game(), "exact equipment journal did not reload")
-	_check(not SaveService.get_pending_claim().is_empty(), "failed automatic equipment retry lost its journal")
-	_player.inventory.remove_item_at(InventoryData.INVENTORY_SIZE - 1)
-	_check(QuestService.claim("q02"), "exact equipment journal did not retry")
-	_check(_player.inventory.gold == 25 and QuestService.main_index == q02_index + 1, "exact equipment retry did not commit final state")
-	var rewarded := _player.inventory.get_item_at(InventoryData.INVENTORY_SIZE - 1).get("item") as ItemData
-	_check(rewarded != null and rewarded.id == "th_weapon_28", "exact equipment retry granted the wrong runtime item")
-	_check(rewarded != null and rewarded.source_card_id == 28, "exact equipment retry lost source card identity")
-	_check(rewarded != null and rewarded.source_asset_id == "item.weapon.card_28.icon", "exact equipment retry lost stable asset identity")
-	_check(rewarded != null and rewarded.get_reference_stats() == valid_stats, "exact equipment retry changed generated stats")
-	_check(SaveService.get_pending_claim().is_empty(), "exact equipment retry did not clear its journal")
-	_check(not QuestService.claim("q02") and _player.inventory.get_item_count("th_weapon_28") == 1, "exact equipment claim granted twice")
-	_check(not ItemDatabase.get_item("th_weapon_28").has_reference_instance_data(), "exact equipment reward mutated its catalog template")
-
-
 func _test_building_collection_transaction() -> void:
 	GameState.reset_profile()
 	_player.inventory = InventoryData.new()
-	_player.inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE)
+	_player.inventory.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE)
 	GameState.plots[0] = {
 		"id": "lumber_mill",
 		"level": 1,
@@ -1140,7 +872,7 @@ func _test_building_upgrade_transaction() -> void:
 	_player.inventory.gold = 500
 	_player.inventory.add_item(ItemDatabase.get_item("wood"), 999)
 	_player.inventory.add_item(ItemDatabase.get_item("stone"), 20)
-	_player.inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE - 2)
+	_player.inventory.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE - 2)
 	GameState.plots[0] = {
 		"id": "lumber_mill",
 		"level": 1,

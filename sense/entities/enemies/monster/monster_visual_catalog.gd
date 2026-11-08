@@ -2,33 +2,9 @@ class_name MonsterVisualCatalog
 extends RefCounted
 ## Runtime adapter from stable art IDs to data-driven monster SpriteFrames.
 
-const DEFINITIONS := {
-	"actor.monster.snailu.atlas": {
-		"texture_path": "res://assets/treasure_hunter/monsters/snailu_atlas.png",
-		"frame_size": Vector2i(64, 64),
-		"animations": {
-			"idle": {"row": 0, "frames": [0, 1, 2, 3, 0], "duration": 0.7083333731, "loop": true},
-			"move": {
-				"row": 1,
-				"frames": [Vector2i(0, 1), Vector2i(1, 0), Vector2i(2, 1), Vector2i(3, 1), Vector2i(4, 1), Vector2i(5, 1)],
-				"duration": 0.4583333135,
-				"loop": true,
-			},
-			"attack": {"row": 2, "frames": [0, 1, 2, 3, 4, 5], "duration": 0.6666666865, "loop": true},
-			"death": {"row": 3, "frames": [0, 1, 2, 3, 4, 5], "duration": 0.75, "loop": false},
-		},
-	},
-	"actor.monster.turtle.default": {
-		"texture_path": "res://assets/treasure_hunter/monsters/turtle_atlas.png",
-		"frame_size": Vector2i(64, 64),
-		"animations": {
-			"idle": {"row": 0, "frames": [0, 1, 2, 3, 0], "duration": 0.7083333731, "loop": true},
-			"move": {"row": 1, "frames": [0, 1, 2, 3, 4, 5], "duration": 0.4583333135, "loop": true},
-			"attack": {"row": 2, "frames": [0, 1, 2, 4, 4, 5], "duration": 0.6666666865, "loop": true},
-			"death": {"row": 3, "frames": [0, 1, 2, 3, 4, 5], "duration": 0.75, "loop": false},
-		},
-	},
-}
+## Atlas-based monster art by stable asset ID. The reference-game atlases (snailu, turtle) were
+## retired in save v6; current monsters use PixelArt sprites. New original atlases register here.
+const DEFINITIONS := {}
 
 static var _cache: Dictionary = {}
 

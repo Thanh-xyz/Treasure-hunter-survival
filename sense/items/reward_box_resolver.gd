@@ -4,7 +4,7 @@ extends RefCounted
 ## Resolves one guaranteed weighted reward without mutating gameplay state.
 ## Callers own the RNG so offline and future host-authoritative flows can replay rolls.
 
-const REWARD_KEYS := [&"xp", &"gold", &"diamonds", &"items", &"equipment"]
+const REWARD_KEYS := [&"xp", &"gold", &"diamonds", &"items"]
 const MAX_REWARD_AMOUNT := 9223372036854775807
 
 
@@ -140,15 +140,6 @@ static func _merge_reward(target: Dictionary, reward: Dictionary) -> bool:
 				target_items[item_id] = current_quantity + quantity
 			target["items"] = target_items
 			continue
-		if key == "equipment":
-			var source_equipment := reward[raw_key] as Array
-			var target_equipment := (target.get("equipment", []) as Array).duplicate(true)
-			if target_equipment.size() + source_equipment.size() > InventoryData.INVENTORY_SIZE:
-				return false
-			for entry: Dictionary in source_equipment:
-				target_equipment.append(entry.duplicate(true))
-			target["equipment"] = target_equipment
-			continue
 		var amount := int(reward[raw_key])
 		var current_amount := int(target.get(key, 0))
 		if amount > MAX_REWARD_AMOUNT - current_amount:
@@ -174,15 +165,6 @@ static func _normalize_reward(reward: Dictionary) -> Dictionary:
 			if not items.is_empty():
 				normalized["items"] = items
 			continue
-		if key == &"equipment":
-			if not reward[raw_key] is Array:
-				return {}
-			var equipment := _normalize_equipment(reward[raw_key])
-			if equipment.is_empty() and not (reward[raw_key] as Array).is_empty():
-				return {}
-			if not equipment.is_empty():
-				normalized["equipment"] = equipment
-			continue
 		var amount := _non_negative_integer(reward[raw_key])
 		if amount < 0:
 			return {}
@@ -202,24 +184,6 @@ static func _normalize_items(raw_items: Dictionary) -> Dictionary:
 			return {}
 		items[item_id] = quantity
 	return items
-
-
-static func _normalize_equipment(raw_equipment: Array) -> Array[Dictionary]:
-	if raw_equipment.size() > InventoryData.INVENTORY_SIZE:
-		return []
-	var equipment: Array[Dictionary] = []
-	for value: Variant in raw_equipment:
-		if not value is Dictionary:
-			return []
-		var entry := value as Dictionary
-		if entry.size() != 2 or not entry.get("stats") is Dictionary:
-			return []
-		var card_id := _positive_integer(entry.get("card_id"))
-		var stats := ReferenceEquipmentCatalog.normalize_payload(card_id, entry["stats"])
-		if card_id <= 0 or stats.is_empty():
-			return []
-		equipment.append({"card_id": card_id, "stats": stats})
-	return equipment
 
 
 static func _positive_integer(value: Variant) -> int:

@@ -493,14 +493,14 @@ func _rebuild_output_preview() -> void:
 func _get_output_stats_text(item: ItemData) -> String:
 	var parts: Array[String] = []
 
-	if item.attack_bonus > 0:
-		parts.append("+%d ATK" % item.attack_bonus)
-	if item.defense_bonus > 0:
-		parts.append("+%d DEF" % item.defense_bonus)
-	if item.health_bonus > 0:
-		parts.append("+%d HP" % item.health_bonus)
-	if item.speed_bonus > 0:
-		parts.append("+%.0f SPD" % item.speed_bonus)
+	if item.get_scaled_attack_bonus() > 0:
+		parts.append("+%d ATK" % item.get_scaled_attack_bonus())
+	if item.get_scaled_defense_bonus() > 0:
+		parts.append("+%d DEF" % item.get_scaled_defense_bonus())
+	if item.get_scaled_health_bonus() > 0:
+		parts.append("+%d HP" % item.get_scaled_health_bonus())
+	if item.get_scaled_speed_bonus() > 0:
+		parts.append("+%.0f SPD" % item.get_scaled_speed_bonus())
 
 	if item.item_type == ItemData.ItemType.AUGMENT:
 		match item.augment_type:

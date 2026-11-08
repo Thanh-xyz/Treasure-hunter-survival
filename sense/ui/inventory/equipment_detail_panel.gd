@@ -189,16 +189,16 @@ func _rebuild_stats(item: ItemData) -> void:
 	for child in _stats.get_children():
 		child.queue_free()
 	var rows := 0
-	if item.health_bonus != 0:
+	if item.get_scaled_health_bonus() != 0:
 		_add_stat_row(ICON_HEALTH, _signed_number(item.get_scaled_health_bonus(), 0))
 		rows += 1
-	if item.attack_bonus != 0:
+	if item.get_scaled_attack_bonus() != 0:
 		_add_stat_row(ICON_DAMAGE, _signed_number(item.get_scaled_attack_bonus(), 0))
 		rows += 1
-	if item.speed_bonus != 0.0:
-		_add_stat_row(ICON_SPEED, _signed_number(item.get_scaled_speed_bonus(), 2))
+	if item.get_scaled_speed_bonus() != 0.0:
+		_add_stat_row(ICON_SPEED, _signed_number(item.get_scaled_speed_bonus(), 0))
 		rows += 1
-	if item.defense_bonus != 0:
+	if item.get_scaled_defense_bonus() != 0:
 		_add_stat_row(null, "DEF %s" % _signed_number(item.get_scaled_defense_bonus(), 0))
 		rows += 1
 	if rows == 0:

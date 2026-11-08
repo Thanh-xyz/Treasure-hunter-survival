@@ -621,7 +621,7 @@ func _create_default_loot_table() -> LootTable:
 	# Add possible drops
 	table.add_entry("bone", 100, 1, 3)          # Common: bones
 	table.add_entry("health_potion", 30, 1, 1)  # Rare: health potion
-	table.add_entry("iron_sword", 5, 1, 1)      # Very rare: weapon
+	table.add_entry("ashwood_blade", 5, 1, 1)      # Very rare: weapon
 
 	# Segment drops (crafting materials)
 	table.add_entry("herb_segment", 18, 1, 2)        # Most common segment

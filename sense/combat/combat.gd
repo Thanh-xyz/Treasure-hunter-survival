@@ -36,6 +36,18 @@ static func roll_dodge(dodge_percent: float, attacker_accuracy_percent: float = 
 	return p > 0.0 and randf() < p
 
 
+## Roll a monster's on-hit status ({"status", "chance", "duration", "magnitude"}) on a player
+## or LAN avatar that supports apply_status(). Returns true when it landed.
+static func apply_on_hit(target: Node, on_hit: Dictionary, rng: RandomNumberGenerator = null) -> bool:
+	if on_hit.is_empty() or target == null or not target.has_method("apply_status"):
+		return false
+	var roll := rng.randf() if rng != null else randf()
+	if roll >= float(on_hit.get("chance", 1.0)):
+		return false
+	target.apply_status(str(on_hit.get("status", "")), float(on_hit.get("duration", 2.0)), float(on_hit.get("magnitude", 1.0)))
+	return true
+
+
 static func is_alive_target(n) -> bool:
 	if n == null or not is_instance_valid(n) or n.is_queued_for_deletion():
 		return false

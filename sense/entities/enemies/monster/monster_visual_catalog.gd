@@ -28,6 +28,12 @@ const GRID_SHEETS := {
 	"actor.monster.ninja.dragon_yellow": "Monster/DragonYellow/SpriteSheet.png",
 	"actor.monster.ninja.kappa_green": "Monster/KappaGreen/SpriteSheet.png",
 	"actor.monster.ninja.beast2": "Monster/Beast2/Beast2.png",
+	# Phase D roster and mini-bosses
+	"actor.monster.ninja.bear": "Monster/Bear/SpriteSheet.png",
+	"actor.monster.ninja.spirit": "Monster/Spirit/SpriteSheet.png",
+	"actor.monster.ninja.beast": "Monster/Beast/Beast.png",
+	"actor.monster.ninja.reptile2": "Monster/Reptile2/Reptile2.png",
+	"actor.monster.ninja.panda": "Monster/Panda/SpriteSheet.png",
 }
 
 ## action -> [file, frame count, seconds, loop]; frame size is shared by the sheet's actions.

@@ -191,6 +191,7 @@ func _process(delta: float) -> void:
 		return
 	if mode == Mode.HOST:
 		_regenerate_peers(delta)
+		_tick_peer_statuses(delta)
 	if mode == Mode.CLIENT:
 		for value: Variant in loot.values():
 			var item := value as GameItem
@@ -403,6 +404,40 @@ func damage_peer(peer_id: int, raw_damage: int) -> void:
 
 
 var _peer_regen_acc: Dictionary = {}
+var _peer_statuses: Dictionary = {}   ## peer_id -> StatusEffects (host only)
+
+
+## A monster's on-hit status on a remote peer. The host applies burn/poison damage; slows are
+## not sent to clients yet (their movement is client-side), see docs/reports/PHASE_D_REPORT.md.
+func apply_peer_status(peer_id: int, kind: String, duration: float, magnitude: float) -> void:
+	if mode != Mode.HOST or not accepted_peers.has(peer_id):
+		return
+	var state: Dictionary = player_states.get(peer_id, {})
+	if state.is_empty() or bool(state.get("dead", false)):
+		return
+	if not _peer_statuses.has(peer_id):
+		_peer_statuses[peer_id] = StatusEffects.new()
+	(_peer_statuses[peer_id] as StatusEffects).apply(kind, duration, magnitude)
+
+
+func _tick_peer_statuses(delta: float) -> void:
+	for peer_id: Variant in _peer_statuses.keys():
+		var effects: StatusEffects = _peer_statuses[peer_id]
+		var dot := effects.tick(delta)
+		var state: Dictionary = player_states.get(peer_id, {})
+		if state.is_empty() or bool(state.get("dead", false)):
+			effects.clear()
+		elif dot > 0:
+			state["hp"] = maxi(0, int(state["hp"]) - dot)
+			state["dead"] = int(state["hp"]) <= 0
+			player_states[peer_id] = state
+			if bool(state["dead"]):
+				effects.clear()
+				_peer_respawn_until[peer_id] = Time.get_ticks_msec() / 1000.0 + PLAYER_INVULNERABILITY
+			_apply_player_state_to_avatar(int(peer_id))
+			_apply_authoritative_vitals.rpc_id(int(peer_id), int(state["hp"]), int(state["max_hp"]), bool(state["dead"]), false, peer_positions.get(peer_id, Vector2.ZERO))
+		if effects.active.is_empty():
+			_peer_statuses.erase(peer_id)
 
 
 ## Renewal Stone regeneration for remote peers; the host owns their HP.

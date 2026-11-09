@@ -1,7 +1,7 @@
 {
   "version": 1,
   "comment": "Breakable ground tiles (brainstorm sheet 08 §4). Provisional balance: tune after playtests. weight = chance this tile is chosen for a plot in its region; loot weights are relative within the table.",
-  "field_regions": {"greenwood": "meadow", "frostvale": "snow"},
+  "field_regions": {"greenwood": "meadow", "cinderwaste": "ash", "frostvale": "snow"},
   "starter_tile": "soft_soil",
   "regions": {
     "meadow": {"name": "Greenwood", "tiles": ["soft_soil", "forest_root", "stone_block", "ancient_ruin"]},

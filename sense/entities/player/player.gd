@@ -193,6 +193,8 @@ const AUTO_FARM_SCAN_RANGE := 320.0
 const AUTO_FARM_ATTACK_RANGE := 38.0
 const SPRITE_BASE_POS := Vector2(0, 4)
 const MOUNT_RAISE := 9.0
+## Burn / poison / slow / freeze from monsters (plan phase D). The LAN host owns client statuses.
+var statuses := StatusEffects.new()
 var mount_sprite: AnimatedSprite2D = null
 var _stomp_tween: Tween = null
 var _stomp_ready_at: float = 0.0
@@ -274,6 +276,7 @@ func _physics_process(delta: float) -> void:
 	# Renewal Stone HP regeneration (the LAN host owns client HP)
 	if passive_processor != null and LanSession.mode != LanSession.Mode.CLIENT:
 		passive_processor.tick_regeneration(delta)
+	_tick_statuses(delta)
 	if _respawn_invuln > 0.0:
 		_respawn_invuln -= delta
 	
@@ -678,6 +681,8 @@ func _on_died() -> void:
 	if current_state == State.DEATH:
 		return
 	_cancel_dig_motion()
+	statuses.clear()
+	_refresh_status_speed()
 	set_auto_farm(false)
 	# Clear all buffs on death
 	if buff_component:
@@ -722,6 +727,37 @@ func take_damage(amount: int) -> void:
 	
 	# Áp dụng damage thông qua hệ thống internal
 	_apply_damage(amount)
+
+
+## A monster's on-hit effect. Damage over time ignores DEF; slows scale move speed.
+func apply_status(kind: String, duration: float, magnitude: float) -> void:
+	if LanSession.mode == LanSession.Mode.CLIENT or current_state == State.DEATH:
+		return
+	if statuses.apply(kind, duration, magnitude):
+		DamageNumber.spawn(get_tree(), global_position + Vector2(0, -30), String(StatusEffects.definitions()[kind].get("name", kind)), StatusEffects.color_of(kind))
+		_refresh_status_speed()
+
+
+func _tick_statuses(delta: float) -> void:
+	if statuses.active.is_empty():
+		return
+	var had := statuses.active.size()
+	var dot := statuses.tick(delta)
+	if dot > 0 and LanSession.mode != LanSession.Mode.CLIENT and current_state != State.DEATH:
+		stats.current_health -= dot
+		DamageNumber.spawn(get_tree(), global_position + Vector2(0, -20), str(dot), Color(1, 0.6, 0.3))
+	if statuses.active.size() != had:
+		_refresh_status_speed()
+	var tint := Color.WHITE
+	for kind: String in statuses.active:
+		tint = tint.lerp(StatusEffects.color_of(kind), 0.35 + 0.15 * sin(Time.get_ticks_msec() / 120.0))
+	anim.self_modulate = tint
+
+
+func _refresh_status_speed() -> void:
+	stats.status_speed_multiplier = statuses.speed_multiplier()
+	if statuses.active.is_empty():
+		anim.self_modulate = Color.WHITE
 
 
 ## Hồi máu cho nhân vật

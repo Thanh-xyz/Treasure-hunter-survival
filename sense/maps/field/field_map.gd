@@ -18,7 +18,9 @@ var spawn_point: Vector2 = Vector2.ZERO
 var altar_point: Vector2 = Vector2.ZERO
 
 var _rng := RandomNumberGenerator.new()          ## seeded: same layout on every LAN peer
-var _spawn_rng := RandomNumberGenerator.new()    ## unseeded: elite rolls on the authority
+var _spawn_rng := RandomNumberGenerator.new()    ## unseeded: elite / mini-boss rolls on the authority
+var _mini_boss_scheduler := SpawnRules.MiniBossScheduler.new()
+var _mini_boss: Monster = null
 var _camps: Array[Dictionary] = []   ## {id, pos, monster, timer}
 var _boss: Monster = null
 var _boss_timer: float = 0.0
@@ -313,6 +315,9 @@ func _spawn_camp(camp: Dictionary) -> void:
 	m.position = camp["pos"] + Vector2(randf_range(-16, 16), randf_range(-16, 16))
 	add_child(m)
 	camp["monster"] = m
+	if elite:
+		RingFX.spawn(get_tree(), m.global_position, 34.0, Color(1.0, 0.82, 0.25), 0.6)
+		GameEvent.toast.emit("An elite %s prowls nearby" % GameContent.MONSTERS[camp["id"]].get("elite_name", GameContent.MONSTERS[camp["id"]]["name"]), Color(1.0, 0.82, 0.25))
 	camp["timer"] = CAMP_RESPAWN
 
 
@@ -330,10 +335,39 @@ func _process(delta: float) -> void:
 			if float(camp["timer"]) <= 0.0:
 				_spawn_camp(camp)
 	_process_world_boss(delta)
+	_process_mini_boss(delta)
 	_magnet_t -= delta
 	if _magnet_t <= 0.0:
 		_magnet_t = MAGNET_INTERVAL
 		_magnet_loot()
+
+
+## Random field mini-boss (sheet 05 §7): one check per interval, at most one alive per zone,
+## never near the safe spawn, announced to the player, respawn cooldown after it dies.
+func _process_mini_boss(delta: float) -> void:
+	var pool: Array = cfg.get("mini_bosses", [])
+	if pool.is_empty():
+		return
+	if _mini_boss_scheduler.tick(delta, _spawn_rng):
+		spawn_mini_boss(str(pool[_spawn_rng.randi_range(0, pool.size() - 1)]))
+
+
+func spawn_mini_boss(boss_id: String) -> Monster:
+	if _mini_boss != null and is_instance_valid(_mini_boss) and not _mini_boss.is_dead():
+		return null
+	var min_dist := float(SpawnRules.mini_boss_config().get("min_distance_from_safe", 400.0))
+	var pos := Vector2.ZERO
+	for attempt in range(30):
+		pos = Vector2(_spawn_rng.randf_range(80, map_size_px.x - 80), _spawn_rng.randf_range(160, map_size_px.y - 160))
+		if pos.distance_to(spawn_point) >= min_dist:
+			break
+	_mini_boss = Monster.create(boss_id)
+	_mini_boss.network_zone_id = zone_id
+	_mini_boss.position = pos
+	add_child(_mini_boss)
+	_mini_boss.monster_died.connect(func(_m: Monster) -> void: _mini_boss_scheduler.on_defeated())
+	GameEvent.toast.emit("%s appeared in %s!" % [GameContent.MONSTERS[boss_id]["name"], cfg.get("name", zone_id)], Color(1.0, 0.5, 0.35))
+	return _mini_boss
 
 
 func _process_world_boss(delta: float) -> void:

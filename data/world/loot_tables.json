@@ -13,6 +13,10 @@
     "snow_soil":    [["stone", 30, 1, 3], ["frost_shard", 30, 1, 2], ["gold", 25, 3, 5], ["large_health_potion", 15, 1, 1]],
     "snow_crystal": [["frost_shard", 45, 1, 3], ["blizzard_shard", 15, 1, 1], ["spirit_essence", 20, 1, 1], ["gold", 20, 3, 6]],
     "snow_rock":    [["iron_ore", 30, 2, 3], ["gold_ore", 30, 1, 2], ["frost_shard", 20, 1, 2], ["gold", 20, 4, 7]],
+    "elite_bonus":       [["stone_guard_1", 30, 1, 2], ["stone_critical_1", 20, 1, 1], ["stone_dodge_1", 15, 1, 1], ["stone_lifesteal_1", 15, 1, 1], ["power_fragment", 20, 1, 1]],
+    "mini_boss_meadow":  [["stone_guard_2", 30, 1, 1], ["stone_regeneration_2", 20, 1, 1], ["wayfarer_coat", 15, 1, 1], ["ember_dirk", 15, 1, 1], ["egg_forest", 20, 1, 1]],
+    "mini_boss_ash":     [["stone_fire_2", 25, 1, 1], ["stone_critical_damage_2", 20, 1, 1], ["ember_harness", 15, 1, 1], ["ironbark_cleaver", 15, 1, 1], ["egg_ash", 25, 1, 1]],
+    "mini_boss_snow":    [["stone_ice_3", 20, 1, 1], ["stone_guard_3", 20, 1, 1], ["wayfarer_cloak", 15, 1, 1], ["ember_quiver", 15, 1, 1], ["egg_snow", 25, 1, 1], ["egg_dragon", 5, 1, 1]],
     "snow_relic":   [["gold", 25, 6, 12], ["ironbark_plate", 10, 1, 1], ["wayfarer_cloak", 10, 1, 1], ["ember_quiver", 10, 1, 1], ["blizzard_shard", 15, 1, 1], ["egg_snow", 3, 1, 1], ["greater_power_fragment", 20, 1, 2], ["diamonds", 10, 1, 2]]
   }
 }

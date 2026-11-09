@@ -65,6 +65,12 @@ var _charge_hit: bool = false
 var _attack_hit_applied: bool = false
 var _base_visual_scale: Vector2 = Vector2.ONE
 var _last_attacker_peer_id: int = 1
+## Plan phase D: shaman ward (damage taken multiplier) and summons.
+var damage_taken_mult: float = 1.0
+var _ward_time: float = 0.0
+var _support_timer: float = 0.0
+var _summoned := false
+var is_mini_boss: bool = false
 
 
 static func create(id: String, p_elite: bool = false) -> Monster:
@@ -83,6 +89,7 @@ func setup(id: String, p_elite: bool) -> void:
 	def = GameContent.MONSTERS.get(id, GameContent.MONSTERS["slime"])
 	elite = p_elite
 	is_boss = def.get("boss", false)
+	is_mini_boss = bool(def.get("mini_boss", false))
 	max_hp = int(def["hp"])
 	damage = int(def["dmg"])
 	speed = float(def["spd"])
@@ -201,11 +208,11 @@ func _build_hurtbox() -> void:
 
 func _build_nameplate() -> void:
 	name_label = Label.new()
-	name_label.text = ("Elite " if elite else "") + str(def.get("name", def_id))
+	name_label.text = ("Elite " if elite else "") + str(def.get("elite_name" if elite and def.has("elite_name") else "name", def_id))
 	name_label.add_theme_font_override("font", NAME_FONT)
 	name_label.add_theme_font_size_override("font_size", 18)
 	var col := Color(1, 0.85, 0.3) if elite else Color(1, 0.95, 0.9)
-	if is_boss:
+	if is_boss or is_mini_boss:
 		col = Color(1, 0.45, 0.4)
 	name_label.add_theme_color_override("font_color", col)
 	name_label.add_theme_color_override("font_outline_color", Color(0.08, 0.05, 0.1))
@@ -283,6 +290,8 @@ func _think(delta: float) -> void:
 	if global_position.distance_to(home) > leash_range and state != "charge":
 		_set_state("return")
 		return
+	if _think_specials(delta):
+		return
 	match def.get("ai", "melee"):
 		"stationary_melee":
 			_think_stationary_melee(delta)
@@ -294,6 +303,87 @@ func _think(delta: float) -> void:
 			_think_charger(delta)
 		_:
 			_think_melee(delta)
+
+
+## Hit one player with this monster's damage and roll its on-hit status (sheet 05: Burn in
+## Ash, Slow/Freeze in Snow, Poison from snakes).
+func _hit_target(t: Node2D, mult: float = 1.0) -> void:
+	if t == null or not Combat.is_alive_target(t):
+		return
+	t.take_damage(maxi(1, roundi(float(damage) * mult)))
+	Combat.apply_on_hit(t, def.get("on_hit", {}))
+
+
+## Data-driven extras shared by every AI (plan phase D). Returns true when it used the frame.
+##   "slam":    {"radius", "warn", "mult", "cooldown", "trigger_range"} ground slam with a red
+##              warning circle that fills up before any damage (sheet 05/06: always telegraphed)
+##   "support": {"radius", "interval", "damage_taken_mult", "duration"} wards nearby monsters
+##   "summon":  {"id", "count", "at_hp"} once, when HP falls below at_hp (mini-bosses)
+func _think_specials(delta: float) -> bool:
+	_ward_time = maxf(0.0, _ward_time - delta)
+	if _ward_time <= 0.0:
+		damage_taken_mult = 1.0
+	var support: Dictionary = def.get("support", {})
+	if not support.is_empty():
+		_support_timer -= delta
+		if _support_timer <= 0.0:
+			_support_timer = float(support.get("interval", 4.0))
+			_pulse_support(support)
+	var summon: Dictionary = def.get("summon", {})
+	if not summon.is_empty() and not _summoned and float(hp) <= float(max_hp) * float(summon.get("at_hp", 0.5)):
+		_summoned = true
+		_summon(summon)
+	var slam: Dictionary = def.get("slam", {})
+	if slam.is_empty():
+		return false
+	if state == "slam_warn":
+		velocity = Vector2.ZERO
+		if state_time >= float(slam.get("warn", 0.8)):
+			var radius := float(slam.get("radius", 40.0))
+			for n in get_tree().get_nodes_in_group("player"):
+				var p := n as Node2D
+				if p != null and Combat.is_alive_target(p) and p.global_position.distance_to(global_position) <= radius + 6.0:
+					_hit_target(p, float(slam.get("mult", 1.5)))
+			RingFX.spawn(get_tree(), global_position, radius, Color(1.0, 0.4, 0.3), 0.3)
+			_set_state("slam_recover")
+		return true
+	if state == "slam_recover":
+		velocity = Vector2.ZERO
+		if state_time >= 0.6:
+			_set_state("idle")
+		return true
+	if state == "idle" and target != null and _slam_cooldown <= 0.0 and _dist_to_target() <= float(slam.get("trigger_range", 50.0)):
+		_slam_cooldown = float(slam.get("cooldown", 4.0))
+		_set_state("slam_warn")
+		_play_anim("attack")
+		return true
+	_slam_cooldown = maxf(0.0, _slam_cooldown - delta)
+	return false
+
+
+var _slam_cooldown: float = 1.5
+
+
+func _pulse_support(support: Dictionary) -> void:
+	var radius := float(support.get("radius", 90.0))
+	for n in get_tree().get_nodes_in_group("monster"):
+		var m := n as Monster
+		if m == null or m == self or m.is_dead() or m.global_position.distance_to(global_position) > radius:
+			continue
+		m.damage_taken_mult = float(support.get("damage_taken_mult", 0.85))
+		m._ward_time = float(support.get("duration", 3.0))
+	RingFX.spawn(get_tree(), global_position, radius * 0.6, Color(0.6, 0.85, 1.0), 0.35)
+
+
+func _summon(summon: Dictionary) -> void:
+	var parent := get_parent()
+	if parent == null or network_replica:
+		return
+	for i in range(int(summon.get("count", 2))):
+		var add := Monster.create(str(summon.get("id", "slime")))
+		add.network_zone_id = network_zone_id
+		add.position = position + Vector2.from_angle(TAU * float(i) / float(maxi(int(summon.get("count", 2)), 1))) * 28.0
+		parent.add_child.call_deferred(add)
 
 
 func _set_state(s: String) -> void:
@@ -353,7 +443,7 @@ func _think_melee(_delta: float) -> void:
 		"windup":
 			if state_time >= 0.4:
 				if target and _dist_to_target() <= attack_range + body_radius + 12.0:
-					target.take_damage(damage)
+					_hit_target(target)
 				_set_state("recover")
 		"recover":
 			if state_time >= 0.55:
@@ -380,7 +470,7 @@ func _think_stationary_melee(_delta: float) -> void:
 		return
 	facing = _dir_to_target()
 	attack_cooldown = float(def.get("attack_interval", 1.0))
-	target.take_damage(damage)
+	_hit_target(target)
 	_set_state("windup")
 	_play_anim("attack")
 
@@ -394,7 +484,7 @@ func _think_timed_melee(_delta: float) -> void:
 			if not _attack_hit_applied and state_time >= hit_time:
 				_attack_hit_applied = true
 				if target and _dist_to_target() <= attack_range:
-					target.take_damage(damage)
+					_hit_target(target)
 			if state_time >= attack_duration:
 				_set_state("recover")
 		"recover":
@@ -424,7 +514,9 @@ func _think_ranged(_delta: float) -> void:
 				if target:
 					var from := global_position + Vector2(0, -visual_height * 0.5)
 					var aim := (target.global_position + Vector2(0, -10) - from).normalized()
-					Projectile.fire(get_tree(), from, aim, 140.0, float(damage), "enemy", def.get("projectile", "bolt_enemy"))
+					var shot := Projectile.fire(get_tree(), from, aim, 140.0, float(damage), "enemy", def.get("projectile", "bolt_enemy"))
+					if shot:
+						shot.on_hit = def.get("on_hit", {})
 				_set_state("recover")
 		"recover":
 			if state_time >= 0.9:
@@ -458,7 +550,7 @@ func _think_charger(_delta: float) -> void:
 			velocity = _charge_dir * 240.0
 			if not _charge_hit and target and _dist_to_target() <= body_radius + 12.0:
 				_charge_hit = true
-				target.take_damage(damage)
+				_hit_target(target)
 			if state_time >= 0.45:
 				_set_state("recover")
 		"recover":
@@ -484,7 +576,7 @@ func _update_visual() -> void:
 	if visual == null:
 		return
 	if visual is AnimatedSprite2D:
-		if state != "windup" and state != "telegraph":
+		if state != "windup" and state != "telegraph" and state != "slam_warn":
 			_play_anim("move" if velocity.length() > 2.0 else "idle")
 	else:
 		var spr := visual as Sprite2D
@@ -498,7 +590,7 @@ func _update_visual() -> void:
 	var m := Color(1, 1, 1)
 	if _flash > 0.0:
 		m = Color(3, 3, 3)
-	elif state == "windup" or state == "telegraph":
+	elif state == "windup" or state == "telegraph" or state == "slam_warn":
 		m = Color(1.4, 0.8, 0.8)
 	var tint: Color = def.get("tint", Color.WHITE)
 	visual.self_modulate = m * tint
@@ -529,6 +621,25 @@ func _draw() -> void:
 	draw_set_transform(Vector2(0, 0), 0.0, Vector2(1.0, 0.4))
 	draw_circle(Vector2.ZERO, body_radius * 0.9, Color(0, 0, 0, 0.28))
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	# Ground slam warning: red circle that fills up until the hit lands
+	if state == "slam_warn":
+		var slam: Dictionary = def.get("slam", {})
+		var radius := float(slam.get("radius", 40.0))
+		var fill := clampf(state_time / maxf(float(slam.get("warn", 0.8)), 0.01), 0.0, 1.0)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.55))
+		draw_circle(Vector2.ZERO, radius, Color(1, 0.15, 0.1, 0.18))
+		draw_circle(Vector2.ZERO, radius * fill, Color(1, 0.15, 0.1, 0.28))
+		draw_arc(Vector2.ZERO, radius, 0.0, TAU, 40, Color(1, 0.25, 0.2, 0.9), 2.0)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	# Elites and mini-bosses glow (sheet 05 §6.1)
+	if elite or is_mini_boss:
+		var glow := Color(1.0, 0.82, 0.25) if elite else Color(1.0, 0.45, 0.3)
+		glow.a = 0.45 + 0.25 * sin(_t * 4.0)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.45))
+		draw_arc(Vector2.ZERO, body_radius * 1.25 + 3.0, 0.0, TAU, 32, glow, 2.0)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	if damage_taken_mult < 1.0:
+		draw_arc(Vector2(0, -visual_height * 0.5), body_radius + 6.0, 0.0, TAU, 24, Color(0.6, 0.85, 1.0, 0.6), 1.5)
 	# Charger telegraph line
 	if state == "telegraph":
 		var end := _charge_dir * 240.0 * 0.45
@@ -536,6 +647,10 @@ func _draw() -> void:
 	# Captured field monsters keep a small red HP bar visible even when full.
 	if not is_boss:
 		var w := 30.0
+		if elite:
+			w = 42.0
+		elif is_mini_boss:
+			w = 60.0
 		var y := -visual_height - 6.0
 		draw_rect(Rect2(-w / 2 - 1, y - 1, w + 2, 5), Color(0.03, 0.025, 0.03), true)
 		draw_rect(Rect2(-w / 2, y, w * float(hp) / float(max_hp), 3), Color(0.78, 0.06, 0.07), true)
@@ -567,6 +682,7 @@ func apply_hit(amount: int, from_pos: Vector2, crit: bool = false, attacker_peer
 		LanSession.request_enemy_hit(network_id)
 		return 0
 	_last_attacker_peer_id = attacker_peer_id
+	amount = maxi(1, roundi(float(amount) * damage_taken_mult))
 	var applied := mini(maxi(amount, 0), hp)
 	hp = maxi(0, hp - amount)
 	_flash = 0.1
@@ -663,6 +779,10 @@ func _grant_rewards(killer_peer_id: int = 1) -> void:
 		else:
 			ItemSpawner.spawn_gold(get_tree(), pos, gold, pos)
 	# Items: each entry rolls independently, weight = percent chance
+	if elite:
+		_drop_bonus("elite_bonus", pos)
+	if is_mini_boss:
+		_drop_bonus(str(def.get("bonus_table", "mini_boss_bonus")), pos)
 	var loot: Array = def.get("loot", [])
 	var luck := 2.0 if elite else 1.0
 	for entry in loot:
@@ -673,3 +793,16 @@ func _grant_rewards(killer_peer_id: int = 1) -> void:
 				LanSession.spawn_authoritative_item(pos, String(entry[0]), quantity)
 			else:
 				ItemSpawner.spawn_item(get_tree(), pos, entry[0], quantity, pos)
+
+
+## One extra roll from a data loot table (elite / mini-boss bonus, loot_tables.json).
+func _drop_bonus(table_id: String, pos: Vector2) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	var reward := LootTableData.roll(table_id, rng)
+	if reward.is_empty() or LootTableData.is_currency(str(reward["item_id"])):
+		return
+	if LanSession.is_host():
+		LanSession.spawn_authoritative_item(pos, str(reward["item_id"]), int(reward["quantity"]))
+	else:
+		ItemSpawner.spawn_item(get_tree(), pos, str(reward["item_id"]), int(reward["quantity"]), pos)

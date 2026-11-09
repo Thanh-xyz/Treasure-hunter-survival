@@ -195,6 +195,9 @@ const SPRITE_BASE_POS := Vector2(0, 4)
 const MOUNT_RAISE := 9.0
 ## Burn / poison / slow / freeze from monsters (plan phase D). The LAN host owns client statuses.
 var statuses := StatusEffects.new()
+## Outfit folder and held weapon from PlayerAppearance (gear changes the look).
+var current_outfit: String = ""
+var weapon_sprite: Sprite2D = null
 var mount_sprite: AnimatedSprite2D = null
 var _stomp_tween: Tween = null
 var _stomp_ready_at: float = 0.0
@@ -203,7 +206,9 @@ var pet: PetFollower = null
 var _respawn_invuln: float = 0.0
 var _survival_name_label: Label = null
 var _survival_hp_bar: ProgressBar = null
-var auto_farm_enabled: bool = false
+var auto_farm_enabled: bool = false   ## auto attack: seek and hit the nearest monster
+var auto_dig_enabled: bool = false    ## auto dig: walk onto the nearest undug plot (owner request 2026-11-09)
+const AUTO_DIG_SCAN_RANGE := 420.0
 var _auto_farm_target: Node2D = null
 var _dig_tween: Tween = null
 
@@ -258,11 +263,65 @@ func _ready() -> void:
 
 
 func _apply_source_style_frames() -> void:
-	anim.sprite_frames = PixelArt.make_guest_frames()
 	anim.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	anim.position = SPRITE_BASE_POS
-	anim.scale = Vector2(1.22, 1.35)
+	anim.scale = Vector2(2, 2)        # 16 px CC0 Ninja Adventure outfit, integer scale
+	anim.offset = Vector2(0, -6)      # feet on the shadow
+	weapon_sprite = Sprite2D.new()
+	weapon_sprite.name = "WeaponInHand"
+	weapon_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	anim.add_child(weapon_sprite)
+	apply_appearance()
 	anim.play("idle_down")
+
+
+## Wearing gear changes the look (owner request 2026-11-09): the armor picks the outfit,
+## the weapon is drawn in hand. Keeps the current animation and frame.
+func apply_appearance() -> void:
+	var armor: ItemData = inventory.get_equipped("armor") if inventory else null
+	var weapon: ItemData = inventory.get_equipped("weapon") if inventory else null
+	var outfit := PlayerAppearance.outfit_for(armor)
+	if outfit != current_outfit or anim.sprite_frames == null:
+		var playing := anim.animation
+		var frame_index := anim.frame
+		var new_frames := PlayerAppearance.frames(outfit)
+		if new_frames != null:
+			anim.sprite_frames = new_frames
+			current_outfit = outfit
+			if new_frames.has_animation(playing):
+				anim.play(playing)
+				anim.frame = mini(frame_index, new_frames.get_frame_count(playing) - 1)
+	if weapon_sprite != null:
+		weapon_sprite.texture = PlayerAppearance.weapon_texture(PlayerAppearance.weapon_for(weapon))
+		_update_weapon_pose()
+	GameEvent.appearance_changed.emit(outfit)
+
+
+## Held weapon follows the facing; it swings during attacks.
+func _update_weapon_pose() -> void:
+	if weapon_sprite == null or weapon_sprite.texture == null:
+		return
+	var key := _direction_to_attack_key(last_dir)
+	var swinging := current_state == State.ATTACK
+	match key:
+		"down":
+			weapon_sprite.position = Vector2(5, 3)
+			weapon_sprite.z_index = 1
+			weapon_sprite.flip_h = false
+		"up":
+			weapon_sprite.position = Vector2(-5, 1)
+			weapon_sprite.z_index = -1
+			weapon_sprite.flip_h = true
+		"left":
+			weapon_sprite.position = Vector2(-5, 3)
+			weapon_sprite.z_index = 1
+			weapon_sprite.flip_h = true
+		_:
+			weapon_sprite.position = Vector2(5, 3)
+			weapon_sprite.z_index = 1
+			weapon_sprite.flip_h = false
+	var side := -1.0 if weapon_sprite.flip_h else 1.0
+	weapon_sprite.rotation = (side * (1.4 if swinging else 0.35)) if key != "up" else side * 0.2
 
 
 func _physics_process(delta: float) -> void:
@@ -291,10 +350,12 @@ func _physics_process(delta: float) -> void:
 	var manual_move := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	if auto_farm_enabled and manual_move.length_squared() > 0.04:
 		set_auto_farm(false, true)
+	if auto_dig_enabled and manual_move.length_squared() > 0.04:
+		set_auto_dig(false, true)
 
 	# Auto-farm owns movement only while it has a local target. Manual joystick
 	# input immediately returns control to the player.
-	var auto_handled := auto_farm_enabled and _drive_auto_farm()
+	var auto_handled := (auto_farm_enabled and _drive_auto_farm()) or (auto_dig_enabled and _drive_auto_dig())
 	if not auto_handled:
 		match current_state:
 			State.IDLE:
@@ -936,6 +997,7 @@ func add_gold(amount: int) -> void:
 func _on_equipment_changed(_slot_type: String) -> void:
 	if inventory == null:
 		return
+	apply_appearance()
 	if stats != null:
 		stats.apply_equipment_bonuses(inventory)
 		# Update hitbox damage with new attack stat
@@ -1430,7 +1492,7 @@ func _spawn_pet() -> void:
 # --- Combat helpers ---------------------------------------------------------
 
 func can_auto_dig() -> bool:
-	if is_dead() or auto_farm_enabled or current_state == State.ATTACK or current_state == State.SKILL:
+	if is_dead() or (auto_farm_enabled and _auto_farm_target != null) or current_state == State.ATTACK or current_state == State.SKILL:
 		return false
 	if GameState.mounted:
 		return false
@@ -1469,6 +1531,52 @@ func set_auto_farm(enabled: bool, manual_override: bool = false) -> void:
 		_change_state(State.IDLE)
 	var suffix := " (manual movement)" if manual_override else ""
 	GameEvent.toast.emit("Auto farm %s%s" % ["on" if enabled else "off", suffix], UiTheme.C_GOLD if enabled else UiTheme.C_MUTED)
+
+
+func set_auto_dig(enabled: bool, manual_override: bool = false) -> void:
+	if enabled and is_dead():
+		return
+	if auto_dig_enabled == enabled:
+		return
+	auto_dig_enabled = enabled
+	if not enabled and current_state == State.MOVE:
+		velocity = Vector2.ZERO
+		_change_state(State.IDLE)
+	var suffix := " (manual movement)" if manual_override else ""
+	GameEvent.toast.emit("Auto dig %s%s" % ["on" if enabled else "off", suffix], UiTheme.C_GOLD if enabled else UiTheme.C_MUTED)
+
+
+## Walk to the nearest plot that can be dug and stand on it; DigSpot does the digging.
+## Returns false once standing on it so the normal idle/dig flow runs.
+func _drive_auto_dig() -> bool:
+	if current_state == State.DEATH or current_state == State.SKILL or current_state == State.ATTACK or GameState.mounted:
+		return false
+	var best: Node2D = null
+	var best_d := AUTO_DIG_SCAN_RANGE
+	for n in get_tree().get_nodes_in_group("dig_spot"):
+		var spot := n as DigSpot
+		if spot == null or spot._depleted:
+			continue
+		var d := spot.global_position.distance_to(global_position)
+		if d < best_d:
+			best_d = d
+			best = spot
+	if best == null:
+		if current_state == State.MOVE:
+			velocity = Vector2.ZERO
+			_change_state(State.IDLE)
+		return false
+	if best_d <= 8.0:
+		if current_state == State.MOVE:
+			velocity = Vector2.ZERO
+			_change_state(State.IDLE)
+		return false
+	last_dir = (best.global_position - global_position).normalized()
+	velocity = last_dir * stats.move_speed
+	move_and_slide()
+	current_state = State.MOVE
+	_play_move_animation()
+	return true
 
 
 func _drive_auto_farm() -> bool:
@@ -1554,5 +1662,6 @@ func _use_first_gear_skill() -> void:
 
 
 func _process(_delta: float) -> void:
+	_update_weapon_pose()
 	if mount_sprite != null and mount_sprite.visible and absf(last_dir.x) > 0.1:
 		mount_sprite.flip_h = last_dir.x < 0.0

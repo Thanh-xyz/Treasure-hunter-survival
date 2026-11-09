@@ -158,15 +158,43 @@ const STRIP_SHEETS := {
 	}},
 }
 
+
+## Sheets from packs whose layout is not a Ninja grid or strip (plan "appearance & art" pass):
+## anim -> {"fps", "loop", "frames": [[res path, x, y], ...]}; every frame is frame_size big.
+## Gridwright Jam Pack (licence: assets/gridwright/LICENSE.txt), THE PACK (assets/the_pack/READ ME.txt).
+const CUSTOM_SHEETS := {
+	"actor.boss.gridwright.slime_king": {"frame_size": Vector2i(96, 96), "anims": {
+		"idle": {"fps": 8.0, "loop": true, "frames": [["res://assets/gridwright/Bosses/slime_king_normal_right.png", 0, 0], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 96, 0], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 192, 0], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 288, 0], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 384, 0], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 480, 0]]},
+		"move": {"fps": 10.0, "loop": true, "frames": [["res://assets/gridwright/Bosses/slime_king_normal_right.png", 0, 96], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 96, 96], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 192, 96], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 288, 96], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 384, 96], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 480, 96], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 576, 96], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 672, 96]]},
+		"attack": {"fps": 12.0, "loop": true, "frames": [["res://assets/gridwright/Bosses/slime_king_normal_right.png", 0, 192], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 96, 192], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 192, 192], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 288, 192], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 384, 192], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 480, 192], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 576, 192], ["res://assets/gridwright/Bosses/slime_king_normal_right.png", 672, 192]]},
+	}},
+	"actor.animal.gridwright.sparrow": {"frame_size": Vector2i(16, 16), "anims": {
+		"idle_down": {"fps": 3.0, "loop": true, "frames": [["res://assets/gridwright/Animals/sparrow.png", 0, 0], ["res://assets/gridwright/Animals/sparrow.png", 16, 0]]},
+		"move_down": {"fps": 10.0, "loop": true, "frames": [["res://assets/gridwright/Animals/sparrow.png", 32, 0], ["res://assets/gridwright/Animals/sparrow.png", 48, 0], ["res://assets/gridwright/Animals/sparrow.png", 64, 0], ["res://assets/gridwright/Animals/sparrow.png", 80, 0]]},
+		"idle_left": {"fps": 3.0, "loop": true, "frames": [["res://assets/gridwright/Animals/sparrow.png", 0, 16], ["res://assets/gridwright/Animals/sparrow.png", 16, 16]]},
+		"move_left": {"fps": 10.0, "loop": true, "frames": [["res://assets/gridwright/Animals/sparrow.png", 32, 16], ["res://assets/gridwright/Animals/sparrow.png", 48, 16], ["res://assets/gridwright/Animals/sparrow.png", 64, 16], ["res://assets/gridwright/Animals/sparrow.png", 80, 16]]},
+		"idle_right": {"fps": 3.0, "loop": true, "frames": [["res://assets/gridwright/Animals/sparrow.png", 0, 32], ["res://assets/gridwright/Animals/sparrow.png", 16, 32]]},
+		"move_right": {"fps": 10.0, "loop": true, "frames": [["res://assets/gridwright/Animals/sparrow.png", 32, 32], ["res://assets/gridwright/Animals/sparrow.png", 48, 32], ["res://assets/gridwright/Animals/sparrow.png", 64, 32], ["res://assets/gridwright/Animals/sparrow.png", 80, 32]]},
+		"idle_up": {"fps": 3.0, "loop": true, "frames": [["res://assets/gridwright/Animals/sparrow.png", 0, 48], ["res://assets/gridwright/Animals/sparrow.png", 16, 48]]},
+		"move_up": {"fps": 10.0, "loop": true, "frames": [["res://assets/gridwright/Animals/sparrow.png", 32, 48], ["res://assets/gridwright/Animals/sparrow.png", 48, 48], ["res://assets/gridwright/Animals/sparrow.png", 64, 48], ["res://assets/gridwright/Animals/sparrow.png", 80, 48]]},
+		"idle": {"fps": 3.0, "loop": true, "frames": [["res://assets/gridwright/Animals/sparrow.png", 0, 0], ["res://assets/gridwright/Animals/sparrow.png", 16, 0]]},
+	}},
+	"actor.monster.thepack.tree": {"frame_size": Vector2i(100, 120), "anims": {
+		"idle": {"fps": 4.0, "loop": true, "frames": [["res://assets/the_pack/Monsters/Tree/ground Up/09.png", 0, 0], ["res://assets/the_pack/Monsters/Tree/ground Up/10.png", 0, 0], ["res://assets/the_pack/Monsters/Tree/ground Up/11.png", 0, 0], ["res://assets/the_pack/Monsters/Tree/ground Up/10.png", 0, 0]]},
+		"move": {"fps": 6.0, "loop": true, "frames": [["res://assets/the_pack/Monsters/Tree/ground Up/09.png", 0, 0], ["res://assets/the_pack/Monsters/Tree/ground Up/10.png", 0, 0], ["res://assets/the_pack/Monsters/Tree/ground Up/11.png", 0, 0], ["res://assets/the_pack/Monsters/Tree/ground Up/10.png", 0, 0]]},
+		"attack": {"fps": 12.0, "loop": true, "frames": [["res://assets/the_pack/Monsters/Tree/attact/01.png", 0, 0], ["res://assets/the_pack/Monsters/Tree/attact/02.png", 0, 0], ["res://assets/the_pack/Monsters/Tree/attact/03.png", 0, 0], ["res://assets/the_pack/Monsters/Tree/attact/04.png", 0, 0], ["res://assets/the_pack/Monsters/Tree/attact/05.png", 0, 0], ["res://assets/the_pack/Monsters/Tree/attact/06.png", 0, 0], ["res://assets/the_pack/Monsters/Tree/attact/07.png", 0, 0], ["res://assets/the_pack/Monsters/Tree/attact/08.png", 0, 0], ["res://assets/the_pack/Monsters/Tree/attact/09.png", 0, 0], ["res://assets/the_pack/Monsters/Tree/attact/10.png", 0, 0]]},
+	}},
+}
+
 static var _cache: Dictionary = {}
 
 
 static func has_asset(asset_id: String) -> bool:
-	return GRID_SHEETS.has(asset_id) or STRIP_SHEETS.has(asset_id)
+	return GRID_SHEETS.has(asset_id) or STRIP_SHEETS.has(asset_id) or CUSTOM_SHEETS.has(asset_id)
 
 
 static func asset_ids() -> Array:
-	return GRID_SHEETS.keys() + STRIP_SHEETS.keys()
+	return GRID_SHEETS.keys() + STRIP_SHEETS.keys() + CUSTOM_SHEETS.keys()
 
 
 ## Segmented dragon bosses assembled by DragonVisual: asset id -> pack folder.
@@ -189,6 +217,11 @@ static func texture_paths() -> Array:
 		for action: Array in (sheet["actions"] as Dictionary).values():
 			if not paths.has(NINJA + str(action[0])):
 				paths.append(NINJA + str(action[0]))
+	for sheet: Dictionary in CUSTOM_SHEETS.values():
+		for anim: Dictionary in (sheet["anims"] as Dictionary).values():
+			for frame: Array in anim["frames"]:
+				if not paths.has(str(frame[0])):
+					paths.append(str(frame[0]))
 	return paths
 
 
@@ -198,6 +231,8 @@ static func get_definition(asset_id: String) -> Dictionary:
 		return {"frame_size": Vector2i(16, 16), "texture_path": NINJA + str(GRID_SHEETS[asset_id])}
 	if STRIP_SHEETS.has(asset_id):
 		return (STRIP_SHEETS[asset_id] as Dictionary).duplicate(true)
+	if CUSTOM_SHEETS.has(asset_id):
+		return {"frame_size": CUSTOM_SHEETS[asset_id]["frame_size"]}
 	return {}
 
 
@@ -209,6 +244,8 @@ static func get_frames(asset_id: String) -> SpriteFrames:
 		frames = _grid_frames(NINJA + str(GRID_SHEETS[asset_id]))
 	elif STRIP_SHEETS.has(asset_id):
 		frames = _strip_frames(STRIP_SHEETS[asset_id])
+	elif CUSTOM_SHEETS.has(asset_id):
+		frames = _custom_frames(CUSTOM_SHEETS[asset_id])
 	if frames != null:
 		_cache[asset_id] = frames
 	return frames
@@ -245,6 +282,26 @@ static func _strip_frames(sheet: Dictionary) -> SpriteFrames:
 		for i in range(int(spec[1])):
 			cells.append(Vector2i(i, 0))
 		_add(frames, action, texture, frame_size, cells, float(spec[2]), bool(spec[3]))
+	return frames
+
+
+static func _custom_frames(sheet: Dictionary) -> SpriteFrames:
+	var size: Vector2i = sheet["frame_size"]
+	var frames := SpriteFrames.new()
+	frames.remove_animation("default")
+	for anim_name: String in sheet["anims"]:
+		var anim: Dictionary = sheet["anims"][anim_name]
+		frames.add_animation(anim_name)
+		frames.set_animation_loop(anim_name, bool(anim.get("loop", true)))
+		frames.set_animation_speed(anim_name, float(anim.get("fps", 8.0)))
+		for frame: Array in anim["frames"]:
+			var texture := load(str(frame[0])) as Texture2D
+			if texture == null:
+				return null
+			var atlas_texture := AtlasTexture.new()
+			atlas_texture.atlas = texture
+			atlas_texture.region = Rect2(Vector2(int(frame[1]), int(frame[2])), Vector2(size))
+			frames.add_frame(anim_name, atlas_texture)
 	return frames
 
 

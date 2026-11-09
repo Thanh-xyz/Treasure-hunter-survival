@@ -135,7 +135,9 @@ func _test_templates() -> void:
 		seen[key] = true
 		_check(EquipmentBalance.is_valid(str(t["slot"]), str(t["line"]), str(t["rarity"]), 1), "%s invalid placement" % id)
 		_check(not EquipmentCatalog.stats_for(id).is_empty(), "%s has no stats" % id)
-		_check(not str(t.get("name", "")).is_empty() and ArtCatalog.has(str(t.get("icon", ""))), "%s needs a name and a known icon id" % id)
+		var icon := str(t.get("icon", ""))
+		var icon_ok := ResourceLoader.exists(icon) if icon.begins_with("res://") else ArtCatalog.has(icon)
+		_check(not str(t.get("name", "")).is_empty() and icon_ok, "%s needs a name and a known icon (art id or licensed file)" % id)
 	_check(commons == 15, "15 common base templates (5 slots x 3 lines), got %d" % commons)
 	for starter in ["ashwood_blade", "ironbark_cleaver", "ember_dirk"]:
 		_check(EquipmentCatalog.has(starter), "starter weapon %s missing" % starter)

@@ -34,6 +34,9 @@ func _ready() -> void:
 	_sprite.sprite_frames = MonsterVisualCatalog.get_frames(art)
 	_sprite.scale = Vector2(WORLD_SCALE, WORLD_SCALE)
 	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	var species_tint := str(CompanionCatalog.species(species_id).get("tint", ""))
+	if not species_tint.is_empty():
+		_sprite.modulate = Color(species_tint)
 	var frame_size: Vector2i = MonsterVisualCatalog.get_definition(art).get("frame_size", Vector2i(16, 16))
 	_sprite.position = Vector2(0, -frame_size.y * WORLD_SCALE * 0.5)
 	add_child(_sprite)

@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "comment": "What the Kindler looks like (owner request 2026-11-09: wearing gear changes the look). The equipped armor's line and rarity pick a full outfit (CC0 Ninja Adventure characters); the equipped weapon's line (and rarity) picks the weapon drawn in hand. No modular helmet/boots/back layers exist in the licensed packs yet.",
+  "default_outfit": "Boy",
+  "outfits": {
+    "tank":     {"common": "GladiatorBlue", "uncommon": "Knight", "epic": "RedGladiator", "legendary": "KnightGold"},
+    "damage":   {"common": "NinjaRed", "uncommon": "NinjaFire", "epic": "NinjaDark", "legendary": "NinjaThunder"},
+    "balanced": {"common": "Hunter", "uncommon": "NinjaGreen", "epic": "NinjaLeaf", "legendary": "NinjaMasked"}
+  },
+  "weapons": {
+    "sword":  {"common": "Sword", "uncommon": "Sword", "epic": "BigSword", "legendary": "BigSword"},
+    "axe":    {"common": "Axe", "uncommon": "Axe", "epic": "Axe", "legendary": "Axe"},
+    "dagger": {"common": "Sai", "uncommon": "Sai", "epic": "Sai", "legendary": "Sai"}
+  }
+}

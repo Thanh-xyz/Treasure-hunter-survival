@@ -88,15 +88,15 @@
     "slots": [[9, "slime_king"], [12, "infernal_dragon"], [15, "frost_leviathan"], [18, "slime_king"], [21, "infernal_dragon"], [0, "frost_leviathan"]]
   },
   "cards": {
-    "card_meadow_guardian": {"name": "Meadow Guardian Card", "rarity": "rare", "boss": "verdant_treant", "regions": ["meadow"], "fragment": "fragment_meadow", "fragments_needed": 10},
-    "card_ash_destroyer":   {"name": "Ash Destroyer Card", "rarity": "epic", "boss": "ash_devourer", "regions": ["ash"], "fragment": "fragment_ash", "fragments_needed": 15},
-    "card_snow_titan":      {"name": "Snow Titan Card", "rarity": "epic", "boss": "frost_abyss_king", "regions": ["snow"], "fragment": "fragment_snow", "fragments_needed": 15},
-    "card_dragon_lord":     {"name": "Dragon Lord Card", "rarity": "legendary", "boss": "ancient_dragon", "regions": ["ash", "snow"]},
-    "card_ember_overlord":  {"name": "Ember Overlord Card", "rarity": "legendary", "boss": "ember_overlord", "regions": ["snow"]}
+    "card_meadow_guardian": {"name": "Meadow Guardian Card", "icon": "res://assets/ninja_adventure/Items/Scroll/ScrollPlant.png", "rarity": "rare", "boss": "verdant_treant", "regions": ["meadow"], "fragment": "fragment_meadow", "fragments_needed": 10},
+    "card_ash_destroyer":   {"name": "Ash Destroyer Card", "icon": "res://assets/ninja_adventure/Items/Scroll/ScrollFire.png", "rarity": "epic", "boss": "ash_devourer", "regions": ["ash"], "fragment": "fragment_ash", "fragments_needed": 15},
+    "card_snow_titan":      {"name": "Snow Titan Card", "icon": "res://assets/ninja_adventure/Items/Scroll/ScrollIce.png", "rarity": "epic", "boss": "frost_abyss_king", "regions": ["snow"], "fragment": "fragment_snow", "fragments_needed": 15},
+    "card_dragon_lord":     {"name": "Dragon Lord Card", "icon": "res://assets/ninja_adventure/Items/Scroll/ScrollThunder.png", "rarity": "legendary", "boss": "ancient_dragon", "regions": ["ash", "snow"]},
+    "card_ember_overlord":  {"name": "Ember Overlord Card", "icon": "res://assets/ninja_adventure/Items/Scroll/ScrollRock.png", "rarity": "legendary", "boss": "ember_overlord", "regions": ["snow"]}
   },
   "fragments": {
-    "fragment_meadow": {"name": "Meadow Card Fragment"},
-    "fragment_ash": {"name": "Ash Card Fragment"},
-    "fragment_snow": {"name": "Snow Card Fragment"}
+    "fragment_meadow": {"name": "Meadow Card Fragment", "icon": "res://assets/ninja_adventure/Items/Scroll/ScrollEmpty.png"},
+    "fragment_ash": {"name": "Ash Card Fragment", "icon": "res://assets/ninja_adventure/Items/Scroll/ScrollEmpty.png"},
+    "fragment_snow": {"name": "Snow Card Fragment", "icon": "res://assets/ninja_adventure/Items/Scroll/ScrollEmpty.png"}
   }
 }

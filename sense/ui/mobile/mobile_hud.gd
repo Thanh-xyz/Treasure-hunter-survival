@@ -44,6 +44,8 @@ var joystick: VirtualJoystick
 var attack_btn: ActionButton
 var auto_farm_btn: ActionButton
 var gear_btn: ActionButton
+var _gear_slots: Dictionary = {}       ## slot id -> HudGearSlot
+var _portrait_menu: PanelContainer = null
 var potion_btn: ActionButton
 var mount_btn: ActionButton
 var interact_btn: ActionButton
@@ -111,6 +113,10 @@ func _ready() -> void:
 	GameEvent.world_boss_timer.connect(_on_world_boss_timer)
 	GameEvent.zone_entered.connect(_on_zone_entered)
 	GameState.stats_dirty.connect(_refresh_card)
+	GameState.pet_changed.connect(func(_p: String) -> void: _refresh_gear_slots())
+	GameState.mount_changed.connect(func(_m: String, _r: bool) -> void: _refresh_gear_slots())
+	GameState.collection_changed.connect(_refresh_gear_slots)
+	GameEvent.appearance_changed.connect(func(_o: String) -> void: _portrait.texture = GameMenu.hero_portrait())
 	GameState.mount_changed.connect(func(_m: String, _r: bool) -> void: _refresh_controls())
 	QuestService.quests_changed.connect(_refresh_quests)
 	QuestService.quest_completed.connect(func(_id: String, qname: String) -> void: show_toast("Reward claimed: %s" % qname, UiTheme.C_GOLD))
@@ -129,6 +135,9 @@ func bind_player(p: Node, hud: CanvasLayer) -> void:
 	var inv: InventoryData = p.get_inventory()
 	inv.gold_changed.connect(_on_gold_changed)
 	_on_gold_changed(inv.gold)
+	inv.equipment_changed.connect(func(_s: String) -> void: _refresh_gear_slots())
+	_portrait.texture = GameMenu.hero_portrait()
+	_refresh_gear_slots()
 	_refresh_card()
 	_refresh_controls()
 	_refresh_quests()
@@ -242,7 +251,7 @@ func _build_player_card() -> void:
 	frame.add_theme_stylebox_override("normal", frame_style)
 	frame.add_theme_stylebox_override("hover", frame_style)
 	frame.add_theme_stylebox_override("pressed", frame_style)
-	frame.pressed.connect(func() -> void: _on_menu_button("bag"))
+	frame.pressed.connect(_toggle_portrait_menu)
 	add_child(frame)
 	var portrait_background := _kit_panel("ui.panel.dark")
 	portrait_background.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -432,32 +441,22 @@ func _build_menu_rail() -> void:
 	_world_gold_label = _world_info_row(rv, GOLD_ICON, "0", UiTheme.C_GOLD)
 	_refresh_world_info()
 
-	var left_ids := ["hero", "pet", "mount", "village"]
-	for i in range(4):
-		var left := _nav_button(left_ids[i], left_ids[i].capitalize())
-		left.position = Vector2(12, 958 + i * 102)
-		left.size = Vector2(90, 90)
-		_foldable_controls.append(left)
+	# Side rails: 8 gear squares (owner request 2026-11-09). Left: helmet, armor, boots, back.
+	# Right: weapon, pet, mount, special skill. Hero / village / bag / auto modes moved to the
+	# menu and to the portrait popup.
+	var rails := [["helmet", "Helmet", 0, 0], ["armor", "Armor", 0, 1], ["boots", "Boots", 0, 2], ["back", "Back", 0, 3],
+		["weapon", "Weapon", 1, 0], ["pet", "Pet", 1, 1], ["mount", "Mount", 1, 2], ["special", "Skill", 1, 3]]
+	for r: Array in rails:
+		var slot := HudGearSlot.new().setup(str(r[0]), str(r[1]))
+		slot.position = Vector2(12 if int(r[2]) == 0 else 618, 958 + int(r[3]) * 102)
+		slot.pressed.connect(_on_gear_slot.bind(str(r[0])))
+		add_child(slot)
+		_gear_slots[str(r[0])] = slot
+		_foldable_controls.append(slot)
 
-	attack_btn = _action_btn("character_attack", Vector2(663, 1003), 45.0, "")
+	attack_btn = _action_btn("character_attack", Vector2(548, 1180), 52.0, "")
 	attack_btn.icon = WEAPON_ICON
 	_foldable_controls.append(attack_btn)
-
-	var inventory_button := _reference_icon_button(BAG_ICON, "Inventory", func() -> void: _on_menu_button("bag"), RAIL_ICON_TINT)
-	inventory_button.position = Vector2(618, 1060)
-	inventory_button.size = Vector2(90, 90)
-	_foldable_controls.append(inventory_button)
-
-	var pet_button := _reference_icon_button(PET_ICON, "Pets", func() -> void: _on_menu_button("pet"), RAIL_ICON_TINT)
-	pet_button.position = Vector2(618, 1162)
-	pet_button.size = Vector2(90, 90)
-	_foldable_controls.append(pet_button)
-
-	auto_farm_btn = _action_btn("", Vector2(663, 1309), 45.0, "")
-	auto_farm_btn.icon = SKILL_ICON
-	auto_farm_btn.icon_color = RAIL_ICON_TINT
-	auto_farm_btn.tapped.connect(_toggle_auto_farm)
-	_foldable_controls.append(auto_farm_btn)
 
 
 func _nav_button(id: String, caption: String) -> Button:
@@ -902,3 +901,107 @@ func _respawn_town() -> void:
 		player.respawn()
 		if SceneTransitionService.get_active_map() != "town":
 			SceneTransitionService.go_to("town")
+
+
+# =============================================================================
+# GEAR RAILS AND PORTRAIT MENU (owner request 2026-11-09)
+# =============================================================================
+
+func _refresh_gear_slots() -> void:
+	if player == null or _gear_slots.is_empty():
+		return
+	var inv: InventoryData = player.get_inventory()
+	for slot_type: String in InventoryData.EQUIPMENT_SLOTS:
+		var slot: HudGearSlot = _gear_slots.get(slot_type)
+		var item := inv.get_equipped(slot_type) if inv else null
+		if slot == null:
+			continue
+		if item != null:
+			slot.show_item(item.get_icon(), item.get_rarity_color(), "Lv.%d" % item.enhancement_level)
+		else:
+			slot.show_empty(slot_type.capitalize())
+	var pet_slot: HudGearSlot = _gear_slots.get("pet")
+	if pet_slot:
+		if GameState.active_pet != "":
+			var p := CompanionCatalog.parse_pet_key(GameState.active_pet)
+			pet_slot.show_item(_first_frame(str(CompanionCatalog.species(p["species"]).get("art", ""))), CompanionCatalog.quality_color(p["quality"]), "Lv.%d" % GameState.pet_level(GameState.active_pet))
+		else:
+			pet_slot.show_empty("Pet")
+	var mount_slot: HudGearSlot = _gear_slots.get("mount")
+	if mount_slot:
+		if GameState.active_mount != "":
+			var look := MountVisual.describe(GameState.active_mount, GameState.mount_skin(GameState.active_mount), GameState.mount_form(GameState.active_mount))
+			mount_slot.show_item(_first_frame(str(look["art"])), Color(1.0, 0.85, 0.35) if GameState.mounted else Color(0.6, 0.6, 0.65), "Off" if GameState.mounted else "Ride", look["modulate"])
+		else:
+			mount_slot.show_empty("Mount")
+	var special: HudGearSlot = _gear_slots.get("special")
+	if special:
+		special.show_empty("Skill", true)
+
+
+func _first_frame(asset_id: String) -> Texture2D:
+	var frames := MonsterVisualCatalog.get_frames(asset_id)
+	if frames == null:
+		return null
+	for n: String in ["idle_down", "idle", "move"]:
+		if frames.has_animation(n) and frames.get_frame_count(n) > 0:
+			return frames.get_frame_texture(n, 0)
+	return null
+
+
+func _on_gear_slot(slot_id: String) -> void:
+	match slot_id:
+		"pet":
+			open_menu("pet")
+		"mount":
+			if GameState.active_mount == "":
+				open_menu("mount")
+			else:
+				GameState.set_mounted(not GameState.mounted)
+		"special":
+			show_toast("Special skills unlock in a later update.", UiTheme.C_MUTED)
+		_:
+			var existing := get_node_or_null("GearSlotPanel")
+			if existing:
+				existing.queue_free()
+			var panel := GearSlotPanel.new()
+			panel.name = "GearSlotPanel"
+			add_child(panel)
+			panel.setup(player.get_inventory(), slot_id)
+			panel.position = Vector2(80, 420)
+
+
+## Tapping the portrait: bag, auto attack, auto dig (owner request 2026-11-09).
+func _toggle_portrait_menu() -> void:
+	if _portrait_menu != null and is_instance_valid(_portrait_menu):
+		_portrait_menu.queue_free()
+		_portrait_menu = null
+		return
+	_portrait_menu = PanelContainer.new()
+	_portrait_menu.name = "PortraitMenu"
+	_portrait_menu.add_theme_stylebox_override("panel", UiTheme.box(UiTheme.C_PANEL, UiTheme.C_TRIM, 3))
+	_portrait_menu.position = Vector2(126, 18)
+	add_child(_portrait_menu)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 6)
+	_portrait_menu.add_child(v)
+	var auto_attack := bool(player.get("auto_farm_enabled")) if player else false
+	var auto_dig := bool(player.get("auto_dig_enabled")) if player else false
+	v.add_child(UiTheme.button("Bag", _portrait_action.bind("bag"), Vector2(260, 56)))
+	v.add_child(UiTheme.button("Auto attack: %s" % ("ON" if auto_attack else "off"), _portrait_action.bind("attack"), Vector2(260, 56)))
+	v.add_child(UiTheme.button("Auto dig: %s" % ("ON" if auto_dig else "off"), _portrait_action.bind("dig"), Vector2(260, 56)))
+
+
+func _portrait_action(action: String) -> void:
+	match action:
+		"bag":
+			_on_menu_button("bag")
+		"attack":
+			if player and player.has_method("set_auto_farm"):
+				player.set_auto_farm(not bool(player.get("auto_farm_enabled")))
+		"dig":
+			if player and player.has_method("set_auto_dig"):
+				player.set_auto_dig(not bool(player.get("auto_dig_enabled")))
+	if _portrait_menu != null and is_instance_valid(_portrait_menu):
+		_portrait_menu.queue_free()
+		_portrait_menu = null

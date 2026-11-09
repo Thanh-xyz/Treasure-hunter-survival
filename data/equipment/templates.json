@@ -2,21 +2,21 @@
   "version": 1,
   "comment": "Equipment templates. Stats are computed from balance.json by slot, line, rarity and level; add items here without code changes. `stat_override` is optional and still budget-checked by tests.",
   "templates": [
-    {"id": "ironbark_helm", "name": "Ironbark Helm", "slot": "helmet", "line": "tank", "rarity": "common", "icon": "ui.icon.weapon"},
-    {"id": "ember_visor", "name": "Ember Visor", "slot": "helmet", "line": "damage", "rarity": "common", "icon": "ui.icon.damage"},
-    {"id": "wayfarer_hood", "name": "Wayfarer Hood", "slot": "helmet", "line": "balanced", "rarity": "common", "icon": "ui.icon.skill"},
-    {"id": "ironbark_plate", "name": "Ironbark Plate", "slot": "armor", "line": "tank", "rarity": "common", "icon": "ui.icon.weapon"},
-    {"id": "ember_harness", "name": "Ember Harness", "slot": "armor", "line": "damage", "rarity": "common", "icon": "ui.icon.damage"},
-    {"id": "wayfarer_coat", "name": "Wayfarer Coat", "slot": "armor", "line": "balanced", "rarity": "common", "icon": "ui.icon.skill"},
+    {"id": "ironbark_helm", "name": "Ironbark Helm", "slot": "helmet", "line": "tank", "rarity": "common", "icon": "res://assets/gridwright/Icons/helmet_iron.png"},
+    {"id": "ember_visor", "name": "Ember Visor", "slot": "helmet", "line": "damage", "rarity": "common", "icon": "res://assets/gridwright/Icons/helmet_iron.png"},
+    {"id": "wayfarer_hood", "name": "Wayfarer Hood", "slot": "helmet", "line": "balanced", "rarity": "common", "icon": "res://assets/gridwright/Icons/helmet_iron.png"},
+    {"id": "ironbark_plate", "name": "Ironbark Plate", "slot": "armor", "line": "tank", "rarity": "common", "icon": "res://assets/gridwright/Icons/chestplate_steel.png"},
+    {"id": "ember_harness", "name": "Ember Harness", "slot": "armor", "line": "damage", "rarity": "common", "icon": "res://assets/gridwright/Icons/chestplate_steel.png"},
+    {"id": "wayfarer_coat", "name": "Wayfarer Coat", "slot": "armor", "line": "balanced", "rarity": "common", "icon": "res://assets/gridwright/Icons/chestplate_steel.png"},
     {"id": "ironbark_greaves", "name": "Ironbark Greaves", "slot": "boots", "line": "tank", "rarity": "common", "icon": "ui.icon.speed"},
     {"id": "ember_treads", "name": "Ember Treads", "slot": "boots", "line": "damage", "rarity": "common", "icon": "ui.icon.speed"},
     {"id": "wayfarer_boots", "name": "Wayfarer Boots", "slot": "boots", "line": "balanced", "rarity": "common", "icon": "ui.icon.speed"},
-    {"id": "ashwood_blade", "name": "Ashwood Blade", "slot": "weapon", "line": "sword", "rarity": "common", "icon": "ui.icon.attack"},
-    {"id": "ironbark_cleaver", "name": "Ironbark Cleaver", "slot": "weapon", "line": "axe", "rarity": "common", "icon": "ui.icon.attack"},
-    {"id": "ember_dirk", "name": "Ember Dirk", "slot": "weapon", "line": "dagger", "rarity": "common", "icon": "ui.icon.attack"},
-    {"id": "ironbark_pack", "name": "Ironbark Pack", "slot": "back", "line": "tank", "rarity": "common", "icon": "ui.icon.weapon"},
-    {"id": "ember_quiver", "name": "Ember Quiver", "slot": "back", "line": "damage", "rarity": "common", "icon": "ui.icon.damage"},
+    {"id": "ashwood_blade", "name": "Ashwood Blade", "slot": "weapon", "line": "sword", "rarity": "common", "icon": "res://assets/gridwright/Icons/sword_iron.png"},
+    {"id": "ironbark_cleaver", "name": "Ironbark Cleaver", "slot": "weapon", "line": "axe", "rarity": "common", "icon": "res://assets/gridwright/Icons/axe_bronze.png"},
+    {"id": "ember_dirk", "name": "Ember Dirk", "slot": "weapon", "line": "dagger", "rarity": "common", "icon": "res://assets/gridwright/Icons/dagger_gold.png"},
+    {"id": "ironbark_pack", "name": "Ironbark Pack", "slot": "back", "line": "tank", "rarity": "common", "icon": "res://assets/gridwright/Icons/bag_leather.png"},
+    {"id": "ember_quiver", "name": "Ember Quiver", "slot": "back", "line": "damage", "rarity": "common", "icon": "res://assets/gridwright/Icons/arrow_iron.png"},
     {"id": "wayfarer_cloak", "name": "Wayfarer Cloak", "slot": "back", "line": "balanced", "rarity": "common", "icon": "ui.icon.skill"},
-    {"id": "emberforged_blade", "name": "Emberforged Blade", "slot": "weapon", "line": "sword", "rarity": "epic", "icon": "ui.icon.attack", "description": "Quenched in a living ember. Holds two runes."}
+    {"id": "emberforged_blade", "name": "Emberforged Blade", "slot": "weapon", "line": "sword", "rarity": "epic", "icon": "res://assets/gridwright/Icons/longsword_steel.png", "description": "Quenched in a living ember. Holds two runes."}
   ]
 }

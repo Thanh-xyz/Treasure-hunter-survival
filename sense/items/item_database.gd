@@ -211,6 +211,7 @@ func _create_gems() -> void:
 			"price": int(tier.get("sell_price", 10)) * 2, "sell_price": int(tier.get("sell_price", 10)),
 			"icon_name": "diamond",
 		})
+		items[stone_id].icon_asset_id = str(GemCatalog.type_def(p["type"]).get("icon", ""))
 
 
 ## Pet eggs (data/companions/pets.json). Hatched from the Pet menu. Icon placeholder until pet
@@ -240,6 +241,7 @@ func _create_boss_cards() -> void:
 			"rarity": rarity_by_name.get(str(c.get("rarity", "rare")), ItemData.ItemRarity.RARE),
 			"icon_name": "power_fragment",
 		})
+		items[card_id].icon_asset_id = str(c.get("icon", ""))
 	for fragment_id: String in BossCatalog.fragments():
 		items[fragment_id] = ItemHelper.create_item({
 			"id": fragment_id, "name": str(BossCatalog.fragments()[fragment_id].get("name", fragment_id)),
@@ -248,6 +250,7 @@ func _create_boss_cards() -> void:
 			"rarity": ItemData.ItemRarity.UNCOMMON,
 			"icon_name": "power_fragment",
 		})
+		items[fragment_id].icon_asset_id = str(BossCatalog.fragments()[fragment_id].get("icon", ""))
 
 
 func _create_timed_buffs() -> void:

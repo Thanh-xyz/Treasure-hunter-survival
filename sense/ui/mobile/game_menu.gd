@@ -191,8 +191,11 @@ func _icon(tex: Texture2D, size_px: int = 72, tint: Color = Color.WHITE) -> Text
 	return tr
 
 
+## The Kindler's face in the outfit they wear now (PlayerAppearance).
 static func hero_portrait() -> Texture2D:
-	return PixelArt.make_guest_portrait()
+	var player := (Engine.get_main_loop() as SceneTree).get_first_node_in_group("player") if Engine.get_main_loop() is SceneTree else null
+	var outfit := str(player.get("current_outfit")) if player != null and player.get("current_outfit") != null else ""
+	return PlayerAppearance.portrait(outfit if not outfit.is_empty() else str(PlayerAppearance.data().get("default_outfit", "Boy")))
 
 
 func _act(ok: bool, fail_msg: String) -> void:

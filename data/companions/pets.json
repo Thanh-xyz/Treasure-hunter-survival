@@ -18,7 +18,7 @@
     "brown_bunny":    {"name": "Brown Bunny", "focus": "HP", "stats": {"hp": 30}, "art": "actor.animal.ninja.hamster_brown", "art_status": "NEEDS_ASSET: no rabbit in the pack; hamster placeholder"},
     "snow_bunny":     {"name": "Snow Bunny", "focus": "Defense", "stats": {"def": 3, "hp": 10}, "art": "actor.animal.ninja.hamster_gray", "art_status": "NEEDS_ASSET: no rabbit in the pack; hamster placeholder"},
     "ash_salamander": {"name": "Ash Salamander", "focus": "Fire, Damage", "stats": {"fire_damage": 2, "atk": 2}, "art": "actor.monster.ninja.axolot"},
-    "ash_crow":       {"name": "Ash Crow", "focus": "Critical, Accuracy", "stats": {"crit_chance": 1.5, "accuracy": 3}, "art": "actor.animal.ninja.parrot_red", "art_status": "NEEDS_ASSET: no crow in the pack; parrot placeholder"},
+    "ash_crow":       {"name": "Ash Crow", "focus": "Critical, Accuracy", "stats": {"crit_chance": 1.5, "accuracy": 3}, "art": "actor.animal.gridwright.sparrow", "tint": "6e6470", "art_status": "Gridwright sparrow, tinted ash grey (closest bird; no crow)"},
     "frost_fox":      {"name": "Frost Fox", "focus": "Freeze, Damage", "stats": {"ice_slow": 3, "atk": 2}, "art": "actor.animal.ninja.dog_white"},
     "glacier_owl":    {"name": "Glacier Owl", "focus": "Defense, Dodge", "stats": {"def": 3, "dodge": 1}, "art": "actor.monster.ninja.owl2"},
     "ember_drake":    {"name": "Ember Drake", "focus": "HP, Damage, Fire", "stats": {"hp": 20, "atk": 3, "fire_damage": 2}, "art": "actor.monster.ninja.dragon"}

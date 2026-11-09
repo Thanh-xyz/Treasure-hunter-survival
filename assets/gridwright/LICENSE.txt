@@ -1,0 +1,23 @@
+GRIDWRIGHT JAM PACK - LICENCE
+
+Free for Gridwright Jam #1 and after it.
+
+You may:
+  - use these assets in any number of personal and commercial projects (games, apps, videos, prototypes),
+    in the jam and after it;
+  - modify them to fit your project;
+  - ship them inside your finished game or app. That is normal use, not redistribution.
+
+You may not:
+  - resell, redistribute or repackage the assets, modified or not, as assets
+    (asset packs, templates, UI kits, tilesets, stock art, engine marketplace content);
+  - claim them as your own work;
+  - use them to train AI / machine-learning models, or in NFTs and similar tokens.
+
+Credit is appreciated, not required: "Art by Gridwright". (In the jam, a credit with a link is part of the rules.)
+
+Each folder also has its own LICENSE.txt with the same terms and a note on how that pack was made.
+How they were made: every sprite is drawn by code and every sound and track is synthesised by code (Python).
+No third-party art, fonts, textures or recordings are included.
+
+The assets are provided "as is", without warranty of any kind.

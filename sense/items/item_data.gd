@@ -280,6 +280,8 @@ func is_timed_buff() -> bool:
 
 ## Get the icon texture (supports both direct texture and atlas)
 func get_icon() -> Texture2D:
+	if icon_asset_id.begins_with("res://"):
+		return load(icon_asset_id) as Texture2D  # licensed pack icon (provenance-registered file)
 	if not icon_asset_id.is_empty():
 		return ArtCatalog.texture(icon_asset_id, 2)
 	if use_atlas_icon:

@@ -124,19 +124,17 @@ const MONSTERS := {
 	# ------------------------------------------------------------ mini-bosses (sheet 05 §7)
 	# Random field mini-bosses: scaled, tinted CC0 sprites until dedicated art exists.
 	"mini_boss_slime_monarch": {
-		"name": "Slime Monarch", "mini_boss": true, "visual": "atlas", "asset_id": "actor.monster.ninja.slime",
-		"tint": Color(1.2, 1.1, 0.6),
+		"name": "Slime Monarch", "mini_boss": true, "visual": "atlas", "asset_id": "actor.boss.gridwright.slime_king",
 		"ai": "melee", "hp": 900, "dmg": 18, "spd": 30.0, "level": 12,
-		"range": 26.0, "aggro": 200.0, "scale": 4.0, "gold": Vector2i(60, 120), "bonus_table": "mini_boss_meadow",
+		"range": 26.0, "aggro": 200.0, "scale": 1.5, "gold": Vector2i(60, 120), "bonus_table": "mini_boss_meadow",
 		"loot": [["stone_guard_1", 100, 2, 3], ["egg_forest", 20, 1, 1]],
 		"slam": {"radius": 48.0, "warn": 0.9, "mult": 1.4, "cooldown": 4.5, "trigger_range": 46.0},
 		"summon": {"id": "slime", "count": 3, "at_hp": 0.5}, "knockback_immune": true,
 	},
 	"mini_boss_rootfang": {
-		"name": "Rootfang", "mini_boss": true, "visual": "atlas", "asset_id": "actor.monster.ninja.reptile2",
-		"art_status": "NEEDS_ASSET",
+		"name": "Rootfang", "mini_boss": true, "visual": "atlas", "asset_id": "actor.monster.thepack.tree",
 		"ai": "charger", "hp": 1100, "dmg": 22, "spd": 40.0, "level": 14,
-		"range": 130.0, "aggro": 220.0, "scale": 3.5, "gold": Vector2i(70, 130), "bonus_table": "mini_boss_meadow",
+		"range": 130.0, "aggro": 220.0, "scale": 1.2, "gold": Vector2i(70, 130), "bonus_table": "mini_boss_meadow",
 		"loot": [["stone_regeneration_1", 100, 1, 2], ["egg_forest", 20, 1, 1]],
 		"on_hit": {"status": "slow", "chance": 0.4, "duration": 2.0, "magnitude": 30},
 		"slam": {"radius": 40.0, "warn": 1.0, "mult": 1.2, "cooldown": 6.0, "trigger_range": 40.0}, "knockback_immune": true,

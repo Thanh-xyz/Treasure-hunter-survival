@@ -9,7 +9,7 @@ signal host_zone_requested(zone_id: String)
 
 const PORT := 24567
 const MAX_CLIENTS := 3
-const PROTOCOL_VERSION := 7  # v7: socket stones, single character, no player level (save v7)
+const PROTOCOL_VERSION := 8  # v8: boss encounter rewards (phase E)
 const SEND_INTERVAL := 0.05
 const ZONE_INTERVAL := 1.0
 const ENEMY_SEND_INTERVAL := 0.10
@@ -793,6 +793,25 @@ func _request_loot_pickup(loot_id: int) -> void:
 		"expires_at": Time.get_ticks_msec() / 1000.0 + LOOT_RESERVATION_TIMEOUT,
 	}
 	_apply_loot_transaction.rpc_id(sender, tx_id, loot_id, kind, item.item_id, quantity)
+
+
+## Host → peer: one boss encounter's share (sheet 06 §8). The client pays it once per
+## encounter id (GameState.boss_claims), so a resend after a reconnect changes nothing.
+func grant_boss_reward(peer_id: int, encounter_id: String, rewards: Array) -> void:
+	if mode != Mode.HOST or not accepted_peers.has(peer_id):
+		return
+	var clean: Array = []
+	for r: Variant in rewards:
+		if r is Dictionary and ItemDatabase.get_item(str(r.get("item_id", ""))) != null:
+			clean.append({"item_id": str(r["item_id"]), "quantity": clampi(int(r.get("quantity", 1)), 1, MAX_LOOT_QUANTITY)})
+	_receive_boss_reward.rpc_id(peer_id, encounter_id, clean)
+
+
+@rpc("authority", "call_remote", "reliable", 0)
+func _receive_boss_reward(encounter_id: String, rewards: Array) -> void:
+	if mode != Mode.CLIENT:
+		return
+	GameState.grant_boss_rewards(encounter_id, rewards)
 
 
 func _send_loot_transaction(peer_id: int, loot_id: int, kind: String, item_id: String, quantity: int) -> void:

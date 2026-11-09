@@ -130,6 +130,27 @@ const STRIP_SHEETS := {
 		"move": ["Boss/GiantSpirit/Idle.png", 5, 0.6, true],
 		"attack": ["Boss/GiantSpirit/Hit.png", 3, 0.5, true],
 	}},
+	# Phase E bosses (CC0 Ninja Adventure)
+	"actor.boss.ninja.giant_bamboo": {"frame_size": Vector2i(62, 62), "actions": {
+		"idle": ["Boss/GiantBamboo/Idle.png", 6, 0.8, true],
+		"move": ["Boss/GiantBamboo/Walk.png", 12, 1.0, true],
+		"attack": ["Boss/GiantBamboo/Attack.png", 5, 0.5, true],
+	}},
+	"actor.boss.ninja.squid_red": {"frame_size": Vector2i(76, 79), "actions": {
+		"idle": ["Boss/SquidRed/Idle.png", 4, 0.8, true],
+		"move": ["Boss/SquidRed/Walk.png", 4, 0.6, true],
+		"attack": ["Boss/SquidRed/Attack.png", 6, 0.6, true],
+	}},
+	"actor.boss.ninja.giant_blue_samurai": {"frame_size": Vector2i(48, 48), "actions": {
+		"idle": ["Boss/GiantBlueSamurai/Idle.png", 12, 1.0, true],
+		"move": ["Boss/GiantBlueSamurai/Walk.png", 12, 0.8, true],
+		"attack": ["Boss/GiantBlueSamurai/Hit.png", 8, 0.5, true],
+	}},
+	"actor.boss.ninja.tengu_red": {"frame_size": Vector2i(82, 82), "actions": {
+		"idle": ["Boss/TenguRed/Idle.png", 6, 0.8, true],
+		"move": ["Boss/TenguRed/Walk.png", 10, 0.8, true],
+		"attack": ["Boss/TenguRed/Attack.png", 15, 1.0, true],
+	}},
 	"actor.boss.ninja.demon_cyclop": {"frame_size": Vector2i(50, 50), "actions": {
 		"idle": ["Boss/DemonCyclop/Idle.png", 5, 0.8, true],
 		"move": ["Boss/DemonCyclop/Walk.png", 6, 0.7, true],
@@ -148,9 +169,20 @@ static func asset_ids() -> Array:
 	return GRID_SHEETS.keys() + STRIP_SHEETS.keys()
 
 
+## Segmented dragon bosses assembled by DragonVisual: asset id -> pack folder.
+const DRAGON_PARTS := {
+	"actor.boss.ninja.dragon_green": "Boss/DragonGreen/",
+	"actor.boss.ninja.dragon_blue": "Boss/DragonBlue/",
+}
+const DRAGON_PART_FILES := ["Head.png", "Wing.png", "Body1.png", "Body2.png", "BodyEnd.png"]
+
+
 ## Every texture path the catalog can load (provenance tests read this).
 static func texture_paths() -> Array:
 	var paths: Array = []
+	for folder: String in DRAGON_PARTS.values():
+		for f: String in DRAGON_PART_FILES:
+			paths.append(NINJA + folder + f)
 	for rel: String in GRID_SHEETS.values():
 		paths.append(NINJA + rel)
 	for sheet: Dictionary in STRIP_SHEETS.values():

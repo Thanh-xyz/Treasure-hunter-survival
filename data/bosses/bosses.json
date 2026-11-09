@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "comment": "Boss system (brainstorm sheet 06, plan phase E). Phases start at hp fraction; every ability is telegraphed and warn time grows with danger. Rewards: participation for everyone who dealt at least min_contribution of max HP, a final-hit bonus, and a contribution roll weighted by damage share. Provisional numbers.",
+  "min_contribution": 0.02,
+  "contribution_roll_scale": 1.5,
+  "abilities": {
+    "slam":       {"warn": 0.9,  "radius": 30.0, "mult": 1.2, "extra": 2},
+    "leap":       {"warn": 1.25, "radius": 44.0, "mult": 1.6},
+    "wave":       {"warn": 0.9,  "radius": 40.0, "mult": 1.1, "rings": 3, "ring_gap": 0.35, "ring_step": 26.0},
+    "nova":       {"warn": 0.7,  "count": 14, "mult": 0.7, "speed": 110.0},
+    "line":       {"warn": 1.0,  "length": 220.0, "width": 26.0, "mult": 1.5},
+    "rain":       {"warn": 1.1,  "radius": 24.0, "mult": 1.0, "count": 6, "spread": 90.0},
+    "summon":     {"count": 3, "max": 4}
+  },
+  "bosses": {
+    "slime_king": {"type": "world", "region": "meadow", "zone": "greenwood", "summon_id": "slime",
+      "phases": [
+        {"hp": 1.0, "name": "Swamp Awakening", "speed": 1.0, "damage": 1.0, "interval": 4.5, "abilities": ["slam", "leap", "summon"]},
+        {"hp": 0.7, "name": "Mire Rage", "speed": 1.2, "damage": 1.1, "interval": 3.6, "abilities": ["slam", "leap", "rain", "summon"]},
+        {"hp": 0.3, "name": "King of the Mire", "speed": 1.3, "damage": 1.25, "interval": 3.0, "abilities": ["wave", "leap", "rain"]}
+      ],
+      "rewards": {"participation": "boss_meadow_participation", "final_hit": "boss_meadow_final", "contribution": "boss_meadow_contribution"}},
+    "infernal_dragon": {"type": "world", "region": "ash", "zone": "cinderwaste", "summon_id": "magma_slime", "on_hit": {"status": "burn", "chance": 0.5, "duration": 3.0, "magnitude": 6},
+      "phases": [
+        {"hp": 1.0, "name": "Flame Awakening", "speed": 1.0, "damage": 1.0, "interval": 4.0, "abilities": ["line", "slam", "leap"]},
+        {"hp": 0.7, "name": "Infernal Storm", "speed": 1.15, "damage": 1.15, "interval": 3.4, "abilities": ["line", "rain", "nova"]},
+        {"hp": 0.3, "name": "Dragon's Wrath", "speed": 1.25, "damage": 1.3, "interval": 2.8, "abilities": ["rain", "wave", "line"]}
+      ],
+      "rewards": {"participation": "boss_ash_participation", "final_hit": "boss_ash_final", "contribution": "boss_ash_contribution"}},
+    "frost_leviathan": {"type": "world", "region": "snow", "zone": "frostvale", "summon_id": "frost_slime", "on_hit": {"status": "slow", "chance": 0.6, "duration": 2.5, "magnitude": 45},
+      "phases": [
+        {"hp": 1.0, "name": "Tidal Frost", "speed": 1.0, "damage": 1.0, "interval": 4.0, "abilities": ["line", "rain", "slam"]},
+        {"hp": 0.7, "name": "Blizzard", "speed": 1.15, "damage": 1.15, "interval": 3.4, "abilities": ["rain", "nova", "summon"]},
+        {"hp": 0.3, "name": "Absolute Zero", "speed": 1.2, "damage": 1.3, "interval": 2.8, "abilities": ["wave", "rain", "line"]}
+      ],
+      "rewards": {"participation": "boss_snow_participation", "final_hit": "boss_snow_final", "contribution": "boss_snow_contribution"}},
+    "bone_colossus": {"type": "area", "region": "snow", "zone": "frostvale", "respawn": 600.0, "summon_id": "snow_wolf",
+      "phases": [
+        {"hp": 1.0, "name": "Frozen Awakening", "speed": 1.0, "damage": 1.0, "interval": 4.5, "abilities": ["slam", "leap", "summon"]},
+        {"hp": 0.7, "name": "Burning Core", "speed": 1.15, "damage": 1.15, "interval": 3.8, "abilities": ["slam", "rain", "nova"]},
+        {"hp": 0.3, "name": "Colossus Collapse", "speed": 1.3, "damage": 1.3, "interval": 3.0, "abilities": ["wave", "leap"]}
+      ],
+      "rewards": {"participation": "boss_snow_participation", "final_hit": "boss_snow_final", "contribution": "boss_snow_contribution"}},
+    "crypt_warden": {"type": "dungeon", "region": "meadow", "zone": "dungeon", "summon_id": "skeleton_grunt",
+      "phases": [
+        {"hp": 1.0, "name": "Grave Guardian", "speed": 1.0, "damage": 1.0, "interval": 4.5, "abilities": ["slam", "leap"]},
+        {"hp": 0.65, "name": "Spirit Unbound", "speed": 1.25, "damage": 1.1, "interval": 3.6, "abilities": ["wave", "summon", "leap"]},
+        {"hp": 0.3, "name": "Eternal Sentence", "speed": 1.3, "damage": 1.25, "interval": 3.0, "abilities": ["line", "wave", "rain"]}
+      ],
+      "rewards": {"participation": "boss_meadow_participation", "final_hit": "boss_meadow_final", "contribution": "boss_meadow_contribution"}},
+    "verdant_treant": {"type": "summoned", "region": "meadow", "summon_id": "slime",
+      "phases": [
+        {"hp": 1.0, "name": "Root Guardian", "speed": 1.0, "damage": 1.0, "interval": 4.0, "abilities": ["rain", "slam"]},
+        {"hp": 0.7, "name": "Ancient Forest", "speed": 1.1, "damage": 1.15, "interval": 3.4, "abilities": ["rain", "summon", "wave"]},
+        {"hp": 0.3, "name": "Nature's Wrath", "speed": 1.2, "damage": 1.3, "interval": 3.0, "abilities": ["wave", "rain"]}
+      ],
+      "rewards": {"participation": "boss_meadow_participation", "final_hit": "boss_card_rare_final", "contribution": "boss_meadow_contribution"}},
+    "ash_devourer": {"type": "summoned", "region": "ash", "summon_id": "magma_slime", "on_hit": {"status": "burn", "chance": 0.4, "duration": 3.0, "magnitude": 6},
+      "phases": [
+        {"hp": 1.0, "name": "Hunger", "speed": 1.0, "damage": 1.0, "interval": 4.0, "abilities": ["nova", "rain"]},
+        {"hp": 0.5, "name": "Devour", "speed": 1.2, "damage": 1.25, "interval": 3.0, "abilities": ["wave", "nova", "summon"]}
+      ],
+      "rewards": {"participation": "boss_ash_participation", "final_hit": "boss_card_epic_final", "contribution": "boss_ash_contribution"}},
+    "frost_abyss_king": {"type": "summoned", "region": "snow", "summon_id": "ice_shaman", "on_hit": {"status": "freeze", "chance": 0.3, "duration": 1.2, "magnitude": 80},
+      "phases": [
+        {"hp": 1.0, "name": "Cold Throne", "speed": 1.0, "damage": 1.0, "interval": 4.0, "abilities": ["line", "slam"]},
+        {"hp": 0.5, "name": "Abyssal Storm", "speed": 1.2, "damage": 1.25, "interval": 3.0, "abilities": ["rain", "wave", "summon"]}
+      ],
+      "rewards": {"participation": "boss_snow_participation", "final_hit": "boss_card_epic_final", "contribution": "boss_snow_contribution"}},
+    "ancient_dragon": {"type": "summoned", "region": "any", "summon_id": "magma_slime", "on_hit": {"status": "burn", "chance": 0.5, "duration": 3.0, "magnitude": 8},
+      "phases": [
+        {"hp": 1.0, "name": "Ancient Fury", "speed": 1.0, "damage": 1.0, "interval": 3.8, "abilities": ["line", "leap"]},
+        {"hp": 0.7, "name": "Sky Fire", "speed": 1.15, "damage": 1.2, "interval": 3.2, "abilities": ["rain", "line", "summon"]},
+        {"hp": 0.3, "name": "Dragon Lord", "speed": 1.25, "damage": 1.35, "interval": 2.6, "abilities": ["wave", "rain", "line"]}
+      ],
+      "rewards": {"participation": "boss_ash_participation", "final_hit": "boss_card_legendary_final", "contribution": "boss_snow_contribution"}},
+    "ember_overlord": {"type": "summoned", "region": "any", "summon_id": "skeleton_grunt", "on_hit": {"status": "burn", "chance": 0.5, "duration": 3.0, "magnitude": 10},
+      "phases": [
+        {"hp": 1.0, "name": "The Sealed Lord", "speed": 1.0, "damage": 1.0, "interval": 3.8, "abilities": ["slam", "line", "summon"]},
+        {"hp": 0.7, "name": "Core Awakening", "speed": 1.15, "damage": 1.2, "interval": 3.2, "abilities": ["nova", "wave", "line"]},
+        {"hp": 0.35, "name": "World Ender", "speed": 1.25, "damage": 1.4, "interval": 2.6, "abilities": ["rain", "wave", "line", "summon"]}
+      ],
+      "rewards": {"participation": "boss_snow_participation", "final_hit": "boss_card_legendary_final", "contribution": "boss_snow_contribution"}}
+  },
+  "world_schedule": {
+    "duration": 900.0,
+    "notices": [300.0, 60.0],
+    "slots": [[9, "slime_king"], [12, "infernal_dragon"], [15, "frost_leviathan"], [18, "slime_king"], [21, "infernal_dragon"], [0, "frost_leviathan"]]
+  },
+  "cards": {
+    "card_meadow_guardian": {"name": "Meadow Guardian Card", "rarity": "rare", "boss": "verdant_treant", "regions": ["meadow"], "fragment": "fragment_meadow", "fragments_needed": 10},
+    "card_ash_destroyer":   {"name": "Ash Destroyer Card", "rarity": "epic", "boss": "ash_devourer", "regions": ["ash"], "fragment": "fragment_ash", "fragments_needed": 15},
+    "card_snow_titan":      {"name": "Snow Titan Card", "rarity": "epic", "boss": "frost_abyss_king", "regions": ["snow"], "fragment": "fragment_snow", "fragments_needed": 15},
+    "card_dragon_lord":     {"name": "Dragon Lord Card", "rarity": "legendary", "boss": "ancient_dragon", "regions": ["ash", "snow"]},
+    "card_ember_overlord":  {"name": "Ember Overlord Card", "rarity": "legendary", "boss": "ember_overlord", "regions": ["snow"]}
+  },
+  "fragments": {
+    "fragment_meadow": {"name": "Meadow Card Fragment"},
+    "fragment_ash": {"name": "Ash Card Fragment"},
+    "fragment_snow": {"name": "Snow Card Fragment"}
+  }
+}

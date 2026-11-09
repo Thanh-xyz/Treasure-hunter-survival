@@ -815,6 +815,12 @@ func _validate_profile(profile: Dictionary) -> bool:
 		var active_mount := str(profile["active_mount"])
 		if active_mount != "" and not profile.get("mounts", {}).has(active_mount):
 			return false
+	if profile.has("boss_claims"):
+		if not profile["boss_claims"] is Array or (profile["boss_claims"] as Array).size() > GameState.BOSS_CLAIMS_CAP:
+			return false
+		for claim: Variant in profile["boss_claims"]:
+			if not claim is String:
+				return false
 	if profile.has("boss_kills"):
 		for monster_id: Variant in profile["boss_kills"]:
 			if not monster_id is String or not _is_integer(profile["boss_kills"][monster_id]) or int(profile["boss_kills"][monster_id]) < 0:

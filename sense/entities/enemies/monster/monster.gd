@@ -143,6 +143,13 @@ func _build_visual() -> void:
 		visual = anim
 		visual_height = 70.0 * s
 		body_radius = 14.0 * s
+	elif visual_kind == "dragon":
+		var dragon := DragonVisual.build(String(def.get("asset_id", "")), float(def.get("hue_shift", 0.0)))
+		dragon.scale = Vector2(s, s)
+		dragon.position = Vector2(0, -46.0 * s * 0.5)
+		visual = dragon
+		visual_height = 70.0 * s
+		body_radius = 22.0 * s
 	elif visual_kind == "atlas":
 		var anim := AnimatedSprite2D.new()
 		anim.sprite_frames = MonsterVisualCatalog.get_frames(String(def.get("asset_id", "")))
@@ -575,7 +582,9 @@ func _think_charger(_delta: float) -> void:
 func _update_visual() -> void:
 	if visual == null:
 		return
-	if visual is AnimatedSprite2D:
+	if visual.has_method("animate"):
+		visual.animate(_t, facing, velocity.length() > 2.0)
+	elif visual is AnimatedSprite2D:
 		if state != "windup" and state != "telegraph" and state != "slam_warn":
 			_play_anim("move" if velocity.length() > 2.0 else "idle")
 	else:
@@ -593,7 +602,10 @@ func _update_visual() -> void:
 	elif state == "windup" or state == "telegraph" or state == "slam_warn":
 		m = Color(1.4, 0.8, 0.8)
 	var tint: Color = def.get("tint", Color.WHITE)
-	visual.self_modulate = m * tint
+	if visual is DragonVisual:
+		visual.modulate = m * tint  # composite: tint every part
+	else:
+		visual.self_modulate = m * tint
 
 
 func _play_anim(base: String) -> void:
@@ -685,6 +697,7 @@ func apply_hit(amount: int, from_pos: Vector2, crit: bool = false, attacker_peer
 	amount = maxi(1, roundi(float(amount) * damage_taken_mult))
 	var applied := mini(maxi(amount, 0), hp)
 	hp = maxi(0, hp - amount)
+	_record_damage(applied, attacker_peer_id)
 	_flash = 0.1
 	hp_changed.emit(hp, max_hp)
 	DamageNumber.spawn(get_tree(), global_position + Vector2(0, -visual_height), ("%d!" % amount) if crit else str(amount), Color(1, 0.85, 0.2) if crit else Color.WHITE, crit)
@@ -698,6 +711,11 @@ func apply_hit(amount: int, from_pos: Vector2, crit: bool = false, attacker_peer
 	if hp <= 0:
 		_die()
 	return applied
+
+
+## Override point: bosses track damage per participant before a killing blow pays out.
+func _record_damage(_applied: int, _attacker_peer_id: int) -> void:
+	pass
 
 
 func _die() -> void:

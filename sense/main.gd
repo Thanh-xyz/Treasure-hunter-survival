@@ -50,6 +50,10 @@ func _ready() -> void:
 	mobile_hud = MobileHUD.new()
 	mobile_hud.name = "MobileHUD"
 	hud.add_child(mobile_hud)
+	# World boss notices (5 min, 1 min, rise) wherever the player is (plan phase E)
+	var boss_clock := WorldBossClock.new()
+	boss_clock.name = "WorldBossClock"
+	add_child(boss_clock)
 	mobile_hud.bind_player(player, hud)
 
 	# Load initial map (last safe zone from the save, never mid-dungeon)

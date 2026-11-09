@@ -179,23 +179,57 @@ const MONSTERS := {
 		"slam": {"radius": 60.0, "warn": 1.2, "mult": 1.5, "cooldown": 6.0, "trigger_range": 55.0}, "knockback_immune": true,
 	},
 	# --------------------------------------------------------------- bosses
+	# Boss rewards come from data/bosses/bosses.json reward tables (BossRewards), not "loot".
+	# World / summoned bosses (plan phase E): behaviour in data/bosses/bosses.json.
+	"infernal_dragon": {
+		"name": "Infernal Dragon", "visual": "dragon", "asset_id": "actor.boss.ninja.dragon_green", "hue_shift": -85.0,
+		"ai": "boss_flyer", "hp": 4000, "dmg": 30, "spd": 40.0, "level": 30,
+		"range": 40.0, "aggro": 320.0, "scale": 2.0, "gold": Vector2i(250, 400), "boss": true,
+	},
+	"frost_leviathan": {
+		"name": "Frost Leviathan", "visual": "dragon", "asset_id": "actor.boss.ninja.dragon_blue",
+		"ai": "boss_flyer", "hp": 6500, "dmg": 40, "spd": 38.0, "level": 45,
+		"range": 40.0, "aggro": 320.0, "scale": 2.0, "gold": Vector2i(350, 550), "boss": true,
+	},
+	"verdant_treant": {
+		"name": "Verdant Treant", "visual": "atlas", "asset_id": "actor.boss.ninja.giant_bamboo",
+		"ai": "boss", "hp": 2500, "dmg": 22, "spd": 26.0, "level": 15,
+		"range": 40.0, "aggro": 300.0, "scale": 2.0, "gold": Vector2i(150, 260), "boss": true,
+	},
+	"ash_devourer": {
+		"name": "Ash Devourer", "visual": "atlas", "asset_id": "actor.boss.ninja.squid_red",
+		"ai": "boss", "hp": 4500, "dmg": 32, "spd": 30.0, "level": 30,
+		"range": 44.0, "aggro": 300.0, "scale": 2.0, "gold": Vector2i(250, 420), "boss": true,
+	},
+	"frost_abyss_king": {
+		"name": "Frost Abyss King", "visual": "atlas", "asset_id": "actor.boss.ninja.giant_blue_samurai",
+		"ai": "boss", "hp": 7000, "dmg": 42, "spd": 36.0, "level": 45,
+		"range": 40.0, "aggro": 300.0, "scale": 3.0, "gold": Vector2i(350, 600), "boss": true,
+	},
+	"ancient_dragon": {
+		"name": "Ancient Dragon", "visual": "dragon", "asset_id": "actor.boss.ninja.dragon_green",
+		"ai": "boss_flyer", "hp": 9000, "dmg": 45, "spd": 40.0, "level": 45,
+		"range": 40.0, "aggro": 320.0, "scale": 2.0, "gold": Vector2i(500, 800), "boss": true,
+	},
+	"ember_overlord": {
+		"name": "Ember Overlord", "visual": "atlas", "asset_id": "actor.boss.ninja.tengu_red",
+		"ai": "boss", "hp": 12000, "dmg": 50, "spd": 34.0, "level": 48,
+		"range": 44.0, "aggro": 320.0, "scale": 2.0, "gold": Vector2i(600, 1000), "boss": true,
+	},
 	"slime_king": {
 		"name": "Mire King", "visual": "atlas", "asset_id": "actor.boss.ninja.giant_slime",
-		"ai": "boss_slime", "hp": 900, "dmg": 18, "spd": 32.0, "level": 5,
+		"ai": "boss_slime", "hp": 1200, "dmg": 18, "spd": 32.0, "level": 5,
 		"range": 30.0, "aggro": 220.0, "scale": 2.0, "gold": Vector2i(80, 140), "boss": true,
-		"loot": [["stone_guard_1", 100, 2, 4], ["egg_forest", 30, 1, 1], ["ironbark_cleaver", 25, 1, 1], ["wayfarer_boots", 25, 1, 1], ["boss_core", 100, 1, 1]],
 	},
 	"crypt_warden": {
 		"name": "Crypt Warden", "visual": "atlas", "asset_id": "actor.boss.ninja.giant_spirit",
 		"ai": "boss_skeleton", "hp": 650, "dmg": 16, "spd": 42.0, "level": 5,
 		"range": 34.0, "aggro": 300.0, "scale": 2.0, "gold": Vector2i(60, 120), "boss": true,
-		"loot": [["stone_lifesteal_1", 100, 1, 3], ["ashwood_blade", 30, 1, 1], ["ironbark_plate", 25, 1, 1], ["egg_forest", 25, 1, 1]],
 	},
 	"bone_colossus": {
 		"name": "Cinder Colossus", "visual": "atlas", "asset_id": "actor.boss.ninja.demon_cyclop",
 		"ai": "boss_skeleton", "hp": 1600, "dmg": 24, "spd": 40.0, "level": 10,
 		"range": 40.0, "aggro": 260.0, "scale": 2.0, "gold": Vector2i(150, 260), "boss": true,
-		"loot": [["stone_critical_2", 100, 1, 2], ["emberforged_blade", 30, 1, 1], ["ember_harness", 25, 1, 1], ["wayfarer_cloak", 20, 1, 1], ["boss_core", 100, 1, 2], ["egg_snow", 25, 1, 1]],
 	},
 }
 
@@ -216,7 +250,6 @@ const ZONES := {
 		"spawns": [["slime", 9], ["bat", 5], ["shroom", 4], ["boar", 3], ["mossback", 1]],
 		"region": "meadow", "mini_bosses": ["mini_boss_slime_monarch", "mini_boss_rootfang"],
 		"trees": 34, "rocks": 18, "lumber": 9, "dig_spots": 64,
-		"world_boss": "slime_king", "boss_interval": 180.0,
 	},
 	"cinderwaste": {
 		"name": "Cinderwaste", "level": 15, "scene": "res://sense/maps/field/cinderwaste.tscn",
@@ -231,7 +264,7 @@ const ZONES := {
 		"spawns": [["frost_slime", 7], ["snow_wolf", 6], ["snow_bear", 3], ["ice_shaman", 4]],
 		"region": "snow", "mini_bosses": ["mini_boss_frosthorn", "mini_boss_glacial_colossus"],
 		"trees": 30, "rocks": 26, "lumber": 8, "dig_spots": 70,
-		"world_boss": "bone_colossus", "boss_interval": 240.0,
+		"area_boss": "bone_colossus",
 	},
 	"dungeon": {"name": "Crypt Depths", "level": 4, "scene": "res://sense/maps/dungeon/dungeon_map.tscn"},
 }

@@ -23,6 +23,10 @@ var active_mount: String = ""
 var mounted: bool = false          ## runtime only (not saved)
 var plots: Array = []              ## index -> {} or {"id","level","last_collect"}
 var boss_kills: Dictionary = {}
+## Boss encounter ids already rewarded on this profile (sheet 06 §8.4): a reconnect or a reload
+## can never pay the same encounter twice. Newest last, capped.
+var boss_claims: Array = []
+const BOSS_CLAIMS_CAP := 200
 var kills_total: int = 0
 var current_zone: String = "town"
 var settings: Dictionary = {
@@ -49,6 +53,7 @@ func reset_profile() -> void:
 	for i in range(PLOT_COUNT):
 		plots.append({})
 	boss_kills = {}
+	boss_claims = []
 	kills_total = 0
 	current_zone = "town"
 	_apply_runtime_settings()
@@ -62,7 +67,7 @@ func to_dict() -> Dictionary:
 	return {
 		"pets": pets, "active_pet": active_pet,
 		"mounts": mounts, "active_mount": active_mount,
-		"plots": plots, "boss_kills": boss_kills, "kills_total": kills_total,
+		"plots": plots, "boss_kills": boss_kills, "boss_claims": boss_claims, "kills_total": kills_total,
 		"current_zone": current_zone, "settings": settings,
 	}
 
@@ -109,6 +114,9 @@ func from_dict(d: Dictionary) -> void:
 		else:
 			plots[i] = {"id": p["id"], "level": int(p.get("level", 1)), "last_collect": float(p.get("last_collect", _now()))}
 	boss_kills = _int_values(d.get("boss_kills", {}))
+	boss_claims = []
+	for claim: Variant in d.get("boss_claims", []):
+		boss_claims.append(str(claim))
 	kills_total = int(d.get("kills_total", 0))
 	current_zone = str(d.get("current_zone", "town"))
 	var s: Dictionary = d.get("settings", {})
@@ -620,6 +628,76 @@ func companion_passive_effects() -> Array[Dictionary]:
 		if value > 0.0:
 			effects.append({"effect": InventoryData.GEM_EFFECTS[stat], "value": value})
 	return effects
+
+
+# =============================================================================
+# BOSSES (brainstorm sheet 06, plan phase E)
+# =============================================================================
+
+func has_claimed(encounter_id: String) -> bool:
+	return encounter_id in boss_claims
+
+
+## Pay one encounter's rewards to this profile exactly once. Items that do not fit drop at the
+## player's feet (never lost). Returns false when the encounter was already claimed.
+func grant_boss_rewards(encounter_id: String, rewards: Array) -> bool:
+	if encounter_id.is_empty() or has_claimed(encounter_id):
+		return false
+	boss_claims.append(encounter_id)
+	while boss_claims.size() > BOSS_CLAIMS_CAP:
+		boss_claims.pop_front()
+	var inv := get_inventory()
+	var player := get_player() as Node2D
+	for r: Variant in rewards:
+		if not r is Dictionary:
+			continue
+		var item := ItemDatabase.get_item(str(r.get("item_id", "")))
+		var qty := int(r.get("quantity", 1))
+		if item == null or qty <= 0:
+			continue
+		var left := inv.add_item(item, qty) if inv != null else qty
+		if left > 0 and player != null:
+			ItemSpawner.spawn_item(get_tree(), player.global_position, item.id, left, player.global_position)
+		GameEvent.toast.emit("Boss reward: %s x%d" % [item.name, qty], Color(1.0, 0.85, 0.35))
+	SaveService.save_game()
+	return true
+
+
+## Combine fragments into their card (sheet 06 §7.2). One transaction, no failure chance.
+func combine_card_fragments(fragment_id: String) -> bool:
+	var card_id := BossCatalog.card_for_fragment(fragment_id)
+	var inv := get_inventory()
+	if card_id.is_empty() or inv == null:
+		return false
+	var need := int(BossCatalog.card(card_id).get("fragments_needed", 0))
+	var fragment := ItemDatabase.get_item(fragment_id)
+	var card_item := ItemDatabase.get_item(card_id)
+	if need <= 0 or fragment == null or card_item == null:
+		return false
+	return inv.transact([{"item": fragment, "quantity": need}], [{"item": card_item, "quantity": 1}])
+
+
+## Use a Boss Summon Card where the player stands (sheet 06 §7.3). The card is consumed only
+## after the boss has appeared. Returns "" on success or a reason for the player.
+func use_boss_card(card_id: String) -> String:
+	var c := BossCatalog.card(card_id)
+	var inv := get_inventory()
+	if c.is_empty() or inv == null or inv.get_item_count(card_id) <= 0:
+		return "You have no %s." % c.get("name", card_id)
+	if LanSession.mode == LanSession.Mode.CLIENT:
+		return "Only the host can summon bosses in a Wi-Fi game for now."
+	var map := get_tree().get_first_node_in_group("field_map") as FieldMap
+	if map == null:
+		return "Boss cards work out in the wild, not in town or dungeons."
+	var region := str(map.cfg.get("region", ""))
+	var regions: Array = c.get("regions", [])
+	if not region in regions:
+		return "This card only works in: %s." % ", ".join(regions)
+	var boss := map.summon_card_boss(str(c.get("boss", "")))
+	if boss == null:
+		return "Another boss is already here."
+	inv.transact([{"item": ItemDatabase.get_item(card_id), "quantity": 1}], [])
+	return ""
 
 
 # =============================================================================

@@ -34,6 +34,7 @@ func _create_all_items() -> void:
 	_create_segments()
 	_create_gems()
 	_create_eggs()
+	_create_boss_cards()
 	_create_timed_buffs()
 	_create_survival_items()
 
@@ -223,6 +224,29 @@ func _create_eggs() -> void:
 			"stackable": true, "max_stack": 99, "price": 0, "sell_price": 0,
 			"rarity": ItemData.ItemRarity.UNCOMMON,
 			"icon_name": "heart",
+		})
+
+
+## Boss Summon Cards and fragments (data/bosses/bosses.json). Used from the World Map tab.
+## Icons are placeholders until card art is assigned (plan phase F, NEEDS_ASSET).
+func _create_boss_cards() -> void:
+	var rarity_by_name := {"rare": ItemData.ItemRarity.RARE, "epic": ItemData.ItemRarity.EPIC, "legendary": ItemData.ItemRarity.LEGENDARY}
+	for card_id: String in BossCatalog.cards():
+		var c: Dictionary = BossCatalog.card(card_id)
+		items[card_id] = ItemHelper.create_item({
+			"id": card_id, "name": str(c.get("name", card_id)),
+			"description": "Summons %s. Consumed only when the boss appears." % GameContent.MONSTERS.get(str(c.get("boss", "")), {}).get("name", c.get("boss", "")),
+			"stackable": true, "max_stack": 20, "price": 0, "sell_price": 0,
+			"rarity": rarity_by_name.get(str(c.get("rarity", "rare")), ItemData.ItemRarity.RARE),
+			"icon_name": "power_fragment",
+		})
+	for fragment_id: String in BossCatalog.fragments():
+		items[fragment_id] = ItemHelper.create_item({
+			"id": fragment_id, "name": str(BossCatalog.fragments()[fragment_id].get("name", fragment_id)),
+			"description": "Combine fragments into a Boss Summon Card.",
+			"stackable": true, "max_stack": 999, "price": 0, "sell_price": 0,
+			"rarity": ItemData.ItemRarity.UNCOMMON,
+			"icon_name": "power_fragment",
 		})
 
 

@@ -634,6 +634,8 @@ func _reward_text(quest: Dictionary) -> String:
 # --- World map ----------------------------------------------------------------
 func _build_map() -> void:
 	_content.add_child(UiTheme.label("Current: %s" % GameContent.ZONES.get(GameState.current_zone, {}).get("name", GameState.current_zone), 22, UiTheme.C_MUTED))
+	_build_world_boss_card()
+	_build_boss_cards()
 	for id in GameContent.ZONE_ORDER:
 		var z: Dictionary = GameContent.ZONES[id]
 		var v := _card()
@@ -643,13 +645,69 @@ func _build_map() -> void:
 		row.add_child(info)
 		info.add_child(UiTheme.label(z["name"], 26, UiTheme.C_GOLD))
 		var extra := "Safe zone" if z.get("safe", false) else "Monster level %d" % int(z["level"])
-		if z.has("world_boss"):
-			extra += "  -  World boss: %s" % GameContent.MONSTERS[z["world_boss"]]["name"]
+		var bosses: Array[String] = []
+		for boss_id: String in BossCatalog.boss_ids():
+			var b := BossCatalog.boss(boss_id)
+			if str(b.get("zone", "")) == id and str(b.get("type", "")) in ["world", "area"]:
+				bosses.append("%s (%s)" % [GameContent.MONSTERS[boss_id]["name"], b["type"]])
+		if not bosses.is_empty():
+			extra += "  -  " + ", ".join(bosses)
 		info.add_child(UiTheme.label(extra, 18, UiTheme.C_MUTED))
 		if id == GameState.current_zone:
 			row.add_child(UiTheme.label("HERE ", 22, UiTheme.C_GOOD))
 		else:
 			row.add_child(UiTheme.button("Travel", _travel.bind(String(id)), Vector2(120, 52)))
+
+
+## World boss timetable (sheet 06 §6): what is up now and what comes next, host clock.
+func _build_world_boss_card() -> void:
+	var v := _card()
+	v.add_child(UiTheme.label("WORLD BOSSES", 24, UiTheme.C_GOLD))
+	var status := WorldBossSchedule.status_at(Time.get_datetime_dict_from_system())
+	if bool(status["active"]):
+		var left := int(status["seconds_left"])
+		v.add_child(_wrapped(UiTheme.label("Now: %s at %s (%d:%02d left)" % [GameContent.MONSTERS[status["boss_id"]]["name"], GameContent.ZONES[status["zone"]]["name"], left / 60, left % 60], 19, UiTheme.C_GOOD)))
+	var wait := int(status["seconds_to_next"])
+	v.add_child(_wrapped(UiTheme.label("Next: %s at %s in %dh %02dm" % [GameContent.MONSTERS.get(str(status["next_boss"]), {}).get("name", ""), GameContent.ZONES.get(str(status["next_zone"]), {}).get("name", ""), wait / 3600, (wait % 3600) / 60], 19, UiTheme.C_MUTED)))
+	var slots: Array[String] = []
+	for slot: Array in WorldBossSchedule.config().get("slots", []):
+		slots.append("%02d:00 %s" % [int(slot[0]), GameContent.MONSTERS[str(slot[1])]["name"]])
+	v.add_child(_wrapped(UiTheme.label(", ".join(slots), 16, UiTheme.C_MUTED)))
+
+
+## Boss Summon Cards and fragments (sheet 06 §7).
+func _build_boss_cards() -> void:
+	var v := _card()
+	v.add_child(UiTheme.label("BOSS CARDS", 24, UiTheme.C_GOLD))
+	var any := false
+	for card_id: String in BossCatalog.cards():
+		var c := BossCatalog.card(card_id)
+		var have := _count(card_id)
+		var frag := str(c.get("fragment", ""))
+		var frags := _count(frag) if not frag.is_empty() else 0
+		if have <= 0 and frags <= 0:
+			continue
+		any = true
+		var row := _row(v)
+		var info := "%s x%d  (%s, %s)" % [c.get("name", card_id), have, GameContent.MONSTERS[str(c["boss"])]["name"], "/".join(c.get("regions", []))]
+		if not frag.is_empty():
+			info += "  fragments %d/%d" % [frags, int(c.get("fragments_needed", 0))]
+		row.add_child(_wrapped(UiTheme.label(info, 18)))
+		if have > 0:
+			row.add_child(UiTheme.button("Summon", _use_card.bind(card_id), Vector2(120, 48)))
+		if not frag.is_empty() and frags >= int(c.get("fragments_needed", 0)):
+			row.add_child(UiTheme.button("Combine", func() -> void: _act(GameState.combine_card_fragments(frag), "Bag full"), Vector2(120, 48)))
+	if not any:
+		v.add_child(_wrapped(UiTheme.label("No cards yet. Fragments drop from bosses and rare digs.", 18, UiTheme.C_MUTED)))
+
+
+func _use_card(card_id: String) -> void:
+	var reason := GameState.use_boss_card(card_id)
+	if reason.is_empty():
+		close()
+	else:
+		GameEvent.toast.emit(reason, UiTheme.C_BAD)
+		_rebuild()
 
 
 # --- Village ------------------------------------------------------------------

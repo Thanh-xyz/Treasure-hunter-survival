@@ -851,10 +851,15 @@ func _on_zone_entered(_zone_id: String) -> void:
 func _on_world_boss_timer(zone_id: String, seconds_left: float) -> void:
 	if zone_id != GameState.current_zone:
 		return
-	if seconds_left < 0.0:
-		_boss_timer_label.text = "World boss is active!"
+	# FieldMap: negative = boss up with |seconds| left, positive = next arrival here, INF = none
+	if is_inf(seconds_left):
+		_boss_timer_label.text = ""
+	elif seconds_left < 0.0:
+		var left := int(-seconds_left)
+		_boss_timer_label.text = "World boss! %d:%02d left" % [left / 60, left % 60]
 	else:
-		_boss_timer_label.text = "World boss in %d:%02d (or use the altar)" % [int(seconds_left) / 60, int(seconds_left) % 60]
+		var wait := int(seconds_left)
+		_boss_timer_label.text = "World boss here in %dh %02dm" % [wait / 3600, (wait % 3600) / 60] if wait >= 3600 else "World boss here in %d:%02d" % [wait / 60, wait % 60]
 
 
 func _on_boss_state(boss_id: String, hp: int, max_hp: int, phase: int) -> void:
@@ -862,7 +867,9 @@ func _on_boss_state(boss_id: String, hp: int, max_hp: int, phase: int) -> void:
 	_boss_bar.max_value = max_hp
 	_boss_bar.value = hp
 	var bname: String = GameContent.MONSTERS.get(boss_id, {}).get("name", boss_id)
-	_boss_label.text = "%s  %s  %d/%d" % [bname, "ENRAGED" if phase >= 2 else "", hp, max_hp]
+	var phases := BossCatalog.phases(boss_id)
+	var pname := str((phases[phase - 1] as Dictionary).get("name", "")) if phase >= 1 and phase <= phases.size() else ""
+	_boss_label.text = "%s  [%d/%d %s]  %d/%d" % [bname, phase, maxi(phases.size(), 1), pname, hp, max_hp]
 
 
 func _on_player_died() -> void:

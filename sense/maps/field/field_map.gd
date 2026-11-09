@@ -31,6 +31,7 @@ var _built: bool = false
 
 
 func _ready() -> void:
+	add_to_group("field_map")
 	y_sort_enabled = true
 	cfg = GameContent.ZONES.get(zone_id, GameContent.ZONES["greenwood"])
 	var size: Vector2i = cfg.get("size", Vector2i(60, 90))
@@ -48,7 +49,6 @@ func _ready() -> void:
 	_build_dig_spots()
 	_scatter_world()
 	_build_camps()
-	_boss_timer = float(cfg.get("boss_interval", 180.0)) * 0.5
 	_built = true
 	_on_entered()
 
@@ -160,7 +160,7 @@ func _build_altar() -> void:
 	altar.add_child(spr)
 	add_child(altar)
 	_occupied.append(altar_point)
-	_add_interaction(altar_point, 40.0, "summon world boss", _on_altar_interact)
+	_add_interaction(altar_point, 40.0, "world boss altar", _on_altar_interact)
 	# Statues flanking the altar
 	for side: int in [-1, 1]:
 		var st := WorldProps.make_obstacle("statue", 0.6, Vector2(16, 8))
@@ -370,39 +370,106 @@ func spawn_mini_boss(boss_id: String) -> Monster:
 	return _mini_boss
 
 
+## World boss on the timetable (sheet 06 §6): appears at this zone's altar while its slot is
+## open, at most once per encounter, and leaves when the slot ends. Area boss: fixed spot,
+## respawns after its cooldown. Card bosses: summon_card_boss().
+var clock_override: Dictionary = {}       ## tests: a datetime dict instead of the system clock
+var _defeated_encounters: Dictionary = {}
+var _area_boss: Boss = null
+var _area_timer: float = 2.0
+var _card_boss: Boss = null
+
+
+func _now() -> Dictionary:
+	return clock_override if not clock_override.is_empty() else Time.get_datetime_dict_from_system()
+
+
+func world_boss_status() -> Dictionary:
+	return WorldBossSchedule.status_at(_now())
+
+
 func _process_world_boss(delta: float) -> void:
-	var boss_id: String = cfg.get("world_boss", "")
-	if boss_id == "":
-		return
-	var alive := _boss != null and is_instance_valid(_boss) and not _boss.is_dead()
-	if not alive:
-		_boss_timer -= delta
-		if _boss_timer <= 0.0:
-			_summon_boss()
+	_process_area_boss(delta)
 	_boss_emit_t -= delta
-	if _boss_emit_t <= 0.0:
-		_boss_emit_t = 0.5
-		GameEvent.world_boss_timer.emit(zone_id, -1.0 if alive else maxf(_boss_timer, 0.0))
-
-
-func _summon_boss() -> void:
-	var boss_id: String = cfg.get("world_boss", "")
-	if boss_id == "" or (_boss != null and is_instance_valid(_boss) and not _boss.is_dead()):
+	if _boss_emit_t > 0.0:
 		return
-	_boss = Monster.create(boss_id)
-	_boss.network_zone_id = zone_id
-	_boss.position = altar_point + Vector2(0, 40)
-	add_child(_boss)
-	_boss_timer = float(cfg.get("boss_interval", 180.0))
+	_boss_emit_t = 0.5
+	var status := world_boss_status()
+	var alive := _boss != null and is_instance_valid(_boss) and not _boss.is_dead()
+	if alive and (not bool(status["active"]) or str(status["encounter_id"]) != (_boss as Boss).encounter_id):
+		GameEvent.toast.emit("%s returns to its slumber." % _boss.def.get("name", "The boss"), Color(0.8, 0.8, 1.0))
+		_boss.queue_free()
+		_boss = null
+		alive = false
+	var mine := bool(status["active"]) and str(status["zone"]) == zone_id
+	if mine and not alive:
+		var enc := str(status["encounter_id"])
+		if not _defeated_encounters.has(enc) and not GameState.has_claimed(enc):
+			_summon_world_boss(str(status["boss_id"]), enc)
+			alive = true
+	if mine and alive:
+		GameEvent.world_boss_timer.emit(zone_id, -float(status["seconds_left"]))
+	elif str(status["next_zone"]) == zone_id:
+		GameEvent.world_boss_timer.emit(zone_id, float(status["seconds_to_next"]))
+	else:
+		GameEvent.world_boss_timer.emit(zone_id, INF)
+
+
+func _summon_world_boss(boss_id: String, encounter_id: String) -> Boss:
+	var boss := Monster.create(boss_id) as Boss
+	boss.encounter_id = encounter_id
+	boss.network_zone_id = zone_id
+	boss.position = altar_point + Vector2(0, 40)
+	add_child(boss)
+	_boss = boss
+	boss.monster_died.connect(func(_m: Monster) -> void: _defeated_encounters[encounter_id] = true)
 	RingFX.spawn(get_tree(), altar_point + Vector2(0, 40), 60.0, Color(0.8, 0.3, 1.0), 0.6)
-	GameEvent.toast.emit("World boss %s has appeared!" % GameContent.MONSTERS[boss_id]["name"], Color(1, 0.4, 0.3))
+	GameEvent.toast.emit("World boss %s has risen at the altar!" % GameContent.MONSTERS[boss_id]["name"], Color(1, 0.4, 0.3))
+	return boss
+
+
+func _process_area_boss(delta: float) -> void:
+	var boss_id := str(cfg.get("area_boss", ""))
+	if boss_id.is_empty() or (_area_boss != null and is_instance_valid(_area_boss) and not _area_boss.is_dead()):
+		return
+	_area_timer -= delta
+	if _area_timer > 0.0:
+		return
+	_area_timer = float(BossCatalog.boss(boss_id).get("respawn", 600.0))
+	_area_boss = Monster.create(boss_id) as Boss
+	_area_boss.network_zone_id = zone_id
+	_area_boss.position = Vector2(map_size_px.x * 0.25, map_size_px.y * 0.3)
+	add_child(_area_boss)
+
+
+## Boss Summon Card (sheet 06 §7): appears beside the player after a summoning circle.
+## Returns null (card kept) while another summoned boss is alive.
+func summon_card_boss(boss_id: String) -> Boss:
+	if _card_boss != null and is_instance_valid(_card_boss) and not _card_boss.is_dead():
+		return null
+	if BossCatalog.boss(boss_id).is_empty():
+		return null
+	var player := GameState.get_player() as Node2D
+	var pos := (player.global_position if player else spawn_point) + Vector2(0, -90)
+	_card_boss = Monster.create(boss_id) as Boss
+	_card_boss.network_zone_id = zone_id
+	_card_boss.global_position = pos
+	add_child(_card_boss)
+	_card_boss.global_position = pos
+	_card_boss.home = pos
+	RingFX.spawn(get_tree(), pos, 70.0, Color(0.9, 0.5, 1.0), 0.8)
+	GameEvent.toast.emit("%s answers the summons!" % GameContent.MONSTERS[boss_id]["name"], Color(0.9, 0.5, 1.0))
+	return _card_boss
 
 
 func _on_altar_interact() -> void:
+	var status := world_boss_status()
 	if _boss != null and is_instance_valid(_boss) and not _boss.is_dead():
-		GameEvent.toast.emit("The boss is already here!", Color(1, 0.6, 0.4))
+		GameEvent.toast.emit("The world boss is here! %d:%02d left." % [int(status["seconds_left"]) / 60, int(status["seconds_left"]) % 60], Color(1, 0.6, 0.4))
 		return
-	_summon_boss()
+	var next := str(status["next_boss"])
+	var wait := int(status["seconds_to_next"])
+	GameEvent.toast.emit("Next world boss: %s at %s in %dh %02dm." % [GameContent.MONSTERS.get(next, {}).get("name", next), GameContent.ZONES.get(str(status["next_zone"]), {}).get("name", ""), wait / 3600, (wait % 3600) / 60], Color(1, 0.8, 0.5))
 
 
 func _magnet_loot() -> void:

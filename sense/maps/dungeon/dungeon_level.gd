@@ -346,7 +346,7 @@ func _spawn_room_enemies(room: DungeonGenerator.Room) -> void:
 			add_child(enemy)
 		elif i == count - 1 and count >= 3:
 			# Deeper rooms mix in a ranged Bone Archer
-			enemy = Monster.create("skeleton_archer", randf() < GameContent.ELITE_CHANCE)
+			enemy = Monster.create("skeleton_archer", randf() < SpawnRules.elite_chance())
 			enemy.position = Vector2(spawn_x, spawn_y)
 			add_child(enemy)
 		else:

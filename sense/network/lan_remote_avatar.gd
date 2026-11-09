@@ -96,6 +96,11 @@ func take_damage(amount: int) -> void:
 		LanSession.damage_peer(peer_id, amount)
 
 
+func apply_status(kind: String, duration: float, magnitude: float) -> void:
+	if LanSession.is_host() and not dead:
+		LanSession.apply_peer_status(peer_id, kind, duration, magnitude)
+
+
 func is_dead() -> bool:
 	return dead
 

@@ -5,14 +5,14 @@ Generated from `docs/architecture/asset-manifest.json` by
 
 ## Attributions
 
-- None required yet.
+- Ninja Adventure Asset Pack by Pixel-boy & AAA (CC0; credit appreciated, not required)
 
 ## Asset status summary
 
 | Status | Records | Shippable |
 | --- | --- | --- |
-| original | 1 | yes |
-| verified | 0 | yes |
+| original | 49 | yes |
+| verified | 18 | yes |
 | licence_pending | 0 | no |
 | unverified | 57 | no |
 | excluded | 82 | no |

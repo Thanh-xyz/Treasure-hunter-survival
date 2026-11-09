@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "comment": "Cinderwild equipment balance. See docs/plans/EQUIPMENT_SYSTEM_PROPOSAL.md. Every number here is tuning data, not logic.",
+  "base_points": 120,
+  "points_per_unit": {"hp": 1.0, "attack": 6.0, "move_speed": 8.0},
+  "level": {"min": 1, "max": 10, "growth_per_level": 0.12},
+  "rarity_order": ["common", "uncommon", "epic", "legendary"],
+  "rarity_multiplier": {"common": 1.0, "uncommon": 1.3, "epic": 1.75, "legendary": 2.3},
+  "slot_order": ["helmet", "armor", "boots", "weapon", "back"],
+  "slot_budget": {"helmet": 1.0, "armor": 1.3, "boots": 0.9, "weapon": 1.3, "back": 1.0},
+  "max_equipment_move_speed": 60,
+  "lines": {
+    "tank": {
+      "slots": ["helmet", "armor", "boots", "back"],
+      "primary": "hp",
+      "base_share": {"hp": 0.75, "attack": 0.15, "move_speed": 0.10},
+      "growth_share": {"hp": 0.85, "attack": 0.10, "move_speed": 0.05}
+    },
+    "damage": {
+      "slots": ["helmet", "armor", "boots", "back"],
+      "primary": "attack",
+      "base_share": {"hp": 0.15, "attack": 0.75, "move_speed": 0.10},
+      "growth_share": {"hp": 0.10, "attack": 0.85, "move_speed": 0.05}
+    },
+    "balanced": {
+      "slots": ["helmet", "armor", "boots", "back"],
+      "primary": "",
+      "base_share": {"hp": 0.45, "attack": 0.45, "move_speed": 0.10},
+      "growth_share": {"hp": 0.475, "attack": 0.475, "move_speed": 0.05}
+    },
+    "sword": {
+      "slots": ["weapon"],
+      "primary": "",
+      "base_share": {"hp": 0.40, "attack": 0.48, "move_speed": 0.12},
+      "growth_share": {"hp": 0.45, "attack": 0.50, "move_speed": 0.05}
+    },
+    "axe": {
+      "slots": ["weapon"],
+      "primary": "attack",
+      "base_share": {"hp": 0.05, "attack": 0.90, "move_speed": 0.05},
+      "growth_share": {"hp": 0.05, "attack": 0.90, "move_speed": 0.05}
+    },
+    "dagger": {
+      "slots": ["weapon"],
+      "primary": "move_speed",
+      "base_share": {"hp": 0.15, "attack": 0.35, "move_speed": 0.50},
+      "growth_share": {"hp": 0.20, "attack": 0.35, "move_speed": 0.45}
+    }
+  },
+  "slot_line_overrides": {
+    "armor/tank": {"base_share": {"hp": 0.80, "attack": 0.10, "move_speed": 0.10}}
+  }
+}

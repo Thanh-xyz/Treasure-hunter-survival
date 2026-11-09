@@ -4,7 +4,6 @@ extends Node
 ## Use this to get item data by ID
 
 var items: Dictionary = {}
-var _reference_items: Dictionary = {}
 
 ## Path to the item icons sprite sheet
 const ICON_SHEET_PATH := "res://assets/items/item_icons.png"
@@ -29,237 +28,41 @@ func _init_icon_atlas() -> void:
 
 
 func _create_all_items() -> void:
-	_create_weapons()
-	_create_armor()
-	_create_helmets()
-	_create_shields()
-	_create_boots()
-	_create_accessories()
+	_create_equipment()
 	_create_consumables()
 	_create_materials()
 	_create_segments()
-	_create_augments()
+	_create_gems()
+	_create_eggs()
+	_create_boss_cards()
 	_create_timed_buffs()
 	_create_survival_items()
 
 
-func _create_weapons() -> void:
-	items["wooden_sword"] = ItemHelper.create_item({
-		"id": "wooden_sword", "name": "Wooden Sword",
-		"description": "A basic wooden sword. Not very effective but better than nothing.",
-		"type": ItemData.ItemType.WEAPON, "price": 50, "attack": 5,
-		"icon_name": "wooden_sword"
-	})
-	items["iron_sword"] = ItemHelper.create_item({
-		"id": "iron_sword", "name": "Iron Sword",
-		"description": "A basic iron sword. Reliable but nothing special.",
-		"type": ItemData.ItemType.WEAPON, "price": 100, "attack": 15,
-		"icon_name": "iron_sword"
-	})
-	items["steel_sword"] = ItemHelper.create_item({
-		"id": "steel_sword", "name": "Steel Sword",
-		"description": "A well-crafted steel sword with a sharp edge.",
-		"type": ItemData.ItemType.WEAPON, "price": 300, "attack": 25,
-		"icon_name": "iron_sword"
-	})
-	items["platinum_sword"] = ItemHelper.create_item({
-		"id": "platinum_sword", "name": "Platinum Sword",
-		"description": "A finely crafted platinum sword. Light and deadly.",
-		"type": ItemData.ItemType.WEAPON, "price": 300, "attack": 25, "speed": 5.0,
-		"icon_name": "platinum_sword"
-	})
-	items["fire_blade"] = ItemHelper.create_item({
-		"id": "fire_blade", "name": "Flame Blade",
-		"description": "A magical blade imbued with fire essence. Burns with eternal flame.",
-		"type": ItemData.ItemType.WEAPON, "rarity": ItemData.ItemRarity.RARE,
-		"price": 1000, "attack": 40,
-		"icon_name": "iron_sword"
-	})
-	items["pirate_blade"] = ItemHelper.create_item({
-		"id": "pirate_blade", "name": "Pirate Blade",
-		"description": "A curved blade favored by pirates. Fast but less powerful.",
-		"type": ItemData.ItemType.WEAPON, "price": 120, "attack": 12, "speed": 10.0,
-		"icon_name": "pirate_blade"
-	})
-	items["battle_axe"] = ItemHelper.create_item({
-		"id": "battle_axe", "name": "Battle Axe",
-		"description": "A heavy axe that deals massive damage.",
-		"type": ItemData.ItemType.WEAPON, "price": 250, "attack": 30, "speed": -5.0,
-		"icon_name": "battle_axe"
-	})
-	items["dagger"] = ItemHelper.create_item({
-		"id": "dagger", "name": "Dagger",
-		"description": "A quick, light blade for swift attacks.",
-		"type": ItemData.ItemType.WEAPON, "price": 90, "attack": 10, "speed": 15.0,
-		"icon_name": "dagger"
-	})
-	items["war_hammer"] = ItemHelper.create_item({
-		"id": "war_hammer", "name": "War Hammer",
-		"description": "A crushing weapon that breaks through armor.",
-		"type": ItemData.ItemType.WEAPON, "price": 400, "attack": 35, "speed": -10.0,
-		"icon_name": "thron_mace"
-	})
-	items["thron_mace"] = ItemHelper.create_item({
-		"id": "thron_mace", "name": "Thron Mace",
-		"description": "A heavy mace that can crush armor.",
-		"type": ItemData.ItemType.WEAPON, "price": 220, "attack": 28, "speed": -10.0,
-		"icon_name": "thron_mace"
-	})
-	items["hunting_bow"] = ItemHelper.create_item({
-		"id": "hunting_bow", "name": "Hunting Bow",
-		"description": "A reliable bow for ranged combat.",
-		"type": ItemData.ItemType.WEAPON, "price": 180, "attack": 20,
-		"icon_name": "hunting_bow"
-	})
-	_create_reference_weapons()
-
-
-func _create_reference_weapons() -> void:
-	for card_id: int in ReferenceEquipmentCatalog.get_card_ids():
-		var definition := ReferenceEquipmentCatalog.get_definition(card_id)
-		var runtime_item_id := str(definition["runtime_item_id"])
-		_reference_items[runtime_item_id] = ItemHelper.create_item({
-			"id": runtime_item_id,
-			"name": str(definition["source_name"]),
-			"description": "",
-			"type": ItemData.ItemType.WEAPON,
-			"rarity": ItemData.ItemRarity.COMMON,
-			"price": 10,
-			"sell_price": 0,
-			"attack": 0,
-			"health": 0,
-			"speed": 0.0,
-			# Source upgrade metadata remains in ReferenceEquipmentCatalog. Runtime
-			# upgrade stays disabled until reference stats participate in the rule.
-			"can_upgrade": false,
-			"upgrade_base_cost": 0,
-			"upgrade_cost_rate": 1.0,
-			"max_upgrade_level": 1,
+## Equipment comes from data/equipment/templates.json; stats are computed by EquipmentBalance.
+## The pre-2026-11-08 equipment (swords, armours, shields, rings…) was retired with save v6.
+func _create_equipment() -> void:
+	for template_id: String in EquipmentCatalog.ids():
+		var t := EquipmentCatalog.get_template(template_id)
+		var slot := str(t["slot"])
+		var item_type: int = ItemData.ItemType.WEAPON
+		for type: int in ItemData.SLOT_BY_TYPE:
+			if ItemData.SLOT_BY_TYPE[type] == slot:
+				item_type = type
+		var rarity := maxi(EquipmentBalance.rarity_enum(str(t["rarity"])), 0)
+		var item := ItemHelper.create_item({
+			"id": template_id,
+			"name": str(t.get("name", template_id)),
+			"description": str(t.get("description", "")),
+			"type": item_type,
+			"rarity": rarity,
+			"price": int(t.get("price", 60 + 40 * rarity)),
+			"max_upgrade_level": EquipmentBalance.max_level(),
 			"use_atlas": false,
 		})
-
-
-func _create_armor() -> void:
-	items["leather_armor"] = ItemHelper.create_item({
-		"id": "leather_armor", "name": "Leather Armor",
-		"description": "Light leather armor that provides basic protection.",
-		"type": ItemData.ItemType.ARMOR, "price": 80, "defense": 10,
-		"icon_name": "leather_armor"
-	})
-	items["chainmail"] = ItemHelper.create_item({
-		"id": "chainmail", "name": "Chainmail Armor",
-		"description": "Flexible armor made of interlocking rings.",
-		"type": ItemData.ItemType.ARMOR, "price": 250, "defense": 18, "speed": -5.0,
-		"icon_row": 7, "icon_col": 3
-	})
-	items["iron_armor"] = ItemHelper.create_item({
-		"id": "iron_armor", "name": "Iron Armor",
-		"description": "Sturdy iron armor. Heavy but protective.",
-		"type": ItemData.ItemType.ARMOR, "price": 400, "defense": 25, "speed": -10.0,
-		"icon_name": "iron_armor"
-	})
-	items["plate_armor"] = ItemHelper.create_item({
-		"id": "plate_armor", "name": "Plate Armor",
-		"description": "Heavy full plate armor. Maximum protection.",
-		"type": ItemData.ItemType.ARMOR, "price": 600, "defense": 35, "speed": -15.0,
-		"icon_name": "plate_armor"
-	})
-
-
-func _create_helmets() -> void:
-	items["leather_cap"] = ItemHelper.create_item({
-		"id": "leather_cap", "name": "Leather Cap",
-		"description": "A simple leather hood for basic protection.",
-		"type": ItemData.ItemType.HELMET, "price": 30, "defense": 4,
-		"icon_name": "leather_cap"
-	})
-	items["iron_helmet"] = ItemHelper.create_item({
-		"id": "iron_helmet", "name": "Iron Helmet",
-		"description": "A sturdy iron helmet to protect your head.",
-		"type": ItemData.ItemType.HELMET, "price": 60, "defense": 8,
-		"icon_name": "iron_helmet"
-	})
-	items["steel_helmet"] = ItemHelper.create_item({
-		"id": "steel_helmet", "name": "Steel Helmet",
-		"description": "A well-crafted steel helmet for superior protection.",
-		"type": ItemData.ItemType.HELMET, "price": 120, "defense": 15,
-		"icon_name": "steel_helmet"
-	})
-
-
-func _create_shields() -> void:
-	items["wooden_shield"] = ItemHelper.create_item({
-		"id": "wooden_shield", "name": "Wooden Shield",
-		"description": "A simple wooden shield. Better than nothing.",
-		"type": ItemData.ItemType.SHIELD, "price": 50, "defense": 12,
-		"icon_name": "wooden_shield"
-	})
-	items["iron_shield"] = ItemHelper.create_item({
-		"id": "iron_shield", "name": "Iron Shield",
-		"description": "A sturdy iron shield for better protection.",
-		"type": ItemData.ItemType.SHIELD, "price": 150, "defense": 20,
-		"icon_name": "iron_shield"
-	})
-	items["kite_shield"] = ItemHelper.create_item({
-		"id": "kite_shield", "name": "Kite Shield",
-		"description": "Large shield providing excellent defensive coverage.",
-		"type": ItemData.ItemType.SHIELD, "price": 300, "defense": 28, "speed": -5.0,
-		"icon_name": "kite_shield"
-	})
-
-
-func _create_boots() -> void:
-	items["leather_boots"] = ItemHelper.create_item({
-		"id": "leather_boots", "name": "Leather Boots",
-		"description": "Comfortable leather boots for long journeys.",
-		"type": ItemData.ItemType.BOOTS, "price": 40, "defense": 5, "speed": 10.0,
-		"icon_name": "leather_boots"
-	})
-	items["iron_boots"] = ItemHelper.create_item({
-		"id": "iron_boots", "name": "Iron Boots",
-		"description": "Heavy iron boots that provide good protection.",
-		"type": ItemData.ItemType.BOOTS, "price": 80, "defense": 10, "speed": -5.0,
-		"icon_row": 7, "icon_col": 1
-	})
-	items["swift_boots"] = ItemHelper.create_item({
-		"id": "swift_boots", "name": "Swift Boots",
-		"description": "Light boots enchanted for speed.",
-		"type": ItemData.ItemType.BOOTS, "price": 150, "defense": 3, "speed": 20.0,
-		"icon_name": "swift_boots"
-	})
-
-
-func _create_accessories() -> void:
-	items["silver_ring"] = ItemHelper.create_item({
-		"id": "silver_ring", "name": "Silver Ring",
-		"description": "A simple silver ring with minor enchantments.",
-		"type": ItemData.ItemType.ACCESSORY, "price": 200, "attack": 5, "defense": 5,
-		"icon_row": 8, "icon_col": 2
-	})
-	items["gold_ring"] = ItemHelper.create_item({
-		"id": "gold_ring", "name": "Gold Ring",
-		"description": "An elegant golden ring that boosts vitality.",
-		"type": ItemData.ItemType.ACCESSORY, "price": 350, "health": 20, "defense": 8,
-		"icon_row": 8, "icon_col": 4
-	})
-	items["diamond_ring"] = ItemHelper.create_item({
-		"id": "diamond_ring", "name": "Diamond Ring",
-		"description": "A sparkling diamond ring that enhances all stats.",
-		"type": ItemData.ItemType.ACCESSORY, "price": 800, "attack": 10, "defense": 10, "health": 30,
-		"icon_row": 8, "icon_col": 5
-	})
-	items["strength_amulet"] = ItemHelper.create_item({
-		"id": "strength_amulet", "name": "Strength Amulet",
-		"description": "An amulet that enhances physical power.",
-		"type": ItemData.ItemType.ACCESSORY, "price": 280, "attack": 12,
-		"icon_row": 8, "icon_col": 6
-	})
-	items["gold_necklace"] = ItemHelper.create_item({
-		"id": "gold_necklace", "name": "Gold Necklace",
-		"description": "A beautiful gold necklace that increases defense.",
-		"type": ItemData.ItemType.ACCESSORY, "price": 500, "defense": 15,
-		"icon_row": 8, "icon_col": 6
-	})
+		item.equipment_line = str(t["line"])
+		item.icon_asset_id = str(t.get("icon", ""))
+		items[template_id] = item
 
 
 func _create_consumables() -> void:
@@ -393,128 +196,61 @@ func _create_segments() -> void:
 	})
 
 
-func _create_augments() -> void:
-	# --- Flame augments ---
-	items["flame_augment_t1"] = ItemHelper.create_item({
-		"id": "flame_augment_t1", "name": "Flame Augment I",
-		"description": "Imbue equipment with fire. Burns enemies on hit.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.UNCOMMON,
-		"stackable": false, "max_stack": 1, "attack": 5,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.BURN_ON_HIT, "passive_value": 3.0,
-		"icon_name": "flame_augment"
-	})
-	items["flame_augment_t2"] = ItemHelper.create_item({
-		"id": "flame_augment_t2", "name": "Flame Augment II",
-		"description": "Stronger fire imbue. Sears enemies on hit.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.RARE,
-		"stackable": false, "max_stack": 1, "attack": 12,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.BURN_ON_HIT, "passive_value": 5.0,
-		"icon_name": "flame_augment"
-	})
-	items["flame_augment_t3"] = ItemHelper.create_item({
-		"id": "flame_augment_t3", "name": "Flame Augment III",
-		"description": "Infernal fire imbue. Incinerates enemies on hit.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.EPIC,
-		"stackable": false, "max_stack": 1, "attack": 20,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.BURN_ON_HIT, "passive_value": 8.0,
-		"icon_name": "flame_augment"
-	})
-	# --- Frost augments ---
-	items["frost_augment_t1"] = ItemHelper.create_item({
-		"id": "frost_augment_t1", "name": "Frost Augment I",
-		"description": "Imbue equipment with ice. Slows enemies on hit.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.UNCOMMON,
-		"stackable": false, "max_stack": 1, "attack": 3,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.FREEZE_ON_HIT, "passive_value": 1.5,
-		"icon_name": "frost_augment"
-	})
-	items["frost_augment_t2"] = ItemHelper.create_item({
-		"id": "frost_augment_t2", "name": "Frost Augment II",
-		"description": "Stronger ice imbue. Freezes enemies on hit.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.RARE,
-		"stackable": false, "max_stack": 1, "attack": 8,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.FREEZE_ON_HIT, "passive_value": 3.0,
-		"icon_name": "frost_augment"
-	})
-	# --- Power augments ---
-	items["power_augment_t1"] = ItemHelper.create_item({
-		"id": "power_augment_t1", "name": "Power Augment I",
-		"description": "Raw strength increase.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.UNCOMMON,
-		"stackable": false, "max_stack": 1, "attack": 8,
-		"augment_type": ItemData.AugmentType.STAT_BOOST,
-		"icon_name": "power_augment"
-	})
-	items["power_augment_t2"] = ItemHelper.create_item({
-		"id": "power_augment_t2", "name": "Power Augment II",
-		"description": "Greater strength increase.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.RARE,
-		"stackable": false, "max_stack": 1, "attack": 15,
-		"augment_type": ItemData.AugmentType.STAT_BOOST,
-		"icon_name": "power_augment"
-	})
-	# --- Lifesteal augments ---
-	items["lifesteal_augment_t1"] = ItemHelper.create_item({
-		"id": "lifesteal_augment_t1", "name": "Lifesteal Augment I",
-		"description": "Drain 5% of damage dealt as health.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.UNCOMMON,
-		"stackable": false, "max_stack": 1,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.LIFE_STEAL, "passive_value": 5.0,
-		"icon_name": "lifesteal_augment"
-	})
-	items["lifesteal_augment_t2"] = ItemHelper.create_item({
-		"id": "lifesteal_augment_t2", "name": "Lifesteal Augment II",
-		"description": "Drain 10% of damage dealt as health.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.RARE,
-		"stackable": false, "max_stack": 1,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.LIFE_STEAL, "passive_value": 10.0,
-		"icon_name": "lifesteal_augment"
-	})
-	# --- Crit augments ---
-	items["crit_augment_t1"] = ItemHelper.create_item({
-		"id": "crit_augment_t1", "name": "Critical Augment I",
-		"description": "Increase critical chance by 8 percentage points.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.UNCOMMON,
-		"stackable": false, "max_stack": 1,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.CRIT_CHANCE, "passive_value": 8.0,
-		"icon_name": "crit_augment"
-	})
-	items["crit_augment_t2"] = ItemHelper.create_item({
-		"id": "crit_augment_t2", "name": "Critical Augment II",
-		"description": "Increase critical chance by 15 percentage points.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.RARE,
-		"stackable": false, "max_stack": 1,
-		"augment_type": ItemData.AugmentType.PASSIVE_EFFECT,
-		"passive_effect": ItemData.PassiveEffect.CRIT_CHANCE, "passive_value": 15.0,
-		"icon_name": "crit_augment"
-	})
-	# --- Skill augments ---
-	items["whirlwind_augment"] = ItemHelper.create_item({
-		"id": "whirlwind_augment", "name": "Whirlwind Rune",
-		"description": "Grants the Whirlwind skill when slotted into equipment.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.EPIC,
-		"stackable": false, "max_stack": 1, "attack": 5,
-		"augment_type": ItemData.AugmentType.ACTIVE_SKILL,
-		"active_skill_id": "whirlwind",
-		"icon_name": "whirlwind_augment"
-	})
-	items["shield_bash_augment"] = ItemHelper.create_item({
-		"id": "shield_bash_augment", "name": "Shield Bash Rune",
-		"description": "Grants the Shield Bash skill when slotted into equipment.",
-		"type": ItemData.ItemType.AUGMENT, "rarity": ItemData.ItemRarity.EPIC,
-		"stackable": false, "max_stack": 1, "defense": 5,
-		"augment_type": ItemData.AugmentType.ACTIVE_SKILL,
-		"active_skill_id": "shield_bash",
-		"icon_name": "shield_bash_augment"
-	})
+## Socket stones (data/gems): 11 types × 4 tiers. Icons are placeholders until the
+## Ninja Adventure item icons are assigned (plan phase F, NEEDS_ASSET).
+func _create_gems() -> void:
+	for stone_id: String in GemCatalog.all_item_ids():
+		var p := GemCatalog.parse(stone_id)
+		var tier := GemCatalog.tier_def(int(p["tier"]))
+		items[stone_id] = ItemHelper.create_item({
+			"id": stone_id, "name": GemCatalog.display_name(stone_id),
+			"description": "%s %s" % [GemCatalog.type_def(p["type"]).get("description", ""), GemCatalog.describe(stone_id)],
+			"type": ItemData.ItemType.GEM,
+			"rarity": maxi(EquipmentBalance.rarity_enum(str(tier.get("rarity", "common"))), 0),
+			"stackable": true, "max_stack": 99,
+			"price": int(tier.get("sell_price", 10)) * 2, "sell_price": int(tier.get("sell_price", 10)),
+			"icon_name": "diamond",
+		})
+		items[stone_id].icon_asset_id = str(GemCatalog.type_def(p["type"]).get("icon", ""))
+
+
+## Pet eggs (data/companions/pets.json). Hatched from the Pet menu. Icon placeholder until pet
+## item art is assigned (plan phase F, NEEDS_ASSET).
+func _create_eggs() -> void:
+	for egg_id: String in CompanionCatalog.egg_ids():
+		var e := CompanionCatalog.egg(egg_id)
+		items[egg_id] = ItemHelper.create_item({
+			"id": egg_id, "name": str(e.get("name", egg_id)),
+			"description": "Hatch it in the Pet menu (%s)." % e.get("region", ""),
+			"stackable": true, "max_stack": 99, "price": 0, "sell_price": 0,
+			"rarity": ItemData.ItemRarity.UNCOMMON,
+			"icon_name": "heart",
+		})
+
+
+## Boss Summon Cards and fragments (data/bosses/bosses.json). Used from the World Map tab.
+## Icons are placeholders until card art is assigned (plan phase F, NEEDS_ASSET).
+func _create_boss_cards() -> void:
+	var rarity_by_name := {"rare": ItemData.ItemRarity.RARE, "epic": ItemData.ItemRarity.EPIC, "legendary": ItemData.ItemRarity.LEGENDARY}
+	for card_id: String in BossCatalog.cards():
+		var c: Dictionary = BossCatalog.card(card_id)
+		items[card_id] = ItemHelper.create_item({
+			"id": card_id, "name": str(c.get("name", card_id)),
+			"description": "Summons %s. Consumed only when the boss appears." % GameContent.MONSTERS.get(str(c.get("boss", "")), {}).get("name", c.get("boss", "")),
+			"stackable": true, "max_stack": 20, "price": 0, "sell_price": 0,
+			"rarity": rarity_by_name.get(str(c.get("rarity", "rare")), ItemData.ItemRarity.RARE),
+			"icon_name": "power_fragment",
+		})
+		items[card_id].icon_asset_id = str(c.get("icon", ""))
+	for fragment_id: String in BossCatalog.fragments():
+		items[fragment_id] = ItemHelper.create_item({
+			"id": fragment_id, "name": str(BossCatalog.fragments()[fragment_id].get("name", fragment_id)),
+			"description": "Combine fragments into a Boss Summon Card.",
+			"stackable": true, "max_stack": 999, "price": 0, "sell_price": 0,
+			"rarity": ItemData.ItemRarity.UNCOMMON,
+			"icon_name": "power_fragment",
+		})
+		items[fragment_id].icon_asset_id = str(BossCatalog.fragments()[fragment_id].get("icon", ""))
 
 
 func _create_timed_buffs() -> void:
@@ -582,20 +318,6 @@ func _create_survival_items() -> void:
 		"stackable": true, "max_stack": 999, "price": 4,
 		"icon_name": "iron_ore"
 	})
-	items["pet_treat"] = ItemHelper.create_item({
-		"id": "pet_treat", "name": "Pet Treat",
-		"description": "A tasty snack. Feed it to pets to level them up.",
-		"stackable": true, "max_stack": 999, "price": 15,
-		"rarity": ItemData.ItemRarity.UNCOMMON,
-		"icon_name": "heart"
-	})
-	items["hero_shard"] = ItemHelper.create_item({
-		"id": "hero_shard", "name": "Hero Shard",
-		"description": "Crystallized valor. Upgrades hero stars.",
-		"stackable": true, "max_stack": 999, "price": 60,
-		"rarity": ItemData.ItemRarity.RARE,
-		"icon_name": "diamond"
-	})
 	items["boss_core"] = ItemHelper.create_item({
 		"id": "boss_core", "name": "Boss Core",
 		"description": "The pulsing heart of a defeated boss. Sells for a fortune.",
@@ -609,8 +331,6 @@ func _create_survival_items() -> void:
 func get_item(item_id: String) -> ItemData:
 	if items.has(item_id):
 		return items[item_id]
-	if _reference_items.has(item_id):
-		return _reference_items[item_id]
 	return null
 
 

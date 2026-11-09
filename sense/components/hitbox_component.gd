@@ -31,6 +31,7 @@ extends Area2D
 ## Player/authority hitboxes resolve variance and critical chance before delivery.
 @export var resolves_damage: bool = false
 var bonus_crit_chance_percent: float = 0.0
+var bonus_crit_damage_percent: float = 0.0
 
 ## Emitted when this hitbox hits a hurtbox
 signal hit_landed(hurtbox: Area2D)
@@ -94,7 +95,7 @@ func _on_area_entered(area: Area2D) -> void:
 		#   - global_position: Vị trí nguồn damage (dùng để tính hướng knockback)
 		var accepted := false
 		if resolves_damage and area.has_method("take_resolved_damage"):
-			var roll := Combat.roll(float(damage), bonus_crit_chance_percent)
+			var roll := Combat.roll(float(damage), bonus_crit_chance_percent, bonus_crit_damage_percent)
 			var result: Dictionary = area.take_resolved_damage(
 				int(roll["amount"]), bool(roll["crit"]), knockback_force, global_position
 			)

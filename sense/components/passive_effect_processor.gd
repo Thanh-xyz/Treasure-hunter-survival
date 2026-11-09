@@ -82,6 +82,42 @@ func get_life_steal_percent() -> float:
 	return get_effect_total(ItemData.PassiveEffect.LIFE_STEAL)
 
 
+func get_crit_damage_bonus_percent() -> float:
+	return get_effect_total(ItemData.PassiveEffect.CRIT_DAMAGE)
+
+
+func get_dodge_percent() -> float:
+	return get_effect_total(ItemData.PassiveEffect.DODGE)
+
+
+func get_accuracy_percent() -> float:
+	return get_effect_total(ItemData.PassiveEffect.ACCURACY)
+
+
+func get_regeneration_per_second() -> float:
+	return get_effect_total(ItemData.PassiveEffect.REGENERATION)
+
+
+var _regen_acc := 0.0
+
+## Renewal Stone: heal whole HP points as the per-second rate accumulates.
+## Owners that do not own their HP (LAN clients) must not call this.
+func tick_regeneration(delta: float) -> int:
+	if not get_owner_stats_func.is_valid():
+		return 0
+	var stats: CharacterStats = get_owner_stats_func.call()
+	var rate := get_regeneration_per_second()
+	if stats == null or rate <= 0.0 or stats.current_health <= 0 or stats.current_health >= stats.max_health:
+		_regen_acc = 0.0
+		return 0
+	_regen_acc += rate * delta
+	var whole := int(_regen_acc)
+	_regen_acc -= whole
+	if whole > 0:
+		stats.heal(whole)
+	return whole
+
+
 func get_effect_total(effect_type: ItemData.PassiveEffect) -> float:
 	if not get_passive_effects_func.is_valid():
 		return 0.0

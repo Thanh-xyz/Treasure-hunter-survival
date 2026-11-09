@@ -29,9 +29,8 @@ enum Category {
 	WEAPONS,
 	ARMOR,
 	HELMETS,
-	SHIELDS,
 	BOOTS,
-	ACCESSORIES,
+	BACK,
 	CONSUMABLES
 }
 
@@ -44,9 +43,8 @@ func _init_category_filters() -> void:
 		"WEAPONS": [ItemData.ItemType.WEAPON],
 		"ARMOR": [ItemData.ItemType.ARMOR],
 		"HELMETS": [ItemData.ItemType.HELMET],
-		"SHIELDS": [ItemData.ItemType.SHIELD],
 		"BOOTS": [ItemData.ItemType.BOOTS],
-		"ACCESSORIES": [ItemData.ItemType.ACCESSORY],
+		"BACK": [ItemData.ItemType.BACK],
 		"CONSUMABLES": [ItemData.ItemType.CONSUMABLE],
 	}
 
@@ -159,7 +157,7 @@ func _create_category_tabs() -> void:
 		child.queue_free()
 	category_buttons.clear()
 
-	var categories: Array[String] = ["ALL", "WEAPONS", "ARMOR", "HELMETS", "SHIELDS", "BOOTS", "ACCESSORIES", "CONSUMABLES"]
+	var categories: Array[String] = ["ALL", "WEAPONS", "ARMOR", "HELMETS", "BOOTS", "BACK", "CONSUMABLES"]
 
 	for category in categories:
 		var btn := Button.new()

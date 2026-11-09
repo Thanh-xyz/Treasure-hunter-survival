@@ -163,7 +163,6 @@ var hitbox_active: bool = false  ## Theo dõi trạng thái hitbox cho visualiza
 ## Survival RPG integration: content id used for quests/XP, and target radius
 @export var monster_id: String = "skeleton_grunt"
 var body_radius: float = 14.0
-const XP_REWARD := 20
 
 # =============================================================================
 # LIFECYCLE METHODS
@@ -524,8 +523,6 @@ func _on_died() -> void:
 	if current_state == State.DEATH:
 		return
 	remove_from_group("monster")
-	GameState.add_xp(XP_REWARD)
-	DamageNumber.spawn(get_tree(), global_position + Vector2(0, -50), "+%d XP" % XP_REWARD, Color(0.75, 0.55, 1.0))
 	GameState.register_kill(monster_id, false)
 	GameEvent.enemy_killed.emit(monster_id, global_position, false)
 	_change_state(State.DEATH)
@@ -621,7 +618,7 @@ func _create_default_loot_table() -> LootTable:
 	# Add possible drops
 	table.add_entry("bone", 100, 1, 3)          # Common: bones
 	table.add_entry("health_potion", 30, 1, 1)  # Rare: health potion
-	table.add_entry("iron_sword", 5, 1, 1)      # Very rare: weapon
+	table.add_entry("ashwood_blade", 5, 1, 1)      # Very rare: weapon
 
 	# Segment drops (crafting materials)
 	table.add_entry("herb_segment", 18, 1, 2)        # Most common segment

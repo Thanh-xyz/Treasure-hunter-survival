@@ -16,7 +16,7 @@ extends Resource
 ## ╚════════════════════════════════════════════════════════════╝
 
 enum RecipeCategory {
-	AUGMENT,         ## Output is an AUGMENT item (permanent or active skill)
+	AUGMENT,         ## Output is a socket stone (name kept for stable enum values)
 	CONSUMABLE_BUFF  ## Output is a timed buff item
 }
 

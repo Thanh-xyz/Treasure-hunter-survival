@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "comment": "Pets (brainstorm sheet 03): stat-only companions, 12 species x 4 qualities, diamond levels to 10, 8 socket stones, eggs. Every number is a provisional proposal to balance after playtests. art_status NEEDS_ASSET = licensed placeholder sprite until a matching CC0 sprite is found.",
+  "qualities": ["common", "uncommon", "epic", "legendary"],
+  "quality_multiplier": {"common": 1.0, "uncommon": 1.4, "epic": 2.0, "legendary": 3.0},
+  "quality_color": {"common": "e8e8e8", "uncommon": "4aa3ff", "epic": "b45cff", "legendary": "ffc93c"},
+  "duplicate_diamonds": {"common": 2, "uncommon": 5, "epic": 15, "legendary": 40},
+  "max_level": 10,
+  "level_cost_diamonds": [5, 8, 12, 18, 25, 35, 50, 70, 100],
+  "growth_per_level": 0.12,
+  "unscaled_stats": ["magnet"],
+  "species": {
+    "ember_fox":      {"name": "Ember Fox", "focus": "Damage, Fire", "stats": {"atk": 3, "fire_damage": 1}, "art": "actor.animal.ninja.dog_orange"},
+    "moss_turtle":    {"name": "Moss Turtle", "focus": "HP, Defense", "stats": {"hp": 25, "def": 4}, "art": "actor.monster.ninja.kappa_green", "art_status": "NEEDS_ASSET: no turtle in the pack; kappa (shell) placeholder"},
+    "dusk_owl":       {"name": "Dusk Owl", "focus": "Critical, Accuracy", "stats": {"crit_chance": 1.5, "accuracy": 2}, "art": "actor.monster.ninja.owl"},
+    "lucky_cat":      {"name": "Lucky Cat", "focus": "Gold, Loot", "stats": {"gold_pct": 0.10, "magnet": 40}, "art": "actor.animal.ninja.cat_orange"},
+    "shadow_bunny":   {"name": "Shadow Bunny", "focus": "Dodge, Speed", "stats": {"dodge": 1.5, "spd": 6}, "art": "actor.animal.ninja.hamster_dark", "art_status": "NEEDS_ASSET: no rabbit in the pack; hamster placeholder"},
+    "brown_bunny":    {"name": "Brown Bunny", "focus": "HP", "stats": {"hp": 30}, "art": "actor.animal.ninja.hamster_brown", "art_status": "NEEDS_ASSET: no rabbit in the pack; hamster placeholder"},
+    "snow_bunny":     {"name": "Snow Bunny", "focus": "Defense", "stats": {"def": 3, "hp": 10}, "art": "actor.animal.ninja.hamster_gray", "art_status": "NEEDS_ASSET: no rabbit in the pack; hamster placeholder"},
+    "ash_salamander": {"name": "Ash Salamander", "focus": "Fire, Damage", "stats": {"fire_damage": 2, "atk": 2}, "art": "actor.monster.ninja.axolot"},
+    "ash_crow":       {"name": "Ash Crow", "focus": "Critical, Accuracy", "stats": {"crit_chance": 1.5, "accuracy": 3}, "art": "actor.animal.gridwright.sparrow", "tint": "6e6470", "art_status": "Gridwright sparrow, tinted ash grey (closest bird; no crow)"},
+    "frost_fox":      {"name": "Frost Fox", "focus": "Freeze, Damage", "stats": {"ice_slow": 3, "atk": 2}, "art": "actor.animal.ninja.dog_white"},
+    "glacier_owl":    {"name": "Glacier Owl", "focus": "Defense, Dodge", "stats": {"def": 3, "dodge": 1}, "art": "actor.monster.ninja.owl2"},
+    "ember_drake":    {"name": "Ember Drake", "focus": "HP, Damage, Fire", "stats": {"hp": 20, "atk": 3, "fire_damage": 2}, "art": "actor.monster.ninja.dragon"}
+  },
+  "eggs": {
+    "egg_forest": {"name": "Forest Egg", "region": "Greenwood", "price": {"gold": 500},
+      "species": {"moss_turtle": 30, "brown_bunny": 20, "shadow_bunny": 15, "dusk_owl": 25, "lucky_cat": 10},
+      "quality": {"common": 70, "uncommon": 22, "epic": 7, "legendary": 1}},
+    "egg_ash": {"name": "Ash Egg", "region": "Cinderwaste", "price": {"gold": 1500},
+      "species": {"ember_fox": 40, "ash_salamander": 35, "ash_crow": 25},
+      "quality": {"common": 60, "uncommon": 28, "epic": 10, "legendary": 2}},
+    "egg_snow": {"name": "Snow Egg", "region": "Frostvale", "price": {"diamonds": 40},
+      "species": {"snow_bunny": 40, "frost_fox": 35, "glacier_owl": 25},
+      "quality": {"common": 50, "uncommon": 32, "epic": 14, "legendary": 4}},
+    "egg_dragon": {"name": "Dragon Egg", "region": "Endgame", "price": {"diamonds": 150},
+      "species": {"ember_drake": 100},
+      "quality": {"common": 0, "uncommon": 40, "epic": 45, "legendary": 15}}
+  },
+  "starter": "ember_fox:common"
+}

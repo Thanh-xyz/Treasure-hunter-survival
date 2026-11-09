@@ -52,6 +52,10 @@ quests, dialogue, audio and balance numbers must be original.
 - The `excluded` status changes only if a written licence from the rights holder of the reference
   game, covering use in this project, is stored under `docs/legal/` and approved by the owner. A
   general statement that the material is "authorised" is not enough.
+- Owner decision 2026-11-08: game graphics (characters, monsters, tiles, items, UI) come from free,
+  licence-verified packs found online (CC0 preferred: Ninja Adventure, Kenney). Do not author new
+  art. Copy only the files used into `assets/<pack>/` together with the pack's licence file, and
+  register them with `tools/provenance/register_third_party.py`.
 - Asset priority: original Cinderwild assets → verified-licence assets with documented
   commercial use → new original pixel art → properly licensed third-party packs.
 - Every production asset needs a provenance record (source, creator, licence, commercial use,

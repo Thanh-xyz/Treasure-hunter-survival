@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "comment": "Status effects monsters put on players (brainstorm sheet 05 §5: Burn in Ash, Freeze/Slow in Snow, Poison from snakes). magnitude = damage per tick for burn/poison, percent slow for slow/freeze. Provisional.",
+  "statuses": {
+    "burn":   {"name": "Burn", "tick": 1.0, "color": "ff8a3d"},
+    "poison": {"name": "Poison", "tick": 1.0, "color": "7fdc4a"},
+    "slow":   {"name": "Slow", "color": "8fc8ff", "max_slow": 60.0},
+    "freeze": {"name": "Freeze", "color": "d6f2ff", "max_slow": 90.0}
+  }
+}

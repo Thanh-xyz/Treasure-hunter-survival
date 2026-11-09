@@ -7,12 +7,13 @@ extends Control
 @export var radius: float = 72.0
 @export var dead_zone: float = 0.18
 
-const JOYSTICK_BACKGROUND := preload("res://assets/treasure_hunter/ui/reference/joystick_ring.png")
-const JOYSTICK_HANDLE := preload("res://assets/treasure_hunter/ui/reference/joystick_handle.png")
-# Preserve the verified Unity 256:128 background/handle ratio at the captured HUD scale.
-const BACKGROUND_SIZE := 184.0
-const HANDLE_SIZE := BACKGROUND_SIZE * 0.5
-const BACKGROUND_TINT := Color8(181, 130, 107)
+# Original Ember UI kit art (ART_BIBLE.md). Sizes are integer multiples of the textures
+# (ring 96 px, handle 42 px at UI_PX 3) so pixels stay crisp.
+const BACKGROUND_SIZE := 192.0
+const HANDLE_SIZE := 84.0
+
+var _ring_texture: Texture2D = ArtCatalog.texture("ui.joystick.ring")
+var _handle_texture: Texture2D = ArtCatalog.texture("ui.joystick.handle")
 
 var _touch_index: int = -1
 var _center: Vector2 = Vector2.ZERO
@@ -91,13 +92,13 @@ func _draw() -> void:
 	var visual_range := (BACKGROUND_SIZE - HANDLE_SIZE) * 0.5
 	var visual_offset := _knob * (visual_range / radius)
 	draw_texture_rect(
-		JOYSTICK_BACKGROUND,
+		_ring_texture,
 		Rect2(_center - background_extent * 0.5, background_extent),
 		false,
-		Color(BACKGROUND_TINT, alpha)
+		Color(1, 1, 1, alpha)
 	)
 	draw_texture_rect(
-		JOYSTICK_HANDLE,
+		_handle_texture,
 		Rect2(_center + visual_offset - handle_extent * 0.5, handle_extent),
 		false,
 		Color(1, 1, 1, alpha)

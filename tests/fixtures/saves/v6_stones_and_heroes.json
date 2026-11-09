@@ -1,0 +1,144 @@
+{
+  "hp": -1,
+  "inventory": {
+    "diamonds": 3,
+    "equipment": {
+      "weapon": {
+        "augments": [
+          "crit_augment_t2",
+          "lifesteal_augment_t1",
+          "whirlwind_augment"
+        ],
+        "id": "emberforged_blade",
+        "level": 2,
+        "qty": 1
+      }
+    },
+    "gold": 500,
+    "slots": [
+      {
+        "id": "flame_augment_t3",
+        "qty": 1
+      },
+      {
+        "id": "flame_augment_t3",
+        "qty": 1
+      },
+      {
+        "id": "hero_shard",
+        "qty": 7
+      },
+      {
+        "id": "wood",
+        "qty": 10
+      },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "lost_and_found": [],
+  "migration_log": [
+    "v6 fixture: written by hand for the v7 migration test"
+  ],
+  "pending_claim": {
+    "claim_id": "main:q02",
+    "reward": {
+      "gold": 80,
+      "items": {
+        "health_potion": 3
+      },
+      "xp": 60
+    },
+    "source_id": "q02",
+    "source_kind": "main",
+    "version": 1
+  },
+  "profile": {
+    "active_mount": "",
+    "active_pet": "ember_fox",
+    "boss_kills": {},
+    "current_zone": "town",
+    "hero_id": "mystic",
+    "heroes": {
+      "mystic": {
+        "stars": 1
+      },
+      "warden": {
+        "stars": 2
+      }
+    },
+    "kills_total": 40,
+    "level": 14,
+    "mounts": {},
+    "pets": {
+      "ember_fox": {
+        "level": 2
+      }
+    },
+    "plots": [
+      {},
+      {},
+      {},
+      {},
+      {},
+      {}
+    ],
+    "settings": {
+      "compact_hud": false,
+      "damage_numbers": true,
+      "joystick_opacity": 0.7,
+      "left_handed": false,
+      "max_fps": 60
+    },
+    "xp": 120
+  },
+  "quests": {
+    "dailies": {
+      "d_boss": {
+        "claimed": false,
+        "progress": 0
+      },
+      "d_gather": {
+        "claimed": false,
+        "progress": 0
+      },
+      "d_hunt": {
+        "claimed": false,
+        "progress": 0
+      }
+    },
+    "daily_date": "2026-11-01",
+    "main_index": 8,
+    "main_progress": 8,
+    "main_quest_id": "q02",
+    "main_ready": true
+  },
+  "saved_at": 1793500000.0,
+  "version": 6
+}

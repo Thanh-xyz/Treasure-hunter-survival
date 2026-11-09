@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "comment": "Socket stones (brainstorm sheet 07 §4, plan phase B). value = base_value × tier_multiplier[tier]. Provisional balance.",
+  "slots_per_holder": 8,
+  "fuse_cost": 6,
+  "tiers": [
+    {"tier": 1, "name": "I", "rarity": "common", "color": "e8e8e8", "multiplier": 1.0, "sell_price": 10},
+    {"tier": 2, "name": "II", "rarity": "uncommon", "color": "4aa3ff", "multiplier": 3.0, "sell_price": 45},
+    {"tier": 3, "name": "III", "rarity": "epic", "color": "b45cff", "multiplier": 8.0, "sell_price": 200},
+    {"tier": 4, "name": "IV", "rarity": "legendary", "color": "ffc93c", "multiplier": 20.0, "sell_price": 900}
+  ],
+  "types": {
+    "stone_guard":           {"name": "Guardian Stone", "icon": "res://assets/gridwright/Icons/gem_brilliant_white.png", "stat": "defense", "base_value": 3.0, "unit": "", "description": "Hardens the bearer against blows."},
+    "stone_critical":        {"name": "Precision Stone", "icon": "res://assets/gridwright/Icons/gem_shard_cyan.png", "stat": "crit_chance", "base_value": 2.0, "unit": "%", "description": "Raises the chance of a critical strike."},
+    "stone_critical_damage": {"name": "Ravager Stone", "icon": "res://assets/ninja_adventure/Items/Resource/GemPurple.png", "stat": "crit_damage", "base_value": 6.0, "unit": "%", "description": "Critical strikes hit harder."},
+    "stone_lifesteal":       {"name": "Vampiric Stone", "icon": "res://assets/gridwright/Icons/gem_round_red.png", "stat": "life_steal", "base_value": 1.0, "unit": "%", "description": "Heals a share of the damage dealt."},
+    "stone_dodge":           {"name": "Wind Stone", "icon": "res://assets/gridwright/Icons/gem_emerald_green.png", "stat": "dodge", "base_value": 1.0, "unit": "%", "description": "A chance to slip past an incoming hit."},
+    "stone_accuracy":        {"name": "Hunter Stone", "icon": "res://assets/ninja_adventure/Items/Resource/GemYellow.png", "stat": "accuracy", "base_value": 2.0, "unit": "%", "description": "Cancels part of a target's dodge."},
+    "stone_regeneration":    {"name": "Renewal Stone", "icon": "res://assets/ninja_adventure/Items/Resource/GemGreen.png", "stat": "regeneration", "base_value": 0.5, "unit": " HP/s", "description": "Slowly restores health."},
+    "stone_reflection":      {"name": "Thorns Stone", "icon": "res://assets/gridwright/Icons/gem_brilliant_white.png", "stat": "reflection", "base_value": 2.0, "unit": "%", "description": "Returns part of the damage taken to the attacker."},
+    "stone_fire":            {"name": "Inferno Stone", "icon": "res://assets/ninja_adventure/Items/Resource/GemRed.png", "stat": "fire_damage", "base_value": 2.0, "unit": " burn/s", "description": "Hits set the target burning for 3 s."},
+    "stone_ice":             {"name": "Frost Stone", "icon": "res://assets/gridwright/Icons/gem_shard_cyan.png", "stat": "ice_slow", "base_value": 5.0, "unit": "% slow", "description": "Hits slow the target for 2 s."},
+    "stone_poison":          {"name": "Venom Stone", "icon": "res://assets/ninja_adventure/Items/Resource/GemPurple.png", "stat": "poison_damage", "base_value": 2.0, "unit": " poison/s", "description": "Hits poison the target for 3 s."}
+  },
+  "caps": {"crit_chance": 60.0, "crit_damage": 200.0, "life_steal": 20.0, "dodge": 40.0, "accuracy": 100.0, "regeneration": 50.0, "reflection": 50.0, "ice_slow": 60.0},
+  "defense": {"k": 150.0, "max_reduction": 0.75}
+}

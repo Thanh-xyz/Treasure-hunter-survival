@@ -67,6 +67,8 @@ var buff_speed_bonus: float = 0.0
 
 # === RUNTIME MULTIPLIERS (mount speed, War Cry, ...) ===
 var speed_multiplier: float = 1.0
+## Slow / freeze from StatusEffects (1.0 = none).
+var status_speed_multiplier: float = 1.0
 var attack_multiplier: float = 1.0
 
 # === COMPUTED STATS (with equipment) ===
@@ -80,7 +82,7 @@ var defense: int:
 
 var move_speed: float:
 	get:
-		return (base_move_speed + equipment_speed_bonus + buff_speed_bonus) * speed_multiplier
+		return (base_move_speed + equipment_speed_bonus + buff_speed_bonus) * speed_multiplier * status_speed_multiplier
 
 
 func _init() -> void:
@@ -112,7 +114,7 @@ func clear_equipment_bonuses() -> void:
 
 
 func take_damage(amount: int) -> void:
-	var actual_damage := maxi(amount - defense, 1)
+	var actual_damage := GemCatalog.mitigate(amount, defense)
 	current_health -= actual_damage
 
 

@@ -30,33 +30,35 @@ func _test_phase1() -> void:
 	assert(shard.item_type == ItemData.ItemType.SEGMENT)
 	assert(shard.is_crafting_material())
 	
-	var aug = ItemDatabase.get_item("flame_augment_t1")
-	assert(aug != null, "flame_augment_t1 should exist")
-	assert(aug.item_type == ItemData.ItemType.AUGMENT)
-	assert(aug.is_augment())
-	assert(!aug.is_timed_buff())
+	var stone = ItemDatabase.get_item("stone_fire_1")
+	assert(stone != null, "stone_fire_1 should exist")
+	assert(stone.item_type == ItemData.ItemType.GEM)
+	assert(stone.is_gem())
+	assert(!stone.is_timed_buff())
+	assert(ItemDatabase.get_item("flame_augment_t1") == null, "slotted augments retired in save v7")
 	
 	var tonic = ItemDatabase.get_item("vitality_tonic_t1")
 	assert(tonic.is_timed_buff())
 	assert(tonic.is_consumable())
 	
-	# Test augment slots by rarity
-	var common_sword = ItemDatabase.get_item("iron_sword")
-	assert(common_sword.get_augment_slot_count() == 0, "Common = 0 slots")
-	var rare_blade = ItemDatabase.get_item("fire_blade")
-	assert(rare_blade.get_augment_slot_count() == 2, "Rare = 2 slots")
+	# Every equipment piece has 8 sockets whatever its rarity (sheet 07 §4.1)
+	var common_sword = ItemDatabase.get_item("ashwood_blade")
+	assert(common_sword.get_gem_slot_count() == 8, "Common = 8 sockets")
+	var epic_blade = ItemDatabase.get_item("emberforged_blade")
+	assert(epic_blade.get_gem_slot_count() == 8, "Epic = 8 sockets")
+	assert(ItemDatabase.get_item("wood").get_gem_slot_count() == 0, "materials have no sockets")
 	
-	# Test recipe database
-	var recipe = RecipeDatabase.get_recipe("flame_augment")
-	assert(recipe != null, "flame_augment recipe should exist")
-	assert(recipe.get_max_tier() == 3)
-	assert(recipe.get_result_item_id(1) == "flame_augment_t1")
+	# Test recipe database: stone recipes make tier I; higher tiers come from fusion
+	var recipe = RecipeDatabase.get_recipe("stone_fire")
+	assert(recipe != null, "stone_fire recipe should exist")
+	assert(recipe.get_max_tier() == 1)
+	assert(recipe.get_result_item_id(1) == "stone_fire_1")
 	
 	var all_recipes = RecipeDatabase.get_all_recipes()
-	assert(all_recipes.size() == 10, "Should have 10 recipes")
+	assert(all_recipes.size() == 9, "Should have 9 recipes")
 	
-	var aug_recipes = RecipeDatabase.get_recipes_by_category(CraftingRecipe.RecipeCategory.AUGMENT)
-	assert(aug_recipes.size() == 7, "Should have 7 augment recipes")
+	var stone_recipes = RecipeDatabase.get_recipes_by_category(CraftingRecipe.RecipeCategory.AUGMENT)
+	assert(stone_recipes.size() == 6, "Should have 6 stone recipes")
 	
 	print("✅ Phase 1 — All tests passed!")
 
@@ -177,83 +179,38 @@ func _test_phase2() -> void:
 
 
 func _test_phase3() -> void:
-	# ── InventoryData: augment application & removal ──
+	# ── InventoryData: socket stones ──
 	var inv := InventoryData.new()
-
-	# Give the player a Rare weapon (2 augment slots) by equipping it
-	var fire_blade := ItemDatabase.get_item("fire_blade")
-	assert(fire_blade != null, "fire_blade should exist in ItemDatabase")
-	assert(fire_blade.get_augment_slot_count() == 2, "Rare weapon = 2 augment slots")
-	inv.add_item(fire_blade, 1)
+	var blade := ItemDatabase.get_item("emberforged_blade")
+	inv.add_item(blade, 1)
 	inv.equip_item(0)
 	assert(inv.equipped_weapon != null, "Weapon should be equipped")
-
-	# Give the player two augment items in inventory
-	var flame_aug := ItemDatabase.get_item("flame_augment_t1")
-	var power_aug := ItemDatabase.get_item("power_augment_t1")
-	inv.add_item(flame_aug, 1)   # index 0
-	inv.add_item(power_aug, 1)   # index 1
-
-	# Apply first augment
-	var applied := inv.apply_augment("weapon", 0)
-	assert(applied, "Should successfully apply flame augment to weapon")
-	assert(inv.equipped_weapon.applied_augments.size() == 1, "Weapon should have 1 augment")
-	assert(inv.equipped_weapon.applied_augments[0] == "flame_augment_t1", "First augment is flame")
-
-	# Item should be consumed from inventory
-	assert(inv.get_item_at(0).item == null or inv.get_item_at(0).item.id != "flame_augment_t1",
-		"Flame augment consumed from slot 0")
-
-	# Apply second augment (power_augment_t1 is now at some slot)
-	var power_slot := -1
+	inv.add_item(ItemDatabase.get_item("stone_fire_1"), 1)
+	inv.add_item(ItemDatabase.get_item("stone_guard_2"), 1)
+	assert(inv.socket_gem("weapon", 0, 0), "Should socket the fire stone")
+	var guard_slot := -1
 	for i in range(inv.inventory_slots.size()):
-		if inv.inventory_slots[i].item != null and inv.inventory_slots[i].item.id == "power_augment_t1":
-			power_slot = i
-			break
-	assert(power_slot >= 0, "Power augment should still be in inventory")
-	applied = inv.apply_augment("weapon", power_slot)
-	assert(applied, "Should successfully apply power augment to weapon")
-	assert(inv.equipped_weapon.applied_augments.size() == 2, "Weapon should have 2 augments")
+		if inv.inventory_slots[i].item != null and inv.inventory_slots[i].item.id == "stone_guard_2":
+			guard_slot = i
+	assert(inv.socket_gem("weapon", 5, guard_slot), "Should socket the guard stone in socket 5")
+	assert(inv.equipped_weapon.count_socketed_gems() == 2, "Weapon should have 2 stones")
+	assert(inv.get_total_defense_bonus() == roundi(GemCatalog.value_of("stone_guard_2")), "Guardian Stone adds DEF")
+	assert(inv.get_total_attack_bonus() == blade.get_scaled_attack_bonus(), "Stones do not add ATK")
+	var passives := inv.get_all_gem_passive_effects()
+	assert(passives.size() == 1 and passives[0].effect == ItemData.PassiveEffect.BURN_ON_HIT, "Fire stone gives burn")
+	assert(inv.unsocket_gem("weapon", 0), "Should remove the fire stone")
+	assert(inv.has_item("stone_fire_1", 1), "Fire stone returned to the bag")
+	assert(inv.equipped_weapon.get_gem_sockets()[5] == "stone_guard_2", "Other sockets keep their stones")
 
-	# Weapon is now full (2/2 slots)
-	assert(not inv.equipped_weapon.is_augmentable(), "Weapon should be full (not augmentable)")
-
-	# Stat bonuses should include augments
-	# fire_blade base attack + flame_augment_t1 attack (5) + power_augment_t1 attack (8)
-	var total_atk := inv.get_total_attack_bonus()
-	var expected_atk := fire_blade.attack_bonus + flame_aug.attack_bonus + power_aug.attack_bonus
-	assert(total_atk == expected_atk,
-		"Total ATK = weapon base (%d) + flame aug (%d) + power aug (%d) = %d, got %d" %
-		[fire_blade.attack_bonus, flame_aug.attack_bonus, power_aug.attack_bonus, expected_atk, total_atk])
-
-	# Passive effects from augments
-	var passives := inv.get_all_augment_passive_effects()
-	assert(passives.size() == 1, "Should have 1 passive effect (burn from flame augment)")
-	assert(passives[0].effect == ItemData.PassiveEffect.BURN_ON_HIT, "Passive should be BURN_ON_HIT")
-
-	# Active skills from augments (none in this setup)
-	var skills := inv.get_all_augment_active_skills()
-	assert(skills.size() == 0, "No active skill augments equipped")
-
-	# Remove first augment
-	var removed := inv.remove_augment("weapon", 0)
-	assert(removed, "Should successfully remove augment at index 0")
-	assert(inv.equipped_weapon.applied_augments.size() == 1, "Should have 1 augment after removal")
-	assert(inv.equipped_weapon.applied_augments[0] == "power_augment_t1", "Remaining augment is power")
-	assert(inv.has_item("flame_augment_t1", 1), "Flame augment returned to inventory")
-
-	# Equipment should be augmentable again (1/2 slots)
-	assert(inv.equipped_weapon.is_augmentable(), "Weapon should have open slot")
-
-	# ── Rarity gating: Common has 0 slots ──
+	# ── Fusion: 6 same type + tier → 1 next tier, no failure chance ──
 	var inv2 := InventoryData.new()
-	var iron_sword := ItemDatabase.get_item("iron_sword")
-	assert(iron_sword.get_augment_slot_count() == 0, "Common = 0 slots")
-	inv2.add_item(iron_sword, 1)
-	inv2.equip_item(0)
-	inv2.add_item(flame_aug, 1)
-	var fail_apply := inv2.apply_augment("weapon", 0)
-	assert(not fail_apply, "Should fail to augment Common weapon (0 slots)")
+	inv2.add_item(ItemDatabase.get_item("stone_guard_1"), 5)
+	assert(not inv2.fuse_gems("stone_guard_1"), "5 stones cannot fuse")
+	inv2.add_item(ItemDatabase.get_item("stone_guard_1"), 2)
+	assert(inv2.fuse_gems("stone_guard_1"), "6 stones fuse")
+	assert(inv2.get_item_count("stone_guard_1") == 1 and inv2.get_item_count("stone_guard_2") == 1, "Fusion consumed 6 and made 1")
+	inv2.add_item(ItemDatabase.get_item("stone_guard_4"), 6)
+	assert(not inv2.fuse_gems("stone_guard_4"), "Gold tier is final")
 
 	# ── SkillComponent: rebuild & activation ──
 	var skill_comp := SkillComponent.new()
@@ -345,8 +302,8 @@ func _test_phase4() -> void:
 	# ── CraftingRecipe: can_craft with ingredient checks ──
 	var inv := InventoryData.new()
 
-	var recipe := RecipeDatabase.get_recipe("flame_augment")
-	assert(recipe != null, "flame_augment recipe should exist")
+	var recipe := RecipeDatabase.get_recipe("stone_fire")
+	assert(recipe != null, "stone_fire recipe should exist")
 
 	# Empty inventory: cannot craft any tier
 	assert(not recipe.can_craft(inv, 1), "Empty inv cannot craft T1")
@@ -373,14 +330,14 @@ func _test_phase4() -> void:
 	assert(t1_ingredients[0].quantity == 3, "Need 3 fire_shards")
 	assert(t1_ingredients[1].item_id == "iron_ore", "Second ingredient = iron_ore")
 	assert(t1_ingredients[1].quantity == 2, "Need 2 iron_ore")
-	assert(recipe.get_result_item_id(1) == "flame_augment_t1", "T1 result = flame_augment_t1")
+	assert(recipe.get_result_item_id(1) == "stone_fire_1", "T1 result = stone_fire_1")
 	assert(recipe.get_result_quantity(1) == 1, "T1 yields 1 item")
 
 	# ── Craft execution: simulate CraftingPanel._execute_craft() logic ──
 	# Verify pre-craft inventory state
 	assert(inv.has_item("fire_shard", 3), "Should have 3 fire_shards pre-craft")
 	assert(inv.has_item("iron_ore", 2), "Should have 2 iron_ore pre-craft")
-	assert(not inv.has_item("flame_augment_t1", 1), "Should NOT have flame_augment_t1 pre-craft")
+	assert(not inv.has_item("stone_fire_1", 1), "Should NOT have stone_fire_1 pre-craft")
 
 	# Execute craft (replicate CraftingPanel logic)
 	var ingredients := recipe.get_ingredients(1)
@@ -400,7 +357,7 @@ func _test_phase4() -> void:
 	# Verify post-craft inventory
 	assert(not inv.has_item("fire_shard", 1), "fire_shards consumed after craft")
 	assert(not inv.has_item("iron_ore", 1), "iron_ore consumed after craft")
-	assert(inv.has_item("flame_augment_t1", 1), "flame_augment_t1 added after craft")
+	assert(inv.has_item("stone_fire_1", 1), "stone_fire_1 added after craft")
 
 	# Cannot craft again (ingredients gone)
 	assert(not recipe.can_craft(inv, 1), "Cannot craft T1 again (ingredients consumed)")
@@ -408,18 +365,17 @@ func _test_phase4() -> void:
 	# ── RecipeDatabase: category filtering ──
 	var aug_recipes := RecipeDatabase.get_recipes_by_category(CraftingRecipe.RecipeCategory.AUGMENT)
 	var buff_recipes := RecipeDatabase.get_recipes_by_category(CraftingRecipe.RecipeCategory.CONSUMABLE_BUFF)
-	assert(aug_recipes.size() == 7, "7 augment recipes")
+	assert(aug_recipes.size() == 6, "6 stone recipes")
 	assert(buff_recipes.size() == 3, "3 consumable buff recipes")
 	assert(aug_recipes.size() + buff_recipes.size() == RecipeDatabase.get_all_recipes().size(),
-		"All recipes = augment + consumable_buff")
+		"All recipes = stone + consumable_buff")
 
-	# ── Multi-tier recipe: frost_augment has 2 tiers ──
-	var frost_recipe := RecipeDatabase.get_recipe("frost_augment")
-	assert(frost_recipe != null, "frost_augment recipe exists")
-	assert(frost_recipe.get_max_tier() == 2, "frost_augment has 2 tiers")
-	assert(frost_recipe.get_result_item_id(1) == "frost_augment_t1", "T1 = frost_augment_t1")
-	assert(frost_recipe.get_result_item_id(2) == "frost_augment_t2", "T2 = frost_augment_t2")
-	assert(frost_recipe.get_result_item_id(3) == "", "No T3 for frost_augment")
+	# ── Stone recipes stop at tier I; tier II+ come from fusion ──
+	var frost_recipe := RecipeDatabase.get_recipe("stone_ice")
+	assert(frost_recipe != null, "stone_ice recipe exists")
+	assert(frost_recipe.get_max_tier() == 1, "stone_ice has 1 tier")
+	assert(frost_recipe.get_result_item_id(1) == "stone_ice_1", "T1 = stone_ice_1")
+	assert(frost_recipe.get_result_item_id(2) == "", "No T2 recipe for stone_ice")
 
 	# ── Invalid tier: get_ingredients for non-existent tier returns empty ──
 	var empty_ingredients := recipe.get_ingredients(99)
@@ -443,8 +399,8 @@ func _test_phase4() -> void:
 	# CraftingPanel._execute_craft (call it indirectly via _on_craft_pressed)
 	panel._on_craft_pressed()
 	assert(crafted_items.size() == 1, "item_crafted signal emitted once")
-	assert(crafted_items[0] == "flame_augment_t1", "Crafted item is flame_augment_t1")
-	assert(inv2.has_item("flame_augment_t1", 1), "Result item in inventory after panel craft")
+	assert(crafted_items[0] == "stone_fire_1", "Crafted item is stone_fire_1")
+	assert(inv2.has_item("stone_fire_1", 1), "Result item in inventory after panel craft")
 	assert(not inv2.has_item("fire_shard", 1), "Ingredients consumed via panel")
 
 	# Press craft again (should fail silently — no ingredients left)
@@ -466,7 +422,7 @@ func _test_phase4() -> void:
 
 	# ── use_item on non-consumable returns failure ──
 	var inv4 := InventoryData.new()
-	inv4.add_item(ItemDatabase.get_item("iron_sword"), 1)
+	inv4.add_item(ItemDatabase.get_item("ashwood_blade"), 1)
 	var fail_result := inv4.use_item(0)
 	assert(fail_result.success == false, "Cannot use non-consumable")
 
@@ -475,47 +431,18 @@ func _test_phase4() -> void:
 
 func _test_phase5() -> void:
 	# ══════════════════════════════════════════════════════════════
-	# Full pipeline: Craft augment → Apply to weapon → Active skill
+	# Skill pipeline: skill source → SkillComponent → SkillExecutor
 	# ══════════════════════════════════════════════════════════════
 
-	# ── Inventory: equip Rare weapon + apply whirlwind augment ──
-	var inv := InventoryData.new()
+	# Slotted skill runes were retired in save v7. The skill pipeline stays for the future
+	# "special skill" slot, so it is driven here by an injected source.
+	var granted := {"skills": [{"skill_id": "whirlwind", "source_equip_slot": "weapon"}]}
 
-	# fire_blade is Rare (2 augment slots)
-	var fire_blade := ItemDatabase.get_item("fire_blade")
-	inv.add_item(fire_blade, 1)
-	inv.equip_item(0)
-	assert(inv.equipped_weapon != null, "Weapon equipped")
-
-	# Add whirlwind augment (ACTIVE_SKILL type) to inventory and apply
-	var wh_aug := ItemDatabase.get_item("whirlwind_augment")
-	assert(wh_aug != null, "whirlwind_augment exists in ItemDatabase")
-	assert(wh_aug.augment_type == ItemData.AugmentType.ACTIVE_SKILL, "Augment type is ACTIVE_SKILL")
-	assert(wh_aug.active_skill_id == "whirlwind", "active_skill_id = whirlwind")
-	inv.add_item(wh_aug, 1)
-
-	# Find the augment in inventory and apply it
-	var aug_slot := -1
-	for i in range(inv.inventory_slots.size()):
-		if inv.inventory_slots[i].item != null and inv.inventory_slots[i].item.id == "whirlwind_augment":
-			aug_slot = i
-			break
-	assert(aug_slot >= 0, "Whirlwind augment found in inventory")
-
-	var applied := inv.apply_augment("weapon", aug_slot)
-	assert(applied, "Whirlwind augment applied to weapon")
-
-	# ── get_all_augment_active_skills should return whirlwind ──
-	var active_skills := inv.get_all_augment_active_skills()
-	assert(active_skills.size() == 1, "Should have 1 active skill from augments")
-	assert(active_skills[0].skill_id == "whirlwind", "Skill ID is whirlwind")
-	assert(active_skills[0].source_equip_slot == "weapon", "Source slot is weapon")
-
-	# ── SkillComponent wired to inventory ──
+	# ── SkillComponent wired to a skill source ──
 	var skill_comp := SkillComponent.new()
 	add_child(skill_comp)
 
-	skill_comp.get_active_skills_func = func() -> Array: return inv.get_all_augment_active_skills()
+	skill_comp.get_active_skills_func = func() -> Array: return granted["skills"]
 	skill_comp.use_stamina_func = func(_cost: float) -> bool: return true
 
 	skill_comp.rebuild_skills()
@@ -530,8 +457,6 @@ func _test_phase5() -> void:
 	var ok := skill_comp.try_activate_skill("whirlwind")
 	assert(ok, "Whirlwind activated")
 	assert(activated_ids.has("whirlwind"), "skill_activated signal emitted")
-
-	# Cooldown should be running
 	assert(not skill_comp.is_skill_ready("whirlwind"), "On cooldown after activation")
 
 	# ── SkillExecutor: execute whirlwind and wait for finish ──
@@ -552,27 +477,15 @@ func _test_phase5() -> void:
 	dummy_parent.queue_free()
 	executor.queue_free()
 
-	# ── Remove augment → skill disappears ──
-	var removed := inv.remove_augment("weapon", 0)
-	assert(removed, "Augment removed from weapon")
+	# ── Source removed → skill disappears ──
+	granted["skills"] = []
 	skill_comp.rebuild_skills()
-	assert(skill_comp.available_skills.size() == 0, "No skills after augment removed")
-	assert(inv.get_all_augment_active_skills().size() == 0, "No active skills in inventory")
+	assert(skill_comp.available_skills.size() == 0, "No skills after the source is removed")
 
 	# ── Stamina gating: deny stamina → skill activation fails ──
-	# Re-apply augment
-	var wh_aug2 := ItemDatabase.get_item("whirlwind_augment")
-	inv.add_item(wh_aug2, 1)
-	var aug_slot2 := -1
-	for i in range(inv.inventory_slots.size()):
-		if inv.inventory_slots[i].item != null and inv.inventory_slots[i].item.id == "whirlwind_augment":
-			aug_slot2 = i
-			break
-	inv.apply_augment("weapon", aug_slot2)
+	granted["skills"] = [{"skill_id": "whirlwind", "source_equip_slot": "weapon"}]
 	skill_comp.rebuild_skills()
-	assert(skill_comp.available_skills.size() == 1, "Skill back after re-apply")
-
-	# Reset cooldown for stamina test
+	assert(skill_comp.available_skills.size() == 1, "Skill back after the source returns")
 	skill_comp.available_skills[0]["current_cooldown"] = 0.0
 	skill_comp.use_stamina_func = func(_cost: float) -> bool: return false
 	var stamina_fail := skill_comp.try_activate_skill("whirlwind")
@@ -626,56 +539,27 @@ func _test_phase5() -> void:
 	buff_comp.queue_free()
 
 	# ══════════════════════════════════════════════════════════════
-	# PassiveEffectProcessor: aggregation from augmented equipment
+	# PassiveEffectProcessor: aggregation from socketed equipment
 	# ══════════════════════════════════════════════════════════════
 	var inv3 := InventoryData.new()
-	var fire_blade2 := ItemDatabase.get_item("fire_blade")
-	inv3.add_item(fire_blade2, 1)
+	inv3.add_item(ItemDatabase.get_item("emberforged_blade"), 1)
 	inv3.equip_item(0)
+	inv3.add_item(ItemDatabase.get_item("stone_fire_1"), 1)
+	inv3.socket_gem("weapon", 0, 0)
 
-	# Apply flame_augment_t1 (has BURN_ON_HIT passive)
-	var flame_aug := ItemDatabase.get_item("flame_augment_t1")
-	inv3.add_item(flame_aug, 1)
-	var fl_slot := -1
-	for i in range(inv3.inventory_slots.size()):
-		if inv3.inventory_slots[i].item != null and inv3.inventory_slots[i].item.id == "flame_augment_t1":
-			fl_slot = i
-			break
-	inv3.apply_augment("weapon", fl_slot)
-
-	var passives := inv3.get_all_augment_passive_effects()
-	assert(passives.size() == 1, "1 passive from flame augment")
+	var passives := inv3.get_all_gem_passive_effects()
+	assert(passives.size() == 1, "1 passive from the fire stone")
 	assert(passives[0].effect == ItemData.PassiveEffect.BURN_ON_HIT, "Effect = BURN_ON_HIT")
 
-	# PassiveEffectProcessor uses the passive effects func
 	var processor := PassiveEffectProcessor.new()
 	add_child(processor)
-
 	processor.get_passive_effects_func = func() -> Array[Dictionary]:
-		return inv3.get_all_augment_passive_effects()
-
-	# No crit augment means no equipment bonus to the base combat roll.
-	assert(processor.get_crit_chance_bonus_percent() == 0.0, "No crit augment = zero bonus")
-
-	# ── Multiple skills from different equipment slots ──
-	var inv4 := InventoryData.new()
-	# Equip fire_blade (Rare, 2 slots) in weapon
-	inv4.add_item(ItemDatabase.get_item("fire_blade"), 1)
-	inv4.equip_item(0)
-
-	# Apply whirlwind augment to weapon
-	inv4.add_item(ItemDatabase.get_item("whirlwind_augment"), 1)
-	var ws := -1
-	for i in range(inv4.inventory_slots.size()):
-		if inv4.inventory_slots[i].item != null and inv4.inventory_slots[i].item.id == "whirlwind_augment":
-			ws = i
-			break
-	inv4.apply_augment("weapon", ws)
-
-	var multi_skills := inv4.get_all_augment_active_skills()
-	assert(multi_skills.size() == 1, "1 skill from weapon augment")
-	assert(multi_skills[0].skill_id == "whirlwind", "Skill = whirlwind")
-	assert(multi_skills[0].source_equip_slot == "weapon", "Source = weapon")
+		return inv3.get_all_gem_passive_effects()
+	assert(processor.get_crit_chance_bonus_percent() == 0.0, "No crit stone = zero bonus")
+	inv3.add_item(ItemDatabase.get_item("stone_critical_3"), 1)
+	inv3.socket_gem("weapon", 1, 0)
+	assert(is_equal_approx(processor.get_crit_chance_bonus_percent(), GemCatalog.value_of("stone_critical_3")), "Crit stone feeds the processor")
+	processor.queue_free()
 
 	# ── SkillDatabase: all skills are valid and have correct properties ──
 	var all_skills := SkillDatabase.get_all_skills()
@@ -726,7 +610,7 @@ func _test_phase6() -> void:
 	table.gold_range = Vector2i(5, 15)
 	table.add_entry("bone", 100, 1, 3)
 	table.add_entry("health_potion", 30, 1, 1)
-	table.add_entry("iron_sword", 5, 1, 1)
+	table.add_entry("ashwood_blade", 5, 1, 1)
 	table.add_entry("herb_segment", 18, 1, 2)
 	table.add_entry("fire_shard", 15, 1, 2)
 	table.add_entry("frost_shard", 15, 1, 2)
@@ -845,64 +729,39 @@ func _test_phase6() -> void:
 	skill_comp.queue_free()
 
 	# ══════════════════════════════════════════════════════════════
-	# Step 19: Tooltip system — augment + passive effect descriptions
+	# Step 19: Tooltip system — socket stone descriptions
 	# ══════════════════════════════════════════════════════════════
 
-	# Verify SEGMENT and AUGMENT are recognized as valid item types
+	# Verify SEGMENT and GEM are recognized as valid item types
 	var fire_shard := ItemDatabase.get_item("fire_shard")
 	assert(fire_shard.item_type == ItemData.ItemType.SEGMENT, "fire_shard is SEGMENT")
 
-	var flame_aug := ItemDatabase.get_item("flame_augment_t1")
-	assert(flame_aug.item_type == ItemData.ItemType.AUGMENT, "flame_augment_t1 is AUGMENT")
-	assert(flame_aug.augment_type == ItemData.AugmentType.PASSIVE_EFFECT, "Flame augment is PASSIVE_EFFECT type")
-	assert(flame_aug.passive_effect == ItemData.PassiveEffect.BURN_ON_HIT, "Flame augment has BURN_ON_HIT")
-	assert(flame_aug.passive_value == 3.0, "Burn value = 3.0")
-
-	var wh_aug := ItemDatabase.get_item("whirlwind_augment")
-	assert(wh_aug.augment_type == ItemData.AugmentType.ACTIVE_SKILL, "Whirlwind augment is ACTIVE_SKILL")
-	assert(wh_aug.active_skill_id == "whirlwind", "Skill ID = whirlwind")
+	var stone := ItemDatabase.get_item("stone_fire_1")
+	assert(stone.item_type == ItemData.ItemType.GEM, "stone_fire_1 is GEM")
+	assert(GemCatalog.stat_of("stone_fire_1") == "fire_damage", "Inferno Stone gives fire damage")
+	assert(GemCatalog.describe("stone_fire_1") != "", "Stone has a tooltip line")
 
 	var tonic2 := ItemDatabase.get_item("vitality_tonic_t1")
 	assert(tonic2.augment_type == ItemData.AugmentType.TIMED_BUFF, "Tonic is TIMED_BUFF")
 	assert(tonic2.buff_duration == 60.0, "Tonic duration = 60s")
 
-	# Verify augment slot tooltip data for equipped items
+	# Socket tooltip data for equipped items
 	var inv := InventoryData.new()
-	var fire_blade := ItemDatabase.get_item("fire_blade")
-	inv.add_item(fire_blade, 1)
+	inv.add_item(ItemDatabase.get_item("emberforged_blade"), 1)
 	inv.equip_item(0)
-	assert(inv.equipped_weapon != null, "Weapon equipped")
-	assert(inv.equipped_weapon.get_augment_slot_count() == 2, "Rare weapon has 2 slots")
-	assert(inv.equipped_weapon.applied_augments.size() == 0, "No augments applied yet")
-
-	# Apply augment and verify tooltip data would show it
-	inv.add_item(flame_aug, 1)
-	var aug_slot := -1
-	for i in range(inv.inventory_slots.size()):
-		if inv.inventory_slots[i].item != null and inv.inventory_slots[i].item.id == "flame_augment_t1":
-			aug_slot = i
-			break
-	inv.apply_augment("weapon", aug_slot)
-
-	# After augment, tooltip data should show 1 filled + 1 empty slot
+	assert(inv.equipped_weapon.get_gem_slot_count() == 8, "Weapon has 8 sockets")
+	assert(inv.equipped_weapon.count_socketed_gems() == 0, "No stones yet")
+	inv.add_item(stone, 1)
+	inv.socket_gem("weapon", 0, 0)
 	var weapon := inv.equipped_weapon
-	assert(weapon.applied_augments.size() == 1, "1 augment applied")
-	assert(weapon.applied_augments[0] == "flame_augment_t1", "Augment is flame_augment_t1")
-	var aug_item := ItemDatabase.get_item(weapon.applied_augments[0])
-	assert(aug_item != null, "Can look up augment data for tooltip")
-	assert(aug_item.name == "Flame Augment I", "Augment name for tooltip display")
-
-	# Verify augment slot count display: 1 filled, 1 empty
-	var filled_slots := weapon.applied_augments.size()
-	var total_slots := weapon.get_augment_slot_count()
-	assert(filled_slots == 1, "1 augment applied")
-	assert(total_slots == 2, "2 total slots")
-	assert(total_slots - filled_slots == 1, "1 empty slot remaining")
+	assert(weapon.count_socketed_gems() == 1, "1 stone socketed")
+	assert(GemCatalog.display_name(weapon.get_gem_sockets()[0]) == "Inferno Stone I", "Stone name for tooltip display")
+	assert(weapon.get_gem_slot_count() - weapon.count_socketed_gems() == 7, "7 empty sockets remaining")
 
 	# ── GameEvent signals exist for Phase 7 wiring ──
 	assert(GameEvent.has_signal("item_crafted"), "GameEvent.item_crafted signal exists")
-	assert(GameEvent.has_signal("augment_applied"), "GameEvent.augment_applied signal exists")
-	assert(GameEvent.has_signal("augment_removed"), "GameEvent.augment_removed signal exists")
+	assert(GameEvent.has_signal("gem_socketed"), "GameEvent.gem_socketed signal exists")
+	assert(GameEvent.has_signal("gem_unsocketed"), "GameEvent.gem_unsocketed signal exists")
 	assert(GameEvent.has_signal("buff_applied"), "GameEvent.buff_applied signal exists")
 	assert(GameEvent.has_signal("buff_expired"), "GameEvent.buff_expired signal exists")
 	assert(GameEvent.has_signal("skill_used"), "GameEvent.skill_used signal exists")
@@ -920,8 +779,9 @@ func _test_phase7() -> void:
 	# ── Step 20: All GameEvent signals declared ──
 	assert(GameEvent.has_signal("request_ui_pause"), "GameEvent.request_ui_pause exists")
 	assert(GameEvent.has_signal("item_crafted"), "GameEvent.item_crafted exists")
-	assert(GameEvent.has_signal("augment_applied"), "GameEvent.augment_applied exists")
-	assert(GameEvent.has_signal("augment_removed"), "GameEvent.augment_removed exists")
+	assert(GameEvent.has_signal("gem_socketed"), "GameEvent.gem_socketed exists")
+	assert(GameEvent.has_signal("gem_unsocketed"), "GameEvent.gem_unsocketed exists")
+	assert(GameEvent.has_signal("gems_fused"), "GameEvent.gems_fused exists")
 	assert(GameEvent.has_signal("buff_applied"), "GameEvent.buff_applied exists")
 	assert(GameEvent.has_signal("buff_expired"), "GameEvent.buff_expired exists")
 	assert(GameEvent.has_signal("skill_used"), "GameEvent.skill_used exists")
@@ -929,7 +789,7 @@ func _test_phase7() -> void:
 	# ── Step 21: Autoloads registered and functional ──
 	assert(RecipeDatabase != null, "RecipeDatabase autoload is registered")
 	assert(RecipeDatabase.recipes.size() > 0, "RecipeDatabase has recipes")
-	assert(RecipeDatabase.get_recipe("flame_augment") != null, "Can look up flame_augment recipe")
+	assert(RecipeDatabase.get_recipe("stone_fire") != null, "Can look up stone_fire recipe")
 
 	assert(SkillDatabase != null, "SkillDatabase autoload is registered")
 	assert(SkillDatabase.skills.size() > 0, "SkillDatabase has skills")
@@ -998,15 +858,15 @@ func _test_phase7() -> void:
 	var cp := CraftingPanel.new()
 	# Prevent _build_ui from running in tree (we only test logic)
 	cp.player_inventory = craft_inv
-	cp.selected_recipe = RecipeDatabase.get_recipe("flame_augment")
+	cp.selected_recipe = RecipeDatabase.get_recipe("stone_fire")
 	cp.selected_tier = 1
-	assert(cp.selected_recipe != null, "flame_augment recipe assigned")
-	assert(cp.selected_recipe.can_craft(craft_inv, 1), "Can craft T1 flame augment")
+	assert(cp.selected_recipe != null, "stone_fire recipe assigned")
+	assert(cp.selected_recipe.can_craft(craft_inv, 1), "Can craft T1 fire stone")
 
 	# Execute craft (calls GameEvent.item_crafted.emit internally)
 	assert(cp._execute_craft(), "Craft succeeds when ingredients and output fit")
 	assert(ge_craft_ids.size() == 1, "GameEvent.item_crafted emitted once")
-	assert(ge_craft_ids[0] == "flame_augment", "item_crafted recipe_id = flame_augment")
+	assert(ge_craft_ids[0] == "stone_fire", "item_crafted recipe_id = stone_fire")
 	assert(ge_craft_tiers[0] == 1, "item_crafted tier = 1")
 
 	# Ingredients consumed
@@ -1014,70 +874,60 @@ func _test_phase7() -> void:
 	assert(not craft_inv.has_item("iron_ore", 1), "iron_ore consumed")
 
 	# Result item added
-	assert(craft_inv.has_item("flame_augment_t1", 1), "flame_augment_t1 in inventory")
+	assert(craft_inv.has_item("stone_fire_1", 1), "stone_fire_1 in inventory")
 
 	# A full inventory with surplus ingredients must reject the craft atomically.
 	var blocked_inv := InventoryData.new()
 	blocked_inv.add_item(fire_shard, 4)
 	blocked_inv.add_item(iron_ore, 3)
-	blocked_inv.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE - 2)
+	blocked_inv.add_item(ItemDatabase.get_item("ashwood_blade"), InventoryData.INVENTORY_SIZE - 2)
 	cp.player_inventory = blocked_inv
 	assert(not cp._execute_craft(), "Craft fails when output cannot fit")
 	assert(blocked_inv.get_item_count("fire_shard") == 4, "Failed craft preserves fire shards")
 	assert(blocked_inv.get_item_count("iron_ore") == 3, "Failed craft preserves iron ore")
-	assert(blocked_inv.get_item_count("flame_augment_t1") == 0, "Failed craft does not add output")
+	assert(blocked_inv.get_item_count("stone_fire_1") == 0, "Failed craft does not add output")
 	assert(ge_craft_ids.size() == 1, "Failed craft emits no crafted event")
 
 	cp.queue_free()
 	GameEvent.item_crafted.disconnect(_h_item_crafted)
 
-	# ── GameEvent.augment_applied / augment_removed via AugmentPanel ──
-	var ge_aug_applied: Array[Dictionary] = []
-	var ge_aug_removed: Array[Dictionary] = []
-	var _h_aug_applied := func(slot: String, aug_id: String) -> void:
-		ge_aug_applied.append({"slot": slot, "aug_id": aug_id})
-	var _h_aug_removed := func(slot: String, aug_id: String) -> void:
-		ge_aug_removed.append({"slot": slot, "aug_id": aug_id})
-	GameEvent.augment_applied.connect(_h_aug_applied)
-	GameEvent.augment_removed.connect(_h_aug_removed)
+	# ── GameEvent.gem_socketed / gem_unsocketed / gems_fused via GemPanel ──
+	var ge_socketed: Array[Dictionary] = []
+	var ge_unsocketed: Array[Dictionary] = []
+	var ge_fused: Array[String] = []
+	var _h_socketed := func(slot: String, stone_id: String) -> void:
+		ge_socketed.append({"slot": slot, "stone": stone_id})
+	var _h_unsocketed := func(slot: String, stone_id: String) -> void:
+		ge_unsocketed.append({"slot": slot, "stone": stone_id})
+	var _h_fused := func(source_id: String, result_id: String) -> void:
+		ge_fused.append("%s>%s" % [source_id, result_id])
+	GameEvent.gem_socketed.connect(_h_socketed)
+	GameEvent.gem_unsocketed.connect(_h_unsocketed)
+	GameEvent.gems_fused.connect(_h_fused)
 
-	# Setup: inventory with equipped rare weapon + augment item
-	var aug_inv := InventoryData.new()
-	var rare_weapon := ItemDatabase.get_item("fire_blade")
-	aug_inv.add_item(rare_weapon, 1)
-	aug_inv.equip_item(0)
-	assert(aug_inv.equipped_weapon != null, "Weapon equipped for augment test")
+	var gem_inv := InventoryData.new()
+	gem_inv.add_item(ItemDatabase.get_item("emberforged_blade"), 1)
+	gem_inv.equip_item(0)
+	gem_inv.add_item(ItemDatabase.get_item("stone_fire_1"), 7)
+	var gp : GemPanel = preload("res://sense/ui/gems/GemPanel.tscn").instantiate()
+	add_child(gp)
+	gp.setup(gem_inv, "weapon")
+	assert(not gp.is_combat_locked(), "Panel without an owner is never combat-locked")
 
-	var flame_aug := ItemDatabase.get_item("flame_augment_t1")
-	aug_inv.add_item(flame_aug, 1)
-	var aug_idx := -1
-	for i in range(aug_inv.inventory_slots.size()):
-		if aug_inv.inventory_slots[i].item != null and aug_inv.inventory_slots[i].item.id == "flame_augment_t1":
-			aug_idx = i
-			break
-	assert(aug_idx >= 0, "Found flame_augment_t1 in inventory")
+	gp._on_bag_stone_pressed(0, 2)
+	assert(ge_socketed.size() == 1 and ge_socketed[0].slot == "weapon" and ge_socketed[0].stone == "stone_fire_1", "gem_socketed emitted once")
+	assert(gem_inv.equipped_weapon.get_gem_sockets()[2] == "stone_fire_1", "Panel socketed into socket 2")
+	gp._on_fuse_pressed("stone_fire_1")
+	assert(ge_fused == ["stone_fire_1>stone_fire_2"], "gems_fused emitted once")
+	assert(gem_inv.get_item_count("stone_fire_2") == 1 and gem_inv.get_item_count("stone_fire_1") == 0, "Panel fusion used 6 stones")
+	gp._on_socket_pressed(2)
+	assert(ge_unsocketed.size() == 1 and ge_unsocketed[0].stone == "stone_fire_1", "gem_unsocketed emitted once")
+	assert(gem_inv.get_item_count("stone_fire_1") == 1, "Unsocketed stone back in the bag")
 
-	# Create AugmentPanel and apply augment
-	var ap : AugmentPanel = preload("res://sense/ui/augment/AugmentPanel.tscn").instantiate()
-	ap.inventory = aug_inv
-	ap.equip_slot = "weapon"
-	ap.equipment_item = aug_inv.equipped_weapon
-	add_child(ap)
-
-	ap._on_augment_clicked(aug_idx)
-	assert(ge_aug_applied.size() == 1, "GameEvent.augment_applied emitted once")
-	assert(ge_aug_applied[0].slot == "weapon", "augment_applied slot = weapon")
-	assert(ge_aug_applied[0].aug_id == "flame_augment_t1", "augment_applied aug_id correct")
-
-	# Remove the augment
-	ap._on_remove_augment(0)
-	assert(ge_aug_removed.size() == 1, "GameEvent.augment_removed emitted once")
-	assert(ge_aug_removed[0].slot == "weapon", "augment_removed slot = weapon")
-	assert(ge_aug_removed[0].aug_id == "flame_augment_t1", "augment_removed aug_id correct")
-
-	ap.queue_free()
-	GameEvent.augment_applied.disconnect(_h_aug_applied)
-	GameEvent.augment_removed.disconnect(_h_aug_removed)
+	gp.queue_free()
+	GameEvent.gem_socketed.disconnect(_h_socketed)
+	GameEvent.gem_unsocketed.disconnect(_h_unsocketed)
+	GameEvent.gems_fused.disconnect(_h_fused)
 
 	# ── GameEvent.skill_used via SkillComponent + simulated activation ──
 	var ge_skill_ids: Array[String] = []
@@ -1131,13 +981,9 @@ func _test_phase7() -> void:
 				assert(ItemDatabase.get_item(ing_id) != null,
 					"Recipe '%s' T%d ingredient '%s' exists in ItemDatabase" % [recipe.id, tier_data.get("tier", 0), ing_id])
 
-	# SkillDatabase skills referenced by augments exist
-	var skill_augment_ids := ["whirlwind_augment", "shield_bash_augment"]
-	for aug_id: String in skill_augment_ids:
-		var aug := ItemDatabase.get_item(aug_id)
-		assert(aug != null, "Skill augment '%s' exists" % aug_id)
-		assert(aug.augment_type == ItemData.AugmentType.ACTIVE_SKILL, "'%s' is ACTIVE_SKILL" % aug_id)
-		var skill := SkillDatabase.get_skill(aug.active_skill_id)
-		assert(skill != null, "Skill '%s' from augment '%s' exists in SkillDatabase" % [aug.active_skill_id, aug_id])
+	# Every socket stone item exists for every type and tier
+	for stone_id: String in GemCatalog.all_item_ids():
+		assert(ItemDatabase.get_item(stone_id) != null, "Stone '%s' exists in ItemDatabase" % stone_id)
+	assert(GemCatalog.all_item_ids().size() == 44, "11 stone types × 4 tiers")
 
 	print("✅ Phase 7 — All tests passed!")

@@ -9,6 +9,8 @@ var team: String = "player"
 var radius: float = 6.0
 var lifetime: float = 1.6
 var pierce: int = 0
+## Monster on-hit status {"status", "chance", "duration", "magnitude"} (plan phase D).
+var on_hit: Dictionary = {}
 var _hit: Array = []
 var _sprite: Sprite2D
 
@@ -51,6 +53,7 @@ func _physics_process(delta: float) -> void:
 			t.apply_hit(r["amount"], global_position - velocity.normalized() * 8.0, r["crit"])
 		else:
 			t.take_damage(int(round(damage)))
+			Combat.apply_on_hit(t, on_hit)
 		if pierce <= 0:
 			queue_free()
 			return

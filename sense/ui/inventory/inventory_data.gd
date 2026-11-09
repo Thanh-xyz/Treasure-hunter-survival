@@ -22,21 +22,33 @@ extends Resource
 signal inventory_changed
 signal equipment_changed(slot_type: String)
 signal equipment_upgraded(slot_type: String, item_id: String, level: int, cost: int)
-signal augments_changed(equip_slot: String)
+signal gems_changed(equip_slot: String)
 signal gold_changed(amount: int)
 signal diamonds_changed(amount: int)
 
 const INVENTORY_SIZE: int = 32  # 8 columns x 4 rows
-const EQUIPMENT_SLOTS := ["helmet", "armor", "weapon", "shield", "boots", "accessory_1", "accessory_2"]
+## The five equipment slots (EQUIPMENT_SYSTEM_PROPOSAL.md). Shield and accessories were retired in save v6.
+const EQUIPMENT_SLOTS := ["helmet", "armor", "boots", "weapon", "back"]
+## Stone stat -> passive effect handled by PassiveEffectProcessor. DEF is a flat stat instead.
+const GEM_EFFECTS := {
+	"crit_chance": ItemData.PassiveEffect.CRIT_CHANCE,
+	"crit_damage": ItemData.PassiveEffect.CRIT_DAMAGE,
+	"life_steal": ItemData.PassiveEffect.LIFE_STEAL,
+	"dodge": ItemData.PassiveEffect.DODGE,
+	"accuracy": ItemData.PassiveEffect.ACCURACY,
+	"regeneration": ItemData.PassiveEffect.REGENERATION,
+	"reflection": ItemData.PassiveEffect.THORNS,
+	"fire_damage": ItemData.PassiveEffect.BURN_ON_HIT,
+	"ice_slow": ItemData.PassiveEffect.FREEZE_ON_HIT,
+	"poison_damage": ItemData.PassiveEffect.POISON_ON_HIT,
+}
 
 # Equipment slots
 var equipped_helmet: ItemData = null
 var equipped_armor: ItemData = null
-var equipped_weapon: ItemData = null
-var equipped_shield: ItemData = null
 var equipped_boots: ItemData = null
-var equipped_accessory_1: ItemData = null
-var equipped_accessory_2: ItemData = null
+var equipped_weapon: ItemData = null
+var equipped_back: ItemData = null
 
 # Inventory grid - array of {item: ItemData, quantity: int}
 var inventory_slots: Array[Dictionary] = []
@@ -325,14 +337,14 @@ func _get_sort_type_order(item_type: ItemData.ItemType) -> int:
 		ItemData.ItemType.WEAPON:     return 0
 		ItemData.ItemType.ARMOR:      return 1
 		ItemData.ItemType.HELMET:     return 2
-		ItemData.ItemType.SHIELD:     return 3
-		ItemData.ItemType.BOOTS:      return 4
-		ItemData.ItemType.ACCESSORY:  return 5
+		ItemData.ItemType.BOOTS:      return 3
+		ItemData.ItemType.BACK:       return 4
 		ItemData.ItemType.CONSUMABLE: return 6
 		ItemData.ItemType.MATERIAL:   return 7
 		ItemData.ItemType.QUEST:      return 8
 		ItemData.ItemType.SEGMENT:    return 9
 		ItemData.ItemType.AUGMENT:    return 10
+		ItemData.ItemType.GEM:        return 11
 		_: return 99
 
 
@@ -359,44 +371,12 @@ func equip_item(inventory_index: int) -> bool:
 	var equipped_item: ItemData = null
 	var slot_type := ""
 	
-	# Determine which slot to equip to
-	match item.item_type:
-		ItemData.ItemType.HELMET:
-			equipped_item = equipped_helmet
-			equipped_helmet = item
-			slot_type = "helmet"
-		ItemData.ItemType.ARMOR:
-			equipped_item = equipped_armor
-			equipped_armor = item
-			slot_type = "armor"
-		ItemData.ItemType.WEAPON:
-			equipped_item = equipped_weapon
-			equipped_weapon = item
-			slot_type = "weapon"
-		ItemData.ItemType.SHIELD:
-			equipped_item = equipped_shield
-			equipped_shield = item
-			slot_type = "shield"
-		ItemData.ItemType.BOOTS:
-			equipped_item = equipped_boots
-			equipped_boots = item
-			slot_type = "boots"
-		ItemData.ItemType.ACCESSORY:
-			# Try first slot, then second
-			if equipped_accessory_1 == null:
-				equipped_accessory_1 = item
-				slot_type = "accessory_1"
-			elif equipped_accessory_2 == null:
-				equipped_accessory_2 = item
-				slot_type = "accessory_2"
-			else:
-				# Swap with first accessory
-				equipped_item = equipped_accessory_1
-				equipped_accessory_1 = item
-				slot_type = "accessory_1"
-		_:
-			return false
-	
+	slot_type = item.get_equipment_slot()
+	if slot_type.is_empty():
+		return false
+	equipped_item = get_equipped(slot_type)
+	_set_equipped(slot_type, item)
+
 	# Remove item from inventory
 	inventory_slots[inventory_index].item = null
 	inventory_slots[inventory_index].quantity = 0
@@ -449,25 +429,16 @@ func _set_equipped(slot_type: String, item: ItemData) -> void:
 	match slot_type:
 		"helmet": equipped_helmet = item
 		"armor": equipped_armor = item
-		"weapon": equipped_weapon = item
-		"shield": equipped_shield = item
 		"boots": equipped_boots = item
-		"accessory_1": equipped_accessory_1 = item
-		"accessory_2": equipped_accessory_2 = item
+		"weapon": equipped_weapon = item
+		"back": equipped_back = item
 
 
 ## Check if item fits in slot type
 func _item_fits_slot(item: ItemData, slot_type: String) -> bool:
 	if item == null:
 		return true
-	match slot_type:
-		"helmet": return item.item_type == ItemData.ItemType.HELMET
-		"armor": return item.item_type == ItemData.ItemType.ARMOR
-		"weapon": return item.item_type == ItemData.ItemType.WEAPON
-		"shield": return item.item_type == ItemData.ItemType.SHIELD
-		"boots": return item.item_type == ItemData.ItemType.BOOTS
-		"accessory_1", "accessory_2": return item.item_type == ItemData.ItemType.ACCESSORY
-		_: return false
+	return EQUIPMENT_SLOTS.has(slot_type) and item.get_equipment_slot() == slot_type
 
 
 ## Swap equipment between two equipment slots
@@ -494,11 +465,9 @@ func get_equipped(slot_type: String) -> ItemData:
 	match slot_type:
 		"helmet": return equipped_helmet
 		"armor": return equipped_armor
-		"weapon": return equipped_weapon
-		"shield": return equipped_shield
 		"boots": return equipped_boots
-		"accessory_1": return equipped_accessory_1
-		"accessory_2": return equipped_accessory_2
+		"weapon": return equipped_weapon
+		"back": return equipped_back
 		_: return null
 
 
@@ -517,7 +486,7 @@ func upgrade_equipment(slot_type: String) -> bool:
 	var upgraded := equipment.duplicate() as ItemData
 	if upgraded == null:
 		return false
-	upgraded.applied_augments = equipment.applied_augments.duplicate()
+	upgraded.gems = equipment.gems.duplicate()
 	upgraded.enhancement_level = equipment.enhancement_level + 1
 
 	# Commit the item first so every gold/equipment observer sees final state.
@@ -558,65 +527,50 @@ func count_equipment_at_or_above_rarity(minimum_rarity: int) -> int:
 	return count
 
 
-## Calculate total equipment bonuses (includes augment stat contributions)
+## Calculate total equipment bonuses. Socket stones add DEF (Guardian Stone); every other
+## stone stat is a combat modifier (see get_gem_stats / get_all_gem_passive_effects).
 func get_total_attack_bonus() -> int:
 	var total := 0
-	for item: ItemData in [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
-				 equipped_shield, equipped_accessory_1, equipped_accessory_2]:
+	for item: ItemData in _equipped_items():
 		if item != null:
 			total += item.get_scaled_attack_bonus()
-			total += _get_augment_stat_sum(item, "attack_bonus")
 	return total
 
 
 func get_total_defense_bonus() -> int:
 	var total := 0
-	for item: ItemData in [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
-				 equipped_shield, equipped_accessory_1, equipped_accessory_2]:
+	for item: ItemData in _equipped_items():
 		if item != null:
 			total += item.get_scaled_defense_bonus()
-			total += _get_augment_stat_sum(item, "defense_bonus")
-	return total
+	return total + roundi(float(get_gem_stats().get("defense", 0.0)))
 
 
 func get_total_health_bonus() -> int:
 	var total := 0
-	for item: ItemData in [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
-				 equipped_shield, equipped_accessory_1, equipped_accessory_2]:
+	for item: ItemData in _equipped_items():
 		if item != null:
 			total += item.get_scaled_health_bonus()
-			total += _get_augment_stat_sum(item, "health_bonus")
 	return total
 
 
+## Equipment move speed is capped by data (max_equipment_move_speed).
 func get_total_speed_bonus() -> float:
-	var total := 0.0
-	for item: ItemData in [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
-				 equipped_shield, equipped_accessory_1, equipped_accessory_2]:
+	var equipment := 0.0
+	for item: ItemData in _equipped_items():
 		if item != null:
-			total += item.get_scaled_speed_bonus()
-			total += _get_augment_stat_sum_float(item, "speed_bonus")
-	return total
+			equipment += item.get_scaled_speed_bonus()
+	var cap := EquipmentBalance.max_equipment_move_speed()
+	if cap > 0:
+		equipment = minf(equipment, float(cap))
+	return equipment
 
 
-## Helper: sum an int stat field from all augments applied to an equipment item
-func _get_augment_stat_sum(equipment: ItemData, stat_field: String) -> int:
-	var total := 0
-	for augment_id: String in equipment.applied_augments:
-		var augment: ItemData = ItemDatabase.get_item(augment_id)
-		if augment != null:
-			total += augment.get(stat_field)
-	return total
-
-
-## Helper: sum a float stat field from all augments applied to an equipment item
-func _get_augment_stat_sum_float(equipment: ItemData, stat_field: String) -> float:
-	var total := 0.0
-	for augment_id: String in equipment.applied_augments:
-		var augment: ItemData = ItemDatabase.get_item(augment_id)
-		if augment != null:
-			total += augment.get(stat_field)
-	return total
+## Equipped items in slot order (null for empty slots).
+func _equipped_items() -> Array[ItemData]:
+	var out: Array[ItemData] = []
+	for slot: String in EQUIPMENT_SLOTS:
+		out.append(get_equipped(slot))
+	return out
 
 
 ## Use consumable item at index
@@ -658,110 +612,91 @@ func use_item(index: int) -> Dictionary:
 
 
 # =============================================================================
-# AUGMENT MANAGEMENT
+# SOCKET STONES (brainstorm sheet 07 §4, plan phase B)
 # =============================================================================
 
-## Apply an augment item to an equipped item's augment slot
-## augment_inventory_index = index of the AUGMENT item in inventory_slots
-## equip_slot = "weapon", "armor", "helmet", "boots", "shield", "accessory_1", "accessory_2"
-## Returns true on success, false if slot full or invalid
-func apply_augment(equip_slot: String, augment_inventory_index: int) -> bool:
-	var augment_slot := get_item_at(augment_inventory_index)
-	if augment_slot.item == null or not augment_slot.item.is_augment():
+## Socket the stone at inventory_index into equip_slot's socket gem_index (must be empty).
+## One transaction: the bag loses the stone and the equipment gains it, or nothing changes.
+func socket_gem(equip_slot: String, gem_index: int, inventory_index: int) -> bool:
+	var equipment := get_equipped(equip_slot)
+	if equipment == null or gem_index < 0 or gem_index >= equipment.get_gem_slot_count():
 		return false
-
-	var equipment: ItemData = get_equipped(equip_slot)
-	if equipment == null:
+	var stone_slot := get_item_at(inventory_index)
+	var stone: ItemData = stone_slot.get("item")
+	if stone == null or not stone.is_gem():
 		return false
-
-	# Check if equipment has open augment slots
-	if not equipment.is_augmentable():
+	var sockets := equipment.get_gem_sockets()
+	if not sockets[gem_index].is_empty():
 		return false
-
-	# At most 1 ACTIVE_SKILL augment per equipment piece
-	if augment_slot.item.augment_type == ItemData.AugmentType.ACTIVE_SKILL:
-		for aug_id: String in equipment.applied_augments:
-			var aug: ItemData = ItemDatabase.get_item(aug_id)
-			if aug and aug.augment_type == ItemData.AugmentType.ACTIVE_SKILL:
-				return false  # Skill slot already occupied
-
 	var simulated := _copy_slots(inventory_slots)
-	if not _remove_at_from_slots(simulated, augment_inventory_index, 1):
+	if not _remove_at_from_slots(simulated, inventory_index, 1):
 		return false
-	var updated_equipment := equipment.duplicate() as ItemData
-	updated_equipment.applied_augments = equipment.applied_augments.duplicate()
-	updated_equipment.enhancement_level = equipment.enhancement_level
-	updated_equipment.applied_augments.append(augment_slot.item.id)
-	inventory_slots = simulated
-	_set_equipped(equip_slot, updated_equipment)
-	augments_changed.emit(equip_slot)
-	equipment_changed.emit(equip_slot)
-	inventory_changed.emit()
+	sockets[gem_index] = stone.id
+	_commit_sockets(equip_slot, equipment, sockets, simulated)
 	return true
 
 
-## Remove an augment from an equipped item and return it to inventory
-## augment_index = index within equipment.applied_augments array
-## Returns true on success (augment returned to inventory)
-func remove_augment(equip_slot: String, augment_index: int) -> bool:
-	var equipment: ItemData = get_equipped(equip_slot)
-	if equipment == null:
+## Return the stone in socket gem_index to the bag. Fails (nothing lost) when the bag is full.
+func unsocket_gem(equip_slot: String, gem_index: int) -> bool:
+	var equipment := get_equipped(equip_slot)
+	if equipment == null or gem_index < 0 or gem_index >= equipment.get_gem_slot_count():
 		return false
-	if augment_index < 0 or augment_index >= equipment.applied_augments.size():
+	var sockets := equipment.get_gem_sockets()
+	var stone: ItemData = ItemDatabase.get_item(sockets[gem_index]) if not sockets[gem_index].is_empty() else null
+	if stone == null:
 		return false
-
-	var augment_id: String = equipment.applied_augments[augment_index]
-	var augment_item: ItemData = ItemDatabase.get_item(augment_id)
-	if augment_item == null:
-		return false
-
 	var simulated := _copy_slots(inventory_slots)
-	if _add_to_slots(simulated, augment_item, 1) > 0:
+	if _add_to_slots(simulated, stone, 1) > 0:
 		return false
-	var updated_equipment := equipment.duplicate() as ItemData
-	updated_equipment.applied_augments = equipment.applied_augments.duplicate()
-	updated_equipment.enhancement_level = equipment.enhancement_level
-	updated_equipment.applied_augments.remove_at(augment_index)
-	inventory_slots = simulated
-	_set_equipped(equip_slot, updated_equipment)
-	augments_changed.emit(equip_slot)
-	equipment_changed.emit(equip_slot)
-	inventory_changed.emit()
+	sockets[gem_index] = ""
+	_commit_sockets(equip_slot, equipment, sockets, simulated)
 	return true
 
 
-# =============================================================================
-# AUGMENT & PASSIVE EFFECT QUERIES
-# =============================================================================
+func _commit_sockets(equip_slot: String, equipment: ItemData, sockets: Array[String], new_slots: Array[Dictionary]) -> void:
+	var updated := equipment.duplicate() as ItemData
+	updated.enhancement_level = equipment.enhancement_level
+	updated.gems = sockets
+	inventory_slots = new_slots
+	_set_equipped(equip_slot, updated)
+	gems_changed.emit(equip_slot)
+	equipment_changed.emit(equip_slot)
+	inventory_changed.emit()
 
-## Collect all passive effects from augments on all equipped items
-## Returns Array[Dictionary] of {effect: PassiveEffect, value: float}
-func get_all_augment_passive_effects() -> Array[Dictionary]:
+
+## Fuse GemCatalog.fuse_cost() stones of one type and tier from the bag into one stone of the
+## next tier. No failure chance; nothing is consumed unless the result fits.
+func fuse_gems(stone_id: String) -> bool:
+	var result_id := GemCatalog.fuse_result(stone_id)
+	var source := ItemDatabase.get_item(stone_id)
+	var result := ItemDatabase.get_item(result_id) if not result_id.is_empty() else null
+	if source == null or result == null:
+		return false
+	return transact([{"item": source, "quantity": GemCatalog.fuse_cost()}], [{"item": result, "quantity": 1}])
+
+
+## Stone ids socketed across all equipped items.
+func get_equipped_gem_sockets() -> Array:
+	var arrays: Array = []
+	for item: ItemData in _equipped_items():
+		if item != null:
+			arrays.append(item.get_gem_sockets())
+	return arrays
+
+
+## Capped stone totals for everything worn, plus optional extra holders (pet, mount).
+func get_gem_stats(extra_socket_arrays: Array = []) -> Dictionary:
+	var arrays := get_equipped_gem_sockets()
+	arrays.append_array(extra_socket_arrays)
+	return GemCatalog.total_stats(arrays)
+
+
+## Stone stats as passive-effect entries {effect, value} for PassiveEffectProcessor.
+func get_all_gem_passive_effects(extra_socket_arrays: Array = []) -> Array[Dictionary]:
+	var totals := get_gem_stats(extra_socket_arrays)
 	var effects: Array[Dictionary] = []
-	for item: ItemData in [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
-				 equipped_shield, equipped_accessory_1, equipped_accessory_2]:
-		if item == null:
-			continue
-		for augment_id: String in item.applied_augments:
-			var augment: ItemData = ItemDatabase.get_item(augment_id)
-			if augment != null and augment.passive_effect != ItemData.PassiveEffect.NONE:
-				effects.append({"effect": augment.passive_effect, "value": augment.passive_value})
+	for stat: String in GEM_EFFECTS:
+		var value := float(totals.get(stat, 0.0))
+		if value > 0.0:
+			effects.append({"effect": GEM_EFFECTS[stat], "value": value})
 	return effects
-
-
-## Collect all active skill IDs from augments on all equipped items
-## Returns Array[Dictionary] of {skill_id: String, source_equip_slot: String}
-func get_all_augment_active_skills() -> Array[Dictionary]:
-	var skills: Array[Dictionary] = []
-	var slot_names := ["weapon", "helmet", "armor", "boots", "shield", "accessory_1", "accessory_2"]
-	var slot_items: Array[ItemData] = [equipped_weapon, equipped_helmet, equipped_armor, equipped_boots,
-					   equipped_shield, equipped_accessory_1, equipped_accessory_2]
-	for i: int in range(slot_items.size()):
-		var item: ItemData = slot_items[i]
-		if item == null:
-			continue
-		for augment_id: String in item.applied_augments:
-			var augment: ItemData = ItemDatabase.get_item(augment_id)
-			if augment != null and augment.augment_type == ItemData.AugmentType.ACTIVE_SKILL:
-				skills.append({"skill_id": augment.active_skill_id, "source_equip_slot": slot_names[i]})
-	return skills

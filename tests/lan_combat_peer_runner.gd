@@ -72,7 +72,6 @@ func _build_host_enemy() -> void:
 	enemy.position = Vector2(160, 220)
 	enemy.max_hp = 24
 	enemy.hp = 24
-	enemy.xp_reward = 0
 	enemy.def = enemy.def.duplicate(true)
 	enemy.def["gold"] = Vector2i.ZERO
 	enemy.def["loot"] = []
@@ -89,7 +88,7 @@ func _build_host_enemy() -> void:
 
 
 func _fill_client_inventory() -> void:
-	var sword := ItemDatabase.get_item("iron_sword")
+	var sword := ItemDatabase.get_item("ashwood_blade")
 	for i in range(_player.inventory.inventory_slots.size()):
 		_player.inventory.inventory_slots[i] = {"item": sword, "quantity": 1}
 	_player.inventory.inventory_changed.emit()

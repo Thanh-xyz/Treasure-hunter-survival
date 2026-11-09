@@ -140,21 +140,7 @@ func _item_fits_equipment_slot(check_item: ItemData) -> bool:
 		return true  # Empty swap is always valid
 	
 	# Map slot_type to valid ItemTypes
-	match slot_type:
-		"helmet":
-			return check_item.item_type == ItemData.ItemType.HELMET
-		"armor":
-			return check_item.item_type == ItemData.ItemType.ARMOR
-		"weapon":
-			return check_item.item_type == ItemData.ItemType.WEAPON
-		"shield":
-			return check_item.item_type == ItemData.ItemType.SHIELD
-		"boots":
-			return check_item.item_type == ItemData.ItemType.BOOTS
-		"accessory_1", "accessory_2":
-			return check_item.item_type == ItemData.ItemType.ACCESSORY
-		_:
-			return false
+	return check_item.get_equipment_slot() == slot_type
 
 
 ## Called when item is dropped
@@ -375,18 +361,17 @@ func _draw_equipment_indicator(rect: Rect2) -> void:
 					 center + Vector2(icon_size/2, -icon_size/2), icon_color, 2.0)
 			draw_line(center + Vector2(-icon_size/4, 0), 
 					 center + Vector2(icon_size/4, 0), icon_color, 2.0)
-		"shield":
-			# Shield shape - circle
-			draw_arc(center, icon_size/2, 0, TAU, 16, icon_color, 2.0)
+		"back":
+			# Cloak shape - trapezoid outline
+			draw_polyline(PackedVector2Array([center + Vector2(-icon_size/4, -icon_size/2),
+				center + Vector2(icon_size/4, -icon_size/2), center + Vector2(icon_size/2, icon_size/2),
+				center + Vector2(-icon_size/2, icon_size/2), center + Vector2(-icon_size/4, -icon_size/2)]), icon_color, 2.0)
 		"boots":
 			# Boot shape
 			draw_line(center + Vector2(-icon_size/3, -icon_size/2), 
 					 center + Vector2(-icon_size/3, icon_size/4), icon_color, 2.0)
 			draw_line(center + Vector2(-icon_size/3, icon_size/4), 
 					 center + Vector2(icon_size/2, icon_size/4), icon_color, 2.0)
-		"accessory", "accessory_1", "accessory_2":
-			# Ring shape
-			draw_arc(center, icon_size/3, 0, TAU, 12, icon_color, 2.0)
 
 
 func _draw_item_icon(rect: Rect2) -> void:

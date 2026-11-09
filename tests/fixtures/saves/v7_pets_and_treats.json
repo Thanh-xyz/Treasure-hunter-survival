@@ -1,0 +1,127 @@
+{
+  "hp": -1,
+  "inventory": {
+    "diamonds": 4,
+    "equipment": {},
+    "gold": 300,
+    "slots": [
+      {
+        "id": "pet_treat",
+        "qty": 12
+      },
+      {
+        "id": "wood",
+        "qty": 5
+      },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "lost_and_found": [
+    {
+      "id": "pet_treat",
+      "qty": 2
+    }
+  ],
+  "migration_log": [],
+  "pending_claim": {
+    "claim_id": "main:q04",
+    "reward": {
+      "items": {
+        "pet_treat": 6
+      }
+    },
+    "source_id": "q04",
+    "source_kind": "main",
+    "version": 1
+  },
+  "profile": {
+    "active_mount": "tusk_boar",
+    "active_pet": "lucky_cat",
+    "boss_kills": {},
+    "current_zone": "town",
+    "kills_total": 12,
+    "mounts": {
+      "tusk_boar": {
+        "skin": 0,
+        "skins": [
+          0
+        ]
+      }
+    },
+    "pets": {
+      "ember_fox": {
+        "level": 2
+      },
+      "lucky_cat": {
+        "level": 13
+      }
+    },
+    "plots": [
+      {},
+      {},
+      {},
+      {},
+      {},
+      {}
+    ],
+    "settings": {
+      "compact_hud": false,
+      "damage_numbers": true,
+      "joystick_opacity": 0.7,
+      "left_handed": false,
+      "max_fps": 60
+    }
+  },
+  "quests": {
+    "dailies": {
+      "d_boss": {
+        "claimed": false,
+        "progress": 0
+      },
+      "d_gather": {
+        "claimed": false,
+        "progress": 0
+      },
+      "d_hunt": {
+        "claimed": false,
+        "progress": 0
+      }
+    },
+    "daily_date": "2026-11-01",
+    "main_index": 10,
+    "main_progress": 1,
+    "main_quest_id": "q04",
+    "main_ready": true
+  },
+  "saved_at": 1793600000.0,
+  "version": 7
+}

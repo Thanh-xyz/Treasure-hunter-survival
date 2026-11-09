@@ -9,7 +9,7 @@ signal host_zone_requested(zone_id: String)
 
 const PORT := 24567
 const MAX_CLIENTS := 3
-const PROTOCOL_VERSION := 5
+const PROTOCOL_VERSION := 8  # v8: boss encounter rewards (phase E)
 const SEND_INTERVAL := 0.05
 const ZONE_INTERVAL := 1.0
 const ENEMY_SEND_INTERVAL := 0.10
@@ -29,6 +29,9 @@ const MAX_PLAYER_ATTACK := 5000
 const MAX_PLAYER_DEFENSE := 500
 const MAX_PLAYER_CRIT_BONUS := 100.0
 const MAX_PLAYER_LIFE_STEAL := 100.0
+const MAX_PLAYER_DODGE := 40.0
+const MAX_PLAYER_CRIT_DAMAGE := 200.0
+const MAX_PLAYER_REGEN := 50.0
 const NETWORK_ITEM_SCENE := preload("res://sense/items/game_item.tscn")
 
 enum Mode { OFFLINE, HOST, CLIENT }
@@ -186,6 +189,9 @@ func local_addresses_text() -> String:
 func _process(delta: float) -> void:
 	if mode == Mode.OFFLINE or local_player == null:
 		return
+	if mode == Mode.HOST:
+		_regenerate_peers(delta)
+		_tick_peer_statuses(delta)
 	if mode == Mode.CLIENT:
 		for value: Variant in loot.values():
 			var item := value as GameItem
@@ -332,12 +338,15 @@ func _send_local_combat_profile() -> void:
 		int(profile["attack"]),
 		int(profile["defense"]),
 		float(profile["crit_chance"]),
-		float(profile["life_steal"])
+		float(profile["life_steal"]),
+		float(profile["crit_damage"]),
+		float(profile["dodge"]),
+		float(profile["regeneration"])
 	)
 
 
 @rpc("any_peer", "call_remote", "reliable", 0)
-func _submit_combat_profile(current_hp: int, max_hp: int, attack: int, defense: int, crit_chance: float, life_steal: float) -> void:
+func _submit_combat_profile(current_hp: int, max_hp: int, attack: int, defense: int, crit_chance: float, life_steal: float, crit_damage: float, dodge: float, regeneration: float) -> void:
 	if mode != Mode.HOST:
 		return
 	var sender := multiplayer.get_remote_sender_id()
@@ -359,6 +368,9 @@ func _submit_combat_profile(current_hp: int, max_hp: int, attack: int, defense: 
 		"defense": accepted_defense,
 		"crit_chance": accepted_crit,
 		"life_steal": accepted_life_steal,
+		"crit_damage": clampf(crit_damage, 0.0, MAX_PLAYER_CRIT_DAMAGE),
+		"dodge": clampf(dodge, 0.0, MAX_PLAYER_DODGE),
+		"regeneration": clampf(regeneration, 0.0, MAX_PLAYER_REGEN),
 		"dead": accepted_hp <= 0,
 		"profile_received": true,
 	}
@@ -379,7 +391,9 @@ func damage_peer(peer_id: int, raw_damage: int) -> void:
 	if now - float(_peer_damage_times.get(peer_id, -100.0)) < PLAYER_INVULNERABILITY:
 		return
 	_peer_damage_times[peer_id] = now
-	var actual := maxi(clampi(raw_damage, 1, 100000) - int(state.get("defense", 0)), 1)
+	if Combat.roll_dodge(float(state.get("dodge", 0.0))):
+		return
+	var actual := GemCatalog.mitigate(clampi(raw_damage, 1, 100000), int(state.get("defense", 0)))
 	state["hp"] = maxi(0, int(state["hp"]) - actual)
 	state["dead"] = int(state["hp"]) <= 0
 	player_states[peer_id] = state
@@ -387,6 +401,62 @@ func damage_peer(peer_id: int, raw_damage: int) -> void:
 		_peer_respawn_until[peer_id] = now + PLAYER_INVULNERABILITY
 	_apply_player_state_to_avatar(peer_id)
 	_apply_authoritative_vitals.rpc_id(peer_id, int(state["hp"]), int(state["max_hp"]), bool(state["dead"]), false, peer_positions.get(peer_id, Vector2.ZERO))
+
+
+var _peer_regen_acc: Dictionary = {}
+var _peer_statuses: Dictionary = {}   ## peer_id -> StatusEffects (host only)
+
+
+## A monster's on-hit status on a remote peer. The host applies burn/poison damage; slows are
+## not sent to clients yet (their movement is client-side), see docs/reports/PHASE_D_REPORT.md.
+func apply_peer_status(peer_id: int, kind: String, duration: float, magnitude: float) -> void:
+	if mode != Mode.HOST or not accepted_peers.has(peer_id):
+		return
+	var state: Dictionary = player_states.get(peer_id, {})
+	if state.is_empty() or bool(state.get("dead", false)):
+		return
+	if not _peer_statuses.has(peer_id):
+		_peer_statuses[peer_id] = StatusEffects.new()
+	(_peer_statuses[peer_id] as StatusEffects).apply(kind, duration, magnitude)
+
+
+func _tick_peer_statuses(delta: float) -> void:
+	for peer_id: Variant in _peer_statuses.keys():
+		var effects: StatusEffects = _peer_statuses[peer_id]
+		var dot := effects.tick(delta)
+		var state: Dictionary = player_states.get(peer_id, {})
+		if state.is_empty() or bool(state.get("dead", false)):
+			effects.clear()
+		elif dot > 0:
+			state["hp"] = maxi(0, int(state["hp"]) - dot)
+			state["dead"] = int(state["hp"]) <= 0
+			player_states[peer_id] = state
+			if bool(state["dead"]):
+				effects.clear()
+				_peer_respawn_until[peer_id] = Time.get_ticks_msec() / 1000.0 + PLAYER_INVULNERABILITY
+			_apply_player_state_to_avatar(int(peer_id))
+			_apply_authoritative_vitals.rpc_id(int(peer_id), int(state["hp"]), int(state["max_hp"]), bool(state["dead"]), false, peer_positions.get(peer_id, Vector2.ZERO))
+		if effects.active.is_empty():
+			_peer_statuses.erase(peer_id)
+
+
+## Renewal Stone regeneration for remote peers; the host owns their HP.
+func _regenerate_peers(delta: float) -> void:
+	for peer_id: Variant in player_states.keys():
+		var state: Dictionary = player_states[peer_id]
+		var rate := float(state.get("regeneration", 0.0))
+		if rate <= 0.0 or bool(state.get("dead", false)) or int(state.get("hp", 0)) >= int(state.get("max_hp", 0)):
+			_peer_regen_acc.erase(peer_id)
+			continue
+		var acc := float(_peer_regen_acc.get(peer_id, 0.0)) + rate * delta
+		var whole := int(acc)
+		_peer_regen_acc[peer_id] = acc - whole
+		if whole <= 0:
+			continue
+		state["hp"] = mini(int(state["max_hp"]), int(state["hp"]) + whole)
+		player_states[peer_id] = state
+		_apply_player_state_to_avatar(int(peer_id))
+		_apply_authoritative_vitals.rpc_id(int(peer_id), int(state["hp"]), int(state["max_hp"]), false, false, peer_positions.get(peer_id, Vector2.ZERO))
 
 
 func request_player_respawn() -> void:
@@ -532,6 +602,9 @@ func _read_local_combat_profile() -> Dictionary:
 		var modifiers: Dictionary = local_player.get_lan_combat_modifiers()
 		result["crit_chance"] = clampf(float(modifiers.get("crit_chance", 0.0)), 0.0, MAX_PLAYER_CRIT_BONUS)
 		result["life_steal"] = clampf(float(modifiers.get("life_steal", 0.0)), 0.0, MAX_PLAYER_LIFE_STEAL)
+		result["crit_damage"] = clampf(float(modifiers.get("crit_damage", 0.0)), 0.0, MAX_PLAYER_CRIT_DAMAGE)
+		result["dodge"] = clampf(float(modifiers.get("dodge", 0.0)), 0.0, MAX_PLAYER_DODGE)
+		result["regeneration"] = clampf(float(modifiers.get("regeneration", 0.0)), 0.0, MAX_PLAYER_REGEN)
 	return result
 
 
@@ -543,6 +616,9 @@ func _default_player_state() -> Dictionary:
 		"defense": 0,
 		"crit_chance": 0.0,
 		"life_steal": 0.0,
+		"crit_damage": 0.0,
+		"dodge": 0.0,
+		"regeneration": 0.0,
 		"dead": false,
 		"profile_received": false,
 	}
@@ -603,7 +679,8 @@ func _request_enemy_hit(enemy_id: int) -> void:
 	_enemy_hit_times[hit_key] = now
 	var roll := Combat.roll(
 		float(peer_state.get("attack", CLIENT_BASE_DAMAGE)),
-		float(peer_state.get("crit_chance", 0.0))
+		float(peer_state.get("crit_chance", 0.0)),
+		float(peer_state.get("crit_damage", 0.0))
 	)
 	var applied := enemy.apply_hit(int(roll["amount"]), peer_pos, bool(roll["crit"]), sender)
 	_apply_peer_life_steal(sender, applied, float(peer_state.get("life_steal", 0.0)))
@@ -644,12 +721,6 @@ func spawn_authoritative_gold(pos: Vector2, amount: int) -> int:
 	if mode != Mode.HOST:
 		return 0
 	return _spawn_authoritative_loot("gold", "", clampi(amount, 1, MAX_LOOT_QUANTITY), pos)
-
-
-func grant_peer_xp(peer_id: int, amount: int) -> void:
-	if mode != Mode.HOST or not accepted_peers.has(peer_id) or amount <= 0:
-		return
-	_send_loot_transaction(peer_id, 0, "xp", "", clampi(amount, 1, MAX_LOOT_QUANTITY))
 
 
 func request_loot_pickup(loot_id: int) -> void:
@@ -724,6 +795,25 @@ func _request_loot_pickup(loot_id: int) -> void:
 	_apply_loot_transaction.rpc_id(sender, tx_id, loot_id, kind, item.item_id, quantity)
 
 
+## Host → peer: one boss encounter's share (sheet 06 §8). The client pays it once per
+## encounter id (GameState.boss_claims), so a resend after a reconnect changes nothing.
+func grant_boss_reward(peer_id: int, encounter_id: String, rewards: Array) -> void:
+	if mode != Mode.HOST or not accepted_peers.has(peer_id):
+		return
+	var clean: Array = []
+	for r: Variant in rewards:
+		if r is Dictionary and ItemDatabase.get_item(str(r.get("item_id", ""))) != null:
+			clean.append({"item_id": str(r["item_id"]), "quantity": clampi(int(r.get("quantity", 1)), 1, MAX_LOOT_QUANTITY)})
+	_receive_boss_reward.rpc_id(peer_id, encounter_id, clean)
+
+
+@rpc("authority", "call_remote", "reliable", 0)
+func _receive_boss_reward(encounter_id: String, rewards: Array) -> void:
+	if mode != Mode.CLIENT:
+		return
+	GameState.grant_boss_rewards(encounter_id, rewards)
+
+
 func _send_loot_transaction(peer_id: int, loot_id: int, kind: String, item_id: String, quantity: int) -> void:
 	var tx_id := _next_transaction_id
 	_next_transaction_id += 1
@@ -734,7 +824,7 @@ func _send_loot_transaction(peer_id: int, loot_id: int, kind: String, item_id: S
 func _apply_loot_transaction(tx_id: int, loot_id: int, kind: String, item_id: String, quantity: int) -> void:
 	if mode != Mode.CLIENT or tx_id <= 0 or tx_id >= 1000000000:
 		return
-	if quantity <= 0 or quantity > MAX_LOOT_QUANTITY or not ["item", "gold", "xp"].has(kind):
+	if quantity <= 0 or quantity > MAX_LOOT_QUANTITY or not ["item", "gold"].has(kind):
 		return
 	if kind == "item" and ItemDatabase.get_item(item_id) == null:
 		return
@@ -801,18 +891,13 @@ func restore_earned_rewards(rewards: Array[Dictionary]) -> void:
 		var quantity := int(reward.get("quantity", 0))
 		if quantity <= 0 or quantity > MAX_LOOT_QUANTITY:
 			continue
-		if ["item", "gold", "xp"].has(kind):
+		if ["item", "gold"].has(kind):
 			_apply_reward_to_local_player(kind, item_id, quantity)
 		elif kind == "consume_item":
 			_remove_local_item(item_id, quantity)
 
 
 func _apply_reward_to_local_player(kind: String, item_id: String, quantity: int) -> int:
-	if kind == "xp":
-		GameState.add_xp(quantity)
-		if local_player:
-			DamageNumber.spawn(get_tree(), local_player.global_position + Vector2(0, -28), "+%d XP" % quantity, Color(0.75, 0.55, 1.0))
-		return 0
 	if local_player == null or not local_player.has_method("get_inventory"):
 		return quantity
 	var inventory := local_player.get_inventory() as InventoryData

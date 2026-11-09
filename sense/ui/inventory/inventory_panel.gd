@@ -115,11 +115,7 @@ func _setup_character_preview() -> void:
 
 
 func _refresh_character_preview() -> void:
-	var hero: Dictionary = GameContent.HEROES.get(GameState.hero_id, {})
-	var portrait := character_preview.get_node_or_null("HeroPortrait") as TextureRect
-	if portrait:
-		portrait.self_modulate = hero.get("tint", Color.WHITE)
-	character_preview_label.text = "%s\nLv.%d" % [hero.get("name", "Hero"), GameState.level]
+	character_preview_label.text = "Kindler"
 	character_preview_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	character_preview_label.add_theme_color_override("font_color", UiTheme.C_GOLD)
 	character_preview_label.add_theme_font_size_override("font_size", 24)
@@ -250,11 +246,12 @@ func _setup_equipment_slots() -> void:
 		"helmet": helmet_slot,
 		"weapon": weapon_slot,
 		"armor": armor_slot,
-		"shield": shield_slot,
 		"boots": boots_slot,
-		"accessory_1": accessory1_slot,
-		"accessory_2": accessory2_slot
+		# The legacy scene's shield placeholder hosts the Back slot; accessory slots were retired (save v6).
+		"back": shield_slot,
 	}
+	accessory1_slot.visible = false
+	accessory2_slot.visible = false
 	
 	# Replace Panel placeholders with InventorySlotUI nodes
 	for slot_type in slot_mapping:
@@ -512,21 +509,7 @@ func _item_fits_slot(check_item: ItemData, check_slot_type: String) -> bool:
 	if check_item == null:
 		return true
 	
-	match check_slot_type:
-		"helmet":
-			return check_item.item_type == ItemData.ItemType.HELMET
-		"armor":
-			return check_item.item_type == ItemData.ItemType.ARMOR
-		"weapon":
-			return check_item.item_type == ItemData.ItemType.WEAPON
-		"shield":
-			return check_item.item_type == ItemData.ItemType.SHIELD
-		"boots":
-			return check_item.item_type == ItemData.ItemType.BOOTS
-		"accessory_1", "accessory_2":
-			return check_item.item_type == ItemData.ItemType.ACCESSORY
-		_:
-			return false
+	return check_item.get_equipment_slot() == check_slot_type
 
 
 func _on_inventory_slot_right_clicked(index: int) -> void:
@@ -550,7 +533,6 @@ func _on_inventory_slot_right_clicked(index: int) -> void:
 			_apply_consumable_effect(result)
 
 
-## Handle right-click on equipment slot (unequip or augment)
 ## Show sell confirmation and process sale
 func _request_sell_item(index: int, item: ItemData, quantity: int) -> void:
 	var catalog_item := ItemDatabase.get_item(item.id)
@@ -582,9 +564,9 @@ func _on_equipment_slot_right_clicked(_index: int, slot_type: String) -> void:
 		return
 
 	var item := inventory_data.get_equipped(slot_type)
-	if item != null and item.get_augment_slot_count() > 0:
-		# If item has augment slots, open augment panel instead of unequipping
-		_open_augment_panel(slot_type)
+	if item != null and item.get_gem_slot_count() > 0:
+		# Equipped items open the socket stone panel; unequip from there or by dragging
+		_open_gem_panel(slot_type)
 	else:
 		inventory_data.unequip_item(slot_type)
 
@@ -659,8 +641,7 @@ func _get_item_type_string(type: ItemData.ItemType) -> String:
 		ItemData.ItemType.ARMOR: return "Armor"
 		ItemData.ItemType.HELMET: return "Helmet"
 		ItemData.ItemType.BOOTS: return "Boots"
-		ItemData.ItemType.SHIELD: return "Shield"
-		ItemData.ItemType.ACCESSORY: return "Accessory"
+		ItemData.ItemType.BACK: return "Back"
 		ItemData.ItemType.CONSUMABLE: return "Consumable"
 		ItemData.ItemType.MATERIAL: return "Material"
 		ItemData.ItemType.QUEST: return "Quest Item"
@@ -673,44 +654,31 @@ func _get_item_stats_string(item: ItemData) -> String:
 	var stats := []
 	if item.is_equippable() and item.can_upgrade:
 		stats.append("Level %d / %d" % [item.enhancement_level, item.max_upgrade_level])
-	if item.attack_bonus > 0:
+	if item.get_scaled_attack_bonus() > 0:
 		stats.append("⚔️ +%d ATK" % item.get_scaled_attack_bonus())
-	if item.defense_bonus > 0:
+	if item.get_scaled_defense_bonus() > 0:
 		stats.append("🛡️ +%d DEF" % item.get_scaled_defense_bonus())
-	if item.health_bonus > 0:
+	if item.get_scaled_health_bonus() > 0:
 		stats.append("❤️ +%d HP" % item.get_scaled_health_bonus())
-	if item.speed_bonus > 0:
+	if item.get_scaled_speed_bonus() > 0:
 		stats.append("👟 +%.1f SPD" % item.get_scaled_speed_bonus())
 	if item.heal_amount > 0:
 		stats.append("💚 Heals %d HP" % item.heal_amount)
 	if item.stamina_restore > 0:
 		stats.append("💙 Restores %.0f Stamina" % item.stamina_restore)
 
-	# Augment-specific stats
-	if item.item_type == ItemData.ItemType.AUGMENT:
-		match item.augment_type:
-			ItemData.AugmentType.PASSIVE_EFFECT:
-				stats.append(_get_passive_effect_description(item.passive_effect, item.passive_value))
-			ItemData.AugmentType.ACTIVE_SKILL:
-				stats.append("Grants Skill: %s" % item.active_skill_id)
-			ItemData.AugmentType.TIMED_BUFF:
-				stats.append("Duration: %.0fs" % item.buff_duration)
+	if item.is_gem():
+		stats.append(GemCatalog.describe(item.id))
+	elif item.is_timed_buff():
+		stats.append("Duration: %.0fs" % item.buff_duration)
 
-	# Augment slots on equippable items
-	if item.is_equippable() and item.get_augment_slot_count() > 0:
+	# Socket stones on equippable items
+	if item.is_equippable() and item.get_gem_slot_count() > 0:
 		stats.append("")
-		stats.append("--- Augment Slots ---")
-		var slot_count := item.get_augment_slot_count()
-		for i in range(slot_count):
-			if i < item.applied_augments.size():
-				var aug_id: String = item.applied_augments[i]
-				var aug_item: ItemData = ItemDatabase.get_item(aug_id)
-				if aug_item:
-					stats.append("  [%s]" % aug_item.name)
-				else:
-					stats.append("  [Unknown]")
-			else:
-				stats.append("  [ Empty Slot ]")
+		stats.append("--- Stones %d/%d ---" % [item.count_socketed_gems(), item.get_gem_slot_count()])
+		for stone_id: String in item.get_gem_sockets():
+			if not stone_id.is_empty():
+				stats.append("  [%s] %s" % [GemCatalog.display_name(stone_id), GemCatalog.describe(stone_id)])
 
 	if stats.size() > 0:
 		return "\n".join(stats)
@@ -735,24 +703,23 @@ func _apply_consumable_effect(result: Dictionary) -> void:
 
 
 # =============================================================================
-# AUGMENT PANEL INTEGRATION
+# SOCKET STONE PANEL INTEGRATION
 # =============================================================================
 
-## Open the augment panel for a specific equipment slot
-func _open_augment_panel(equip_slot: String) -> void:
+## Open the socket stone panel for a specific equipment slot
+func _open_gem_panel(equip_slot: String) -> void:
 	var equipment: ItemData = inventory_data.get_equipped(equip_slot)
-	if equipment == null or equipment.get_augment_slot_count() == 0:
+	if equipment == null or equipment.get_gem_slot_count() == 0:
 		return
 
-	# Remove existing augment panel if any
-	var existing := get_node_or_null("AugmentPanel")
+	var existing := get_node_or_null("GemPanel")
 	if existing:
 		existing.queue_free()
 
-	var panel : AugmentPanel = preload("res://sense/ui/augment/AugmentPanel.tscn").instantiate()
-	panel.name = "AugmentPanel"
+	var panel : GemPanel = preload("res://sense/ui/gems/GemPanel.tscn").instantiate()
+	panel.name = "GemPanel"
 	add_child(panel)
-	panel.setup(inventory_data, equip_slot)
+	panel.setup(inventory_data, equip_slot, get_tree().get_first_node_in_group("player") as Node2D)
 
 	# Position near the equipment panel
 	var eq_slot_ui: Control = equipment_slots.get(equip_slot)
@@ -762,6 +729,6 @@ func _open_augment_panel(equip_slot: String) -> void:
 		panel.global_position = Vector2(slot_rect.end.x + 10, slot_rect.position.y)
 
 
-## Called from equipment slot context — shows augment button if item has slots
-func _on_augment_button_pressed(equip_slot: String) -> void:
-	_open_augment_panel(equip_slot)
+## Called from equipment slot context — opens the socket stone panel
+func _on_gem_button_pressed(equip_slot: String) -> void:
+	_open_gem_panel(equip_slot)

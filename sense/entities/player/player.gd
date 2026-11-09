@@ -184,8 +184,6 @@ var passive_processor: PassiveEffectProcessor
 var skill_component: SkillComponent
 ## SkillExecutor — spawns skill hitboxes/effects in the world
 var skill_executor: SkillExecutor
-## HeroSkillRunner — the active hero's three signature skills
-var hero_skills: HeroSkillRunner
 
 # =============================================================================
 # SURVIVAL RPG: mount / pet / auto-aim
@@ -195,12 +193,22 @@ const AUTO_FARM_SCAN_RANGE := 320.0
 const AUTO_FARM_ATTACK_RANGE := 38.0
 const SPRITE_BASE_POS := Vector2(0, 4)
 const MOUNT_RAISE := 9.0
-var mount_sprite: Sprite2D = null
+## Burn / poison / slow / freeze from monsters (plan phase D). The LAN host owns client statuses.
+var statuses := StatusEffects.new()
+## Outfit folder and held weapon from PlayerAppearance (gear changes the look).
+var current_outfit: String = ""
+var weapon_sprite: Sprite2D = null
+var mount_sprite: AnimatedSprite2D = null
+var _stomp_tween: Tween = null
+var _stomp_ready_at: float = 0.0
+const MOUNT_WORLD_SCALE := 2.0
 var pet: PetFollower = null
 var _respawn_invuln: float = 0.0
 var _survival_name_label: Label = null
 var _survival_hp_bar: ProgressBar = null
-var auto_farm_enabled: bool = false
+var auto_farm_enabled: bool = false   ## auto attack: seek and hit the nearest monster
+var auto_dig_enabled: bool = false    ## auto dig: walk onto the nearest undug plot (owner request 2026-11-09)
+const AUTO_DIG_SCAN_RANGE := 420.0
 var _auto_farm_target: Node2D = null
 var _dig_tween: Tween = null
 
@@ -255,11 +263,65 @@ func _ready() -> void:
 
 
 func _apply_source_style_frames() -> void:
-	anim.sprite_frames = PixelArt.make_guest_frames()
 	anim.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	anim.position = SPRITE_BASE_POS
-	anim.scale = Vector2(1.22, 1.35)
+	anim.scale = Vector2(2, 2)        # 16 px CC0 Ninja Adventure outfit, integer scale
+	anim.offset = Vector2(0, -6)      # feet on the shadow
+	weapon_sprite = Sprite2D.new()
+	weapon_sprite.name = "WeaponInHand"
+	weapon_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	anim.add_child(weapon_sprite)
+	apply_appearance()
 	anim.play("idle_down")
+
+
+## Wearing gear changes the look (owner request 2026-11-09): the armor picks the outfit,
+## the weapon is drawn in hand. Keeps the current animation and frame.
+func apply_appearance() -> void:
+	var armor: ItemData = inventory.get_equipped("armor") if inventory else null
+	var weapon: ItemData = inventory.get_equipped("weapon") if inventory else null
+	var outfit := PlayerAppearance.outfit_for(armor)
+	if outfit != current_outfit or anim.sprite_frames == null:
+		var playing := anim.animation
+		var frame_index := anim.frame
+		var new_frames := PlayerAppearance.frames(outfit)
+		if new_frames != null:
+			anim.sprite_frames = new_frames
+			current_outfit = outfit
+			if new_frames.has_animation(playing):
+				anim.play(playing)
+				anim.frame = mini(frame_index, new_frames.get_frame_count(playing) - 1)
+	if weapon_sprite != null:
+		weapon_sprite.texture = PlayerAppearance.weapon_texture(PlayerAppearance.weapon_for(weapon))
+		_update_weapon_pose()
+	GameEvent.appearance_changed.emit(outfit)
+
+
+## Held weapon follows the facing; it swings during attacks.
+func _update_weapon_pose() -> void:
+	if weapon_sprite == null or weapon_sprite.texture == null:
+		return
+	var key := _direction_to_attack_key(last_dir)
+	var swinging := current_state == State.ATTACK
+	match key:
+		"down":
+			weapon_sprite.position = Vector2(5, 3)
+			weapon_sprite.z_index = 1
+			weapon_sprite.flip_h = false
+		"up":
+			weapon_sprite.position = Vector2(-5, 1)
+			weapon_sprite.z_index = -1
+			weapon_sprite.flip_h = true
+		"left":
+			weapon_sprite.position = Vector2(-5, 3)
+			weapon_sprite.z_index = 1
+			weapon_sprite.flip_h = true
+		_:
+			weapon_sprite.position = Vector2(5, 3)
+			weapon_sprite.z_index = 1
+			weapon_sprite.flip_h = false
+	var side := -1.0 if weapon_sprite.flip_h else 1.0
+	weapon_sprite.rotation = (side * (1.4 if swinging else 0.35)) if key != "up" else side * 0.2
 
 
 func _physics_process(delta: float) -> void:
@@ -270,6 +332,10 @@ func _physics_process(delta: float) -> void:
 	
 	# Hồi stamina theo thời gian
 	stats.regen_stamina(delta)
+	# Renewal Stone HP regeneration (the LAN host owns client HP)
+	if passive_processor != null and LanSession.mode != LanSession.Mode.CLIENT:
+		passive_processor.tick_regeneration(delta)
+	_tick_statuses(delta)
 	if _respawn_invuln > 0.0:
 		_respawn_invuln -= delta
 	
@@ -284,10 +350,12 @@ func _physics_process(delta: float) -> void:
 	var manual_move := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	if auto_farm_enabled and manual_move.length_squared() > 0.04:
 		set_auto_farm(false, true)
+	if auto_dig_enabled and manual_move.length_squared() > 0.04:
+		set_auto_dig(false, true)
 
 	# Auto-farm owns movement only while it has a local target. Manual joystick
 	# input immediately returns control to the player.
-	var auto_handled := auto_farm_enabled and _drive_auto_farm()
+	var auto_handled := (auto_farm_enabled and _drive_auto_farm()) or (auto_dig_enabled and _drive_auto_dig())
 	if not auto_handled:
 		match current_state:
 			State.IDLE:
@@ -565,7 +633,8 @@ func _play_attack_animation() -> void:
 	# Bật hitbox để gây damage
 	refresh_hitbox_damage()
 	_enable_attack_hitbox()
-	_on_basic_attack()
+	if GameState.mounted:
+		play_mounted_stomp()
 	
 	# Tắt loop để animation_finished signal được emit khi xong
 	anim.sprite_frames.set_animation_loop(anim_name, false)
@@ -673,6 +742,8 @@ func _on_died() -> void:
 	if current_state == State.DEATH:
 		return
 	_cancel_dig_motion()
+	statuses.clear()
+	_refresh_status_speed()
 	set_auto_farm(false)
 	# Clear all buffs on death
 	if buff_component:
@@ -710,9 +781,44 @@ func take_damage(amount: int) -> void:
 		return
 	if invincibility_timer > 0:
 		return
+	# Wind Stone: a dodged hit deals nothing and grants no iframes.
+	if passive_processor != null and Combat.roll_dodge(passive_processor.get_dodge_percent()):
+		DamageNumber.spawn(get_tree(), global_position + Vector2(0, -20), "Miss", Color(0.75, 0.9, 1.0))
+		return
 	
 	# Áp dụng damage thông qua hệ thống internal
 	_apply_damage(amount)
+
+
+## A monster's on-hit effect. Damage over time ignores DEF; slows scale move speed.
+func apply_status(kind: String, duration: float, magnitude: float) -> void:
+	if LanSession.mode == LanSession.Mode.CLIENT or current_state == State.DEATH:
+		return
+	if statuses.apply(kind, duration, magnitude):
+		DamageNumber.spawn(get_tree(), global_position + Vector2(0, -30), String(StatusEffects.definitions()[kind].get("name", kind)), StatusEffects.color_of(kind))
+		_refresh_status_speed()
+
+
+func _tick_statuses(delta: float) -> void:
+	if statuses.active.is_empty():
+		return
+	var had := statuses.active.size()
+	var dot := statuses.tick(delta)
+	if dot > 0 and LanSession.mode != LanSession.Mode.CLIENT and current_state != State.DEATH:
+		stats.current_health -= dot
+		DamageNumber.spawn(get_tree(), global_position + Vector2(0, -20), str(dot), Color(1, 0.6, 0.3))
+	if statuses.active.size() != had:
+		_refresh_status_speed()
+	var tint := Color.WHITE
+	for kind: String in statuses.active:
+		tint = tint.lerp(StatusEffects.color_of(kind), 0.35 + 0.15 * sin(Time.get_ticks_msec() / 120.0))
+	anim.self_modulate = tint
+
+
+func _refresh_status_speed() -> void:
+	stats.status_speed_multiplier = statuses.speed_multiplier()
+	if statuses.active.is_empty():
+		anim.self_modulate = Color.WHITE
 
 
 ## Hồi máu cho nhân vật
@@ -827,13 +933,13 @@ func _add_starter_items() -> void:
 	if health_potion:
 		inventory.add_item(health_potion, 5)
 	
-	var iron_sword := ItemDatabase.get_item("iron_sword")
-	if iron_sword:
-		inventory.add_item(iron_sword, 1)
-	
-	var leather_armor := ItemDatabase.get_item("leather_armor")
-	if leather_armor:
-		inventory.add_item(leather_armor, 1)
+	var starter_weapon := ItemDatabase.get_item("ashwood_blade")
+	if starter_weapon:
+		inventory.add_item(starter_weapon, 1)
+
+	var starter_armor := ItemDatabase.get_item("wayfarer_coat")
+	if starter_armor:
+		inventory.add_item(starter_armor, 1)
 	
 	var iron_ore := ItemDatabase.get_item("iron_ore")
 	if iron_ore:
@@ -843,19 +949,11 @@ func _add_starter_items() -> void:
 	if herb_segment:
 		inventory.add_item(herb_segment, 12)
 
-	# --- Skill demo items ---
-	# Rare weapon with 2 augment slots + Whirlwind Rune + Shield Bash Rune
-	var fire_blade := ItemDatabase.get_item("fire_blade")
-	if fire_blade:
-		inventory.add_item(fire_blade, 1)
-
-	var whirlwind_rune := ItemDatabase.get_item("whirlwind_augment")
-	if whirlwind_rune:
-		inventory.add_item(whirlwind_rune, 1)
-
-	var shield_bash_rune := ItemDatabase.get_item("shield_bash_augment")
-	if shield_bash_rune:
-		inventory.add_item(shield_bash_rune, 1)
+	# --- Starter socket stones (tutorial t06 teaches socketing) ---
+	for stone_id: String in ["stone_guard_1", "stone_critical_1"]:
+		var stone := ItemDatabase.get_item(stone_id)
+		if stone:
+			inventory.add_item(stone, 2)
 
 	# Timed buff consumables for testing
 	var speed_elixir := ItemDatabase.get_item("speed_elixir_t1")
@@ -899,6 +997,7 @@ func add_gold(amount: int) -> void:
 func _on_equipment_changed(_slot_type: String) -> void:
 	if inventory == null:
 		return
+	apply_appearance()
 	if stats != null:
 		stats.apply_equipment_bonuses(inventory)
 		# Update hitbox damage with new attack stat
@@ -965,11 +1064,6 @@ func restore_stamina_from_pickup(amount: float) -> void:
 		stats.restore_stamina(amount)
 
 
-## Add XP from pickup
-func add_xp(amount: int) -> void:
-	GameState.add_xp(amount)
-
-
 # =============================================================================
 # COMPONENT SETUP (BuffComponent, PassiveEffectProcessor, SkillComponent, SkillExecutor)
 # =============================================================================
@@ -996,7 +1090,8 @@ func _setup_components() -> void:
 	skill_component = SkillComponent.new()
 	skill_component.name = "SkillComponent"
 	add_child(skill_component)
-	skill_component.get_active_skills_func = func() -> Array: return inventory.get_all_augment_active_skills()
+	# Slotted skill runes were retired in save v7; the future "special skill" slot will feed this.
+	skill_component.get_active_skills_func = func() -> Array: return []
 	skill_component.use_stamina_func = func(cost: float) -> bool: return stats.use_stamina(cost)
 	skill_component.skill_activated.connect(_on_skill_activated)
 
@@ -1016,12 +1111,12 @@ func _setup_components() -> void:
 		passive_processor.on_damage_received(amount, knockback, from_pos)
 	)
 
-	# --- Wire equipment/augment changes to rebuild skills ---
-	inventory.augments_changed.connect(func(_slot: String) -> void:
+	# --- Socket stone or equipment changes refresh combat modifiers ---
+	inventory.gems_changed.connect(func(_slot: String) -> void: _refresh_combat_modifiers())
+	inventory.equipment_changed.connect(func(_slot: String) -> void:
 		skill_component.rebuild_skills()
 		_refresh_combat_modifiers()
 	)
-	inventory.equipment_changed.connect(func(_slot: String) -> void: skill_component.rebuild_skills())
 
 	# --- Wire buff/skill components to HUD ---
 	_connect_components_to_hud.call_deferred()
@@ -1078,12 +1173,13 @@ func _on_skill_effect_finished(_skill_id: String) -> void:
 		_change_state(State.IDLE)
 
 
-## Aggregate passive effects from augments + active timed buffs
+## Aggregate passive effects from socket stones + active timed buffs
 ## Used by PassiveEffectProcessor via injected Callable
 func _get_all_passive_effects() -> Array[Dictionary]:
 	var effects: Array[Dictionary] = []
 	if inventory:
-		effects.append_array(inventory.get_all_augment_passive_effects())
+		effects.append_array(inventory.get_all_gem_passive_effects(GameState.active_companion_sockets()))
+	effects.append_array(GameState.companion_passive_effects())
 	if buff_component:
 		effects.append_array(buff_component.get_active_passive_effects())
 	return effects
@@ -1093,14 +1189,18 @@ func _refresh_combat_modifiers() -> void:
 	if attack_hitbox == null or passive_processor == null:
 		return
 	attack_hitbox.bonus_crit_chance_percent = passive_processor.get_crit_chance_bonus_percent()
+	attack_hitbox.bonus_crit_damage_percent = passive_processor.get_crit_damage_bonus_percent()
 
 
 func get_lan_combat_modifiers() -> Dictionary:
 	if passive_processor == null:
-		return {"crit_chance": 0.0, "life_steal": 0.0}
+		return {"crit_chance": 0.0, "life_steal": 0.0, "crit_damage": 0.0, "dodge": 0.0, "regeneration": 0.0}
 	return {
 		"crit_chance": passive_processor.get_crit_chance_bonus_percent(),
 		"life_steal": passive_processor.get_life_steal_percent(),
+		"crit_damage": passive_processor.get_crit_damage_bonus_percent(),
+		"dodge": passive_processor.get_dodge_percent(),
+		"regeneration": passive_processor.get_regeneration_per_second(),
 	}
 
 
@@ -1155,6 +1255,11 @@ func _draw() -> void:
 	# Treasure Hunter keeps a compact dark-green oval directly under actors.
 	draw_set_transform(Vector2(0, 7), 0.0, Vector2(1.0, 0.38))
 	draw_circle(Vector2.ZERO, 10.0, Color(0.08, 0.24, 0.17, 0.72))
+	# Evolved mounts (form 1–3) show an element aura under them
+	if mount_sprite != null and mount_sprite.visible:
+		var aura: Color = MountVisual.describe(GameState.active_mount, GameState.mount_skin(GameState.active_mount), GameState.mount_form(GameState.active_mount))["aura"]
+		if aura.a > 0.0:
+			draw_arc(Vector2.ZERO, 16.0, 0.0, TAU, 32, aura, 2.0)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	if not debug_draw_enabled:
 		return
@@ -1215,26 +1320,20 @@ func _draw() -> void:
 
 func _setup_survival() -> void:
 	_build_survival_nameplate()
-	hero_skills = HeroSkillRunner.new()
-	hero_skills.name = "HeroSkillRunner"
-	hero_skills.player = self
-	add_child(hero_skills)
-
-	mount_sprite = Sprite2D.new()
+	mount_sprite = AnimatedSprite2D.new()
+	mount_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	mount_sprite.scale = Vector2(MOUNT_WORLD_SCALE, MOUNT_WORLD_SCALE)
 	mount_sprite.name = "MountSprite"
 	mount_sprite.visible = false
-	mount_sprite.z_index = -1
+	mount_sprite.z_index = 0  # child order keeps the rider on top; -1 sank under the ground layer
 	mount_sprite.z_as_relative = true
 	add_child(mount_sprite)
 	move_child(mount_sprite, 0)
 
 	GameState.stats_dirty.connect(refresh_profile_stats)
-	GameState.hero_changed.connect(func(_h: String) -> void: _apply_hero_visual())
 	GameState.mount_changed.connect(func(_m: String, _r: bool) -> void: _update_mount_visual())
 	GameState.pet_changed.connect(func(_p: String) -> void: _spawn_pet.call_deferred())
-	GameState.leveled_up.connect(_on_level_up)
 	refresh_profile_stats()
-	_apply_hero_visual()
 	_update_mount_visual()
 	_spawn_pet.call_deferred()
 
@@ -1290,28 +1389,16 @@ func _update_survival_nameplate(current: int, maximum: int) -> void:
 	_survival_hp_bar.value = current
 
 
-## Recompute base stats from hero/level/pet/mount/buildings
+## Recompute base stats from the character, pet, mount and buildings
 func refresh_profile_stats() -> void:
 	GameState.apply_to_stats(stats)
 	refresh_hitbox_damage()
+	_refresh_combat_modifiers()
 
 
 func refresh_hitbox_damage() -> void:
 	if attack_hitbox != null and stats != null:
 		attack_hitbox.damage = stats.attack_damage
-
-
-func _apply_hero_visual() -> void:
-	var hero: Dictionary = GameContent.HEROES.get(GameState.hero_id, {})
-	anim.self_modulate = hero.get("tint", Color.WHITE)
-
-
-func _on_level_up(new_level: int) -> void:
-	stats.current_health = stats.max_health
-	stats.current_stamina = stats.max_stamina
-	RingFX.spawn(get_tree(), global_position + Vector2(0, 8), 34.0, Color(1, 0.9, 0.4), 0.6)
-	DamageNumber.spawn(get_tree(), global_position + Vector2(0, -28), "LEVEL %d!" % new_level, Color(1, 0.9, 0.3), true)
-	GameEvent.toast.emit("Level up! Lv.%d" % new_level, Color(1, 0.9, 0.3))
 
 
 # --- Mount ------------------------------------------------------------------
@@ -1331,18 +1418,61 @@ func _update_mount_visual() -> void:
 	var on := GameState.mounted and GameState.active_mount != ""
 	mount_sprite.visible = on
 	if on:
-		var mdef: Dictionary = GameContent.MOUNTS[GameState.active_mount]
-		mount_sprite.texture = PixelArt.get_texture(mdef["sprite"], GameState.mount_skin_palette(GameState.active_mount))
-		mount_sprite.position = Vector2(0, 17.0 - mount_sprite.texture.get_height() * 0.5)
-		anim.position = SPRITE_BASE_POS + Vector2(0, -MOUNT_RAISE)
+		var look := MountVisual.describe(GameState.active_mount, GameState.mount_skin(GameState.active_mount), GameState.mount_form(GameState.active_mount))
+		mount_sprite.sprite_frames = MonsterVisualCatalog.get_frames(look["art"])
+		mount_sprite.modulate = look["modulate"]
+		var frame_size: Vector2i = MonsterVisualCatalog.get_definition(look["art"]).get("frame_size", Vector2i(16, 16))
+		mount_sprite.position = Vector2(0, 17.0 - frame_size.y * MOUNT_WORLD_SCALE * 0.5)
+		mount_sprite.rotation = 0.0
+		var anim_name := "move_right" if mount_sprite.sprite_frames != null and mount_sprite.sprite_frames.has_animation("move_right") else "move"
+		if mount_sprite.sprite_frames != null and mount_sprite.sprite_frames.has_animation(anim_name):
+			mount_sprite.play(anim_name)
+		anim.position = SPRITE_BASE_POS + Vector2(0, -MOUNT_RAISE - frame_size.y * 0.5)
+		anim.z_index = 1  # rider sits on top of the mount sprite
+		queue_redraw()
 	else:
 		anim.position = SPRITE_BASE_POS
+		anim.z_index = 0
 
 
+## Every mount can fight: the rider's basic attack plays the shared stomp (sheet 04 §8).
 func _mount_allows_combat() -> bool:
-	if not GameState.mounted or GameState.active_mount == "":
-		return true
-	return GameContent.MOUNTS[GameState.active_mount]["category"] != "speed"
+	return true
+
+
+## mounted_attack_stomp: prepare → rear_up → stomp → impact → recover, shared by every mount.
+## A new stomp never stacks on a running one (cooldown from data/companions/mounts.json).
+func play_mounted_stomp() -> bool:
+	if mount_sprite == null or not mount_sprite.visible:
+		return false
+	var cfg := CompanionCatalog.stomp()
+	var now := Time.get_ticks_msec() / 1000.0
+	if now < _stomp_ready_at or (_stomp_tween != null and _stomp_tween.is_running()):
+		return false
+	_stomp_ready_at = now + float(cfg.get("cooldown", 0.6))
+	var duration := float(cfg.get("duration", 0.45))
+	var facing := -1.0 if mount_sprite.flip_h else 1.0
+	var base_pos := mount_sprite.position
+	var rider_pos := anim.position
+	_stomp_tween = create_tween()
+	# prepare + rear_up: front legs lift, rider leans back with the mount
+	_stomp_tween.tween_property(mount_sprite, "rotation", -0.35 * facing, duration * 0.35).set_ease(Tween.EASE_OUT)
+	_stomp_tween.parallel().tween_property(mount_sprite, "position", base_pos + Vector2(0, -4), duration * 0.35)
+	_stomp_tween.parallel().tween_property(anim, "position", rider_pos + Vector2(-2.0 * facing, -5), duration * 0.35)
+	# stomp: front legs slam down
+	_stomp_tween.tween_property(mount_sprite, "rotation", 0.08 * facing, duration * 0.2).set_ease(Tween.EASE_IN)
+	_stomp_tween.parallel().tween_property(mount_sprite, "position", base_pos + Vector2(0, 1), duration * 0.2)
+	_stomp_tween.parallel().tween_property(anim, "position", rider_pos + Vector2(0, 1), duration * 0.2)
+	# impact
+	_stomp_tween.tween_callback(func() -> void:
+		var impact := global_position + Vector2(14.0 * facing, 14)
+		RingFX.spawn(get_tree(), impact, float(cfg.get("radius", 30.0)), Color(0.95, 0.85, 0.6), 0.25)
+	)
+	# recover
+	_stomp_tween.tween_property(mount_sprite, "rotation", 0.0, duration * 0.45)
+	_stomp_tween.parallel().tween_property(mount_sprite, "position", base_pos, duration * 0.45)
+	_stomp_tween.parallel().tween_property(anim, "position", rider_pos, duration * 0.45)
+	return true
 
 
 # --- Pet --------------------------------------------------------------------
@@ -1362,7 +1492,7 @@ func _spawn_pet() -> void:
 # --- Combat helpers ---------------------------------------------------------
 
 func can_auto_dig() -> bool:
-	if is_dead() or auto_farm_enabled or current_state == State.ATTACK or current_state == State.SKILL:
+	if is_dead() or (auto_farm_enabled and _auto_farm_target != null) or current_state == State.ATTACK or current_state == State.SKILL:
 		return false
 	if GameState.mounted:
 		return false
@@ -1403,6 +1533,52 @@ func set_auto_farm(enabled: bool, manual_override: bool = false) -> void:
 	GameEvent.toast.emit("Auto farm %s%s" % ["on" if enabled else "off", suffix], UiTheme.C_GOLD if enabled else UiTheme.C_MUTED)
 
 
+func set_auto_dig(enabled: bool, manual_override: bool = false) -> void:
+	if enabled and is_dead():
+		return
+	if auto_dig_enabled == enabled:
+		return
+	auto_dig_enabled = enabled
+	if not enabled and current_state == State.MOVE:
+		velocity = Vector2.ZERO
+		_change_state(State.IDLE)
+	var suffix := " (manual movement)" if manual_override else ""
+	GameEvent.toast.emit("Auto dig %s%s" % ["on" if enabled else "off", suffix], UiTheme.C_GOLD if enabled else UiTheme.C_MUTED)
+
+
+## Walk to the nearest plot that can be dug and stand on it; DigSpot does the digging.
+## Returns false once standing on it so the normal idle/dig flow runs.
+func _drive_auto_dig() -> bool:
+	if current_state == State.DEATH or current_state == State.SKILL or current_state == State.ATTACK or GameState.mounted:
+		return false
+	var best: Node2D = null
+	var best_d := AUTO_DIG_SCAN_RANGE
+	for n in get_tree().get_nodes_in_group("dig_spot"):
+		var spot := n as DigSpot
+		if spot == null or spot._depleted:
+			continue
+		var d := spot.global_position.distance_to(global_position)
+		if d < best_d:
+			best_d = d
+			best = spot
+	if best == null:
+		if current_state == State.MOVE:
+			velocity = Vector2.ZERO
+			_change_state(State.IDLE)
+		return false
+	if best_d <= 8.0:
+		if current_state == State.MOVE:
+			velocity = Vector2.ZERO
+			_change_state(State.IDLE)
+		return false
+	last_dir = (best.global_position - global_position).normalized()
+	velocity = last_dir * stats.move_speed
+	move_and_slide()
+	current_state = State.MOVE
+	_play_move_animation()
+	return true
+
+
 func _drive_auto_farm() -> bool:
 	if current_state == State.DEATH or current_state == State.SKILL:
 		return false
@@ -1441,26 +1617,6 @@ func _auto_aim() -> void:
 		var dir := (target.global_position - global_position).normalized()
 		if dir.length() > 0.01:
 			last_dir = dir
-	if not _mount_allows_combat():
-		GameState.set_mounted(false)
-
-
-## Hero attack style extras on top of the melee swing
-func _on_basic_attack() -> void:
-	var hero: Dictionary = GameContent.HEROES.get(GameState.hero_id, {})
-	match hero.get("attack_style", "melee"):
-		"bolt":
-			var target := Combat.nearest_monster(get_tree(), global_position, 170.0)
-			var dir := last_dir
-			if target != null:
-				dir = (target.global_position + Vector2(0, -6) - global_position).normalized()
-			Projectile.fire(get_tree(), global_position, dir, 260.0, stats.attack_damage * 0.8, "player", "bolt")
-		"nova":
-			Combat.hit_monsters_in_radius(get_tree(), global_position + Vector2(0, 8), 26.0, stats.attack_damage * 0.6)
-			RingFX.spawn(get_tree(), global_position + Vector2(0, 8), 26.0, Color(0.8, 0.6, 1.0), 0.25)
-
-
-func on_hero_skill_cast() -> void:
 	if not _mount_allows_combat():
 		GameState.set_mounted(false)
 
@@ -1506,5 +1662,6 @@ func _use_first_gear_skill() -> void:
 
 
 func _process(_delta: float) -> void:
+	_update_weapon_pose()
 	if mount_sprite != null and mount_sprite.visible and absf(last_dir.x) > 0.1:
 		mount_sprite.flip_h = last_dir.x < 0.0

@@ -20,8 +20,8 @@ func _run() -> void:
 
 	var inventory := InventoryData.new()
 	inventory.gold = 1000
-	var weapon := ItemDatabase.get_item("fire_blade").duplicate() as ItemData
-	_check(weapon != null, "Missing fire_blade fixture")
+	var weapon := ItemDatabase.get_item("emberforged_blade").duplicate() as ItemData
+	_check(weapon != null, "Missing emberforged_blade fixture")
 	if weapon == null:
 		_finish()
 		return
@@ -78,8 +78,11 @@ func _run() -> void:
 	_check(inventory.get_equipped("weapon").enhancement_level == level_before, "Disabled Upgrade mutated equipment")
 
 	_check(inventory.unequip_item("weapon"), "Could not clear upgrade fixture")
-	var reference_item := ReferenceEquipmentCatalog.materialize(28, {"health": 0.0, "damage": 5.0, "speed": 0.0})
-	_check(reference_item != null, "Could not materialize locked reference equipment")
+	var reference_item := ItemDatabase.get_item_copy("ashwood_blade")
+	_check(reference_item != null, "Could not create locked equipment")
+	if reference_item != null:
+		reference_item.can_upgrade = false
+		reference_item.max_upgrade_level = 1
 	if reference_item != null:
 		_check(inventory.add_item(reference_item, 1) == 0, "Could not add locked reference equipment")
 		var reference_index := _find_inventory_item(inventory, reference_item.id)
@@ -87,8 +90,8 @@ func _run() -> void:
 		inventory.gold = 1000
 		panel.setup(inventory, "weapon")
 		await get_tree().process_frame
-		_check(upgrade.disabled, "Reference equipment exposed the provisional Upgrade action")
-		_check(upgrade.text.begins_with("Không thể"), "Locked reference equipment displayed a fake cost")
+		_check(upgrade.disabled, "Non-upgradeable equipment exposed the Upgrade action")
+		_check(upgrade.text.begins_with("Không thể"), "Locked equipment displayed a fake cost")
 		var closed_count := [0]
 		panel.closed.connect(func() -> void: closed_count[0] += 1)
 		remove.pressed.emit()

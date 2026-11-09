@@ -219,7 +219,7 @@ func _create_category_tabs() -> void:
 	for child in category_tabs.get_children():
 		child.queue_free()
 
-	var categories := ["All", "Augments", "Buffs"]
+	var categories := ["All", "Stones", "Buffs"]
 	var btn_group := ButtonGroup.new()
 
 	for cat_name in categories:
@@ -314,7 +314,7 @@ func _create_recipe_list_row(recipe: CraftingRecipe) -> PanelContainer:
 
 func _get_filtered_recipes() -> Array:
 	match current_category:
-		"Augments":
+		"Stones":
 			return RecipeDatabase.get_recipes_by_category(CraftingRecipe.RecipeCategory.AUGMENT)
 		"Buffs":
 			return RecipeDatabase.get_recipes_by_category(CraftingRecipe.RecipeCategory.CONSUMABLE_BUFF)
@@ -493,23 +493,19 @@ func _rebuild_output_preview() -> void:
 func _get_output_stats_text(item: ItemData) -> String:
 	var parts: Array[String] = []
 
-	if item.attack_bonus > 0:
-		parts.append("+%d ATK" % item.attack_bonus)
-	if item.defense_bonus > 0:
-		parts.append("+%d DEF" % item.defense_bonus)
-	if item.health_bonus > 0:
-		parts.append("+%d HP" % item.health_bonus)
-	if item.speed_bonus > 0:
-		parts.append("+%.0f SPD" % item.speed_bonus)
+	if item.get_scaled_attack_bonus() > 0:
+		parts.append("+%d ATK" % item.get_scaled_attack_bonus())
+	if item.get_scaled_defense_bonus() > 0:
+		parts.append("+%d DEF" % item.get_scaled_defense_bonus())
+	if item.get_scaled_health_bonus() > 0:
+		parts.append("+%d HP" % item.get_scaled_health_bonus())
+	if item.get_scaled_speed_bonus() > 0:
+		parts.append("+%.0f SPD" % item.get_scaled_speed_bonus())
 
-	if item.item_type == ItemData.ItemType.AUGMENT:
-		match item.augment_type:
-			ItemData.AugmentType.PASSIVE_EFFECT:
-				parts.append(_get_passive_effect_text(item.passive_effect, item.passive_value))
-			ItemData.AugmentType.ACTIVE_SKILL:
-				parts.append("Skill: %s" % item.active_skill_id)
-			ItemData.AugmentType.TIMED_BUFF:
-				parts.append("Duration: %.0fs" % item.buff_duration)
+	if item.is_gem():
+		parts.append(GemCatalog.describe(item.id))
+	elif item.is_timed_buff():
+		parts.append("Duration: %.0fs" % item.buff_duration)
 
 	return "  ".join(parts)
 

@@ -27,7 +27,6 @@ func _ready() -> void:
 	GameEvent.zone_entered.connect(_on_zone_entered)
 	GameEvent.building_built.connect(_on_building_built)
 	GameEvent.item_crafted.connect(func(_r: String, _t: int) -> void: _advance("craft", "any", 1))
-	GameState.leveled_up.connect(func(_l: int) -> void: _refresh_state_objectives())
 	GameState.collection_changed.connect(_refresh_state_objectives)
 	GameState.pet_changed.connect(func(_p: String) -> void: _refresh_state_objectives())
 	GameState.mount_changed.connect(func(_m: String, _r: bool) -> void: _refresh_state_objectives())
@@ -274,16 +273,20 @@ func _advance(type: String, target: String, amount: int) -> void:
 func get_state_objective_value(obj: Dictionary, inventory: InventoryData = null) -> int:
 	var value := -1
 	match obj.get("type", ""):
-		"level":
-			value = GameState.level
 		"own_pet":
 			value = 1 if GameState.active_pet != "" else 0
 		"own_mount":
 			value = 1 if not GameState.mounts.is_empty() else 0
 		"pet_level":
 			value = GameState.max_pet_level()
-		"hero_star":
-			value = GameState.max_hero_stars()
+		"socketed_gems":
+			var gem_inventory := inventory if inventory != null else GameState.get_inventory()
+			value = 0
+			if gem_inventory != null:
+				for sockets: Variant in gem_inventory.get_equipped_gem_sockets():
+					for stone_id: Variant in sockets:
+						if not str(stone_id).is_empty():
+							value += 1
 		"build":
 			value = 1 if GameState.building_level(str(obj.get("target", ""))) > 0 else 0
 		"equipped_count":
@@ -386,14 +389,17 @@ func to_dict() -> Dictionary:
 	}
 
 
+const LEGACY_TUTORIAL_ROWS := 7
+
+
 func from_dict(d: Dictionary) -> void:
 	reset()
 	var fallback_index := clampi(int(d.get("main_index", 0)), 0, GameContent.MAIN_QUESTS.size())
 	var saved_quest_id := str(d.get("main_quest_id", ""))
-	# Saves predating stable quest IDs used the old chain index. q305-q311 were
-	# inserted after q01, so old post-tutorial indices shift by six.
+	# Saves predating stable quest IDs used the old chain index. Seven tutorial rows (t01-t07)
+	# now sit between q01 and q02, so old post-tutorial indices shift by seven.
 	if saved_quest_id.is_empty() and fallback_index > 0:
-		fallback_index = mini(fallback_index + 6, GameContent.MAIN_QUESTS.size())
+		fallback_index = mini(fallback_index + LEGACY_TUTORIAL_ROWS, GameContent.MAIN_QUESTS.size())
 	var saved_quest_index := GameContent.get_main_quest_index(saved_quest_id)
 	main_index = saved_quest_index if saved_quest_index >= 0 else fallback_index
 	main_progress = int(d.get("main_progress", 0))

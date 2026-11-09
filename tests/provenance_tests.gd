@@ -102,9 +102,8 @@ func _collect_project_icon() -> void:
 
 
 func _collect_monster_catalogs() -> void:
-	for asset_id: String in MonsterVisualCatalog.DEFINITIONS:
-		var definition: Dictionary = MonsterVisualCatalog.DEFINITIONS[asset_id]
-		_note(str(definition.get("texture_path", "")), "MonsterVisualCatalog %s" % asset_id)
+	for path: String in MonsterVisualCatalog.texture_paths():
+		_note(path, "MonsterVisualCatalog")
 	for monster_id: String in GameContent.MONSTERS:
 		var texture := str((GameContent.MONSTERS[monster_id] as Dictionary).get("texture", ""))
 		if not texture.is_empty():

@@ -54,40 +54,31 @@ func register_recipe(recipe: CraftingRecipe, report_error: bool = true) -> bool:
 
 
 func _create_recipes() -> void:
-	# === AUGMENT RECIPES ===
+	# === SOCKET STONE RECIPES (tier I; higher tiers come from fusing 6 → 1) ===
+	# RecipeCategory.AUGMENT keeps its saved enum value; it now means "socket stone".
 
-	_add_recipe("flame_augment", "Flame Augment", "Imbue equipment with fire.", CraftingRecipe.RecipeCategory.AUGMENT, [
-		{"tier": 1, "ingredients": [{"item_id": "fire_shard", "quantity": 3}, {"item_id": "iron_ore", "quantity": 2}], "result_item_id": "flame_augment_t1", "result_quantity": 1},
-		{"tier": 2, "ingredients": [{"item_id": "inferno_shard", "quantity": 3}, {"item_id": "gold_ore", "quantity": 2}], "result_item_id": "flame_augment_t2", "result_quantity": 1},
-		{"tier": 3, "ingredients": [{"item_id": "hellfire_shard", "quantity": 3}, {"item_id": "monster_bone", "quantity": 1}], "result_item_id": "flame_augment_t3", "result_quantity": 1},
+	_add_recipe("stone_fire", "Inferno Stone", "Cut a stone that sets targets burning.", CraftingRecipe.RecipeCategory.AUGMENT, [
+		{"tier": 1, "ingredients": [{"item_id": "fire_shard", "quantity": 3}, {"item_id": "iron_ore", "quantity": 2}], "result_item_id": "stone_fire_1", "result_quantity": 1},
 	])
 
-	_add_recipe("frost_augment", "Frost Augment", "Imbue equipment with ice.", CraftingRecipe.RecipeCategory.AUGMENT, [
-		{"tier": 1, "ingredients": [{"item_id": "frost_shard", "quantity": 3}, {"item_id": "iron_ore", "quantity": 2}], "result_item_id": "frost_augment_t1", "result_quantity": 1},
-		{"tier": 2, "ingredients": [{"item_id": "blizzard_shard", "quantity": 3}, {"item_id": "gold_ore", "quantity": 2}], "result_item_id": "frost_augment_t2", "result_quantity": 1},
+	_add_recipe("stone_ice", "Frost Stone", "Cut a stone that slows targets.", CraftingRecipe.RecipeCategory.AUGMENT, [
+		{"tier": 1, "ingredients": [{"item_id": "frost_shard", "quantity": 3}, {"item_id": "iron_ore", "quantity": 2}], "result_item_id": "stone_ice_1", "result_quantity": 1},
 	])
 
-	_add_recipe("power_augment", "Power Augment", "Raw strength increase.", CraftingRecipe.RecipeCategory.AUGMENT, [
-		{"tier": 1, "ingredients": [{"item_id": "power_fragment", "quantity": 3}, {"item_id": "iron_ore", "quantity": 2}], "result_item_id": "power_augment_t1", "result_quantity": 1},
-		{"tier": 2, "ingredients": [{"item_id": "greater_power_fragment", "quantity": 3}, {"item_id": "gold_ore", "quantity": 2}], "result_item_id": "power_augment_t2", "result_quantity": 1},
+	_add_recipe("stone_poison", "Venom Stone", "Cut a stone that poisons targets.", CraftingRecipe.RecipeCategory.AUGMENT, [
+		{"tier": 1, "ingredients": [{"item_id": "venom_gland", "quantity": 3}, {"item_id": "iron_ore", "quantity": 2}], "result_item_id": "stone_poison_1", "result_quantity": 1},
 	])
 
-	_add_recipe("lifesteal_augment", "Lifesteal Augment", "Drain life on hit.", CraftingRecipe.RecipeCategory.AUGMENT, [
-		{"tier": 1, "ingredients": [{"item_id": "spirit_essence", "quantity": 3}, {"item_id": "monster_bone", "quantity": 2}], "result_item_id": "lifesteal_augment_t1", "result_quantity": 1},
-		{"tier": 2, "ingredients": [{"item_id": "spirit_essence", "quantity": 5}, {"item_id": "gold_ore", "quantity": 3}], "result_item_id": "lifesteal_augment_t2", "result_quantity": 1},
+	_add_recipe("stone_lifesteal", "Vampiric Stone", "Cut a stone that drains life on hit.", CraftingRecipe.RecipeCategory.AUGMENT, [
+		{"tier": 1, "ingredients": [{"item_id": "spirit_essence", "quantity": 3}, {"item_id": "monster_bone", "quantity": 2}], "result_item_id": "stone_lifesteal_1", "result_quantity": 1},
 	])
 
-	_add_recipe("crit_augment", "Critical Augment", "Increase critical strike chance.", CraftingRecipe.RecipeCategory.AUGMENT, [
-		{"tier": 1, "ingredients": [{"item_id": "power_fragment", "quantity": 2}, {"item_id": "monster_bone", "quantity": 3}], "result_item_id": "crit_augment_t1", "result_quantity": 1},
-		{"tier": 2, "ingredients": [{"item_id": "greater_power_fragment", "quantity": 3}, {"item_id": "monster_bone", "quantity": 5}], "result_item_id": "crit_augment_t2", "result_quantity": 1},
+	_add_recipe("stone_critical", "Precision Stone", "Cut a stone that sharpens critical strikes.", CraftingRecipe.RecipeCategory.AUGMENT, [
+		{"tier": 1, "ingredients": [{"item_id": "power_fragment", "quantity": 2}, {"item_id": "monster_bone", "quantity": 3}], "result_item_id": "stone_critical_1", "result_quantity": 1},
 	])
 
-	_add_recipe("whirlwind_augment", "Whirlwind Augment", "Grants the Whirlwind skill.", CraftingRecipe.RecipeCategory.AUGMENT, [
-		{"tier": 1, "ingredients": [{"item_id": "power_fragment", "quantity": 5}, {"item_id": "fire_shard", "quantity": 3}, {"item_id": "monster_bone", "quantity": 3}], "result_item_id": "whirlwind_augment", "result_quantity": 1},
-	])
-
-	_add_recipe("shield_bash_augment", "Shield Bash Augment", "Grants the Shield Bash skill.", CraftingRecipe.RecipeCategory.AUGMENT, [
-		{"tier": 1, "ingredients": [{"item_id": "frost_shard", "quantity": 3}, {"item_id": "iron_ore", "quantity": 5}, {"item_id": "monster_bone", "quantity": 2}], "result_item_id": "shield_bash_augment", "result_quantity": 1},
+	_add_recipe("stone_guard", "Guardian Stone", "Cut a stone that hardens the bearer.", CraftingRecipe.RecipeCategory.AUGMENT, [
+		{"tier": 1, "ingredients": [{"item_id": "stone", "quantity": 6}, {"item_id": "iron_ore", "quantity": 2}], "result_item_id": "stone_guard_1", "result_quantity": 1},
 	])
 
 	# === CONSUMABLE BUFF RECIPES ===

@@ -156,8 +156,7 @@ Exploration reward: fog reveal % per zone with chests at 25/50/75/100%.
 - A carried **Kindled Key** always drops on death regardless of the chance (TREASURE §3).
 - Mitigations: item lock, the Ashwalker set (−50% drop chance), a crafted Ward Charm consumed
   instead of an item.
-- Applying the rule to Snow as well as Ash is an assumption (both are danger zones). Confirm or
-  restrict it to Ash only.
+- The rule applies to **both Ash and Snow** (owner confirmed 2026-11-07).
 
 ## 8. Quests (all original text)
 

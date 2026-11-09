@@ -1,17 +1,7 @@
 {
-  "schema_version": 1,
-  "project": "Treasure Hunter - Survival local recreation in Emberfield",
-  "generated_from": "Agent A repository inventory on 2026-11-04",
-  "evidence_policy": {
-    "priority": [
-      "runtime_capture",
-      "user_supplied_extracted_asset",
-      "static_metadata",
-      "explicit_inference"
-    ],
-    "unknown_values": "Use null or unknown; do not fabricate metadata.",
-    "local_asset_scope": "Supplied Treasure Hunter assets are authorized for local/private use and marked local_only."
-  },
+  "schema_version": 2,
+  "project": "Cinderwild (internal project name: emberfield)",
+  "generated_from": "Agent A repository inventory on 2026-11-04; migrated to schema v2 on 2026-11-07",
   "asset_id_pattern": "<category>.<subject>.<identity>.<variant>",
   "assets": [
     {
@@ -36,9 +26,22 @@
         "sense/components/interaction_manager.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (dc28dc5 2026-02-16 Brez)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -55,9 +58,22 @@
       "animation": null,
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (dc28dc5 2026-02-16 Brez)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -74,9 +90,22 @@
       "animation": null,
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (f6ce3d9 2026-02-11 Brez)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -100,9 +129,22 @@
         "sense/entities/npcs/merchant/general_goods.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (f6ce3d9 2026-02-11 Brez)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -142,9 +184,22 @@
         "sense/entities/npcs/merchant/general_goods.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (f6ce3d9 2026-02-11 Brez)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -166,9 +221,22 @@
         "sense/entities/npcs/merchant/ItemSell.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (6aeda42 2026-02-17 brez)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -190,9 +258,22 @@
         "sense/entities/npcs/merchant/UI.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (6aeda42 2026-02-17 brez)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -214,9 +295,22 @@
         "sense/entities/npcs/merchant/ItemSell.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (6aeda42 2026-02-17 brez)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -238,9 +332,22 @@
         "sense/entities/npcs/blacksmith/blacksmith.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (c213534 2026-02-11 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -277,9 +384,22 @@
         "sense/entities/npcs/blacksmith/blacksmith.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (1c45dba 2026-02-13 Tuong Tran Kien)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -321,9 +441,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -365,9 +498,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -409,9 +555,22 @@
         "sense/entities/enemies/skeleton/skeleton.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -453,9 +612,22 @@
         "sense/entities/enemies/skeleton/skeleton.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -497,9 +669,22 @@
         "sense/entities/enemies/skeleton/skeleton.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -541,9 +726,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -585,9 +783,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -629,9 +840,22 @@
         "sense/entities/enemies/skeleton/skeleton.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -671,9 +895,22 @@
         "sense/entities/enemies/skeleton/skeleton.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -715,9 +952,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -759,9 +1009,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -801,9 +1064,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -843,9 +1119,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -885,9 +1174,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -929,9 +1231,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -973,9 +1288,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -1015,9 +1343,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -1059,9 +1400,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -1103,9 +1457,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -1147,9 +1514,22 @@
         "sense/entities/enemies/skeleton/skeleton.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1191,9 +1571,22 @@
         "sense/entities/enemies/skeleton/skeleton.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1235,9 +1628,22 @@
         "sense/entities/enemies/skeleton/skeleton.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1279,9 +1685,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -1323,9 +1742,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -1367,9 +1799,22 @@
         "sense/entities/enemies/skeleton/skeleton.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (716a961 2026-02-13 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1392,9 +1837,22 @@
         "sense/items/debug_icon_atlas.gd"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (9d39590 2026-02-19 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1436,9 +1894,22 @@
         "sense/entities/player/player.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (813a13e 2026-02-09 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1480,9 +1951,22 @@
         "sense/entities/player/player.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (813a13e 2026-02-09 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1524,9 +2008,22 @@
         "sense/entities/player/player.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (813a13e 2026-02-09 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1568,9 +2065,22 @@
         "sense/entities/player/player.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (813a13e 2026-02-09 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1612,9 +2122,22 @@
         "sense/entities/player/player.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (32e1453 2026-02-08 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1656,9 +2179,22 @@
         "sense/entities/player/player.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (32e1453 2026-02-08 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1703,9 +2239,22 @@
         "sense/entities/player/player.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (813a13e 2026-02-09 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1750,9 +2299,22 @@
         "sense/entities/player/player.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (813a13e 2026-02-09 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1794,9 +2356,22 @@
         "sense/entities/player/player.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (813a13e 2026-02-09 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1841,9 +2416,22 @@
         "sense/entities/player/player.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (813a13e 2026-02-09 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1888,9 +2476,22 @@
         "sense/entities/player/player.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (813a13e 2026-02-09 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1932,9 +2533,22 @@
         "sense/entities/player/player.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (813a13e 2026-02-09 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1956,9 +2570,22 @@
         "sense/maps/field/world_props.gd"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (040e004 2026-02-08 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -1982,9 +2609,22 @@
         "sense/maps/portal/portal.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (040e004 2026-02-08 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -2004,9 +2644,22 @@
       "animation": null,
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (040e004 2026-02-08 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -2026,9 +2679,22 @@
       "animation": null,
       "usage": [],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (040e004 2026-02-08 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "available",
@@ -2050,9 +2716,22 @@
         "sense/maps/town/town.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (040e004 2026-02-08 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -2074,9 +2753,22 @@
         "sense/maps/town/town.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (040e004 2026-02-08 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -2098,9 +2790,22 @@
         "sense/maps/dungeon/dungeon_map.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (040e004 2026-02-08 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -2123,9 +2828,22 @@
         "sense/maps/town/town.tscn"
       ],
       "provenance": {
-        "status": "unknown",
-        "distribution_scope": "unknown",
-        "license_status": "unknown"
+        "status": "unverified",
+        "source": "Imported into the upstream Emberfield repository (040e004 2026-02-08 HauTranCong)",
+        "creator": null,
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "No licence on file. Development only until verified or replaced.",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "unknown",
+          "distribution_scope": "unknown",
+          "license_status": "unknown"
+        }
       },
       "evidence_status": "verified_file_metadata",
       "integration_status": "integrated",
@@ -2147,9 +2865,22 @@
         "sense/maps/field/world_props.gd"
       ],
       "provenance": {
-        "status": "user_supplied_capture_derived",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — runtime capture",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_capture_derived",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_repository_file_source_capture_not_uniquely_recorded",
       "integration_status": "integrated",
@@ -2173,9 +2904,22 @@
         "sense/maps/field/world_props.gd"
       ],
       "provenance": {
-        "status": "user_supplied_capture_derived",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — runtime capture",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_capture_derived",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_repository_file_source_capture_not_uniquely_recorded",
       "integration_status": "integrated",
@@ -2199,9 +2943,22 @@
         "sense/maps/field/world_props.gd"
       ],
       "provenance": {
-        "status": "user_supplied_capture_derived",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — runtime capture",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_capture_derived",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_repository_file_source_capture_not_uniquely_recorded",
       "integration_status": "integrated",
@@ -2225,9 +2982,22 @@
         "sense/maps/field/world_props.gd"
       ],
       "provenance": {
-        "status": "user_supplied_capture_derived",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — runtime capture",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_capture_derived",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_repository_file_source_capture_not_uniquely_recorded",
       "integration_status": "integrated",
@@ -2251,9 +3021,22 @@
         "sense/globals/game_content.gd"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_manifest_and_repository_file",
       "integration_status": "integrated",
@@ -2275,9 +3058,22 @@
         "sense/globals/game_content.gd"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_manifest_and_repository_file",
       "integration_status": "integrated",
@@ -2321,9 +3117,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_unity_runtime_pointer_and_clip_metadata",
       "integration_status": "selected",
@@ -2358,9 +3167,22 @@
         "sense/globals/game_content.gd"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_manifest_and_repository_file",
       "integration_status": "integrated",
@@ -2404,9 +3226,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_unity_runtime_pointer_and_clip_metadata",
       "integration_status": "selected",
@@ -2461,9 +3296,22 @@
       },
       "usage": [],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_unity_runtime_pointer_and_clip_metadata",
       "integration_status": "selected",
@@ -2493,9 +3341,22 @@
       "animation": null,
       "usage": [],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_card_config_and_exported_sprite",
       "integration_status": "selected",
@@ -2523,9 +3384,22 @@
         "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -2551,9 +3425,22 @@
         "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -2580,9 +3467,22 @@
         "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -2609,9 +3509,22 @@
         "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -2637,9 +3550,22 @@
         "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -2665,9 +3591,22 @@
         "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -2693,9 +3632,22 @@
         "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -2721,9 +3673,22 @@
         "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -2749,9 +3714,22 @@
         "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -2777,9 +3755,22 @@
         "sense/ui/mobile/startup_gate.gd"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -2804,9 +3795,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "selected",
@@ -2833,9 +3837,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -2861,9 +3878,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -2889,9 +3919,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -2917,9 +3960,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
       "integration_status": "integrated",
@@ -2947,9 +4003,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
       "integration_status": "integrated",
@@ -2975,9 +4044,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "selected",
@@ -3002,9 +4084,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "selected",
@@ -3029,9 +4124,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "selected",
@@ -3056,9 +4164,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "selected",
@@ -3083,9 +4204,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "selected",
@@ -3112,9 +4246,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -3139,9 +4286,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_rejected_for_captured_attack_control",
       "integration_status": "rejected",
@@ -3167,9 +4327,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -3184,7 +4357,10 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Icon_Power__6088.png",
       "target_path": "assets/treasure_hunter/ui/reference/icon_power.png",
       "file_format": "png",
-      "dimensions": [24, 24],
+      "dimensions": [
+        24,
+        24
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
@@ -3192,9 +4368,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -3209,7 +4398,10 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/16fb51c3eb996465993e7aead12d451b/Icon_Health__2.png",
       "target_path": "assets/treasure_hunter/ui/reference/icon_health.png",
       "file_format": "png",
-      "dimensions": [15, 15],
+      "dimensions": [
+        15,
+        15
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
@@ -3217,9 +4409,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -3234,7 +4439,10 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/16fb51c3eb996465993e7aead12d451b/Icon_Damage__5.png",
       "target_path": "assets/treasure_hunter/ui/reference/icon_damage.png",
       "file_format": "png",
-      "dimensions": [15, 15],
+      "dimensions": [
+        15,
+        15
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
@@ -3242,9 +4450,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -3259,7 +4480,10 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/16fb51c3eb996465993e7aead12d451b/Icon_Speed__25.png",
       "target_path": "assets/treasure_hunter/ui/reference/icon_speed.png",
       "file_format": "png",
-      "dimensions": [15, 15],
+      "dimensions": [
+        15,
+        15
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
@@ -3267,9 +4491,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -3284,7 +4521,10 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/a6ccb581f9b1f7a45804c4fc36a81c80/Icon_Gold__2.png",
       "target_path": "assets/treasure_hunter/ui/reference/icon_gold.png",
       "file_format": "png",
-      "dimensions": [16, 16],
+      "dimensions": [
+        16,
+        16
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
@@ -3292,9 +4532,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -3309,7 +4562,10 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/F200_389__3015.png",
       "target_path": "assets/treasure_hunter/ui/reference/icon_map.png",
       "file_format": "png",
-      "dimensions": [15, 15],
+      "dimensions": [
+        15,
+        15
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
@@ -3317,9 +4573,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
       "integration_status": "integrated",
@@ -3335,7 +4604,10 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/F200_1_41__3047.png",
       "target_path": "assets/treasure_hunter/ui/reference/portrait_frame.png",
       "file_format": "png",
-      "dimensions": [64, 64],
+      "dimensions": [
+        64,
+        64
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
@@ -3343,9 +4615,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
       "integration_status": "integrated",
@@ -3361,7 +4646,10 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/BorderAvatar__5893.png",
       "target_path": "assets/treasure_hunter/ui/reference/portrait_border.png",
       "file_format": "png",
-      "dimensions": [44, 44],
+      "dimensions": [
+        44,
+        44
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
@@ -3369,9 +4657,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
       "integration_status": "integrated",
@@ -3387,7 +4688,10 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Line__6099.png",
       "target_path": "assets/treasure_hunter/ui/reference/stat_line.png",
       "file_format": "png",
-      "dimensions": [16, 48],
+      "dimensions": [
+        16,
+        48
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
@@ -3395,9 +4699,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
       "integration_status": "integrated",
@@ -3413,7 +4730,10 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/d9e509c5e1ea36648a0ee66b2b200657/IconSlot_Back__1.png",
       "target_path": "assets/treasure_hunter/ui/reference/icon_back.png",
       "file_format": "png",
-      "dimensions": [26, 20],
+      "dimensions": [
+        26,
+        20
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
@@ -3421,9 +4741,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -3438,7 +4771,10 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/52bff16b0f37e9e43888eae2e4774e71/IconSlot_Pet__1.png",
       "target_path": "assets/treasure_hunter/ui/reference/icon_pet.png",
       "file_format": "png",
-      "dimensions": [24, 21],
+      "dimensions": [
+        24,
+        21
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
@@ -3446,9 +4782,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -3463,7 +4812,10 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/IconSlot_Skill__6658.png",
       "target_path": "assets/treasure_hunter/ui/reference/icon_skill.png",
       "file_format": "png",
-      "dimensions": [24, 24],
+      "dimensions": [
+        24,
+        24
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [
@@ -3471,9 +4823,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -3499,9 +4864,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
       "integration_status": "integrated",
@@ -3528,9 +4906,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -3555,9 +4946,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "selected",
@@ -3582,9 +4986,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "selected",
@@ -3609,9 +5026,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "selected",
@@ -3636,9 +5066,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "selected",
@@ -3663,9 +5106,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "selected",
@@ -3690,9 +5146,22 @@
         "sense/ui/mobile/mobile_hud.gd"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_and_direct_decode",
       "integration_status": "integrated",
@@ -3719,9 +5188,22 @@
         "sense/ui/mobile/mobile_hud.gd"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_export_file_and_runtime_capture",
       "integration_status": "integrated",
@@ -3747,9 +5229,22 @@
         "sense/ui/mobile/mobile_hud.gd"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_and_runtime_capture",
       "integration_status": "integrated",
@@ -3773,9 +5268,22 @@
       "animation": null,
       "usage": [],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_card_config_and_direct_unity_decode",
       "integration_status": "selected",
@@ -3801,9 +5309,22 @@
       "animation": null,
       "usage": [],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_card_config_and_direct_unity_decode",
       "integration_status": "selected",
@@ -3829,9 +5350,22 @@
       "animation": null,
       "usage": [],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_card_config_and_direct_unity_decode",
       "integration_status": "selected",
@@ -3861,9 +5395,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
       "integration_status": "integrated",
@@ -3893,9 +5440,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_and_export",
       "integration_status": "integrated",
@@ -3925,9 +5485,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
       "integration_status": "integrated",
@@ -3957,9 +5530,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
       "integration_status": "integrated",
@@ -3989,9 +5575,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
       "integration_status": "integrated",
@@ -4021,9 +5620,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
       "integration_status": "integrated",
@@ -4053,9 +5665,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
       "integration_status": "integrated",
@@ -4084,9 +5709,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
       "integration_status": "integrated",
@@ -4115,9 +5753,22 @@
         "docs/reports/reference-screen-inventory.md"
       ],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_scene_pointer_export_and_runtime_capture",
       "integration_status": "integrated",
@@ -4142,9 +5793,22 @@
       "animation": null,
       "usage": [],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_quest_card_box_config_and_addressable_export",
       "integration_status": "selected",
@@ -4171,9 +5835,22 @@
       "animation": null,
       "usage": [],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_quest_card_box_config_and_addressable_export",
       "integration_status": "selected",
@@ -4200,9 +5877,22 @@
       "animation": null,
       "usage": [],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_quest_card_box_config_and_addressable_export",
       "integration_status": "selected",
@@ -4230,9 +5920,22 @@
       "animation": null,
       "usage": [],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_spriteatlas_metadata_and_texture",
       "integration_status": "selected",
@@ -4259,9 +5962,22 @@
       "animation": null,
       "usage": [],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_spriteatlas_metadata_and_texture",
       "integration_status": "selected",
@@ -4287,9 +6003,22 @@
       "animation": null,
       "usage": [],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_quest_dialog_sprite_metadata_and_pixel_match",
       "integration_status": "selected",
@@ -4315,9 +6044,22 @@
       "animation": null,
       "usage": [],
       "provenance": {
-        "status": "user_supplied_extracted",
-        "distribution_scope": "local_only",
-        "license_status": "not_verified_for_public_redistribution"
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
       },
       "evidence_status": "verified_quest_scene_sprite_metadata_and_pixel_identity",
       "integration_status": "selected",
@@ -4335,11 +6077,31 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-27556434b6678b260ca11c33e448082a/Elixir_1__-6562287470894062856.png",
       "target_path": "assets/treasure_hunter/items/potions/card_900_elixir_1.png",
       "file_format": "png",
-      "dimensions": [32, 32],
+      "dimensions": [
+        32,
+        32
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [],
-      "provenance": {"status": "user_supplied_extracted", "distribution_scope": "local_only", "license_status": "not_verified_for_public_redistribution"},
+      "provenance": {
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
+      },
       "evidence_status": "verified_card_sprite_metadata_and_pixel_identity",
       "integration_status": "selected",
       "notes": [
@@ -4356,11 +6118,31 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-decbc2d71e337d06c260613e0e1145c1/Elixir_2__-2634301104702487641.png",
       "target_path": "assets/treasure_hunter/items/potions/card_901_elixir_2.png",
       "file_format": "png",
-      "dimensions": [32, 32],
+      "dimensions": [
+        32,
+        32
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [],
-      "provenance": {"status": "user_supplied_extracted", "distribution_scope": "local_only", "license_status": "not_verified_for_public_redistribution"},
+      "provenance": {
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
+      },
       "evidence_status": "verified_card_sprite_metadata_and_pixel_identity",
       "integration_status": "selected",
       "notes": [
@@ -4377,11 +6159,31 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-595e606fec709bae0694efd34ee11c01/Elixir_3__4350849866145245561.png",
       "target_path": "assets/treasure_hunter/items/potions/card_902_elixir_3.png",
       "file_format": "png",
-      "dimensions": [32, 32],
+      "dimensions": [
+        32,
+        32
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [],
-      "provenance": {"status": "user_supplied_extracted", "distribution_scope": "local_only", "license_status": "not_verified_for_public_redistribution"},
+      "provenance": {
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
+      },
       "evidence_status": "verified_card_sprite_metadata_and_pixel_identity",
       "integration_status": "selected",
       "notes": [
@@ -4398,11 +6200,31 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-888161cc8474142d55586fe24477407e/Elixir_4__-7238559032222656786.png",
       "target_path": "assets/treasure_hunter/items/potions/card_903_elixir_4.png",
       "file_format": "png",
-      "dimensions": [32, 32],
+      "dimensions": [
+        32,
+        32
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [],
-      "provenance": {"status": "user_supplied_extracted", "distribution_scope": "local_only", "license_status": "not_verified_for_public_redistribution"},
+      "provenance": {
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
+      },
       "evidence_status": "verified_card_sprite_metadata_and_pixel_identity",
       "integration_status": "selected",
       "notes": [
@@ -4419,11 +6241,31 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-a74d35a7183b81827db92662743bb66e/Elixir_5__-3920510400539632491.png",
       "target_path": "assets/treasure_hunter/items/potions/card_904_elixir_5.png",
       "file_format": "png",
-      "dimensions": [32, 32],
+      "dimensions": [
+        32,
+        32
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [],
-      "provenance": {"status": "user_supplied_extracted", "distribution_scope": "local_only", "license_status": "not_verified_for_public_redistribution"},
+      "provenance": {
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
+      },
       "evidence_status": "verified_card_sprite_metadata_and_pixel_identity",
       "integration_status": "selected",
       "notes": [
@@ -4440,11 +6282,31 @@
       "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/addressables/sprites/CAB-6892eb0ed103912f7adcb7f602050b53/Elixir_6__5364003978163849103.png",
       "target_path": "assets/treasure_hunter/items/potions/card_905_elixir_6.png",
       "file_format": "png",
-      "dimensions": [32, 32],
+      "dimensions": [
+        32,
+        32
+      ],
       "transparency": "transparent_or_partial",
       "animation": null,
       "usage": [],
-      "provenance": {"status": "user_supplied_extracted", "distribution_scope": "local_only", "license_status": "not_verified_for_public_redistribution"},
+      "provenance": {
+        "status": "excluded",
+        "source": "Treasure Hunter – Survival 4.3.6 (Mega Combat) — XAPK extraction via assets-ths",
+        "creator": "Mega Combat (reference game)",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "no",
+        "modification": "no",
+        "attribution": null,
+        "distribution_restrictions": "Reference-game material obtained from the Treasure Hunter – Survival XAPK or runtime captures. Owner decision 2026-11-07: not used in the game; replace (ASSET_REPLACEMENT_PLAN §3) and retire (P0-9).",
+        "verified_by": null,
+        "verified_on": null,
+        "legacy_v1": {
+          "status": "user_supplied_extracted",
+          "distribution_scope": "local_only",
+          "license_status": "not_verified_for_public_redistribution"
+        }
+      },
       "evidence_status": "verified_card_sprite_metadata_and_pixel_identity",
       "integration_status": "selected",
       "notes": [
@@ -4454,6 +6316,86 @@
         "Reconstructed logical-canvas SHA-256: e5f6d1eaf6784a136bd111f5358f5a6d6aa36cd26cfb958ae479aa61323659be.",
         "Metadata-only art ID; no Emberfield item, recipe, effect, quest, or runtime mapping is implied."
       ]
+    },
+    {
+      "asset_id": "branding.icon.godot_default",
+      "category": "branding",
+      "source_path": null,
+      "target_path": "icon.svg",
+      "file_format": "svg",
+      "dimensions": [
+        128,
+        128
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "project.godot",
+        "sense/ui/hud/hud.tscn"
+      ],
+      "provenance": {
+        "status": "unverified",
+        "source": "Godot Engine default project icon (created with the project)",
+        "creator": "Godot Engine contributors",
+        "license": null,
+        "license_ref": null,
+        "commercial_use": "unknown",
+        "modification": "unknown",
+        "attribution": null,
+        "distribution_restrictions": "Engine branding, not a game icon. Replace with a Cinderwild icon (P0-10).",
+        "verified_by": null,
+        "verified_on": null
+      },
+      "evidence_status": "file_inspected",
+      "integration_status": "in_use",
+      "notes": [
+        "Added by the v2 migration; was missing from the v1 manifest."
+      ]
+    },
+    {
+      "asset_id": "generated.pixel_art.sprites",
+      "category": "generated",
+      "source_path": null,
+      "target_path": "sense/globals/pixel_art.gd",
+      "file_format": "gdscript_ascii_sprites",
+      "dimensions": null,
+      "transparency": "transparent_or_partial",
+      "animation": "runtime SpriteFrames for some sprites",
+      "usage": [
+        "sense/globals/pixel_art.gd"
+      ],
+      "provenance": {
+        "status": "original",
+        "source": "in-repo: sense/globals/pixel_art.gd (ASCII sprites + palettes rendered at runtime)",
+        "creator": "Emberfield / Cinderwild project",
+        "license": "Project-owned",
+        "license_ref": null,
+        "commercial_use": "yes",
+        "modification": "yes",
+        "attribution": null,
+        "distribution_restrictions": null,
+        "verified_by": "repository history",
+        "verified_on": "2026-11-07"
+      },
+      "evidence_status": "source_inspected",
+      "integration_status": "in_use",
+      "notes": [
+        "Covers every sprite ID in PixelArt.SPRITES; textures have no res:// path."
+      ]
     }
-  ]
+  ],
+  "provenance_policy": {
+    "statuses": {
+      "original": "Created for this project. Allowed in every build.",
+      "verified": "Licence text on file and checked. Allowed per licence terms.",
+      "licence_pending": "Licence document on file but not yet verified. Development builds only.",
+      "unverified": "No licence on file. Development builds only.",
+      "excluded": "Must not ship. Allowed in development builds only until retired."
+    },
+    "release_allowed": [
+      "original",
+      "verified"
+    ],
+    "gate": "tools/provenance/check_provenance.py and tests/ProvenanceTests.tscn"
+  }
 }

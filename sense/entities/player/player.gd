@@ -193,7 +193,10 @@ const AUTO_FARM_SCAN_RANGE := 320.0
 const AUTO_FARM_ATTACK_RANGE := 38.0
 const SPRITE_BASE_POS := Vector2(0, 4)
 const MOUNT_RAISE := 9.0
-var mount_sprite: Sprite2D = null
+var mount_sprite: AnimatedSprite2D = null
+var _stomp_tween: Tween = null
+var _stomp_ready_at: float = 0.0
+const MOUNT_WORLD_SCALE := 2.0
 var pet: PetFollower = null
 var _respawn_invuln: float = 0.0
 var _survival_name_label: Label = null
@@ -566,6 +569,8 @@ func _play_attack_animation() -> void:
 	# Bật hitbox để gây damage
 	refresh_hitbox_damage()
 	_enable_attack_hitbox()
+	if GameState.mounted:
+		play_mounted_stomp()
 	
 	# Tắt loop để animation_finished signal được emit khi xong
 	anim.sprite_frames.set_animation_loop(anim_name, false)
@@ -1075,7 +1080,8 @@ func _on_skill_effect_finished(_skill_id: String) -> void:
 func _get_all_passive_effects() -> Array[Dictionary]:
 	var effects: Array[Dictionary] = []
 	if inventory:
-		effects.append_array(inventory.get_all_gem_passive_effects())
+		effects.append_array(inventory.get_all_gem_passive_effects(GameState.active_companion_sockets()))
+	effects.append_array(GameState.companion_passive_effects())
 	if buff_component:
 		effects.append_array(buff_component.get_active_passive_effects())
 	return effects
@@ -1151,6 +1157,11 @@ func _draw() -> void:
 	# Treasure Hunter keeps a compact dark-green oval directly under actors.
 	draw_set_transform(Vector2(0, 7), 0.0, Vector2(1.0, 0.38))
 	draw_circle(Vector2.ZERO, 10.0, Color(0.08, 0.24, 0.17, 0.72))
+	# Evolved mounts (form 1–3) show an element aura under them
+	if mount_sprite != null and mount_sprite.visible:
+		var aura: Color = MountVisual.describe(GameState.active_mount, GameState.mount_skin(GameState.active_mount), GameState.mount_form(GameState.active_mount))["aura"]
+		if aura.a > 0.0:
+			draw_arc(Vector2.ZERO, 16.0, 0.0, TAU, 32, aura, 2.0)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	if not debug_draw_enabled:
 		return
@@ -1211,10 +1222,12 @@ func _draw() -> void:
 
 func _setup_survival() -> void:
 	_build_survival_nameplate()
-	mount_sprite = Sprite2D.new()
+	mount_sprite = AnimatedSprite2D.new()
+	mount_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	mount_sprite.scale = Vector2(MOUNT_WORLD_SCALE, MOUNT_WORLD_SCALE)
 	mount_sprite.name = "MountSprite"
 	mount_sprite.visible = false
-	mount_sprite.z_index = -1
+	mount_sprite.z_index = 0  # child order keeps the rider on top; -1 sank under the ground layer
 	mount_sprite.z_as_relative = true
 	add_child(mount_sprite)
 	move_child(mount_sprite, 0)
@@ -1282,6 +1295,7 @@ func _update_survival_nameplate(current: int, maximum: int) -> void:
 func refresh_profile_stats() -> void:
 	GameState.apply_to_stats(stats)
 	refresh_hitbox_damage()
+	_refresh_combat_modifiers()
 
 
 func refresh_hitbox_damage() -> void:
@@ -1306,18 +1320,61 @@ func _update_mount_visual() -> void:
 	var on := GameState.mounted and GameState.active_mount != ""
 	mount_sprite.visible = on
 	if on:
-		var mdef: Dictionary = GameContent.MOUNTS[GameState.active_mount]
-		mount_sprite.texture = PixelArt.get_texture(mdef["sprite"], GameState.mount_skin_palette(GameState.active_mount))
-		mount_sprite.position = Vector2(0, 17.0 - mount_sprite.texture.get_height() * 0.5)
-		anim.position = SPRITE_BASE_POS + Vector2(0, -MOUNT_RAISE)
+		var look := MountVisual.describe(GameState.active_mount, GameState.mount_skin(GameState.active_mount), GameState.mount_form(GameState.active_mount))
+		mount_sprite.sprite_frames = MonsterVisualCatalog.get_frames(look["art"])
+		mount_sprite.modulate = look["modulate"]
+		var frame_size: Vector2i = MonsterVisualCatalog.get_definition(look["art"]).get("frame_size", Vector2i(16, 16))
+		mount_sprite.position = Vector2(0, 17.0 - frame_size.y * MOUNT_WORLD_SCALE * 0.5)
+		mount_sprite.rotation = 0.0
+		var anim_name := "move_right" if mount_sprite.sprite_frames != null and mount_sprite.sprite_frames.has_animation("move_right") else "move"
+		if mount_sprite.sprite_frames != null and mount_sprite.sprite_frames.has_animation(anim_name):
+			mount_sprite.play(anim_name)
+		anim.position = SPRITE_BASE_POS + Vector2(0, -MOUNT_RAISE - frame_size.y * 0.5)
+		anim.z_index = 1  # rider sits on top of the mount sprite
+		queue_redraw()
 	else:
 		anim.position = SPRITE_BASE_POS
+		anim.z_index = 0
 
 
+## Every mount can fight: the rider's basic attack plays the shared stomp (sheet 04 §8).
 func _mount_allows_combat() -> bool:
-	if not GameState.mounted or GameState.active_mount == "":
-		return true
-	return GameContent.MOUNTS[GameState.active_mount]["category"] != "speed"
+	return true
+
+
+## mounted_attack_stomp: prepare → rear_up → stomp → impact → recover, shared by every mount.
+## A new stomp never stacks on a running one (cooldown from data/companions/mounts.json).
+func play_mounted_stomp() -> bool:
+	if mount_sprite == null or not mount_sprite.visible:
+		return false
+	var cfg := CompanionCatalog.stomp()
+	var now := Time.get_ticks_msec() / 1000.0
+	if now < _stomp_ready_at or (_stomp_tween != null and _stomp_tween.is_running()):
+		return false
+	_stomp_ready_at = now + float(cfg.get("cooldown", 0.6))
+	var duration := float(cfg.get("duration", 0.45))
+	var facing := -1.0 if mount_sprite.flip_h else 1.0
+	var base_pos := mount_sprite.position
+	var rider_pos := anim.position
+	_stomp_tween = create_tween()
+	# prepare + rear_up: front legs lift, rider leans back with the mount
+	_stomp_tween.tween_property(mount_sprite, "rotation", -0.35 * facing, duration * 0.35).set_ease(Tween.EASE_OUT)
+	_stomp_tween.parallel().tween_property(mount_sprite, "position", base_pos + Vector2(0, -4), duration * 0.35)
+	_stomp_tween.parallel().tween_property(anim, "position", rider_pos + Vector2(-2.0 * facing, -5), duration * 0.35)
+	# stomp: front legs slam down
+	_stomp_tween.tween_property(mount_sprite, "rotation", 0.08 * facing, duration * 0.2).set_ease(Tween.EASE_IN)
+	_stomp_tween.parallel().tween_property(mount_sprite, "position", base_pos + Vector2(0, 1), duration * 0.2)
+	_stomp_tween.parallel().tween_property(anim, "position", rider_pos + Vector2(0, 1), duration * 0.2)
+	# impact
+	_stomp_tween.tween_callback(func() -> void:
+		var impact := global_position + Vector2(14.0 * facing, 14)
+		RingFX.spawn(get_tree(), impact, float(cfg.get("radius", 30.0)), Color(0.95, 0.85, 0.6), 0.25)
+	)
+	# recover
+	_stomp_tween.tween_property(mount_sprite, "rotation", 0.0, duration * 0.45)
+	_stomp_tween.parallel().tween_property(mount_sprite, "position", base_pos, duration * 0.45)
+	_stomp_tween.parallel().tween_property(anim, "position", rider_pos, duration * 0.45)
+	return true
 
 
 # --- Pet --------------------------------------------------------------------

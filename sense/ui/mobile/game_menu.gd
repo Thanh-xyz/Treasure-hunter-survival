@@ -228,85 +228,188 @@ func _build_heroes() -> void:
 
 
 # --- Pets ---------------------------------------------------------------------
+## Pets (sheet 03): stat-only, 4 qualities, diamond levels, 8 stones, hatched from eggs.
 func _build_pets() -> void:
-	_content.add_child(UiTheme.label("Pets evolve at Lv.5 and Lv.10. Feed them Pet Treats.", 20, UiTheme.C_MUTED))
-	for id in GameContent.PETS:
-		var p: Dictionary = GameContent.PETS[id]
+	_content.add_child(_wrapped(UiTheme.label("Pets add stats only. One active pet. Duplicates turn into diamonds.", 20, UiTheme.C_MUTED)))
+	_content.add_child(UiTheme.label("Diamonds: %d" % GameState.get_diamonds(), 20, UiTheme.C_GOLD))
+	# Eggs: price, stock and the hatch odds (sheet 03 §4: the UI must show the rates)
+	for egg_id: String in CompanionCatalog.egg_ids():
+		var e := CompanionCatalog.egg(egg_id)
 		var v := _card()
-		var row := _row(v)
-		var owned := GameState.pets.has(id)
-		var lv: int = GameState.pets.get(id, {}).get("level", 1)
-		var stage := GameState.pet_stage(id) if owned else 0
-		row.add_child(_icon(PixelArt.get_texture(p["sprite"]), 72, GameContent.PET_STAGE_TINT[stage]))
-		var info := VBoxContainer.new()
-		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(info)
-		var stage_names := ["", " II", " III"]
-		info.add_child(UiTheme.label("%s%s  %s" % [p["name"], stage_names[stage], ("Lv.%d" % lv) if owned else ""], 26, UiTheme.C_GOLD))
-		info.add_child(UiTheme.label("[%s] %s" % [p["role"], p["desc"]], 18, UiTheme.C_MUTED))
-		var passive: Dictionary = p.get("passive", {})
-		var parts: Array[String] = []
-		for k in passive:
-			parts.append("%s +%s" % [k, str(passive[k])])
-		info.add_child(UiTheme.label("Passive: " + ", ".join(parts), 18, Color(0.75, 0.85, 1)))
+		v.add_child(UiTheme.label("%s  (%s)  - you have %d" % [e.get("name", egg_id), e.get("region", ""), _count(egg_id)], 24, UiTheme.C_GOLD))
+		var odds := CompanionCatalog.egg_odds(egg_id)
+		var sp_parts: Array[String] = []
+		for row: Dictionary in odds["species"]:
+			sp_parts.append("%s %.0f%%" % [CompanionCatalog.species(row["id"]).get("name", row["id"]), float(row["percent"])])
+		var q_parts: Array[String] = []
+		for row: Dictionary in odds["quality"]:
+			q_parts.append("%s %.0f%%" % [String(row["id"]).capitalize(), float(row["percent"])])
+		v.add_child(_wrapped(UiTheme.label(", ".join(sp_parts), 17, UiTheme.C_MUTED)))
+		v.add_child(_wrapped(UiTheme.label(", ".join(q_parts), 17, UiTheme.C_MUTED)))
 		var actions := _row(v)
-		if not owned:
-			actions.add_child(UiTheme.button("Adopt (%d gold)" % int(p["unlock"]["gold"]),
-				func() -> void: _act(GameState.unlock_pet(id), "Not enough gold")))
-		else:
-			if GameState.active_pet == id:
-				actions.add_child(UiTheme.button("Unequip", _equip_pet.bind("")))
-			else:
-				actions.add_child(UiTheme.button("Equip", _equip_pet.bind(String(id))))
-			if lv < GameContent.PET_MAX_LEVEL:
-				var cost := GameContent.pet_level_cost(lv)
-				actions.add_child(UiTheme.button("Feed (%d treats, %d gold)" % [cost["pet_treat"], cost["gold"]],
-					func() -> void: _act(GameState.level_up_pet(id), "Need Pet Treats / gold (have %d treats)" % _count("pet_treat"))))
+		actions.add_child(UiTheme.button("Buy (%s)" % GameState.format_cost(e.get("price", {})),
+			func() -> void: _act(GameState.buy_egg(egg_id), "Not enough gold / diamonds or bag full")))
+		if _count(egg_id) > 0:
+			actions.add_child(UiTheme.button("Hatch", _hatch.bind(egg_id)))
+	# Collection: every species, owned qualities first
+	for species_id: String in CompanionCatalog.species_ids():
+		var sp := CompanionCatalog.species(species_id)
+		var owned_any := false
+		for q: String in CompanionCatalog.qualities():
+			var key := CompanionCatalog.pet_key(species_id, q)
+			if GameState.pets.has(key):
+				owned_any = true
+				_pet_card(key)
+		if not owned_any:
+			var v := _card()
+			var row := _row(v)
+			row.add_child(_icon(_actor_icon(str(sp.get("art", ""))), 64, Color(0.3, 0.3, 0.3)))
+			row.add_child(UiTheme.label("%s - not owned (%s)" % [sp.get("name", species_id), sp.get("focus", "")], 20, UiTheme.C_MUTED))
+
+
+func _pet_card(key: String) -> void:
+	var parsed := CompanionCatalog.parse_pet_key(key)
+	var sp := CompanionCatalog.species(parsed["species"])
+	var lv := GameState.pet_level(key)
+	var v := _card()
+	var row := _row(v)
+	row.add_child(_icon(_actor_icon(str(sp.get("art", ""))), 72))
+	var info := VBoxContainer.new()
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(info)
+	info.add_child(UiTheme.label("%s  Lv.%d/%d" % [CompanionCatalog.pet_name(key), lv, CompanionCatalog.pet_max_level()], 24, CompanionCatalog.quality_color(parsed["quality"])))
+	info.add_child(UiTheme.label(_stat_text(CompanionCatalog.pet_stats(key, lv)), 18, Color(0.75, 0.85, 1)))
+	var art_status := str(sp.get("art_status", ""))
+	if not art_status.is_empty():
+		info.add_child(UiTheme.label("Art: placeholder", 14, UiTheme.C_MUTED))
+	var actions := _row(v)
+	if GameState.active_pet == key:
+		actions.add_child(UiTheme.button("Unequip", _equip_pet.bind("")))
+	else:
+		actions.add_child(UiTheme.button("Equip", _equip_pet.bind(key)))
+	var cost := CompanionCatalog.pet_level_cost(lv)
+	if cost > 0:
+		actions.add_child(UiTheme.button("Level up (%d diamonds)" % cost, _confirm_spend.bind(
+			"Spend %d diamonds to raise %s to Lv.%d?" % [cost, CompanionCatalog.pet_name(key), lv + 1],
+			func() -> bool: return GameState.level_up_pet(key), "Not enough diamonds")))
+	actions.add_child(UiTheme.button("Stones", _open_companion_stones.bind("pet", key)))
 
 
 # --- Mounts -------------------------------------------------------------------
+## Mounts (sheet 04): diamond levels, 8 stones (socketing can evolve the form), shared stomp.
 func _build_mounts() -> void:
-	_content.add_child(UiTheme.label("Speed mounts dismount when you attack. Attack/Defense mounts can fight.", 20, UiTheme.C_MUTED))
-	for id in GameContent.MOUNTS:
-		var m: Dictionary = GameContent.MOUNTS[id]
+	_content.add_child(_wrapped(UiTheme.label("Every mount can fight: attacks play the stomp. Socketing a stone may evolve the mount.", 20, UiTheme.C_MUTED)))
+	_content.add_child(UiTheme.label("Diamonds: %d" % GameState.get_diamonds(), 20, UiTheme.C_GOLD))
+	for id: String in CompanionCatalog.mount_ids():
+		var m := CompanionCatalog.mount(id)
+		var owned := GameState.mounts.has(id)
 		var v := _card()
 		var row := _row(v)
-		var owned := GameState.mounts.has(id)
-		var palette: String = GameState.mount_skin_palette(id) if owned else String(m["sprite"])
-		row.add_child(_icon(PixelArt.get_texture(m["sprite"], palette), 80))
+		var look := MountVisual.describe(id, GameState.mount_skin(id) if owned else {}, GameState.mount_form(id))
+		row.add_child(_icon(_actor_icon(str(look["art"])), 80, look["modulate"] if owned else Color(0.35, 0.35, 0.35)))
 		var info := VBoxContainer.new()
 		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(info)
-		info.add_child(UiTheme.label("%s  [%s]" % [m["name"], String(m["category"]).to_upper()], 26, UiTheme.C_GOLD))
-		var bonus_parts: Array[String] = ["Speed x%.2f" % float(m["speed_mult"])]
-		var bonus: Dictionary = m["bonus"]
-		for k in bonus:
-			bonus_parts.append("%s +%d" % [k, int(bonus[k])])
-		info.add_child(UiTheme.label(", ".join(bonus_parts), 18, Color(0.75, 0.85, 1)))
+		var title := "%s  [%s]" % [m.get("name", id), String(m.get("category", "")).to_upper()]
+		if owned:
+			title += "  Lv.%d  %s" % [GameState.mount_level(id), CompanionCatalog.form_name(GameState.mount_form(id))]
+		info.add_child(UiTheme.label(title, 24, UiTheme.C_GOLD))
+		var lv := maxi(GameState.mount_level(id), 1)
+		var stats_text := "Speed x%.2f" % CompanionCatalog.mount_speed_mult(id, GameState.mount_form(id))
+		var extra := _stat_text(CompanionCatalog.mount_stats(id, lv, GameState.mount_form(id)))
+		info.add_child(UiTheme.label(stats_text + ("  " + extra if not extra.is_empty() else ""), 18, Color(0.75, 0.85, 1)))
+		if not str(m.get("art_status", "")).is_empty():
+			info.add_child(UiTheme.label("Art: placeholder", 14, UiTheme.C_MUTED))
 		var actions := _row(v)
 		if not owned:
-			var u: Dictionary = m["unlock"]
-			actions.add_child(UiTheme.button("Claim (%d gold, Lv.%d)" % [u["gold"], u["level"]],
-				func() -> void: _act(GameState.unlock_mount(id), "Need more gold or level")))
+			actions.add_child(UiTheme.button("Claim (%s)" % GameState.format_cost(m.get("unlock", {})),
+				func() -> void: _act(GameState.unlock_mount(id), "Not enough gold / diamonds")))
+			continue
+		if GameState.active_mount == id:
+			actions.add_child(UiTheme.button("Dismount" if GameState.mounted else "Ride", _toggle_ride))
 		else:
-			if GameState.active_mount == id:
-				actions.add_child(UiTheme.button("Dismount" if GameState.mounted else "Ride", _toggle_ride))
-			else:
-				actions.add_child(UiTheme.button("Select", _select_mount.bind(String(id))))
-			var skins: Array = m["skins"]
-			if skins.size() > 1:
-				var skin_row := _row(v)
-				skin_row.add_child(UiTheme.label("Skins:", 20))
-				for i in range(skins.size()):
-					var skin_list: Array = GameState.mounts[id]["skins"]
-					var owned_skin: bool = skin_list.has(i)
-					var label := ("Skin %d" % (i + 1)) if owned_skin else ("Skin %d (%dg)" % [i + 1, int(m["skin_cost"])])
-					var skin_index := i
-					var on_skin := func() -> void: _act(GameState.buy_or_select_skin(id, skin_index), "Not enough gold")
-					var skin_btn := UiTheme.button(label, on_skin, Vector2(0, 48))
-					skin_btn.icon = PixelArt.get_texture(m["sprite"], skins[i])
-					skin_btn.expand_icon = false
-					skin_row.add_child(skin_btn)
+			actions.add_child(UiTheme.button("Select", _select_mount.bind(id)))
+		var cost := CompanionCatalog.mount_level_cost(GameState.mount_level(id))
+		if cost > 0:
+			actions.add_child(UiTheme.button("Train (%d diamonds)" % cost, _confirm_spend.bind(
+				"Spend %d diamonds to train %s to Lv.%d?" % [cost, m.get("name", id), GameState.mount_level(id) + 1],
+				func() -> bool: return GameState.level_up_mount(id), "Not enough diamonds")))
+		actions.add_child(UiTheme.button("Stones", _open_companion_stones.bind("mount", id)))
+		var skins: Array = m.get("skins", [])
+		if skins.size() > 1:
+			var skin_row := HFlowContainer.new()
+			skin_row.add_theme_constant_override("h_separation", 8)
+			skin_row.add_theme_constant_override("v_separation", 6)
+			v.add_child(skin_row)
+			skin_row.add_child(UiTheme.label("Skins:", 20))
+			for i in range(skins.size()):
+				var skin: Dictionary = skins[i]
+				var owned_skin := false
+				for s_i: Variant in GameState.mounts[id]["skins"]:
+					owned_skin = owned_skin or int(s_i) == i
+				var label := str(skin.get("name", "Skin %d" % (i + 1)))
+				if not owned_skin:
+					label += " (%dg)" % int(skin.get("cost", 0))
+				var skin_index := i
+				var skin_btn := UiTheme.button(label, func() -> void: _act(GameState.buy_or_select_skin(id, skin_index), "Not enough gold"), Vector2(0, 48))
+				skin_row.add_child(skin_btn)
+
+
+func _wrapped(label: Label) -> Label:
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.custom_minimum_size.x = 1
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return label
+
+
+func _stat_text(stats: Dictionary) -> String:
+	var parts: Array[String] = []
+	for k: String in stats:
+		var value := float(stats[k])
+		if k == "gold_pct":
+			parts.append("gold +%d%%" % roundi(value * 100.0))
+		else:
+			parts.append("%s +%s" % [k.replace("_", " "), ("%d" % roundi(value)) if absf(value) >= 10.0 else ("%.1f" % value)])
+	return ", ".join(parts)
+
+
+## First frame of an actor sheet, for list icons.
+func _actor_icon(asset_id: String) -> Texture2D:
+	var frames := MonsterVisualCatalog.get_frames(asset_id)
+	if frames == null:
+		return null
+	for name: String in ["idle_down", "idle"]:
+		if frames.has_animation(name) and frames.get_frame_count(name) > 0:
+			return frames.get_frame_texture(name, 0)
+	return null
+
+
+func _hatch(egg_id: String) -> void:
+	var result := GameState.hatch_egg(egg_id)
+	if result.is_empty():
+		GameEvent.toast.emit("Could not hatch the egg", UiTheme.C_BAD)
+	elif bool(result["duplicate"]):
+		GameEvent.toast.emit("Duplicate %s: +%d diamonds" % [CompanionCatalog.pet_name(result["key"]), int(result["diamonds"])], UiTheme.C_GOLD)
+	else:
+		GameEvent.toast.emit("New pet: %s!" % CompanionCatalog.pet_name(result["key"]), UiTheme.C_GOOD)
+	_rebuild()
+
+
+## Every diamond spend asks first (sheet 03 §5 Pet Upgrade).
+func _confirm_spend(message: String, action: Callable, fail_msg: String) -> void:
+	ConfirmDialog.show_confirm(message, func() -> void: _act(bool(action.call()), fail_msg))
+
+
+func _open_companion_stones(kind: String, id: String) -> void:
+	var existing := get_node_or_null("GemPanel")
+	if existing:
+		existing.queue_free()
+	var panel: GemPanel = preload("res://sense/ui/gems/GemPanel.tscn").instantiate()
+	panel.name = "GemPanel"
+	add_child(panel)
+	panel.setup_companion(GameState.get_inventory(), kind, id, GameState.get_player() as Node2D)
+	panel.position = Vector2(40, 260)
+	panel.panel_closed.connect(_rebuild)
 
 
 # --- Quests -------------------------------------------------------------------

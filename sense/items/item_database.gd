@@ -33,6 +33,7 @@ func _create_all_items() -> void:
 	_create_materials()
 	_create_segments()
 	_create_gems()
+	_create_eggs()
 	_create_timed_buffs()
 	_create_survival_items()
 
@@ -211,6 +212,20 @@ func _create_gems() -> void:
 		})
 
 
+## Pet eggs (data/companions/pets.json). Hatched from the Pet menu. Icon placeholder until pet
+## item art is assigned (plan phase F, NEEDS_ASSET).
+func _create_eggs() -> void:
+	for egg_id: String in CompanionCatalog.egg_ids():
+		var e := CompanionCatalog.egg(egg_id)
+		items[egg_id] = ItemHelper.create_item({
+			"id": egg_id, "name": str(e.get("name", egg_id)),
+			"description": "Hatch it in the Pet menu (%s)." % e.get("region", ""),
+			"stackable": true, "max_stack": 99, "price": 0, "sell_price": 0,
+			"rarity": ItemData.ItemRarity.UNCOMMON,
+			"icon_name": "heart",
+		})
+
+
 func _create_timed_buffs() -> void:
 	items["vitality_tonic_t1"] = ItemHelper.create_item({
 		"id": "vitality_tonic_t1", "name": "Vitality Tonic I",
@@ -275,13 +290,6 @@ func _create_survival_items() -> void:
 		"description": "Quarried stone. Used to build and upgrade homestead buildings.",
 		"stackable": true, "max_stack": 999, "price": 4,
 		"icon_name": "iron_ore"
-	})
-	items["pet_treat"] = ItemHelper.create_item({
-		"id": "pet_treat", "name": "Pet Treat",
-		"description": "A tasty snack. Feed it to pets to level them up.",
-		"stackable": true, "max_stack": 999, "price": 15,
-		"rarity": ItemData.ItemRarity.UNCOMMON,
-		"icon_name": "heart"
 	})
 	items["boss_core"] = ItemHelper.create_item({
 		"id": "boss_core", "name": "Boss Core",

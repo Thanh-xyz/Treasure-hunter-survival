@@ -16,9 +16,9 @@ signal stats_dirty   ## Something that affects player stats changed
 
 const PLOT_COUNT := 6
 
-var pets: Dictionary = {}          ## pet_id -> {"level": int}
-var active_pet: String = ""
-var mounts: Dictionary = {}        ## mount_id -> {"skin": int, "skins": Array[int]}
+var pets: Dictionary = {}          ## "<species>:<quality>" -> {"level": int, "gems": Array[String](8)}
+var active_pet: String = ""        ## a pet key
+var mounts: Dictionary = {}        ## mount_id -> {"skin", "skins", "level", "form", "gems"}
 var active_mount: String = ""
 var mounted: bool = false          ## runtime only (not saved)
 var plots: Array = []              ## index -> {} or {"id","level","last_collect"}
@@ -40,7 +40,7 @@ func _ready() -> void:
 
 ## Fresh profile (new game)
 func reset_profile() -> void:
-	pets = {"ember_fox": {"level": 1}}
+	pets = {str(CompanionCatalog.pets().get("starter", "ember_fox:common")): _new_pet_record()}
 	active_pet = ""
 	mounts = {}
 	active_mount = ""
@@ -69,20 +69,35 @@ func to_dict() -> Dictionary:
 
 func from_dict(d: Dictionary) -> void:
 	reset_profile()
-	pets = _int_values(d.get("pets", pets))
+	pets = {}
+	var raw_pets: Dictionary = d.get("pets", {})
+	for key in raw_pets:
+		if not CompanionCatalog.is_pet_key(str(key)):
+			continue
+		var pet_entry: Dictionary = raw_pets[key]
+		var pet_record := _new_pet_record()
+		pet_record["level"] = clampi(int(pet_entry.get("level", 1)), 1, CompanionCatalog.pet_max_level())
+		pet_record["gems"] = _read_sockets(pet_entry.get("gems", []))
+		pets[str(key)] = pet_record
 	active_pet = str(d.get("active_pet", ""))
 	if active_pet != "" and not pets.has(active_pet):
 		active_pet = ""
 	mounts = {}
 	var raw_mounts: Dictionary = d.get("mounts", {})
 	for m_id in raw_mounts:
-		if not GameContent.MOUNTS.has(m_id):
+		if CompanionCatalog.mount(str(m_id)).is_empty():
 			continue
 		var entry: Dictionary = raw_mounts[m_id]
 		var skins: Array = []
 		for s in entry.get("skins", [0]):
 			skins.append(int(s))
-		mounts[m_id] = {"skin": int(entry.get("skin", 0)), "skins": skins}
+		var mount_record := _new_mount_record()
+		mount_record["skin"] = int(entry.get("skin", 0))
+		mount_record["skins"] = skins
+		mount_record["level"] = clampi(int(entry.get("level", 1)), 1, CompanionCatalog.mount_max_level())
+		mount_record["form"] = clampi(int(entry.get("form", 0)), 0, CompanionCatalog.mount_max_form())
+		mount_record["gems"] = _read_sockets(entry.get("gems", []))
+		mounts[str(m_id)] = mount_record
 	active_mount = str(d.get("active_mount", ""))
 	if active_mount != "" and not mounts.has(active_mount):
 		active_mount = ""
@@ -105,6 +120,14 @@ func from_dict(d: Dictionary) -> void:
 
 func _apply_runtime_settings() -> void:
 	Engine.max_fps = clampi(int(settings.get("max_fps", 60)), 30, 120)
+
+
+func _read_sockets(raw: Variant) -> Array:
+	var sockets := Array(GemCatalog.empty_sockets())
+	if raw is Array:
+		for i in range(mini((raw as Array).size(), sockets.size())):
+			sockets[i] = str(raw[i])
+	return sockets
 
 
 ## JSON turns ints into floats; normalize nested numeric dictionaries.
@@ -147,21 +170,15 @@ func compute_base_stats() -> Dictionary:
 	var atk: float = float(base["atk"])
 	var def: float = float(base["def"])
 	var spd: float = float(base["spd"])
-	var gold_pct := 0.0
-	var magnet := 0.0
-
-	# Pet passive (scales +15% per pet level)
-	if active_pet != "" and GameContent.PETS.has(active_pet):
-		var pdef: Dictionary = GameContent.PETS[active_pet]
-		var plv: int = pets.get(active_pet, {}).get("level", 1)
-		var pscale := 1.0 + 0.15 * float(plv - 1)
-		var passive: Dictionary = pdef.get("passive", {})
-		hp += passive.get("hp", 0) * pscale
-		atk += passive.get("atk", 0) * pscale
-		def += passive.get("def", 0) * pscale
-		spd += passive.get("spd", 0.0) * pscale
-		gold_pct += passive.get("gold_pct", 0.0) * pscale
-		magnet += passive.get("magnet", 0.0)
+	# Pet (always) and mount (while riding) stats; their Guardian Stones add DEF here too.
+	var companion := active_companion_stats()
+	hp += float(companion.get("hp", 0.0))
+	atk += float(companion.get("atk", 0.0))
+	def += float(companion.get("def", 0.0))
+	def += float(GemCatalog.total_stats(active_companion_sockets()).get("defense", 0.0))
+	spd += float(companion.get("spd", 0.0))
+	var gold_pct := float(companion.get("gold_pct", 0.0))
+	var magnet := float(companion.get("magnet", 0.0))
 
 	# Buildings
 	var mount_pct := 0.0
@@ -182,13 +199,8 @@ func compute_base_stats() -> Dictionary:
 
 	# Mount
 	var speed_mult := 1.0
-	if mounted and active_mount != "" and GameContent.MOUNTS.has(active_mount):
-		var mdef: Dictionary = GameContent.MOUNTS[active_mount]
-		speed_mult = float(mdef["speed_mult"]) + mount_pct
-		var bonus: Dictionary = mdef.get("bonus", {})
-		atk += bonus.get("atk", 0)
-		def += bonus.get("def", 0)
-		hp += bonus.get("hp", 0)
+	if mounted and active_mount != "" and mounts.has(active_mount):
+		speed_mult = CompanionCatalog.mount_speed_mult(active_mount, mount_form(active_mount)) + mount_pct
 
 	return {
 		"hp": int(round(hp)), "atk": int(round(atk)), "def": int(round(def)),
@@ -325,72 +337,102 @@ func format_cost(cost: Dictionary) -> String:
 
 
 # =============================================================================
-# PETS
+# PETS — stat-only companions (brainstorm sheet 03, plan phase C). Keys are
+# "<species>:<quality>"; levels cost diamonds; duplicates become diamonds.
 # =============================================================================
 
-func unlock_pet(id: String) -> bool:
-	if pets.has(id) or not GameContent.PETS.has(id):
-		return false
-	if not spend({"gold": int(GameContent.PETS[id]["unlock"].get("gold", 0))}):
-		return false
-	pets[id] = {"level": 1}
-	collection_changed.emit()
-	return true
+func _new_pet_record() -> Dictionary:
+	return {"level": 1, "gems": Array(GemCatalog.empty_sockets())}
 
 
-func equip_pet(id: String) -> void:
-	if id != "" and not pets.has(id):
+func equip_pet(key: String) -> void:
+	if key != "" and not pets.has(key):
 		return
-	active_pet = id
-	pet_changed.emit(id)
+	active_pet = key
+	pet_changed.emit(key)
 	stats_dirty.emit()
 
 
-func pet_stage(id: String) -> int:
-	var lv: int = pets.get(id, {}).get("level", 1)
-	var stage := 0
-	for threshold in GameContent.PET_EVOLVE_LEVELS:
-		if lv >= threshold:
-			stage += 1
-	return stage
-
-
-func level_up_pet(id: String) -> bool:
-	if not pets.has(id):
-		return false
-	var lv: int = pets[id]["level"]
-	if lv >= GameContent.PET_MAX_LEVEL:
-		return false
-	if not spend(GameContent.pet_level_cost(lv)):
-		return false
-	var old_stage := pet_stage(id)
-	pets[id]["level"] = lv + 1
+## Hatch one egg from the bag. One transaction: the egg is consumed and either the new pet is
+## added or (duplicate) its diamonds are paid. Returns {} on failure, else
+## {"key", "species", "quality", "duplicate": bool, "diamonds": int}.
+func hatch_egg(egg_id: String, rng: RandomNumberGenerator = null) -> Dictionary:
+	var inv := get_inventory()
+	var egg_item := ItemDatabase.get_item(egg_id)
+	if inv == null or egg_item == null or CompanionCatalog.egg(egg_id).is_empty() or inv.get_item_count(egg_id) <= 0:
+		return {}
+	if rng == null:
+		rng = RandomNumberGenerator.new()
+		rng.randomize()
+	var rolled := CompanionCatalog.roll_egg(egg_id, rng)
+	if rolled.is_empty():
+		return {}
+	var key: String = rolled["key"]
+	var duplicate := pets.has(key)
+	var diamonds := CompanionCatalog.duplicate_diamonds(rolled["quality"]) if duplicate else 0
+	if not inv.transact([{"item": egg_item, "quantity": 1}], [], 0, diamonds):
+		return {}
+	if not duplicate:
+		pets[key] = _new_pet_record()
+		if active_pet == "":
+			equip_pet(key)
 	collection_changed.emit()
-	if id == active_pet:
+	GameEvent.pet_hatched.emit(key, duplicate, diamonds)
+	return {"key": key, "species": rolled["species"], "quality": rolled["quality"], "duplicate": duplicate, "diamonds": diamonds}
+
+
+## Buy an egg into the bag (pet menu shop). Price comes from data.
+func buy_egg(egg_id: String) -> bool:
+	var e := CompanionCatalog.egg(egg_id)
+	var inv := get_inventory()
+	var egg_item := ItemDatabase.get_item(egg_id)
+	if e.is_empty() or inv == null or egg_item == null:
+		return false
+	var price: Dictionary = e.get("price", {})
+	if not can_afford(price):
+		return false
+	return inv.transact([], [{"item": egg_item, "quantity": 1}], -int(price.get("gold", 0)), -int(price.get("diamonds", 0)))
+
+
+func pet_level(key: String) -> int:
+	return int(pets.get(key, {}).get("level", 0))
+
+
+func level_up_pet(key: String) -> bool:
+	if not pets.has(key):
+		return false
+	var cost := CompanionCatalog.pet_level_cost(pet_level(key))
+	if cost < 0 or not spend({"diamonds": cost}):
+		return false
+	pets[key]["level"] = pet_level(key) + 1
+	collection_changed.emit()
+	if key == active_pet:
 		stats_dirty.emit()
-		if pet_stage(id) != old_stage:
-			pet_changed.emit(id)  # respawn with evolved visuals
 	return true
 
 
 func max_pet_level() -> int:
 	var best := 0
-	for id in pets:
-		best = maxi(best, int(pets[id].get("level", 1)))
+	for key in pets:
+		best = maxi(best, int(pets[key].get("level", 1)))
 	return best
 
 
 # =============================================================================
-# MOUNTS
+# MOUNTS (brainstorm sheet 04): diamond levels, 8 stones, form evolution 0–3.
 # =============================================================================
 
+func _new_mount_record() -> Dictionary:
+	return {"skin": 0, "skins": [0], "level": 1, "form": 0, "gems": Array(GemCatalog.empty_sockets())}
+
+
 func unlock_mount(id: String) -> bool:
-	if mounts.has(id) or not GameContent.MOUNTS.has(id):
+	if mounts.has(id) or CompanionCatalog.mount(id).is_empty():
 		return false
-	var unlock: Dictionary = GameContent.MOUNTS[id]["unlock"]
-	if not spend({"gold": int(unlock.get("gold", 0))}):
+	var unlock: Dictionary = CompanionCatalog.mount(id).get("unlock", {})
+	if not spend({"gold": int(unlock.get("gold", 0)), "diamonds": int(unlock.get("diamonds", 0))}):
 		return false
-	mounts[id] = {"skin": 0, "skins": [0]}
+	mounts[id] = _new_mount_record()
 	if active_mount == "":
 		active_mount = id
 	collection_changed.emit()
@@ -417,26 +459,167 @@ func set_mounted(value: bool) -> void:
 	stats_dirty.emit()
 
 
-func mount_skin_palette(id: String) -> String:
-	if not GameContent.MOUNTS.has(id):
-		return ""
-	var skins: Array = GameContent.MOUNTS[id]["skins"]
-	var idx: int = mounts.get(id, {}).get("skin", 0)
-	return skins[clampi(idx, 0, skins.size() - 1)]
+func mount_level(id: String) -> int:
+	return int(mounts.get(id, {}).get("level", 0))
+
+
+func mount_form(id: String) -> int:
+	return int(mounts.get(id, {}).get("form", 0))
+
+
+func level_up_mount(id: String) -> bool:
+	if not mounts.has(id):
+		return false
+	var cost := CompanionCatalog.mount_level_cost(mount_level(id))
+	if cost < 0 or not spend({"diamonds": cost}):
+		return false
+	mounts[id]["level"] = mount_level(id) + 1
+	collection_changed.emit()
+	if id == active_mount:
+		stats_dirty.emit()
+	return true
+
+
+## The skin entry in use: {"name", "tint"?, "art"?}.
+func mount_skin(id: String) -> Dictionary:
+	var skins: Array = CompanionCatalog.mount(id).get("skins", [])
+	if skins.is_empty():
+		return {}
+	return skins[clampi(int(mounts.get(id, {}).get("skin", 0)), 0, skins.size() - 1)]
 
 
 func buy_or_select_skin(id: String, skin_index: int) -> bool:
-	if not mounts.has(id):
+	var skins: Array = CompanionCatalog.mount(id).get("skins", [])
+	if not mounts.has(id) or skin_index < 0 or skin_index >= skins.size():
 		return false
 	var owned: Array = mounts[id]["skins"]
-	if not owned.has(skin_index):
-		if not spend({"gold": int(GameContent.MOUNTS[id]["skin_cost"])}):
+	var has := false
+	for owned_index: Variant in owned:
+		has = has or int(owned_index) == skin_index
+	if not has:
+		if not spend({"gold": int((skins[skin_index] as Dictionary).get("cost", 0))}):
 			return false
 		owned.append(skin_index)
 	mounts[id]["skin"] = skin_index
 	collection_changed.emit()
 	mount_changed.emit(active_mount, mounted)
 	return true
+
+
+# =============================================================================
+# COMPANION SOCKET STONES — pets and mounts share the equipment stone system.
+# kind = "pet" | "mount"; id = pet key or mount id.
+# =============================================================================
+
+func _companion_record(kind: String, id: String) -> Dictionary:
+	if kind == "pet":
+		return pets.get(id, {})
+	if kind == "mount":
+		return mounts.get(id, {})
+	return {}
+
+
+func companion_sockets(kind: String, id: String) -> Array[String]:
+	var sockets := GemCatalog.empty_sockets()
+	var raw: Array = _companion_record(kind, id).get("gems", [])
+	for i in range(mini(raw.size(), sockets.size())):
+		sockets[i] = str(raw[i])
+	return sockets
+
+
+## Socket the stone at inventory_index into a pet or mount. Mounts may evolve (sheet 04 §6):
+## returns {"ok": bool, "evolved": bool, "form": int}.
+func socket_companion_gem(kind: String, id: String, gem_index: int, inventory_index: int, rng: RandomNumberGenerator = null) -> Dictionary:
+	var record := _companion_record(kind, id)
+	var inv := get_inventory()
+	if record.is_empty() or inv == null or gem_index < 0 or gem_index >= GemCatalog.slots_per_holder():
+		return {"ok": false}
+	var sockets := companion_sockets(kind, id)
+	var stone: ItemData = inv.get_item_at(inventory_index).get("item")
+	if stone == null or not stone.is_gem() or not sockets[gem_index].is_empty():
+		return {"ok": false}
+	var simulated := inv._copy_slots(inv.inventory_slots)
+	if not inv._remove_at_from_slots(simulated, inventory_index, 1):
+		return {"ok": false}
+	sockets[gem_index] = stone.id
+	inv.inventory_slots = simulated
+	record["gems"] = Array(sockets)
+	var result := {"ok": true, "evolved": false, "form": int(record.get("form", 0))}
+	if kind == "mount":
+		if rng == null:
+			rng = RandomNumberGenerator.new()
+			rng.randomize()
+		var filled := 0
+		for s_id: String in sockets:
+			if not s_id.is_empty():
+				filled += 1
+		if rng.randf() < CompanionCatalog.evolution_chance(filled, int(record.get("form", 0))):
+			record["form"] = int(record.get("form", 0)) + 1
+			result["evolved"] = true
+			result["form"] = record["form"]
+			GameEvent.mount_evolved.emit(id, int(record["form"]))
+			mount_changed.emit(active_mount, mounted)
+	inv.inventory_changed.emit()
+	collection_changed.emit()
+	stats_dirty.emit()
+	return result
+
+
+## Return a socketed stone to the bag; fails (nothing lost) when the bag is full.
+## Evolution is never undone by removing stones.
+func unsocket_companion_gem(kind: String, id: String, gem_index: int) -> bool:
+	var record := _companion_record(kind, id)
+	var inv := get_inventory()
+	if record.is_empty() or inv == null or gem_index < 0 or gem_index >= GemCatalog.slots_per_holder():
+		return false
+	var sockets := companion_sockets(kind, id)
+	var stone := ItemDatabase.get_item(sockets[gem_index]) if not sockets[gem_index].is_empty() else null
+	if stone == null:
+		return false
+	if not inv.transact([], [{"item": stone, "quantity": 1}]):
+		return false
+	sockets[gem_index] = ""
+	record["gems"] = Array(sockets)
+	collection_changed.emit()
+	stats_dirty.emit()
+	return true
+
+
+## Socket arrays that count right now: the active pet always, the mount only while riding.
+func active_companion_sockets() -> Array:
+	var arrays: Array = []
+	if active_pet != "" and pets.has(active_pet):
+		arrays.append(companion_sockets("pet", active_pet))
+	if mounted and active_mount != "" and mounts.has(active_mount):
+		arrays.append(companion_sockets("mount", active_mount))
+	return arrays
+
+
+## Pet and mount stats right now (pet always, mount while riding), summed by stat key.
+func active_companion_stats() -> Dictionary:
+	var total := {}
+	if active_pet != "" and pets.has(active_pet):
+		_add_stats(total, CompanionCatalog.pet_stats(active_pet, pet_level(active_pet)))
+	if mounted and active_mount != "" and mounts.has(active_mount):
+		_add_stats(total, CompanionCatalog.mount_stats(active_mount, mount_level(active_mount), mount_form(active_mount)))
+	return total
+
+
+func _add_stats(into: Dictionary, add: Dictionary) -> void:
+	for k: String in add:
+		into[k] = float(into.get(k, 0.0)) + float(add[k])
+
+
+## Combat modifiers from pet/mount stats as passive-effect entries (crit, dodge, fire, ...).
+## Their socket stones are added by InventoryData.get_all_gem_passive_effects(active_companion_sockets()).
+func companion_passive_effects() -> Array[Dictionary]:
+	var effects: Array[Dictionary] = []
+	var totals := active_companion_stats()
+	for stat: String in InventoryData.GEM_EFFECTS:
+		var value := float(totals.get(stat, 0.0))
+		if value > 0.0:
+			effects.append({"effect": InventoryData.GEM_EFFECTS[stat], "value": value})
+	return effects
 
 
 # =============================================================================

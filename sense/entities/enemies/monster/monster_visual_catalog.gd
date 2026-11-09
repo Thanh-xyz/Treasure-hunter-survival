@@ -20,10 +20,94 @@ const GRID_SHEETS := {
 	"actor.monster.ninja.flam2": "Monster/Flam2/SpriteSheet.png",
 	"actor.monster.ninja.skull": "Monster/Skull/SpriteSheet.png",
 	"actor.monster.ninja.skull_blue": "Monster/SkullBlue/SpriteSheet.png",
+	# Companions (pets and mounts, plan phase C)
+	"actor.monster.ninja.owl": "Monster/Owl/Owl.png",
+	"actor.monster.ninja.owl2": "Monster/Owl2/Owl2.png",
+	"actor.monster.ninja.axolot": "Monster/Axolot/SpriteSheet.png",
+	"actor.monster.ninja.dragon": "Monster/Dragon/SpriteSheet.png",
+	"actor.monster.ninja.dragon_yellow": "Monster/DragonYellow/SpriteSheet.png",
+	"actor.monster.ninja.kappa_green": "Monster/KappaGreen/SpriteSheet.png",
+	"actor.monster.ninja.beast2": "Monster/Beast2/Beast2.png",
 }
 
 ## action -> [file, frame count, seconds, loop]; frame size is shared by the sheet's actions.
 const STRIP_SHEETS := {
+	# Animal side-view strips (2 frames) used by pets and mounts, plan phase C
+	"actor.animal.ninja.dog_orange": {"frame_size": Vector2i(18, 16), "actions": {
+		"idle": ["Animal/DogOrange/SpriteSheet.png", 1, 0.5, true],
+		"move": ["Animal/DogOrange/SpriteSheet.png", 2, 0.4, true],
+		"attack": ["Animal/DogOrange/SpriteSheet.png", 2, 0.3, true],
+	}},
+	"actor.animal.ninja.dog_white": {"frame_size": Vector2i(18, 17), "actions": {
+		"idle": ["Animal/DogBlack/SpriteSheetWhite.png", 1, 0.5, true],
+		"move": ["Animal/DogBlack/SpriteSheetWhite.png", 2, 0.4, true],
+		"attack": ["Animal/DogBlack/SpriteSheetWhite.png", 2, 0.3, true],
+	}},
+	"actor.animal.ninja.dog_black": {"frame_size": Vector2i(18, 17), "actions": {
+		"idle": ["Animal/DogBlack/SpriteSheet.png", 1, 0.5, true],
+		"move": ["Animal/DogBlack/SpriteSheet.png", 2, 0.4, true],
+		"attack": ["Animal/DogBlack/SpriteSheet.png", 2, 0.3, true],
+	}},
+	"actor.animal.ninja.cat_orange": {"frame_size": Vector2i(22, 17), "actions": {
+		"idle": ["Animal/CatOrange/SpriteSheet.png", 1, 0.5, true],
+		"move": ["Animal/CatOrange/SpriteSheet.png", 2, 0.4, true],
+		"attack": ["Animal/CatOrange/SpriteSheet.png", 2, 0.3, true],
+	}},
+	"actor.animal.ninja.hamster_dark": {"frame_size": Vector2i(15, 14), "actions": {
+		"idle": ["Animal/Hamster/SpriteSheetDark.png", 1, 0.5, true],
+		"move": ["Animal/Hamster/SpriteSheetDark.png", 2, 0.4, true],
+		"attack": ["Animal/Hamster/SpriteSheetDark.png", 2, 0.3, true],
+	}},
+	"actor.animal.ninja.hamster_brown": {"frame_size": Vector2i(15, 13), "actions": {
+		"idle": ["Animal/Hamster/SpriteSheetBrown.png", 1, 0.5, true],
+		"move": ["Animal/Hamster/SpriteSheetBrown.png", 2, 0.4, true],
+		"attack": ["Animal/Hamster/SpriteSheetBrown.png", 2, 0.3, true],
+	}},
+	"actor.animal.ninja.hamster_gray": {"frame_size": Vector2i(15, 15), "actions": {
+		"idle": ["Animal/Hamster/SpriteSheetGray.png", 1, 0.5, true],
+		"move": ["Animal/Hamster/SpriteSheetGray.png", 2, 0.4, true],
+		"attack": ["Animal/Hamster/SpriteSheetGray.png", 2, 0.3, true],
+	}},
+	"actor.animal.ninja.parrot_red": {"frame_size": Vector2i(16, 16), "actions": {
+		"idle": ["Animal/Parrot/SpriteSheetRed.png", 1, 0.5, true],
+		"move": ["Animal/Parrot/SpriteSheetRed.png", 2, 0.4, true],
+		"attack": ["Animal/Parrot/SpriteSheetRed.png", 2, 0.3, true],
+	}},
+	"actor.animal.ninja.parrot_blue": {"frame_size": Vector2i(16, 16), "actions": {
+		"idle": ["Animal/Parrot/SpriteSheetBlue.png", 1, 0.5, true],
+		"move": ["Animal/Parrot/SpriteSheetBlue.png", 2, 0.4, true],
+		"attack": ["Animal/Parrot/SpriteSheetBlue.png", 2, 0.3, true],
+	}},
+	"actor.animal.ninja.horse_brown": {"frame_size": Vector2i(23, 16), "actions": {
+		"idle": ["Animal/Horse/SpriteSheetBrownSide.png", 1, 0.5, true],
+		"move": ["Animal/Horse/SpriteSheetBrownSide.png", 2, 0.4, true],
+		"attack": ["Animal/Horse/SpriteSheetBrownSide.png", 2, 0.3, true],
+	}},
+	"actor.animal.ninja.horse_black": {"frame_size": Vector2i(23, 16), "actions": {
+		"idle": ["Animal/Horse/SpriteSheetBlackSide.png", 1, 0.5, true],
+		"move": ["Animal/Horse/SpriteSheetBlackSide.png", 2, 0.4, true],
+		"attack": ["Animal/Horse/SpriteSheetBlackSide.png", 2, 0.3, true],
+	}},
+	"actor.animal.ninja.donkey_grey": {"frame_size": Vector2i(23, 16), "actions": {
+		"idle": ["Animal/Donkey/SpriteSheeGreySide.png", 1, 0.5, true],
+		"move": ["Animal/Donkey/SpriteSheeGreySide.png", 2, 0.4, true],
+		"attack": ["Animal/Donkey/SpriteSheeGreySide.png", 2, 0.3, true],
+	}},
+	"actor.animal.ninja.lion_orange": {"frame_size": Vector2i(30, 16), "actions": {
+		"idle": ["Animal/Lion/SpriteSheetOrangeSide.png", 1, 0.5, true],
+		"move": ["Animal/Lion/SpriteSheetOrangeSide.png", 2, 0.4, true],
+		"attack": ["Animal/Lion/SpriteSheetOrangeSide.png", 2, 0.3, true],
+	}},
+	"actor.animal.ninja.lion_red": {"frame_size": Vector2i(30, 16), "actions": {
+		"idle": ["Animal/Lion/SpriteSheetRedSide.png", 1, 0.5, true],
+		"move": ["Animal/Lion/SpriteSheetRedSide.png", 2, 0.4, true],
+		"attack": ["Animal/Lion/SpriteSheetRedSide.png", 2, 0.3, true],
+	}},
+	"actor.animal.ninja.hyena": {"frame_size": Vector2i(14, 13), "actions": {
+		"idle": ["Animal/Hyena/SpriteSheet.png", 1, 0.5, true],
+		"move": ["Animal/Hyena/SpriteSheet.png", 2, 0.4, true],
+		"attack": ["Animal/Hyena/SpriteSheet.png", 2, 0.3, true],
+	}},
 	"actor.monster.ninja.wild_boar": {"frame_size": Vector2i(17, 16), "actions": {
 		"idle": ["Animal/WildBoar/SpriteSheet.png", 1, 0.5, true],
 		"move": ["Animal/WildBoar/SpriteSheet.png", 2, 0.4, true],

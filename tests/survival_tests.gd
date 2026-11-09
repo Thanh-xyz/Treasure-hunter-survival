@@ -102,7 +102,7 @@ func _test_progression() -> void:
 	var s := GameState.compute_base_stats()
 	var base: Dictionary = GameContent.PLAYER_BASE
 	_check(s["hp"] == int(base["hp"]) and s["atk"] == int(base["atk"]) and s["def"] == int(base["def"]), "base stats come from PLAYER_BASE")
-	GameState.equip_pet("ember_fox")
+	GameState.equip_pet("ember_fox:common")
 	var s2 := GameState.compute_base_stats()
 	_check(s2["atk"] > s["atk"], "pet passive adds attack")
 	var stats := CharacterStats.new()
@@ -148,23 +148,23 @@ func _test_economy_and_collections() -> void:
 	var inv: InventoryData = _stub_player.inventory
 	inv.gold = 0
 	_check(not GameState.spend({"gold": 10}), "cannot spend without gold")
-	GameState.grant({"gold": 5000, "items": {"stone_guard_1": 20, "pet_treat": 30}})
+	GameState.grant({"gold": 5000, "items": {"stone_guard_1": 20, "stone_fire_1": 30}})
 	_check(inv.gold == 5000, "grant adds gold")
 	_check(inv.get_item_count("stone_guard_1") == 20, "grant adds items")
 	var gold_before_cost := inv.gold
-	var treats_before_cost := inv.get_item_count("pet_treat")
-	_check(not GameState.spend({"gold": 25, "pet_treat": treats_before_cost + 1}), "mixed cost rejects insufficient items")
-	_check(inv.gold == gold_before_cost and inv.get_item_count("pet_treat") == treats_before_cost, "failed mixed cost is atomic")
-	_check(GameState.spend({"gold": 25, "pet_treat": 1}), "valid mixed cost succeeds")
-	_check(inv.gold == gold_before_cost - 25 and inv.get_item_count("pet_treat") == treats_before_cost - 1, "valid mixed cost charges exactly")
+	var treats_before_cost := inv.get_item_count("stone_fire_1")
+	_check(not GameState.spend({"gold": 25, "stone_fire_1": treats_before_cost + 1}), "mixed cost rejects insufficient items")
+	_check(inv.gold == gold_before_cost and inv.get_item_count("stone_fire_1") == treats_before_cost, "failed mixed cost is atomic")
+	_check(GameState.spend({"gold": 25, "stone_fire_1": 1}), "valid mixed cost succeeds")
+	_check(inv.gold == gold_before_cost - 25 and inv.get_item_count("stone_fire_1") == treats_before_cost - 1, "valid mixed cost charges exactly")
 
-	# Pets
-	_check(GameState.unlock_pet("moss_turtle"), "adopt turtle")
-	GameState.equip_pet("moss_turtle")
+	# Pets level with diamonds (sheet 03 §2.3); full coverage lives in CompanionTests
+	inv.diamonds = 100
+	GameState.equip_pet("ember_fox:common")
 	for i in range(4):
-		GameState.level_up_pet("moss_turtle")
-	_check(GameState.pets["moss_turtle"]["level"] == 5, "turtle reaches Lv.5")
-	_check(GameState.pet_stage("moss_turtle") == 1, "turtle evolved at Lv.5")
+		GameState.level_up_pet("ember_fox:common")
+	_check(GameState.pet_level("ember_fox:common") == 5, "pet reaches Lv.5 with diamonds")
+	_check(inv.diamonds == 100 - 5 - 8 - 12 - 18, "pet levels cost the data table's diamonds")
 
 	# Mounts (no level gate since save v7)
 	_check(GameState.unlock_mount("dust_pony"), "claim pony with gold")
@@ -172,7 +172,7 @@ func _test_economy_and_collections() -> void:
 	GameState.set_mounted(true)
 	_check(GameState.compute_base_stats()["speed_mult"] > slow, "mounting increases speed")
 	_check(GameState.buy_or_select_skin("dust_pony", 1), "buy pony skin")
-	_check(GameState.mount_skin_palette("dust_pony") == "mount_pony_snow", "skin palette applied")
+	_check(GameState.mount_skin("dust_pony").get("name", "") == "White Pony", "skin applied")
 	GameState.set_mounted(false)
 
 
@@ -420,7 +420,8 @@ func _test_save_roundtrip() -> void:
 	enhanced_weapon.enhancement_level = 3
 	_check(enhanced_weapon != null and inv.add_item(enhanced_weapon, 1) == 0, "enhanced equipment setup failed")
 	inv.equip_item(_find_slot(inv, "ashwood_blade"))
-	_check(GameState.unlock_pet("lucky_cat"), "adopt lucky cat for save test")
+	GameState.pets["lucky_cat:epic"] = GameState._new_pet_record()
+	GameState.pets["lucky_cat:epic"]["level"] = 4
 	inv.gold = 1234
 	inv.diamonds = 17
 	GameState.plots[2] = {"id": "stable", "level": 2, "last_collect": 100.0}
@@ -450,7 +451,7 @@ func _test_save_roundtrip() -> void:
 	inv.diamonds = 0
 	SaveService.deserialize_inventory(inv, {"gold": 0, "slots": [], "equipment": {}})
 	_check(SaveService.load_game(), "load succeeds")
-	_check(GameState.pets.has("lucky_cat"), "pets restored")
+	_check(GameState.pets.has("lucky_cat:epic") and GameState.pet_level("lucky_cat:epic") == 4, "pets restored")
 	_check(GameState.plots[2].get("id", "") == "stable", "buildings restored")
 	_check(bool(GameState.settings.get("compact_hud", false)), "compact HUD setting restored")
 	_check(int(GameState.settings.get("max_fps", 0)) == 30 and Engine.max_fps == 30, "FPS setting restored and applied")
@@ -522,7 +523,7 @@ func _test_save_roundtrip() -> void:
 		_check(legacy_inventory.get_equipped("weapon").enhancement_level == 1, "legacy equipment did not default to level 1")
 
 	var invalid_profile := snap.duplicate(true)
-	invalid_profile["profile"]["pets"]["lucky_cat"]["level"] = "max"
+	invalid_profile["profile"]["pets"]["lucky_cat:epic"]["level"] = "max"
 	f = FileAccess.open(SaveService.SAVE_PATH, FileAccess.WRITE)
 	f.store_string(JSON.stringify(invalid_profile))
 	f.close()

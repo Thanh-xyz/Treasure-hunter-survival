@@ -9,7 +9,7 @@ const FIXTURE_DIR := "res://tests/fixtures/saves"
 const SAVE_PATH := "user://saves/fixture_profile.json"
 const HISTORIC := ["v0_legacy", "v1_historic", "v2_historic", "v3_historic", "v4_historic", "v5_full_original"]
 const INVALID := ["corrupt_truncated", "future_version", "bad_types"]
-const SCENARIOS := ["v5_reference_items", "v5_quest_q306_progress", "v5_pending_claim_q311", "v5_legacy_index_quest", "v6_stones_and_heroes"]
+const SCENARIOS := ["v5_reference_items", "v5_quest_q306_progress", "v5_pending_claim_q311", "v5_legacy_index_quest", "v6_stones_and_heroes", "v7_pets_and_treats"]
 
 var _failures: Array[String] = []
 var _player: StubPlayer
@@ -38,6 +38,7 @@ func _ready() -> void:
 	_test_pending_claim_q311()
 	_test_legacy_index_quest()
 	_test_v6_stones_and_heroes()
+	_test_v7_pets_and_treats()
 	_test_mount_owner_can_save_and_reload()
 	_test_unknown_item_goes_to_lost_and_found()
 	_test_migration_is_idempotent()
@@ -74,7 +75,8 @@ func _test_full_profile_loads(name: String) -> void:
 		return
 	var inv := _player.inventory
 	_check(not GameState.to_dict().has("level") and not GameState.to_dict().has("heroes"), "%s: level/heroes retired" % name)
-	_check(int(GameState.pets["ember_fox"]["level"]) == 4 and GameState.active_pet == "ember_fox", "%s: pets" % name)
+	_check(GameState.pet_level("ember_fox:common") == 4 and GameState.active_pet == "ember_fox:common", "%s: pets became Common records" % name)
+	_check(GameState.pets.has("moss_turtle:common") and GameState.mount_level("dust_pony") == 1 and GameState.mount_form("dust_pony") == 0, "%s: v8 pet/mount fields" % name)
 	_check(GameState.active_mount == "dust_pony" and int(GameState.mounts["dust_pony"]["skin"]) == 1, "%s: mounts" % name)
 	_check(str(GameState.plots[0].get("id", "")) == "lumber_mill" and int(GameState.plots[0].get("level", 0)) == 2, "%s: plot 0" % name)
 	_check(str(GameState.plots[2].get("id", "")) == "herb_garden", "%s: plot 2" % name)
@@ -121,6 +123,24 @@ func _test_v6_stones_and_heroes() -> void:
 	_reset()
 	_check(SaveService.load_game(), "v6 stones: reload failed")
 	_check(_player.inventory.get_equipped("weapon").get_gem_sockets()[0] == "stone_critical_2", "v6 stones: sockets did not survive a round trip")
+
+
+## v7 → v8: pets become Common records, levels above 10 are refunded in gold, pet treats
+## (bag, Lost & Found, pending reward) become gold, mounts gain level/form/sockets.
+func _test_v7_pets_and_treats() -> void:
+	_install("v7_pets_and_treats")
+	if not SaveService.load_game():
+		_fail("v7 pets: load failed (%s)" % _explain("v7_pets_and_treats"))
+		return
+	_check(GameState.pet_level("ember_fox:common") == 2, "v7 pets: ember fox kept its level")
+	_check(GameState.pet_level("lucky_cat:common") == 10 and GameState.active_pet == "lucky_cat:common", "v7 pets: level 13 capped at 10 and still active")
+	_check(GameState.mount_level("tusk_boar") == 1 and GameState.companion_sockets("mount", "tusk_boar").size() == 8, "v7 pets: mount gained level and sockets")
+	# 300 + levels 10–12 (580 + 635 + 690) + 12 bag treats + 2 lost treats + 6 pending treats, × 15 gold
+	var expected := 300 + 580 + 635 + 690 + (12 + 2 + 6) * 15
+	_check(_player.inventory.gold == expected, "v7 pets: gold %d, expected %d" % [_player.inventory.gold, expected])
+	_check(_player.inventory.get_item_count("wood") == 5, "v7 pets: other items kept")
+	_check(SaveService.get_lost_and_found().is_empty(), "v7 pets: lost treats not refunded")
+	_check(SaveService.get_pending_claim().is_empty() and str(QuestService.get_main_quest().get("id", "")) == "q05", "v7 pets: pending claim not recovered")
 
 
 ## A migrated save, written and read back, must reproduce the same profile and inventory.

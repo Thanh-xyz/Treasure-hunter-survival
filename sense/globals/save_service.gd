@@ -9,7 +9,7 @@ extends Node
 signal saved
 signal loaded
 
-const SAVE_VERSION := 7
+const SAVE_VERSION := 8
 const SAVE_DIR := "user://saves"
 var SAVE_PATH: String = "user://saves/profile.json"  ## tests point this elsewhere
 const AUTOSAVE_INTERVAL := 60.0
@@ -55,6 +55,12 @@ const V6_AUGMENT_SLOTS := [0, 1, 2, 3, 4]  ## save v6 sockets by rarity (common.
 const RETIRED_AUGMENT_GOLD := {"whirlwind_augment": 200, "shield_bash_augment": 200, "hero_shard": 60}
 ## Save v7 drops player level/XP and hero classes; XP left in a pending reward becomes gold 1:1.
 const RETIRED_PROFILE_KEYS := ["level", "xp", "hero_id", "heroes"]
+## Save v8: pets become "<species>:<quality>" records (old pets are Common) capped at level 10;
+## pet treats retire (pets level with diamonds). Old pet levels above the cap are refunded in the
+## gold they cost (treats valued at their shop price).
+const PET_TREAT_GOLD := 15
+const V7_PET_LEVEL_GOLD := 40       ## old cost per level: 40 × level gold
+const V7_PET_LEVEL_TREATS := 2      ## plus (2 + level) treats
 
 
 func _ready() -> void:
@@ -293,6 +299,11 @@ func _migrate(data: Dictionary) -> Dictionary:
 			return {}  # a malformed level/XP is corruption, not something to drop silently
 		_migrate_to_v7(data)
 		data["version"] = 7
+		v = 7
+	if v < 8:
+		# Version 8: pets by species and quality, diamond levels, socket stones on pets and mounts.
+		_migrate_to_v8(data)
+		data["version"] = 8
 	return data
 
 
@@ -593,6 +604,82 @@ func _migrate_profile_v7(data: Dictionary, log: Array) -> void:
 				log.append("Pending reward XP %d became %d gold" % [xp, xp])
 
 
+func _migrate_to_v8(data: Dictionary) -> void:
+	var log: Array = data.get("migration_log", []) if data.get("migration_log") is Array else []
+	var refund := 0
+	var profile: Variant = data.get("profile", {})
+	if profile is Dictionary:
+		var p := profile as Dictionary
+		if p.get("pets") is Dictionary:
+			var new_pets := {}
+			for old_id: Variant in (p["pets"] as Dictionary):
+				var entry: Variant = p["pets"][old_id]
+				var key := str(old_id)
+				if not CompanionCatalog.is_pet_key(key):
+					key = CompanionCatalog.pet_key(str(old_id), "common")
+				if not CompanionCatalog.is_pet_key(key) or not entry is Dictionary:
+					log.append("Unknown pet %s dropped" % old_id)
+					continue
+				var level := int(entry.get("level", 1)) if _is_integer(entry.get("level", 1)) else 1
+				var cap := CompanionCatalog.pet_max_level()
+				if level > cap:
+					var gold := 0
+					for lv in range(cap, level):
+						gold += V7_PET_LEVEL_GOLD * lv + (V7_PET_LEVEL_TREATS + lv) * PET_TREAT_GOLD
+					refund += gold
+					log.append("%s level %d capped at %d, refunded %d gold" % [old_id, level, cap, gold])
+					level = cap
+				new_pets[key] = {"level": maxi(level, 1), "gems": Array(GemCatalog.empty_sockets())}
+				if key != str(old_id):
+					log.append("Pet %s is now %s" % [old_id, CompanionCatalog.pet_name(key)])
+			p["pets"] = new_pets
+			var active := str(p.get("active_pet", ""))
+			if active != "" and not CompanionCatalog.is_pet_key(active):
+				var active_key := CompanionCatalog.pet_key(active, "common")
+				p["active_pet"] = active_key if new_pets.has(active_key) else ""
+		if p.get("mounts") is Dictionary:
+			for mount_id: Variant in (p["mounts"] as Dictionary):
+				var m: Variant = p["mounts"][mount_id]
+				if m is Dictionary:
+					for key in ["level", "form"]:
+						if not (m as Dictionary).has(key):
+							m[key] = 1 if key == "level" else 0
+					if not (m as Dictionary).has("gems"):
+						m["gems"] = Array(GemCatalog.empty_sockets())
+	var inv: Variant = data.get("inventory", {})
+	var lost: Array = data.get("lost_and_found", []) if data.get("lost_and_found") is Array else []
+	if inv is Dictionary:
+		var slots: Array = inv.get("slots", []) if inv.get("slots") is Array else []
+		for i in range(slots.size()):
+			if slots[i] is Dictionary and str(slots[i].get("id", "")) == "pet_treat":
+				var qty := int(slots[i].get("qty", 1)) if _is_integer(slots[i].get("qty", 1)) else 1
+				refund += qty * PET_TREAT_GOLD
+				log.append("Pet Treat ×%d refunded %d gold" % [qty, qty * PET_TREAT_GOLD])
+				slots[i] = {}
+		var kept_lost: Array = []
+		for entry: Variant in lost:
+			if entry is Dictionary and str(entry.get("id", "")) == "pet_treat":
+				var qty := int(entry.get("qty", 1)) if _is_integer(entry.get("qty", 1)) else 1
+				refund += qty * PET_TREAT_GOLD
+				continue
+			kept_lost.append(entry)
+		lost = kept_lost
+		var gold := int(inv.get("gold", 0)) if _is_integer(inv.get("gold", 0)) else 0
+		inv["gold"] = gold + refund
+	var pending: Variant = data.get("pending_claim", {})
+	if pending is Dictionary and (pending as Dictionary).get("reward") is Dictionary:
+		var reward: Dictionary = pending["reward"]
+		if reward.get("items") is Dictionary and (reward["items"] as Dictionary).has("pet_treat"):
+			var qty := int(reward["items"]["pet_treat"])
+			reward["gold"] = int(reward.get("gold", 0)) + qty * PET_TREAT_GOLD
+			(reward["items"] as Dictionary).erase("pet_treat")
+			if (reward["items"] as Dictionary).is_empty():
+				reward.erase("items")
+			log.append("Pending reward Pet Treat ×%d became gold" % qty)
+	data["migration_log"] = log
+	data["lost_and_found"] = lost
+
+
 func _is_valid_save_file(path: String) -> bool:
 	if not FileAccess.file_exists(path):
 		return false
@@ -672,11 +759,13 @@ func _validate_profile(profile: Dictionary) -> bool:
 		if profile.has(key) and not profile[key] is String:
 			return false
 	var pets: Dictionary = profile.get("pets", {})
-	for pet_id: Variant in pets:
-		var pet: Variant = pets[pet_id]
-		if not GameContent.PETS.has(str(pet_id)) or not pet is Dictionary:
+	for pet_key: Variant in pets:
+		var pet: Variant = pets[pet_key]
+		if not CompanionCatalog.is_pet_key(str(pet_key)) or not pet is Dictionary:
 			return false
-		if not _is_integer(pet.get("level", 0)) or int(pet.get("level", 0)) < 1 or int(pet.get("level", 0)) > GameContent.PET_MAX_LEVEL:
+		if not _is_integer(pet.get("level", 0)) or int(pet.get("level", 0)) < 1 or int(pet.get("level", 0)) > CompanionCatalog.pet_max_level():
+			return false
+		if not _valid_sockets(pet.get("gems", [])):
 			return false
 	if profile.has("active_pet"):
 		var active_pet := str(profile["active_pet"])
@@ -700,12 +789,18 @@ func _validate_profile(profile: Dictionary) -> bool:
 				return false
 	if profile.has("mounts"):
 		for mount_id: Variant in profile["mounts"]:
-			if not GameContent.MOUNTS.has(str(mount_id)):
+			if CompanionCatalog.mount(str(mount_id)).is_empty():
 				return false
 			var mount: Variant = profile["mounts"][mount_id]
 			if not mount is Dictionary or not mount.get("skins", []) is Array:
 				return false
-			var available_skins: Array = GameContent.MOUNTS[str(mount_id)].get("skins", [])
+			if not _is_integer(mount.get("level", 1)) or int(mount.get("level", 1)) < 1 or int(mount.get("level", 1)) > CompanionCatalog.mount_max_level():
+				return false
+			if not _is_integer(mount.get("form", 0)) or int(mount.get("form", 0)) < 0 or int(mount.get("form", 0)) > CompanionCatalog.mount_max_form():
+				return false
+			if not _valid_sockets(mount.get("gems", [])):
+				return false
+			var available_skins: Array = CompanionCatalog.mount(str(mount_id)).get("skins", [])
 			var owned_skins: Array = mount.get("skins", [])
 			if owned_skins.is_empty() or not _is_integer(mount.get("skin", -1)):
 				return false
@@ -828,6 +923,21 @@ func _validate_item_entry(entry: Dictionary, equipment_slot: String = "") -> boo
 
 func _item_fits_slot(item: ItemData, slot_type: String) -> bool:
 	return EQUIP_SLOTS.has(slot_type) and item.get_equipment_slot() == slot_type
+
+
+## Pet/mount sockets: empty (never socketed) or exactly 8 entries of "" or a stone id.
+func _valid_sockets(raw: Variant) -> bool:
+	if not raw is Array:
+		return false
+	var sockets := raw as Array
+	if sockets.is_empty():
+		return true
+	if sockets.size() != GemCatalog.slots_per_holder():
+		return false
+	for stone_id: Variant in sockets:
+		if not stone_id is String or (not str(stone_id).is_empty() and not GemCatalog.is_stone(str(stone_id))):
+			return false
+	return true
 
 
 func _has_integer(values: Array, target: int) -> bool:

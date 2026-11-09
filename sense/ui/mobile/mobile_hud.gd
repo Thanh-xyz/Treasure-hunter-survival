@@ -769,7 +769,9 @@ func _refresh_controls() -> void:
 		mount_btn.locked = GameState.active_mount == ""
 		mount_btn.caption = "Off" if GameState.mounted else "Ride"
 		if GameState.active_mount != "":
-			mount_btn.icon = PixelArt.get_texture(GameContent.MOUNTS[GameState.active_mount]["sprite"], GameState.mount_skin_palette(GameState.active_mount))
+			var mount_frames := MonsterVisualCatalog.get_frames(str(MountVisual.describe(GameState.active_mount, GameState.mount_skin(GameState.active_mount), 0)["art"]))
+			if mount_frames != null:
+				mount_btn.icon = mount_frames.get_frame_texture(mount_frames.get_animation_names()[0], 0)
 			mount_btn.caption = "Off" if GameState.mounted else ""
 	if auto_farm_btn:
 		var auto_on := bool(player.get("auto_farm_enabled"))

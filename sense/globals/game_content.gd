@@ -15,76 +15,7 @@ extends RefCounted
 # =============================================================================
 const PLAYER_BASE := {"hp": 150, "atk": 12, "def": 0, "spd": 120.0}
 
-# =============================================================================
-# PETS — follow, fight, give passives, level up with pet_treat, evolve at 5/10
-# =============================================================================
-const PETS := {
-	"ember_fox": {
-		"name": "Ember Fox", "sprite": "pet_fox", "role": "attack",
-		"desc": "Pounces on nearby enemies.",
-		"attack": {"damage": 6, "cooldown": 1.2, "range": 110.0},
-		"passive": {"atk": 2},
-		"unlock": {"gold": 0},
-	},
-	"moss_turtle": {
-		"name": "Moss Turtle", "sprite": "pet_turtle", "role": "defense",
-		"desc": "Slowly heals its owner and hardens skin.",
-		"heal": {"amount": 3, "interval": 4.0},
-		"passive": {"def": 2, "hp": 15},
-		"unlock": {"gold": 600},
-	},
-	"dusk_owl": {
-		"name": "Dusk Owl", "sprite": "pet_owl", "role": "support",
-		"desc": "Fires feathers at distant targets.",
-		"attack": {"damage": 4, "cooldown": 0.9, "range": 150.0, "ranged": true},
-		"passive": {"spd": 8.0},
-		"unlock": {"gold": 900},
-	},
-	"lucky_cat": {
-		"name": "Lucky Cat", "sprite": "pet_cat", "role": "utility",
-		"desc": "Attracts loot and extra gold.",
-		"passive": {"gold_pct": 0.25, "magnet": 60.0},
-		"unlock": {"gold": 1500},
-	},
-}
-const PET_MAX_LEVEL := 15
-const PET_EVOLVE_LEVELS := [5, 10]       ## stage 2 at lvl 5, stage 3 at lvl 10
-const PET_STAGE_SCALE := [1.0, 1.35, 1.7]
-const PET_STAGE_TINT := [Color(1, 1, 1), Color(1.15, 1.05, 0.85), Color(1.3, 1.1, 1.4)]
-
-static func pet_level_cost(level: int) -> Dictionary:
-	return {"pet_treat": 2 + level, "gold": 40 * level}
-
-# =============================================================================
-# MOUNTS — categories speed / attack / defense, skins are palette swaps
-# =============================================================================
-const MOUNTS := {
-	"dust_pony": {
-		"name": "Dust Pony", "category": "speed", "sprite": "mount_pony",
-		"speed_mult": 1.6, "bonus": {},
-		"skins": ["mount_pony", "mount_pony_snow", "mount_pony_night"],
-		"skin_cost": 300,
-		"unlock": {"gold": 0},
-	},
-	"tusk_boar": {
-		"name": "Tusk Boar", "category": "attack", "sprite": "mount_boar",
-		"speed_mult": 1.35, "bonus": {"atk": 6},
-		"skins": ["mount_boar"], "skin_cost": 0,
-		"unlock": {"gold": 1000},
-	},
-	"shell_tortoise": {
-		"name": "Shell Tortoise", "category": "defense", "sprite": "mount_tortoise",
-		"speed_mult": 1.2, "bonus": {"def": 6, "hp": 40},
-		"skins": ["mount_tortoise"], "skin_cost": 0,
-		"unlock": {"gold": 1000},
-	},
-	"gale_stag": {
-		"name": "Gale Stag", "category": "speed", "sprite": "mount_stag",
-		"speed_mult": 1.9, "bonus": {},
-		"skins": ["mount_stag"], "skin_cost": 0,
-		"unlock": {"gold": 3000},
-	},
-}
+# Pets and mounts live in data/companions (CompanionCatalog, plan phase C).
 
 # =============================================================================
 # MONSTERS — data for Monster.gd. visual "skeleton" reuses the existing sheet.
@@ -95,13 +26,13 @@ const MONSTERS := {
 		"name": "Meadow Slime", "visual": "atlas", "asset_id": "actor.monster.ninja.slime",
 		"ai": "flyer", "hp": 30, "dmg": 6, "spd": 38.0, "level": 1,
 		"range": 16.0, "aggro": 110.0, "scale": 2.0, "gold": Vector2i(1, 4),
-		"loot": [["herb_segment", 30, 1, 2], ["pet_treat", 12, 1, 1], ["health_potion", 6, 1, 1]],
+		"loot": [["herb_segment", 30, 1, 2], ["health_potion", 6, 1, 1]],
 	},
 	"bat": {
 		"name": "Dusk Bat", "visual": "atlas", "asset_id": "actor.monster.ninja.blue_bat",
 		"ai": "flyer", "hp": 22, "dmg": 5, "spd": 70.0, "level": 2,
 		"range": 14.0, "aggro": 140.0, "scale": 2.0, "gold": Vector2i(1, 5),
-		"loot": [["spirit_essence", 10, 1, 1], ["pet_treat", 10, 1, 1]],
+		"loot": [["spirit_essence", 10, 1, 1], ["herb_segment", 15, 1, 1]],
 	},
 	"shroom": {
 		"name": "Bramble Snake", "visual": "atlas", "asset_id": "actor.monster.ninja.snake",
@@ -113,14 +44,14 @@ const MONSTERS := {
 		"name": "Bristle Boar", "visual": "atlas", "asset_id": "actor.monster.ninja.wild_boar",
 		"ai": "charger", "hp": 60, "dmg": 12, "spd": 34.0, "level": 4,
 		"range": 90.0, "aggro": 140.0, "scale": 2.0, "gold": Vector2i(3, 8),
-		"loot": [["ironbark_plate", 3, 1, 1], ["pet_treat", 15, 1, 2], ["iron_ore", 20, 1, 2]],
+		"loot": [["ironbark_plate", 3, 1, 1], ["iron_ore", 20, 1, 2]],
 	},
 	# Stationary guard (save v6 replaces the retired "turtle" row). Art: Ninja Adventure (CC0).
 	"mossback": {
 		"name": "Mosscap", "visual": "atlas", "asset_id": "actor.monster.ninja.mushroom",
 		"ai": "stationary_melee", "hp": 90, "dmg": 14, "spd": 0.0, "level": 1,
 		"range": 60.0, "aggro": 160.0, "scale": 2.0, "gold": Vector2i(3, 6),
-		"loot": [["pet_treat", 10, 1, 1]],
+		"loot": [["herb_segment", 25, 1, 2]],
 		"attack_interval": 1.2, "attack_duration": 0.5, "death_duration": 0.6, "knockback_immune": true,
 	},
 	"skeleton_grunt": {
@@ -140,7 +71,7 @@ const MONSTERS := {
 		"name": "Frost Wisp", "visual": "atlas", "asset_id": "actor.monster.ninja.flam2",
 		"ai": "melee", "hp": 80, "dmg": 13, "spd": 44.0, "level": 8,
 		"range": 16.0, "aggro": 120.0, "scale": 2.0, "gold": Vector2i(4, 10),
-		"loot": [["frost_shard", 25, 1, 2], ["pet_treat", 15, 1, 2]],
+		"loot": [["frost_shard", 25, 1, 2], ["stone_ice_1", 3, 1, 1]],
 	},
 	"magma_slime": {
 		"name": "Magma Flame", "visual": "atlas", "asset_id": "actor.monster.ninja.flam",
@@ -153,19 +84,19 @@ const MONSTERS := {
 		"name": "Mire King", "visual": "atlas", "asset_id": "actor.boss.ninja.giant_slime",
 		"ai": "boss_slime", "hp": 900, "dmg": 18, "spd": 32.0, "level": 5,
 		"range": 30.0, "aggro": 220.0, "scale": 2.0, "gold": Vector2i(80, 140), "boss": true,
-		"loot": [["stone_guard_1", 100, 2, 4], ["pet_treat", 100, 3, 6], ["ironbark_cleaver", 25, 1, 1], ["wayfarer_boots", 25, 1, 1], ["boss_core", 100, 1, 1]],
+		"loot": [["stone_guard_1", 100, 2, 4], ["egg_forest", 30, 1, 1], ["ironbark_cleaver", 25, 1, 1], ["wayfarer_boots", 25, 1, 1], ["boss_core", 100, 1, 1]],
 	},
 	"crypt_warden": {
 		"name": "Crypt Warden", "visual": "atlas", "asset_id": "actor.boss.ninja.giant_spirit",
 		"ai": "boss_skeleton", "hp": 650, "dmg": 16, "spd": 42.0, "level": 5,
 		"range": 34.0, "aggro": 300.0, "scale": 2.0, "gold": Vector2i(60, 120), "boss": true,
-		"loot": [["stone_lifesteal_1", 100, 1, 3], ["ashwood_blade", 30, 1, 1], ["ironbark_plate", 25, 1, 1], ["pet_treat", 100, 2, 4]],
+		"loot": [["stone_lifesteal_1", 100, 1, 3], ["ashwood_blade", 30, 1, 1], ["ironbark_plate", 25, 1, 1], ["egg_forest", 25, 1, 1]],
 	},
 	"bone_colossus": {
 		"name": "Cinder Colossus", "visual": "atlas", "asset_id": "actor.boss.ninja.demon_cyclop",
 		"ai": "boss_skeleton", "hp": 1600, "dmg": 24, "spd": 40.0, "level": 10,
 		"range": 40.0, "aggro": 260.0, "scale": 2.0, "gold": Vector2i(150, 260), "boss": true,
-		"loot": [["stone_critical_2", 100, 1, 2], ["emberforged_blade", 30, 1, 1], ["ember_harness", 25, 1, 1], ["wayfarer_cloak", 20, 1, 1], ["boss_core", 100, 1, 2]],
+		"loot": [["stone_critical_2", 100, 1, 2], ["emberforged_blade", 30, 1, 1], ["ember_harness", 25, 1, 1], ["wayfarer_cloak", 20, 1, 1], ["boss_core", 100, 1, 2], ["egg_snow", 25, 1, 1]],
 	},
 }
 
@@ -215,9 +146,8 @@ const BUILDINGS := {
 		"prop": "rock",
 	},
 	"herb_garden": {
-		"name": "Herb Garden", "desc": "Grows herbs and pet treats.",
+		"name": "Herb Garden", "desc": "Grows herbs.",
 		"produces": "herb_segment", "per_hour": [0, 20, 40, 70],
-		"bonus_item": "pet_treat",
 		"cost": [{}, {"gold": 200, "wood": 15, "stone": 5}, {"gold": 500, "wood": 40, "stone": 25}, {"gold": 1100, "wood": 90, "stone": 60}],
 		"prop": "bush",
 	},
@@ -279,7 +209,7 @@ const MAIN_QUESTS := [
 	{"id": "q03", "name": "Timber!", "desc": "Chop trees for wood. Hit a tree to gather.",
 		"obj": {"type": "gather", "target": "wood", "count": 10}, "reward": {"gold": 60, "items": {"stone": 5}}},
 	{"id": "q04", "name": "A Loyal Friend", "desc": "Equip a pet from the Pet menu.",
-		"obj": {"type": "own_pet", "target": "any", "count": 1}, "reward": {"items": {"pet_treat": 6}}},
+		"obj": {"type": "own_pet", "target": "any", "count": 1}, "reward": {"items": {"egg_forest": 1}}},
 	{"id": "q05", "name": "Bats in the Dusk", "desc": "Defeat Dusk Bats.",
 		"obj": {"type": "kill", "target": "bat", "count": 6}, "reward": {"gold": 100}},
 	{"id": "q06", "name": "Saddle Up", "desc": "Claim a mount from the Mount menu.",
@@ -289,7 +219,7 @@ const MAIN_QUESTS := [
 	{"id": "q08", "name": "Charging Beasts", "desc": "Defeat Bristle Boars. Dodge their charge!",
 		"obj": {"type": "kill", "target": "boar", "count": 5}, "reward": {"gold": 160, "items": {"ember_visor": 1}}},
 	{"id": "q09", "name": "Pet Training", "desc": "Raise any pet to level 3.",
-		"obj": {"type": "pet_level", "target": "any", "count": 3}, "reward": {"items": {"pet_treat": 8}}},
+		"obj": {"type": "pet_level", "target": "any", "count": 3}, "reward": {"diamonds": 10}},
 	{"id": "q10", "name": "The Mire King", "desc": "The world boss rises at the altar. Defeat it!",
 		"obj": {"type": "boss", "target": "slime_king", "count": 1}, "reward": {"gold": 400, "items": {"stone_guard_1": 3}}},
 	{"id": "q11", "name": "Into the Crypt", "desc": "Clear the Crypt Depths dungeon (use the town portal).",
@@ -306,7 +236,7 @@ const MAIN_QUESTS := [
 
 const DAILY_QUESTS := [
 	{"id": "d_hunt", "name": "Daily Hunt", "desc": "Defeat any 30 monsters.",
-		"obj": {"type": "kill", "target": "any", "count": 30}, "reward": {"gold": 200, "items": {"pet_treat": 4}}},
+		"obj": {"type": "kill", "target": "any", "count": 30}, "reward": {"gold": 200, "diamonds": 2}},
 	{"id": "d_gather", "name": "Daily Gather", "desc": "Gather 25 wood or stone.",
 		"obj": {"type": "gather", "target": "any", "count": 25}, "reward": {"gold": 150}},
 	{"id": "d_boss", "name": "Daily Boss", "desc": "Defeat any boss.",

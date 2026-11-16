@@ -70,6 +70,7 @@ func run_all() -> bool:
 	await _test_monster_kill()
 	await _test_turtle_runtime()
 	await _test_snailu_runtime()
+	await _test_mosqui_runtime()
 	await _test_menu_keeps_world_running()
 	await _test_auto_farm_toggle()
 	_test_combat_roll()
@@ -341,12 +342,42 @@ func _test_quests() -> void:
 	var q311_diamonds_before: int = _stub_player.inventory.diamonds
 	_check(QuestService.claim("q311"), "claim q311")
 	_check(_stub_player.inventory.diamonds == q311_diamonds_before + 1, "q311 did not grant exactly one Diamond")
-	_check(QuestService.get_main_quest()["id"] == "q02", "q311 did not advance to q02")
+	_check(QuestService.get_main_quest()["id"] == "q312", "q311 did not advance to q312")
 	_check(not QuestService.claim("q311") and _stub_player.inventory.diamonds == q311_diamonds_before + 1, "q311 granted twice")
+	_check(QuestService.main_progress == 0 and not QuestService.main_ready, "level-1 equipment completed q312")
+	_stub_player.inventory.gold = 10000
+	for expected_level in range(2, 5):
+		_check(_stub_player.inventory.upgrade_equipment("weapon"), "q312 setup upgrade failed")
+		_check(_stub_player.inventory.get_equipped("weapon").enhancement_level == expected_level, "q312 setup upgrade level mismatch")
+	QuestService.refresh_state_objectives(_stub_player.inventory)
+	_check(QuestService.main_progress == 0 and not QuestService.main_ready, "level-4 equipment completed q312")
+	_check(not QuestService.claim("q312"), "q312 allowed an incomplete claim")
+	_check(_stub_player.inventory.upgrade_equipment("weapon"), "q312 level-5 upgrade failed")
+	QuestService.refresh_state_objectives(_stub_player.inventory)
+	_check(QuestService.main_progress == 1 and QuestService.main_ready, "level-5 equipment did not complete q312")
+	var q312_gold_before: int = _stub_player.inventory.gold
+	var q312_diamonds_before: int = _stub_player.inventory.diamonds
+	_check(QuestService.claim("q312"), "claim q312")
+	_check(_stub_player.inventory.gold == q312_gold_before + 300, "q312 did not grant exactly 300 Gold")
+	_check(_stub_player.inventory.diamonds == q312_diamonds_before, "q312 granted unexpected Diamonds")
+	_check(QuestService.get_main_quest()["id"] == "q313", "q312 did not advance to q313")
+	_check(not QuestService.claim("q312") and _stub_player.inventory.gold == q312_gold_before + 300, "q312 granted twice")
+	GameEvent.enemy_killed.emit("slime", Vector2.ZERO, false)
+	_check(QuestService.main_progress == 0 and not QuestService.main_ready, "legacy slime kill completed q313")
+	GameEvent.enemy_killed.emit("mosqui", Vector2.ZERO, false)
+	GameEvent.enemy_killed.emit("mosqui", Vector2.ZERO, false)
+	_check(QuestService.main_progress == 2 and not QuestService.main_ready, "q313 completed before three kills")
+	GameEvent.enemy_killed.emit("mosqui", Vector2.ZERO, false)
+	_check(QuestService.main_ready, "three Mosqui kills did not complete q313")
+	var q313_diamonds_before: int = _stub_player.inventory.diamonds
+	_check(QuestService.claim("q313"), "claim q313")
+	_check(_stub_player.inventory.diamonds == q313_diamonds_before + 1, "q313 did not grant exactly one Diamond")
+	_check(QuestService.get_main_quest()["id"] == "q02", "q313 did not advance to q02")
+	_check(not QuestService.claim("q313") and _stub_player.inventory.diamonds == q313_diamonds_before + 1, "q313 granted twice")
 	for i in range(8):
 		GameEvent.enemy_killed.emit("slime", Vector2.ZERO, false)
 	_check(QuestService.main_ready, "kill 8 slimes completes q02")
-	_check(QuestService.dailies["d_hunt"]["progress"] == 14, "daily hunt counts all monster kills")
+	_check(QuestService.dailies["d_hunt"]["progress"] == 18, "daily hunt counts all monster kills")
 	GameEvent.enemy_killed.emit("slime_king", Vector2.ZERO, true)
 	_check(QuestService.dailies["d_boss"]["progress"] == 1, "daily boss counts boss kill")
 	_check(QuestService.claim("d_boss"), "claim daily boss")
@@ -614,8 +645,12 @@ func _test_save_roundtrip() -> void:
 	_check(QuestService.main_index == GameContent.get_main_quest_index("q04"), "stable quest id takes precedence over stale index")
 	QuestService.from_dict({"main_index": 0, "main_quest_id": "q311", "main_progress": 0, "main_ready": false})
 	_check(QuestService.main_index == GameContent.get_main_quest_index("q311"), "stable q311 save did not restore by quest id")
+	QuestService.from_dict({"main_index": 0, "main_quest_id": "q312", "main_progress": 0, "main_ready": false})
+	_check(QuestService.main_index == GameContent.get_main_quest_index("q312"), "stable q312 save did not restore by quest id")
+	QuestService.from_dict({"main_index": 0, "main_quest_id": "q313", "main_progress": 0, "main_ready": false})
+	_check(QuestService.main_index == GameContent.get_main_quest_index("q313"), "stable q313 save did not restore by quest id")
 	QuestService.from_dict({"main_index": 2, "main_progress": 0, "main_ready": false})
-	_check(QuestService.main_index == 8, "legacy quest save did not shift across inserted q305-q311")
+	_check(QuestService.main_index == 10, "legacy quest save did not shift across inserted q305-q313")
 	QuestService.from_dict({"main_index": 1, "main_quest_id": "removed_quest", "main_progress": 0, "main_ready": false})
 	_check(QuestService.main_index == 1, "unknown stable quest id did not preserve explicit fallback index")
 
@@ -934,6 +969,105 @@ func _test_snailu_runtime() -> void:
 	for item in spawned_gold:
 		item.queue_free()
 	await get_tree().create_timer(float(snailu_def["death_duration"]) + 0.05).timeout
+	GameEvent.enemy_killed.disconnect(cb)
+	_stub_player.global_position = Vector2.ZERO
+
+
+## Verify the additive source-backed Mosqui encounter without changing legacy slime.
+func _test_mosqui_runtime() -> void:
+	var asset_id := "actor.monster.mosqui.atlas"
+	_check(MonsterVisualCatalog.has_asset(asset_id), "Mosqui stable art ID is not registered")
+	var definition := MonsterVisualCatalog.get_definition(asset_id)
+	_check(definition.get("frame_size", Vector2i.ZERO) == Vector2i(64, 64), "Mosqui frame size drifted")
+	var frames := MonsterVisualCatalog.get_frames(asset_id)
+	_check(frames != null, "Mosqui atlas did not build SpriteFrames")
+	var expected := {
+		"idle": {"row": 0, "frames": [0, 1, 2, 3, 0], "duration": 0.375, "loop": true},
+		"move": {
+			"row": 1,
+			"frames": [0, 1, 2, 3, 4, 5, 0],
+			"duration": 0.2916666567,
+			"loop": true,
+		},
+		"attack": {"row": 2, "frames": [0, 1, 2, 3, 4, 5], "duration": 0.6666666865, "loop": true},
+		"death": {"row": 3, "frames": [0, 1, 2, 3, 4, 5], "duration": 0.75, "loop": false},
+	}
+	for animation_name: String in expected:
+		var expected_animation: Dictionary = expected[animation_name]
+		var sequence: Array = expected_animation["frames"]
+		_check(frames.has_animation(animation_name), "Mosqui animation missing: %s" % animation_name)
+		_check(frames.get_frame_count(animation_name) == sequence.size(), "Mosqui frame count drifted: %s" % animation_name)
+		_check(frames.get_animation_loop(animation_name) == bool(expected_animation["loop"]), "Mosqui loop flag drifted: %s" % animation_name)
+		_check(is_equal_approx(frames.get_animation_speed(animation_name), float(sequence.size()) / float(expected_animation["duration"])), "Mosqui clip duration drifted: %s" % animation_name)
+		for frame_index in range(sequence.size()):
+			var frame_value: Variant = sequence[frame_index]
+			var coordinates: Vector2i
+			if frame_value is Vector2i:
+				coordinates = frame_value
+			else:
+				coordinates = Vector2i(int(frame_value), int(expected_animation["row"]))
+			var atlas := frames.get_frame_texture(animation_name, frame_index) as AtlasTexture
+			var expected_region := Rect2(float(coordinates.x * 64), float(coordinates.y * 64), 64.0, 64.0)
+			_check(atlas != null and atlas.region == expected_region, "Mosqui atlas region drifted: %s[%d]" % [animation_name, frame_index])
+
+	var mosqui_def: Dictionary = GameContent.MONSTERS["mosqui"]
+	_check(GameContent.MONSTERS.has("slime") and GameContent.MONSTERS["slime"] != mosqui_def, "legacy slime identity was replaced by Mosqui")
+	_check(int(mosqui_def.get("source_card_id", 0)) == 37, "Mosqui source Card ID drifted")
+	_check(int(mosqui_def["hp"]) == 400 and int(mosqui_def["dmg"]) == 40, "Mosqui source stats drifted")
+	_check(float(mosqui_def["range"]) == 70.0 and float(mosqui_def["aggro"]) == 200.0, "Mosqui source-scaled ranges drifted")
+	_check(is_equal_approx(float(mosqui_def["attack_interval"]), 1.0), "Mosqui attack gate drifted")
+	_check(mosqui_def["gold"] == Vector2i(60, 70) and mosqui_def["loot"].is_empty(), "Mosqui approved loot boundary drifted")
+
+	var mosqui := Monster.create("mosqui")
+	mosqui.position = Vector2(300, 300)
+	mosqui.set_physics_process(false)
+	add_child(mosqui)
+	_check(mosqui.visual is AnimatedSprite2D, "Mosqui does not use the atlas visual")
+	_check((mosqui.visual as AnimatedSprite2D).sprite_frames == frames, "Mosqui visual did not consume the stable catalog")
+	_check(mosqui.max_hp == 400 and mosqui.damage == 40 and mosqui.xp_reward == 0, "Mosqui runtime stats drifted")
+	var body_shape: CollisionShape2D = null
+	for child in mosqui.get_children():
+		if child is CollisionShape2D:
+			body_shape = child
+			break
+	_check(body_shape != null and body_shape.shape is CircleShape2D and is_equal_approx((body_shape.shape as CircleShape2D).radius, 30.0), "Mosqui source collider radius drifted")
+
+	_stub_player.global_position = mosqui.global_position + Vector2(71, 0)
+	mosqui.target = _stub_player
+	mosqui.attack_cooldown = 0.0
+	mosqui._think_reference_melee(0.0)
+	_check(mosqui.state == "idle" and mosqui.velocity.length() > 0.0, "Mosqui did not chase outside exact attack range")
+	_stub_player.global_position = mosqui.global_position + Vector2(70, 0)
+	mosqui.velocity = Vector2.ZERO
+	mosqui._think_reference_melee(0.0)
+	_check(mosqui.state == "windup" and is_equal_approx(mosqui.attack_cooldown, 1.0), "Mosqui did not open its 1.0s attack gate at exact range")
+	var damage_before: int = _stub_player.damage_taken
+	mosqui.state_time = 0.4
+	mosqui._think_reference_melee(0.0)
+	mosqui._think_reference_melee(0.0)
+	_check(_stub_player.damage_taken == damage_before + 40 and mosqui.state == "windup", "Mosqui attack did not apply exactly one hit during the full clip")
+	mosqui.state_time = float(mosqui_def["attack_duration"])
+	mosqui._think_reference_melee(0.0)
+	_check(mosqui.state == "recover", "Mosqui attack clip did not finish at the verified duration")
+
+	var killed: Array[String] = []
+	var cb := func(id: String, _position: Vector2, _is_boss: bool) -> void: killed.append(id)
+	GameEvent.enemy_killed.connect(cb)
+	var xp_before := GameState.xp
+	mosqui.apply_hit(mosqui.hp, Vector2.ZERO)
+	_check(mosqui.is_dead() and killed.has("mosqui"), "Mosqui death did not emit its stable gameplay ID")
+	_check(GameState.xp == xp_before, "Mosqui invented an unverified XP reward")
+	await get_tree().process_frame
+	var dropped_gold := 0
+	var spawned_gold: Array[GameItem] = []
+	for child in get_tree().current_scene.get_children():
+		if child is GameItem and child.content_type == GameItem.ContentType.GOLD and child.global_position.distance_to(mosqui.global_position) < 80.0:
+			spawned_gold.append(child)
+			dropped_gold += child.value
+	_check(dropped_gold >= 60 and dropped_gold <= 70, "Mosqui Gold drop escaped the verified 60-70 range")
+	for item in spawned_gold:
+		item.queue_free()
+	await get_tree().create_timer(float(mosqui_def["death_duration"]) + 0.05).timeout
 	GameEvent.enemy_killed.disconnect(cb)
 	_stub_player.global_position = Vector2.ZERO
 

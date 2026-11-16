@@ -3,6 +3,16 @@ extends RefCounted
 ## Runtime adapter from stable art IDs to data-driven monster SpriteFrames.
 
 const DEFINITIONS := {
+	"actor.monster.mosqui.atlas": {
+		"texture_path": "res://assets/treasure_hunter/monsters/mosqui_atlas.png",
+		"frame_size": Vector2i(64, 64),
+		"animations": {
+			"idle": {"row": 0, "frames": [0, 1, 2, 3, 0], "duration": 0.375, "loop": true},
+			"move": {"row": 1, "frames": [0, 1, 2, 3, 4, 5, 0], "duration": 0.2916666567, "loop": true},
+			"attack": {"row": 2, "frames": [0, 1, 2, 3, 4, 5], "duration": 0.6666666865, "loop": true},
+			"death": {"row": 3, "frames": [0, 1, 2, 3, 4, 5], "duration": 0.75, "loop": false},
+		},
+	},
 	"actor.monster.snailu.atlas": {
 		"texture_path": "res://assets/treasure_hunter/monsters/snailu_atlas.png",
 		"frame_size": Vector2i(64, 64),

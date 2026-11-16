@@ -390,10 +390,10 @@ func from_dict(d: Dictionary) -> void:
 	reset()
 	var fallback_index := clampi(int(d.get("main_index", 0)), 0, GameContent.MAIN_QUESTS.size())
 	var saved_quest_id := str(d.get("main_quest_id", ""))
-	# Saves predating stable quest IDs used the old chain index. q305-q311 were
-	# inserted after q01, so old post-tutorial indices shift by six.
+	# Saves predating stable quest IDs used the old chain index. q305-q313 were
+	# inserted after q01, so old post-tutorial indices shift by eight.
 	if saved_quest_id.is_empty() and fallback_index > 0:
-		fallback_index = mini(fallback_index + 6, GameContent.MAIN_QUESTS.size())
+		fallback_index = mini(fallback_index + 8, GameContent.MAIN_QUESTS.size())
 	var saved_quest_index := GameContent.get_main_quest_index(saved_quest_id)
 	main_index = saved_quest_index if saved_quest_index >= 0 else fallback_index
 	main_progress = int(d.get("main_progress", 0))

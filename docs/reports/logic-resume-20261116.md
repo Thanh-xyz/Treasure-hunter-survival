@@ -57,3 +57,21 @@ Implemented the exact five-file plan. No Monster behavior or Agent A source was 
 Godot 4.6 import, InventoryTransaction, Survival, Legacy phases 1-7 plus Survival/save, source Card37/q313 assertions, generic menu render and two-process LAN combat all pass (host/client exit 0). Logs /tmp/th-q313. Two independent catalog captures are 360x800, SHA256 4c59354753787fdea3122197696b57e9288b553d3dbd3cd325ca360f763ec205 with zero pixel difference; manual inspection sees a complete unclipped idle sprite. These prove deterministic catalog consumption, not live-world scale/parity. Temporary render scripts in /tmp/th-q313 reuse tests/render_snailu.gd with the existing Mosqui key.
 
 REVIEW: no high/medium issue in five-file scope. Corrected one copied test diagnostic naming shroom instead of slime (message only). Stable gameplay IDs, source sprite/clip metadata, gold boundary, isolated tests, legacy migration and no concurrent Agent A changes verified. Known HUD/negative-save/exit-resource warnings retained. Explicit residuals: no Epic Card162, death alpha fade, verified source speed/spawn/lifetime/hit event. PR target develop only.
+
+## Quest 313 — PR / INTEGRATION
+
+Commit 1f2c3b1fc merged through PR #137 as d5b7b6f86 on develop. Integrated tree 14c7b1981048c824097cb1656e6caed50418b4ad exactly equals tested feature tree. MAIN remains intentionally unmodified.
+
+## Quest 314 prerequisite — SCOUT / BRAINSTORM / proposed PLAN
+
+SCOUT runtime audit on Godot 4.6 exits 0: no Epic-or-better equippable item exists in the catalog; slots are helmet, armor, weapon, shield, boots, accessory_1, accessory_2. Recovered source Card162 is Back_9, equipmentType 5; Card161 is Back_8. Source loot conveys Epic/Rare rank separately from the base card's rareType 0. Neither icon art ID nor BackSlot is registered. The initial audit scratch script had a --script/autoload compile issue; removing static autoload-dependent type references produced the clean audit in /tmp/th-q313/audit.log. Repository tests are unaffected.
+
+BRAINSTORM: dedicated source BackSlot is recommended. Aliasing the back item to accessory/armor would silently change source equipment rules and existing UI contracts. A fake Epic upgrade of an unrelated weapon or a test-only rarity mutation would make the test pass while leaving gameplay fidelity unresolved. Activating q314 immediately would strand the real quest chain, so it is not implemented.
+
+Concrete proposed PLAN and acceptance gates are in docs/handoffs/logic-to-art.md. This expands shared equipment/UI/save/LAN contracts and needs the agreed BackSlot/art metadata before COOK. Existing user authorization permits continuous logic work but explicitly preserves Agent A layout and allows stopping for required Scene/UI design. AGENTS requires shared contract proposals to be approved before implementation; cook-logic requires stopping when art metadata/shared runtime needs coordination. No placeholder node is added because the existing UI has no approved name/placement/slot contract yet. A hidden placeholder would not give the player a usable equip/unequip path.
+
+Queue after resolving the prerequisite: canonical Cards161/162 and drops -> q314 Epic state -> q315 three equipped Level3 items -> q316-319 damage/health/defense stones and upgrade contract -> q320 Donx interaction. Other ongoing fidelity gaps (source upgrade formula, precise attack timing/lifetime, missing equipment drops) remain visible; game-wide parity is not complete.
+
+## Contract documentation — REVIEW
+
+Only this Agent B report and owned logic-to-art handoff are changed on docs/th-logic-back-equipment-contract, based on integrated q313 develop. Reviewed against runtime audit, source Card/Quest metadata and existing UI slot paths. Documentation-only whitespace/scope validation applies; no new runtime suite is needed after these text changes. Next: publish proposal PR to develop; wait at the required Scene/UI contract gate.

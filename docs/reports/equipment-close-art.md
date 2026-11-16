@@ -79,8 +79,10 @@ evidence, superseding the provisional sprite plan.
 
 ## PR / INTEGRATION
 
-Blocked: active GitHub identity is ducnm-kimei; git-flow requires Thanh-xyz.
-Also origin/main has switched to original-content architecture while develop
-remains the recreation base. No account switch, push, PR or main merge performed.
-Next: establish correct GitHub identity and recreation integration target before
-PR. Preserve this reviewed local feature and other worktrees.
+User explicitly authorized using Thanh-xyz to push and continue. gh auth switch
+and gh api user verify Thanh-xyz. Current origin/develop@d5b7b6f86 includes
+Agent B q312/q313 and is the confirmed recreation integration branch; main
+remains separate original-content history and is excluded from this release.
+Merged develop normally with no conflict and reran equipment detail render/action
+checks successfully (exit 0). Final three-file feature scope and whitespace pass.
+Next stage: push and PR into develop, then clean integration validation.

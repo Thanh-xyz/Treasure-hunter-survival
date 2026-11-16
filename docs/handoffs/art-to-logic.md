@@ -15,8 +15,9 @@ Status: startup/auth presentation integrated; broader asset registry remains pro
   former 21x21 X region (441 pixels at 360x800). No full pixel parity claimed.
 - No asset, manifest, gameplay, save or signal contract changes. Agent B needs
   no adaptation. Details: docs/reports/equipment-close-art.md.
-- PR blocked: active GitHub account ducnm-kimei differs from required Thanh-xyz;
-  main now targets original content. No push/PR/main merge performed.
+- User authorized Thanh-xyz; identity verified. Synced q312/q313 develop with
+  no conflict and reran detail render/actions successfully. PR targets develop;
+  original-content main stays excluded.
 
 ## Quest 324 Elixir Icon Asset Contract
 

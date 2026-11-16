@@ -341,8 +341,26 @@ func _test_quests() -> void:
 	var q311_diamonds_before: int = _stub_player.inventory.diamonds
 	_check(QuestService.claim("q311"), "claim q311")
 	_check(_stub_player.inventory.diamonds == q311_diamonds_before + 1, "q311 did not grant exactly one Diamond")
-	_check(QuestService.get_main_quest()["id"] == "q02", "q311 did not advance to q02")
+	_check(QuestService.get_main_quest()["id"] == "q312", "q311 did not advance to q312")
 	_check(not QuestService.claim("q311") and _stub_player.inventory.diamonds == q311_diamonds_before + 1, "q311 granted twice")
+	_check(QuestService.main_progress == 0 and not QuestService.main_ready, "level-1 equipment completed q312")
+	_stub_player.inventory.gold = 10000
+	for expected_level in range(2, 5):
+		_check(_stub_player.inventory.upgrade_equipment("weapon"), "q312 setup upgrade failed")
+		_check(_stub_player.inventory.get_equipped("weapon").enhancement_level == expected_level, "q312 setup upgrade level mismatch")
+	QuestService.refresh_state_objectives(_stub_player.inventory)
+	_check(QuestService.main_progress == 0 and not QuestService.main_ready, "level-4 equipment completed q312")
+	_check(not QuestService.claim("q312"), "q312 allowed an incomplete claim")
+	_check(_stub_player.inventory.upgrade_equipment("weapon"), "q312 level-5 upgrade failed")
+	QuestService.refresh_state_objectives(_stub_player.inventory)
+	_check(QuestService.main_progress == 1 and QuestService.main_ready, "level-5 equipment did not complete q312")
+	var q312_gold_before: int = _stub_player.inventory.gold
+	var q312_diamonds_before: int = _stub_player.inventory.diamonds
+	_check(QuestService.claim("q312"), "claim q312")
+	_check(_stub_player.inventory.gold == q312_gold_before + 300, "q312 did not grant exactly 300 Gold")
+	_check(_stub_player.inventory.diamonds == q312_diamonds_before, "q312 granted unexpected Diamonds")
+	_check(QuestService.get_main_quest()["id"] == "q02", "q312 did not advance to q02")
+	_check(not QuestService.claim("q312") and _stub_player.inventory.gold == q312_gold_before + 300, "q312 granted twice")
 	for i in range(8):
 		GameEvent.enemy_killed.emit("slime", Vector2.ZERO, false)
 	_check(QuestService.main_ready, "kill 8 slimes completes q02")
@@ -614,8 +632,10 @@ func _test_save_roundtrip() -> void:
 	_check(QuestService.main_index == GameContent.get_main_quest_index("q04"), "stable quest id takes precedence over stale index")
 	QuestService.from_dict({"main_index": 0, "main_quest_id": "q311", "main_progress": 0, "main_ready": false})
 	_check(QuestService.main_index == GameContent.get_main_quest_index("q311"), "stable q311 save did not restore by quest id")
+	QuestService.from_dict({"main_index": 0, "main_quest_id": "q312", "main_progress": 0, "main_ready": false})
+	_check(QuestService.main_index == GameContent.get_main_quest_index("q312"), "stable q312 save did not restore by quest id")
 	QuestService.from_dict({"main_index": 2, "main_progress": 0, "main_ready": false})
-	_check(QuestService.main_index == 8, "legacy quest save did not shift across inserted q305-q311")
+	_check(QuestService.main_index == 9, "legacy quest save did not shift across inserted q305-q312")
 	QuestService.from_dict({"main_index": 1, "main_quest_id": "removed_quest", "main_progress": 0, "main_ready": false})
 	_check(QuestService.main_index == 1, "unknown stable quest id did not preserve explicit fallback index")
 

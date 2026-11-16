@@ -38,6 +38,9 @@ var use_stamina_func: Callable
 ## Array[Dictionary]: {skill_id, source_equip_slot, cooldown, current_cooldown, input_action}
 var available_skills: Array[Dictionary] = []
 
+## Timers outlive temporary equipment bindings; entries above expose them to HUD.
+var _cooldowns: Dictionary = {}
+
 ## Skill input action mapping by equipment slot
 const SLOT_INPUT_MAP: Dictionary = {
 	"weapon": "skill_1",      # Q key (define in project input map)
@@ -51,12 +54,20 @@ const SLOT_INPUT_MAP: Dictionary = {
 
 
 func _process(delta: float) -> void:
-	# Tick down cooldowns
-	for skill: Dictionary in available_skills:
-		var cd: float = skill.get("current_cooldown", 0.0)
-		if cd > 0.0:
-			skill["current_cooldown"] = maxf(0.0, cd - delta)
-			skill_cooldown_updated.emit(skill.get("skill_id", ""), skill["current_cooldown"])
+	# A skill has one timer even when multiple equipment slots expose its ID.
+	for skill_id: String in _cooldowns.keys():
+		var remaining := maxf(0.0, float(_cooldowns[skill_id]) - delta)
+		if remaining <= 0.0:
+			_cooldowns.erase(skill_id)
+		else:
+			_cooldowns[skill_id] = remaining
+		var is_available := false
+		for skill: Dictionary in available_skills:
+			if skill.get("skill_id", "") == skill_id:
+				skill["current_cooldown"] = remaining
+				is_available = true
+		if is_available:
+			skill_cooldown_updated.emit(skill_id, remaining)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -91,7 +102,7 @@ func rebuild_skills() -> void:
 			"skill_id": skill_id,
 			"source_equip_slot": slot,
 			"cooldown": skill_data.cooldown,
-			"current_cooldown": 0.0,
+			"current_cooldown": float(_cooldowns.get(skill_id, 0.0)),
 			"stamina_cost": skill_data.stamina_cost,
 			"input_action": SLOT_INPUT_MAP.get(slot, ""),
 		})
@@ -106,7 +117,7 @@ func try_activate_skill(skill_id: String) -> bool:
 			continue
 
 		# Check cooldown
-		if skill.get("current_cooldown", 0.0) > 0.0:
+		if float(_cooldowns.get(skill_id, 0.0)) > 0.0:
 			return false
 
 		# Check stamina
@@ -115,7 +126,11 @@ func try_activate_skill(skill_id: String) -> bool:
 			return false
 
 		# Start cooldown
-		skill["current_cooldown"] = skill.get("cooldown", 0.0)
+		var duration := float(skill.get("cooldown", 0.0))
+		_cooldowns[skill_id] = duration
+		for binding: Dictionary in available_skills:
+			if binding.get("skill_id", "") == skill_id:
+				binding["current_cooldown"] = duration
 
 		# Emit activation signal — owner handles state change + execution
 		skill_activated.emit(skill_id)
@@ -128,5 +143,5 @@ func try_activate_skill(skill_id: String) -> bool:
 func is_skill_ready(skill_id: String) -> bool:
 	for skill: Dictionary in available_skills:
 		if skill.get("skill_id", "") == skill_id:
-			return skill.get("current_cooldown", 0.0) <= 0.0
+			return float(_cooldowns.get(skill_id, 0.0)) <= 0.0
 	return false

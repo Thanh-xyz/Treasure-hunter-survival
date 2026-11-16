@@ -3,6 +3,21 @@
 Date: 2026-11-04
 Status: startup/auth presentation integrated; broader asset registry remains proposed.
 
+## 2026-11-16 Equipment Detail Dismissal — REVIEW complete
+
+- Branch feature/th-art-equipment-close from origin/develop@bd5a5e482.
+- Live Android 4.3.9-1398 shows no X in equipped-item detail and confirms
+  background-tap dismissal. Source close-sprite prototype was discarded.
+- Existing Modal/CloseButton stays hidden with its callback/path preserved;
+  presentation-only _gui_input closes on background press via close_panel.
+- Godot import, existing equipment-detail renderer/action checks and temporary
+  mouse/touch dismissal/idempotence harness pass. Screenshot diff changes only
+  former 21x21 X region (441 pixels at 360x800). No full pixel parity claimed.
+- No asset, manifest, gameplay, save or signal contract changes. Agent B needs
+  no adaptation. Details: docs/reports/equipment-close-art.md.
+- PR blocked: active GitHub account ducnm-kimei differs from required Thanh-xyz;
+  main now targets original content. No push/PR/main merge performed.
+
 ## Quest 324 Elixir Icon Asset Contract
 
 - Stable metadata-only IDs `item.potion.card_900.icon` through

@@ -59,6 +59,22 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
+## Match the reference modal dismissal without invoking equipment actions.
+func _gui_input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if not (event is InputEventMouseButton or event is InputEventScreenTouch):
+		return
+	if _modal.get_rect().has_point(event.position):
+		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		close_panel()
+		accept_event()
+	elif event is InputEventScreenTouch and event.pressed:
+		close_panel()
+		accept_event()
+
+
 func _build_ui() -> void:
 	_modal = Panel.new()
 	_modal.name = "Modal"
@@ -147,6 +163,8 @@ func _build_ui() -> void:
 
 	var close_button := Button.new()
 	close_button.name = "CloseButton"
+	# Retain the node/callback for compatibility; the captured detail has no X.
+	close_button.visible = false
 	close_button.text = "X"
 	close_button.position = Vector2(424, 10)
 	close_button.size = Vector2(42, 42)

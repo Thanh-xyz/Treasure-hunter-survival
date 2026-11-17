@@ -291,7 +291,7 @@ func _test_phase3() -> void:
 	assert(not reactivated, "Should fail — whirlwind on cooldown")
 
 	# Stamina gating: inject a func that denies stamina
-	skill_comp.available_skills[0]["current_cooldown"] = 0.0  # reset cooldown for test
+	skill_comp._process(SkillDatabase.get_skill("whirlwind").cooldown)  # elapse cooldown for test
 	skill_comp.use_stamina_func = func(_cost: float) -> bool: return false
 	var stamina_fail := skill_comp.try_activate_skill("whirlwind")
 	assert(not stamina_fail, "Should fail — insufficient stamina")
@@ -573,7 +573,7 @@ func _test_phase5() -> void:
 	assert(skill_comp.available_skills.size() == 1, "Skill back after re-apply")
 
 	# Reset cooldown for stamina test
-	skill_comp.available_skills[0]["current_cooldown"] = 0.0
+	skill_comp._process(SkillDatabase.get_skill("whirlwind").cooldown)
 	skill_comp.use_stamina_func = func(_cost: float) -> bool: return false
 	var stamina_fail := skill_comp.try_activate_skill("whirlwind")
 	assert(not stamina_fail, "Activation fails when stamina is insufficient")

@@ -24,6 +24,7 @@ func _ready() -> void:
 	_test_shop_purchase_transaction()
 	_test_sale_transaction()
 	_test_equipment_transactions()
+	_test_skill_cooldown_lifecycle()
 	_test_equipment_enhancement()
 	_test_equipment_quest_objectives()
 	_test_inventory_removal_invariants()
@@ -1160,3 +1161,46 @@ func _test_building_upgrade_transaction() -> void:
 	_check(float(GameState.plots[0]["last_collect"]) > timestamp, "successful upgrade did not advance production time")
 	_check(_player.inventory.gold == 100, "successful upgrade did not charge gold exactly once")
 	_check(_player.inventory.get_item_count("stone") == 0, "successful upgrade did not charge stone exactly once")
+
+
+## Equipment refresh must not let a skill bypass its configured cooldown or cost.
+func _test_skill_cooldown_lifecycle() -> void:
+	var component := SkillComponent.new()
+	add_child(component)
+	component.set_process(false)
+	var binding: Array[Dictionary] = [{"skill_id": "whirlwind", "source_equip_slot": "weapon"}]
+	component.get_active_skills_func = func() -> Array: return binding
+	var paid_costs: Array[float] = []
+	component.use_stamina_func = func(cost: float) -> bool:
+		paid_costs.append(cost)
+		return true
+	var activated: Array[String] = []
+	component.skill_activated.connect(func(skill_id: String) -> void: activated.append(skill_id))
+	component.rebuild_skills()
+	_check(component.try_activate_skill("whirlwind"), "skill initial activation failed")
+	var duration: float = SkillDatabase.get_skill("whirlwind").cooldown
+	component._process(1.0)
+	component.rebuild_skills()
+	_check(not component.is_skill_ready("whirlwind"), "equipment refresh cleared active skill cooldown")
+	_check(is_equal_approx(float(component.available_skills[0]["current_cooldown"]), duration - 1.0), "equipment refresh changed remaining cooldown")
+	_check(not component.try_activate_skill("whirlwind"), "skill reactivated during cooldown after refresh")
+	_check(paid_costs.size() == 1 and activated.size() == 1, "cooldown rejection consumed stamina or emitted activation")
+
+	binding.clear()
+	component.rebuild_skills()
+	_check(component.available_skills.is_empty() and not component.try_activate_skill("whirlwind"), "unequipped skill remained usable")
+	component._process(1.0)
+	binding.append({"skill_id": "whirlwind", "source_equip_slot": "armor"})
+	component.rebuild_skills()
+	_check(not component.is_skill_ready("whirlwind"), "re-equipping skill bypassed cooldown")
+	_check(is_equal_approx(float(component.available_skills[0]["current_cooldown"]), duration - 2.0), "unequipped cooldown did not elapse")
+	binding.append({"skill_id": "whirlwind", "source_equip_slot": "weapon"})
+	component.rebuild_skills()
+	component._process(duration - 2.0)
+	_check(component.is_skill_ready("whirlwind"), "skill did not become ready at cooldown expiry")
+	_check(component.try_activate_skill("whirlwind"), "skill could not reactivate after expiry")
+	for entry: Dictionary in component.available_skills:
+		_check(is_equal_approx(float(entry["current_cooldown"]), duration), "duplicate skill binding showed a different cooldown")
+	_check(not component.try_activate_skill("whirlwind"), "duplicate binding bypassed shared cooldown")
+	_check(paid_costs.size() == 2 and activated.size() == 2, "skill cost/activation count drifted")
+	component.queue_free()

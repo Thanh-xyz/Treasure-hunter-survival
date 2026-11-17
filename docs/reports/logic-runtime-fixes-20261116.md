@@ -109,3 +109,15 @@ Pre-fix Survival reproduced both loss on missing inventory and requested-versus-
 ## Pickup delivery — TEST / REVIEW
 
 Godot4.6 import, Inventory, Legacy+Survival and standalone Survival all exit0 with no script errors; LAN combat/loot host+client exit0. Expanded reentrant/invalid-ID checks rerun in survival-final.log. Logs /tmp/th-pickup. Full diff review found no high/medium issue in the bounded delivery change: validation before key use, after async unlock, reservation before inventory callbacks and actual delivery signal. Existing overflow respawn and host loot-consumption listener are preserved (including a zero-delivered lifecycle event when a valid full-bag pickup spills all items). No new visual or save/network contract. Known harness warnings retained; missing red asset cache in initial reproduction fixed by import, not source edits.
+
+## Fixed chest gold range — SCOUT / BRAINSTORM / PLAN
+
+Pickup delivery #148 integrated. Chest _collect_multi_item only rolls gold_range when max>min; an inclusive fixed range (25,25) silently grants zero, while LootTable.roll_gold correctly supports equal endpoints. Choose accepting a nonnegative ordered inclusive range when upper>0; no change to RNG or generic loot distribution. No gold on reversed/negative ranges. Scope GameItem one condition, Survival regression and report, under standing approval on fix/th-logic-chest-fixed-gold. Tests fixed gold plus base gold and fixed contents, exact chest signal and duplicate-claim prevention; zero/ranged behavior unchanged. No UI/asset/schema/network contract. Reproduce then import/Survival and existing transaction suite, review/commit/PR develop. Three-file slice independent of BackSlot.
+
+## Fixed chest gold — COOK / TEST
+
+Pre-fix Survival exits1 with missing fixed gold and wrong emitted reward. Corrected condition includes equal endpoints and excludes negative/reversed ranges. Existing contents, base gold, RNG and cleanup remain unchanged. Regression uses base10 plus range25..25, two wood, exact event payload and duplicate collection rejection. Evidence /tmp/th-chest-gold.
+
+## Fixed chest gold — TEST / REVIEW closeout
+
+Godot4.6 Survival and Inventory suites exit0 with no script errors; fixed gold/content/event/retry regression passes. Full diff reviewed: one condition plus focused test and report; no ownership or high/medium issue. Existing zero-range grants nothing, ordered positive ranges retain randi_range inclusive semantics. No separate renderer/LAN run for this arithmetic-only chest change. Known existing harness warnings preserved. PR targets develop.

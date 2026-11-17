@@ -4,6 +4,7 @@ extends Control
 signal closed
 
 const BUTTON_BLUE := preload("res://assets/treasure_hunter/ui/reference/button_blue.png")
+const BUTTON_RED := preload("res://assets/treasure_hunter/ui/reference/button_red.png")
 const ICON_GOLD := preload("res://assets/treasure_hunter/ui/reference/icon_gold.png")
 const ICON_HEALTH := preload("res://assets/treasure_hunter/ui/reference/icon_health.png")
 const ICON_DAMAGE := preload("res://assets/treasure_hunter/ui/reference/icon_damage.png")
@@ -159,6 +160,7 @@ func _build_ui() -> void:
 	_sell_button.disabled = true
 	_sell_button.tooltip_text = "Chưa hỗ trợ bán trực tiếp trang bị đang mặc."
 	_apply_flat_button_styles(_sell_button, Color8(179, 44, 58), Color8(235, 75, 86))
+	_apply_texture_button_states(_sell_button, BUTTON_RED)
 	_modal.add_child(_sell_button)
 
 	var close_button := Button.new()
@@ -323,9 +325,16 @@ func _item_field_style(rarity: int) -> StyleBoxFlat:
 
 
 func _apply_texture_button_styles(button: Button) -> void:
+	_apply_texture_button_states(button, BUTTON_BLUE)
+	var disabled := _flat_button_style(Color8(54, 58, 65), Color8(92, 94, 99))
+	button.add_theme_stylebox_override("disabled", disabled)
+
+
+## Apply source artwork to interactive states while preserving disabled styling.
+func _apply_texture_button_states(button: Button, texture: Texture2D) -> void:
 	for state in ["normal", "hover", "pressed"]:
 		var style := StyleBoxTexture.new()
-		style.texture = BUTTON_BLUE
+		style.texture = texture
 		style.texture_margin_left = 14
 		style.texture_margin_top = 14
 		style.texture_margin_right = 14
@@ -335,8 +344,6 @@ func _apply_texture_button_styles(button: Button) -> void:
 		elif state == "pressed":
 			style.modulate_color = Color(0.82, 0.82, 0.82, 1)
 		button.add_theme_stylebox_override(state, style)
-	var disabled := _flat_button_style(Color8(54, 58, 65), Color8(92, 94, 99))
-	button.add_theme_stylebox_override("disabled", disabled)
 
 
 func _apply_flat_button_styles(button: Button, base: Color, border: Color) -> void:

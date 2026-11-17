@@ -4482,6 +4482,34 @@
         "Metadata-only guide icon; no world sprite, runtime NPC, interaction, quest, placement, shop, save or network consumer.",
         "Mira and Mira UI are separate sprites. The transparent collision-generated portrait export is excluded."
       ]
+    },
+    {
+      "asset_id": "ui.reference.button.red",
+      "category": "ui_reference",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/sharedassets1.assets/Button_Red__5904.png",
+      "target_path": "assets/treasure_hunter/ui/reference/button_red.png",
+      "file_format": "png",
+      "dimensions": [
+        32,
+        32
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [
+        "sense/ui/inventory/equipment_detail_panel.gd"
+      ],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_export_and_visual_corner_comparison",
+      "integration_status": "integrated",
+      "notes": [
+        "Source Sprite Button_Red path ID 5904; exact SHA-256 1b15ca602c8782cf28314ba2a22f6446b62d0f295b7c325ac189f0daee5db634.",
+        "Selected by live red button corner matching; exact Unity reference pointer unverified.",
+        "Normal/hover/pressed Sell preview only. Existing sale-disabled state and gameplay authority unchanged."
+      ]
     }
   ]
 }

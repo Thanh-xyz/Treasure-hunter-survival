@@ -105,49 +105,57 @@ func _change_map_with_fade(target_map: String) -> void:
 	transition_started.emit(_active_map_id, target_map)
 	
 	await _fade_to(1.0)
-	_load_map(target_map)
+	var loaded := _load_map(target_map)
 	await _fade_to(0.0)
 	
-	transition_completed.emit(_active_map_id)
+	if loaded:
+		transition_completed.emit(_active_map_id)
 	_is_transitioning = false
 
 
-func _load_map(map_id: String) -> void:
-	# Unload current map
-	var previous_map_id = _active_map_id
-	var previous_map_node = _active_map_node
-	if previous_map_node != null and previous_map_node.get_parent() == _root:
-		_root.remove_child(previous_map_node)
-	
-	# Free maps that should not persist between visits (fresh run each time)
-	if previous_map_node != null and not _should_cache_map(previous_map_id):
-		_loaded_maps.erase(previous_map_id)
-		previous_map_node.queue_free()
-	
-	# Get or create map instance
-	var map_node: Node2D
-	if _loaded_maps.has(map_id):
-		map_node = _loaded_maps[map_id]
-	else:
-		var scene_path = _map_registry[map_id]
-		var scene = load(scene_path)
-		if scene == null:
-			push_error("SceneTransitionService: Failed to load scene '%s'" % scene_path)
-			return
-		map_node = scene.instantiate()
+## Prepare a usable destination before detaching the current run; failure is atomic.
+func _load_map(map_id: String) -> bool:
+	if not is_instance_valid(_root) or not is_instance_valid(_player) or not is_valid_map(map_id):
+		return false
+	var cached_map: Variant = _loaded_maps.get(map_id)
+	var map_node: Node2D = cached_map as Node2D if is_instance_valid(cached_map) else null
+	if not is_instance_valid(map_node) or map_node.is_queued_for_deletion():
+		var scene_path := String(_map_registry[map_id])
+		if not ResourceLoader.exists(scene_path):
+			push_warning("SceneTransitionService: Missing destination '%s'" % scene_path)
+			return false
+		var scene := load(scene_path) as PackedScene
+		if scene == null or not scene.can_instantiate():
+			push_warning("SceneTransitionService: Invalid destination scene '%s'" % scene_path)
+			return false
+		var instance := scene.instantiate()
+		if not instance is Node2D:
+			instance.free()
+			push_warning("SceneTransitionService: Destination must be Node2D '%s'" % scene_path)
+			return false
+		map_node = instance as Node2D
 		map_node.name = map_id.capitalize().replace(" ", "")
-		_loaded_maps[map_id] = map_node
-	
-	# Add to tree at index 0 (behind player/UI)
+	if map_node.get_parent() != null and map_node.get_parent() != _root:
+		push_warning("SceneTransitionService: Destination belongs to another root")
+		return false
+
+	var previous_map_id := _active_map_id
+	var previous_map_node := _active_map_node
+	if is_instance_valid(previous_map_node) and previous_map_node != map_node:
+		if previous_map_node.get_parent() == _root:
+			_root.remove_child(previous_map_node)
+		if not _should_cache_map(previous_map_id):
+			_loaded_maps.erase(previous_map_id)
+			previous_map_node.queue_free()
+
+	_loaded_maps[map_id] = map_node
 	if map_node.get_parent() != _root:
 		_root.add_child(map_node)
 	_root.move_child(map_node, 0)
-	
-	# Spawn player
 	_spawn_player_in_map(map_node)
-	
 	_active_map_id = map_id
 	_active_map_node = map_node
+	return true
 
 
 func _should_cache_map(map_id: String) -> bool:

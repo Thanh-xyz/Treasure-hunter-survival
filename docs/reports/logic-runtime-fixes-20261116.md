@@ -49,3 +49,27 @@ Godot 4.6 import, InventoryTransaction, Legacy phases1-7 plus embedded Survival/
 Review of full three-file diff: one private helper/four call sites, focused regression and owned report. No high/medium finding, art/UI edit, unrelated balance/stat change or ownership conflict. No live reference comparison or source maximum-HP rescaling semantics claimed; this repairs the existing absolute-HP invariant.
 
 LAN player-vitals host/client both exit 0; logs/JSON /tmp/th-health-bonus/lan-*. No script errors in either process. Full test/review gates complete before commit. Skill #140 integrated as 90c9203ac; combined base also includes disjoint Agent A #139, so exact equality to the pre-art skill tree was not claimed. Combined suites validate both.
+
+## Scene transition failure — SCOUT / BRAINSTORM
+
+Health fix #142 integrated after disjoint Agent A back-equipment evidence #141; that report identifies unresolved Back_0 versus Back_8/9 source icon ambiguity. No slot/icon guess is made. Continue independent gameplay work.
+
+SceneTransitionService._load_map removes the active map and queues noncached maps for deletion before trying load/instantiate of the destination. Failure leaves a stale active-map pointer and blank play area. _change_map_with_fade also emits completion on failure. Main listens to transition completion to save. Investigated the full service, owner listeners, map cache rules, relevant history, active Agent A diff and coordination. Preserve existing fade and all map IDs, cameras, UI and signals.
+
+Recommend prepare/validate the destination before detaching the current map, and return internal success to suppress false completion. Alternative reconstruct old maps after failure loses dungeon run state; global loading redesign is unnecessary. Existing synchronous load stays synchronous.
+
+## Scene transition failure — PLAN / HUMAN APPROVAL
+
+Standing continuous bug-fix approval applies. Branch fix/th-logic-map-load-recovery from latest develop. Scope: shared runtime scene_transition_service.gd logic only, owned tests/inventory_transaction_tests.gd and this report. No visual field, layer, timing, map scene, ownership or public interface changes. _load_map returns bool internally; check initialized root/player, destination registration, PackedScene type, instantiated Node2D and usable cache before mutating old map; failed transition fades back, releases transition lock and does not signal completion. Tests create temporary PackedScene resources with Node2D/Marker2D only, use an isolated service instance, verify failed path/non-map resource leaves old cached/noncached map and player position intact; verify success spawns, caches/uncaches and emits completion once. Missing/corrupt cache should reload. Regression before fix then import/Inventory/Legacy/Survival and review. No real player save or gameplay scene is modified by test. Rollback service and test/report.
+
+## Scene transition failure — COOK / TEST entry
+
+Before-fix Inventory regression exits 1: missing load detaches/frees active dungeon and signals completion; Resource instead of PackedScene triggers nonexistent instantiate script error. /tmp/th-map-recovery/repro.log retains evidence. Destination now prepared/type-checked before source mutation; internal success gates completion while preserving fade behavior. Active cache and current-map IDs remain unchanged on failure. TEST follows on isolated user storage.
+
+TEST added real fade, wrong-root scene and freed-cache recovery checks. Freed cache exposed a cast-on-freed-object script error despite suite success output; added is_instance_valid before the typed cast and reran the focused suite. The earlier log is invalid as a full pass and retained as inventory-cache-initial.log. No generic ALL PASSED marker is trusted without log inspection.
+
+## Scene transition recovery — TEST / REVIEW closeout
+
+Godot 4.6 import, Inventory, Legacy phases1-7 plus Survival/save and standalone Survival pass with no script/parse errors. Final Inventory includes missing-path, non-scene resource, wrong-root scene, preserving live noncached dungeon, correct spawn, cached identity, freed-cache reload, real fade restore and transition-lock/completion assertions. /tmp/th-map-recovery contains final logs. Known invalid-save/HUD/exit-resource warnings remain; destination warnings are intentional negative fixtures. No LAN change or visual-parity assertion.
+
+Review: prepared destination before mutation, current run/player preserved on preparation failure, successful transitions retain caching/spawn/fade behavior. Three-file scope matches plan; no high/medium finding or concurrent Agent A edit remains. Private _load_map now returns bool, public signal signatures stay unchanged. Main's transition_started loot collection still runs on transition attempts; this feature does not claim all external start-listener side effects roll back. MAIN stays excluded.

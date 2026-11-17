@@ -399,7 +399,7 @@ func _collect_multi_item(collector: Node2D) -> void:
 	
 	# Add gold
 	var total_gold := gold_amount
-	if gold_range.y > gold_range.x:
+	if gold_range.x >= 0 and gold_range.y >= gold_range.x and gold_range.y > 0:
 		total_gold += randi_range(gold_range.x, gold_range.y)
 	if total_gold > 0:
 		inventory.gold += total_gold

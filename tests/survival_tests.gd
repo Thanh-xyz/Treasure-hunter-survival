@@ -67,6 +67,7 @@ func run_all() -> bool:
 	await _test_ground_dig()
 	await _test_resource_node_overflow()
 	await _test_item_pickup_delivery()
+	await _test_fixed_chest_gold()
 	_test_save_roundtrip()
 	await _test_monster_kill()
 	await _test_turtle_runtime()
@@ -1247,4 +1248,26 @@ func _test_item_pickup_delivery() -> void:
 	await invalid_item._collect(_stub_player)
 	_check(not invalid_item._is_collected, "invalid item identifier was consumed")
 	invalid_item.queue_free()
+	_stub_player.inventory = previous_inventory
+
+
+## Inclusive equal-endpoint gold ranges must grant their fixed value once.
+func _test_fixed_chest_gold() -> void:
+	var previous_inventory: InventoryData = _stub_player.inventory
+	var inventory := InventoryData.new()
+	_stub_player.inventory = inventory
+	var chest := GameItem.create_chest([{"item_id": "wood", "quantity": 2}], 10)
+	chest.gold_range = Vector2i(25, 25)
+	chest.position = Vector2(2000, 2000)
+	add_child(chest)
+	chest.set_physics_process(false)
+	var opened: Array[Array] = []
+	chest.chest_opened.connect(func(items: Array[Dictionary]) -> void: opened.append(items.duplicate(true)))
+	await chest._collect(_stub_player)
+	_check(inventory.gold == 35, "fixed chest gold range was omitted")
+	_check(inventory.get_item_count("wood") == 2, "fixed chest contents were lost")
+	_check(opened.size() == 1 and opened[0] == [{"item_id": "gold", "quantity": 35}, {"item_id": "wood", "quantity": 2}], "chest event did not report fixed gold plus contents")
+	await chest._collect(_stub_player)
+	_check(inventory.gold == 35 and opened.size() == 1, "chest retry changed the expected one-time reward")
+	chest.queue_free()
 	_stub_player.inventory = previous_inventory

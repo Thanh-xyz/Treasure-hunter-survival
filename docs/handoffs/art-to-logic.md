@@ -13,8 +13,8 @@ Status: startup/auth presentation integrated; broader asset registry remains pro
 - Current runtime has seven equipment slots and no back slot. No Back asset ID,
   manifest entry, scene, or gameplay file was changed. Agent B must resolve the
   icon resolver/authoritative variant in the shared contract before COOK.
-- Direct Android account is connected but has no Card 161/162 item; no live
-  back-item capture exists.
+- No live Card 161/162 capture was obtained; account ownership is unknown.
+  Android is disconnected at the 2026-11-17 recheck.
 
 ## 2026-11-16 Equipment Detail Dismissal — REVIEW complete
 

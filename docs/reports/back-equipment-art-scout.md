@@ -29,9 +29,9 @@ Base: origin/develop@902541b1f
   runtime equipment detail displays.
 - Direct Android is connected as `R58W70GXK6J` / SM_A047F, but the current
   captured account is at login after the latest relaunch. No source Card 161/162
-  item was obtained or equipped, and no gameplay action was invoked.
+  item was obtained or equipped, and no equipment mutation was invoked during this investigation.
 
-## Decision / recommendation
+## BRAINSTORM / decision
 
 Do not add `BackSlot`, modify `inventory_panel.tscn`, or register stable art IDs
 until Agent B and the shared contract resolve the `iconUrl Back_0` versus
@@ -39,6 +39,20 @@ Back_8/Back_9 discrepancy and specify which source variant is authoritative.
 When approved, the art plan must choose one logical canvas per card, preserve
 metadata/pivot/PPU, use nearest filtering, record `local_only` provenance, and
 validate the new slot against a direct character-panel capture.
+
+## PLAN / standing approval / COOK
+
+User authorized continued independent Art/UI work and pushing as Thanh-xyz.
+This documentation-only slice records the ambiguity in this report and the owned
+art-to-logic handoff; it does not implement the proposed shared BackSlot contract.
+
+## TEST / REVIEW
+
+Rechecked source image dimensions/hashes and Card.json fields. Reviewed the
+complete two-file diff and git diff --check; no runtime file or manifest changed.
+Godot/render tests are not applicable to this documentation-only feature.
+ADB is currently disconnected (2026-11-17); historical captures were ephemeral.
+No claim is made about whether the saved account owns either card.
 
 ## Files and validation
 

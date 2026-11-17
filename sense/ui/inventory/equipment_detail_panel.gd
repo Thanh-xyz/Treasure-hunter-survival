@@ -143,7 +143,7 @@ func _build_ui() -> void:
 
 	_remove_button = _action_button("Tháo", Vector2(30, 360), Vector2(126, 70))
 	_remove_button.name = "RemoveButton"
-	_apply_flat_button_styles(_remove_button, Color8(96, 97, 101), Color8(144, 145, 148))
+	_apply_texture_button_styles(_remove_button)
 	_remove_button.pressed.connect(_on_remove_pressed)
 	_modal.add_child(_remove_button)
 

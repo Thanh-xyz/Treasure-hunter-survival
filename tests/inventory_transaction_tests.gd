@@ -25,6 +25,7 @@ func _ready() -> void:
 	_test_sale_transaction()
 	_test_equipment_transactions()
 	_test_skill_cooldown_lifecycle()
+	_test_health_bonus_removal()
 	_test_equipment_enhancement()
 	_test_equipment_quest_objectives()
 	_test_inventory_removal_invariants()
@@ -1204,3 +1205,62 @@ func _test_skill_cooldown_lifecycle() -> void:
 	_check(not component.try_activate_skill("whirlwind"), "duplicate binding bypassed shared cooldown")
 	_check(paid_costs.size() == 2 and activated.size() == 2, "skill cost/activation count drifted")
 	component.queue_free()
+
+
+## Bonus expiry and equipment removal must publish one valid, non-healing HP state.
+func _test_health_bonus_removal() -> void:
+	var stats := CharacterStats.new()
+	var inventory := InventoryData.new()
+	var armor := ItemDatabase.get_item_copy("leather_armor")
+	armor.health_bonus = 50
+	_check(inventory.add_item(armor, 1) == 0 and inventory.equip_item(0), "HP bonus equipment setup failed")
+	var notifications: Array[Vector2i] = []
+	var deaths: Array[bool] = []
+	stats.health_changed.connect(func(current: int, maximum: int) -> void: notifications.append(Vector2i(current, maximum)))
+	stats.died.connect(func() -> void: deaths.append(true))
+	stats.apply_equipment_bonuses(inventory)
+	_check(stats.current_health == 100 and stats.max_health == 150, "equipping HP bonus healed the player")
+	stats.heal(50)
+	notifications.clear()
+	_check(inventory.unequip_item("armor"), "HP bonus unequip failed")
+	stats.apply_equipment_bonuses(inventory)
+	_check(stats.current_health == 100, "unequipped HP bonus left health above maximum")
+	_check(notifications == [Vector2i(100, 100)], "unequip did not publish one valid final HP state")
+
+	_check(inventory.equip_item(0), "HP bonus re-equip failed")
+	stats.apply_equipment_bonuses(inventory)
+	stats.heal(50)
+	notifications.clear()
+	stats.clear_equipment_bonuses()
+	_check(stats.current_health == 100 and notifications == [Vector2i(100, 100)], "clearing equipment HP bonus did not clamp exactly once")
+
+	var buffs := BuffComponent.new()
+	add_child(buffs)
+	buffs.set_process(false)
+	buffs.buffs_changed.connect(func() -> void: stats.apply_buff_bonuses(buffs))
+	buffs.apply_buff(ItemDatabase.get_item("vitality_tonic_t1"))
+	_check(stats.current_health == 100 and stats.max_health == 120, "HP buff healed on cap increase")
+	stats.heal(20)
+	notifications.clear()
+	buffs._process(61.0)
+	_check(stats.current_health == 100 and notifications == [Vector2i(100, 100)], "expired buff left excess HP or duplicate notification")
+
+	buffs.apply_buff(ItemDatabase.get_item("vitality_tonic_t1"))
+	stats.heal(20)
+	notifications.clear()
+	stats.clear_buff_bonuses()
+	_check(stats.current_health == 100 and notifications == [Vector2i(100, 100)], "clearing buff HP bonus did not clamp exactly once")
+	stats.current_health = 25
+	stats.apply_buff_bonuses(buffs)
+	stats.clear_buff_bonuses()
+	_check(stats.current_health == 25, "bonus update healed or injured a wounded player")
+	stats.current_health = 0
+	var death_count: int = deaths.size()
+	notifications.clear()
+	stats.apply_buff_bonuses(buffs)
+	stats.clear_buff_bonuses()
+	stats.apply_equipment_bonuses(inventory)
+	stats.clear_equipment_bonuses()
+	_check(stats.current_health == 0 and deaths.size() == death_count, "bonus refresh resurrected player or repeated death")
+	_check(notifications.size() == 4, "dead bonus updates changed notification count")
+	buffs.queue_free()

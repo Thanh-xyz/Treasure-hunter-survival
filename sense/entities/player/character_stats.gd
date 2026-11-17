@@ -98,8 +98,8 @@ func apply_equipment_bonuses(inventory: InventoryData) -> void:
 	equipment_health_bonus = inventory.get_total_health_bonus()
 	equipment_speed_bonus = inventory.get_total_speed_bonus()
 	
-	# Re-emit health change in case max_health changed
-	health_changed.emit(current_health, max_health)
+	# Reconcile before observers see a lower health cap.
+	_refresh_health_after_bonus_change()
 
 
 ## Clear all equipment bonuses
@@ -108,7 +108,7 @@ func clear_equipment_bonuses() -> void:
 	equipment_defense_bonus = 0
 	equipment_health_bonus = 0
 	equipment_speed_bonus = 0
-	health_changed.emit(current_health, max_health)
+	_refresh_health_after_bonus_change()
 
 
 func take_damage(amount: int) -> void:
@@ -151,7 +151,7 @@ func apply_buff_bonuses(buff_component: BuffComponent) -> void:
 	buff_defense_bonus = buff_component.get_total_buff_defense()
 	buff_health_bonus = buff_component.get_total_buff_health()
 	buff_speed_bonus = buff_component.get_total_buff_speed()
-	health_changed.emit(current_health, max_health)
+	_refresh_health_after_bonus_change()
 
 
 ## Clear all buff bonuses (e.g. on death)
@@ -160,7 +160,15 @@ func clear_buff_bonuses() -> void:
 	buff_defense_bonus = 0
 	buff_health_bonus = 0
 	buff_speed_bonus = 0
-	health_changed.emit(current_health, max_health)
+	_refresh_health_after_bonus_change()
+
+
+## Keep absolute HP within a changed cap without healing or replaying death signals.
+func _refresh_health_after_bonus_change() -> void:
+	if current_health > max_health:
+		current_health = max_health
+	else:
+		health_changed.emit(current_health, max_health)
 
 
 func reset() -> void:

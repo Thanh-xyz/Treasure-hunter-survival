@@ -3,6 +3,17 @@
 Date: 2026-11-04
 Status: startup/auth presentation integrated; broader asset registry remains proposed.
 
+## 2026-11-17 Mira guide icon — REVIEW complete
+
+- Stable metadata-only ID actor.npc.mira.icon maps to
+  assets/treasure_hunter/npcs/mira/mira_icon.png, exact RGBA 160x160 export.
+- SHA-256 4487785383c988d7a93529d3a353f205508836b7bb1cf1285cbdf522c74b59c7;
+  local_only. FAQ Quest325 pointer and source metadata in mira-guide-art report.
+- Godot import/load/native render pass: all 17,559 opaque pixels and full alpha
+  match source. No runtime NPC, quest, shop, placement, world sprite or API change.
+- No Agent B adaptation; world Mira requires its own future approved contract.
+
+
 ## 2026-11-16 Back Equipment Art — SCOUT complete
 
 - Card 161/162 are source `Back_8`/`Back_9` but both Card.json records point to

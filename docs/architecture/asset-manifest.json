@@ -4454,6 +4454,34 @@
         "Reconstructed logical-canvas SHA-256: e5f6d1eaf6784a136bd111f5358f5a6d6aa36cd26cfb958ae479aa61323659be.",
         "Metadata-only art ID; no Emberfield item, recipe, effect, quest, or runtime mapping is implied."
       ]
+    },
+    {
+      "asset_id": "actor.npc.mira.icon",
+      "category": "npc_icon",
+      "source_path": "/home/thanh/Documents/1.Projects/assets-ths/exports/TreasureHunter_UnityPy_images/unity_data/sprites/e04a8939bc803b34a9aa30d3add8dbc3/Mira Icon__1.png",
+      "target_path": "assets/treasure_hunter/npcs/mira/mira_icon.png",
+      "file_format": "png",
+      "dimensions": [
+        160,
+        160
+      ],
+      "transparency": "transparent_or_partial",
+      "animation": null,
+      "usage": [],
+      "provenance": {
+        "status": "user_supplied_extracted",
+        "distribution_scope": "local_only",
+        "license_status": "not_verified_for_public_redistribution"
+      },
+      "evidence_status": "verified_quest_faq_pointer_and_exact_export",
+      "integration_status": "selected",
+      "notes": [
+        "Quest 325_MeetMira_Wiki GameObject 93905 points to external file 218 / Sprite path ID 1 in e04a8939bc803b34a9aa30d3add8dbc3.",
+        "Sprite Mira Icon: original 160x160 canvas, centered pivot, 100 PPU per prior source scout.",
+        "SHA-256: 4487785383c988d7a93529d3a353f205508836b7bb1cf1285cbdf522c74b59c7.",
+        "Metadata-only guide icon; no world sprite, runtime NPC, interaction, quest, placement, shop, save or network consumer.",
+        "Mira and Mira UI are separate sprites. The transparent collision-generated portrait export is excluded."
+      ]
     }
   ]
 }

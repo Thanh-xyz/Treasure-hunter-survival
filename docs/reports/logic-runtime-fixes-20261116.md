@@ -73,3 +73,23 @@ TEST added real fade, wrong-root scene and freed-cache recovery checks. Freed ca
 Godot 4.6 import, Inventory, Legacy phases1-7 plus Survival/save and standalone Survival pass with no script/parse errors. Final Inventory includes missing-path, non-scene resource, wrong-root scene, preserving live noncached dungeon, correct spawn, cached identity, freed-cache reload, real fade restore and transition-lock/completion assertions. /tmp/th-map-recovery contains final logs. Known invalid-save/HUD/exit-resource warnings remain; destination warnings are intentional negative fixtures. No LAN change or visual-parity assertion.
 
 Review: prepared destination before mutation, current run/player preserved on preparation failure, successful transitions retain caching/spawn/fade behavior. Three-file scope matches plan; no high/medium finding or concurrent Agent A edit remains. Private _load_map now returns bool, public signal signatures stay unchanged. Main's transition_started loot collection still runs on transition attempts; this feature does not claim all external start-listener side effects roll back. MAIN stays excluded.
+
+## Hurtbox reset race — SCOUT / BRAINSTORM / PLAN
+
+Map recovery #145 passed tests/review and integrates to develop. Next independent component defect: HurtboxComponent starts deferred release coroutines after each accepted hit; reset only sets can_take_damage=true. An old timer can release a newer post-reset hit's invincibility early. No exact source iframe duration is claimed or changed.
+
+Choose a private generation token: reset invalidates pending releases, each accepted raw/resolved hit records a new generation before emitting signals, only matching release can unlock the hurtbox. Alternative stop-and-recreate Timer child changes node contracts; serializing hits unnecessarily affects gameplay. Standing continuous approval covers this isolated fix.
+
+Exact files: sense/components/hurtbox_component.gd, tests/inventory_transaction_tests.gd, this report. Existing signals/method signatures, scene nodes, collision layers and configured durations remain unchanged. Reproduce with old long-running raw hit -> reset -> new resolved hit; wait past old deadline but before new deadline and verify rejection, then permit at new expiry. Repeat with reset inside synchronous damage callback to catch invalid token capture order. Run Inventory/Legacy/Survival and LAN combat because both damage entry points feed existing combat authority. Review full diff before commit/PR. Rollback token and tests. No Agent A dependency.
+
+## Hurtbox reset race — COOK / TEST
+
+Initial scratch invocation appended a test function before its caller existed on the pre-map branch, so it was not a valid reproduction. Synced integrated map #145 preserving local additions, wired awaited test, reran; /tmp/th-hurtbox-race/repro.log records actual pre-reset timer release failures. GitHub default identity changed during collaboration; scoped GH_TOKEN loaded in process for Thanh-xyz (never printed) successfully merged #145. Agent A #143/#144 are disjoint already in the base.
+
+Implementation captures generation and configured duration before synchronous callbacks, invalidates on reset, checks token before deferred scheduling and timer completion. No signature change except private release helper. Tests cover raw -> reset -> resolved and synchronous reset with different durations. Full suites and LAN combat follow.
+
+## Hurtbox reset race — TEST / REVIEW closeout
+
+Godot 4.6 import, Inventory regression, Legacy phases1-7 plus Survival/save, standalone Survival and two-process LAN combat all exit 0 and contain no script/parse errors. Both timer races reproduced before correction and pass after it. Tests intentionally wait across old/new timer deadlines, not one frame; no configured invincibility duration changes. Logs/JSON /tmp/th-hurtbox-race.
+
+Review confirms generation captured before callbacks in both raw/resolved entry points, reset invalidates old release and completion checks identity. Three-file scope, stable signals and damage rules, no visual/asset/schema change. Existing harness negative-save/HUD/resource warnings remain. Agent A's active equipment-detail-sell art files are disjoint and preserved. No high/medium finding remains; PR to develop next.

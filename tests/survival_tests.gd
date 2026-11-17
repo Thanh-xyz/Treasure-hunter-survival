@@ -66,6 +66,7 @@ func run_all() -> bool:
 	_test_quests()
 	await _test_ground_dig()
 	await _test_resource_node_overflow()
+	await _test_item_pickup_delivery()
 	_test_save_roundtrip()
 	await _test_monster_kill()
 	await _test_turtle_runtime()
@@ -1198,3 +1199,52 @@ func _test_player_combat_modifiers() -> void:
 	_check(bool(upgrade_event["seen"]) and int(upgrade_event["level"]) == 2 and int(upgrade_event["cost"]) == upgrade_cost, "player did not forward the stable equipment upgrade event")
 	GameEvent.equipment_upgraded.disconnect(on_equipment_upgraded)
 	local_player.queue_free()
+
+
+## Pickup events must reflect delivered quantity and reject collectors without inventory.
+func _test_item_pickup_delivery() -> void:
+	var previous_inventory: InventoryData = _stub_player.inventory
+	var invalid_collector := Node2D.new()
+	add_child(invalid_collector)
+	var pickup := GameItem.create_item("wood", 3)
+	add_child(pickup)
+	pickup.set_physics_process(false)
+	var received: Array[int] = []
+	pickup.collected.connect(func(_type: GameItem.ContentType, _id: String, amount: int) -> void: received.append(amount))
+	await pickup._collect(invalid_collector)
+	_check(not pickup._is_collected and received.is_empty(), "invalid collector consumed ground item")
+	pickup.queue_free()
+	invalid_collector.queue_free()
+
+	var inventory := InventoryData.new()
+	var wood: ItemData = ItemDatabase.get_item("wood")
+	inventory.add_item(wood, wood.max_stack - 1)
+	inventory.add_item(ItemDatabase.get_item("iron_sword"), InventoryData.INVENTORY_SIZE - 1)
+	_stub_player.inventory = inventory
+	var partial := GameItem.create_item("wood", 3)
+	partial.position = Vector2(2000, 2000)
+	add_child(partial)
+	partial.set_physics_process(false)
+	var actual: Array[int] = []
+	partial.collected.connect(func(_type: GameItem.ContentType, _id: String, amount: int) -> void: actual.append(amount))
+	var reenter := func() -> void: partial._collect(_stub_player)
+	inventory.inventory_changed.connect(reenter)
+	await partial._collect(_stub_player)
+	inventory.inventory_changed.disconnect(reenter)
+	_check(inventory.get_item_count("wood") == wood.max_stack, "partial pickup did not fill available stack")
+	_check(actual == [1], "partial pickup reported requested rather than delivered quantity")
+	await get_tree().process_frame
+	var overflow := 0
+	for child in get_tree().current_scene.get_children():
+		if child is GameItem and child != partial and child.item_id == "wood" and child.global_position.distance_to(Vector2(2000, 2000)) < 30:
+			overflow += child.quantity
+			child.queue_free()
+	_check(overflow == 2, "partial pickup did not conserve overflow items")
+	partial.queue_free()
+	var invalid_item := GameItem.create_item("", 1)
+	add_child(invalid_item)
+	invalid_item.set_physics_process(false)
+	await invalid_item._collect(_stub_player)
+	_check(not invalid_item._is_collected, "invalid item identifier was consumed")
+	invalid_item.queue_free()
+	_stub_player.inventory = previous_inventory

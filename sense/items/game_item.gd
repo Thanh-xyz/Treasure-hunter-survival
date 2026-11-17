@@ -278,16 +278,21 @@ func _collect(collector: Node2D) -> void:
 		LanSession.request_loot_pickup(network_id)
 		return
 	
+	if not _can_deliver_to(collector):
+		return
 	# Check lock (async because _try_unlock may show message)
 	if locked and not await _try_unlock(collector):
 		return
 	
+	if _is_collected or not _can_deliver_to(collector):
+		return
 	_is_collected = true
+	var delivered_quantity := quantity
 	
 	# Process based on content type
 	match content_type:
 		ContentType.ITEM:
-			_collect_item(collector)
+			delivered_quantity = _collect_item(collector)
 		ContentType.GOLD:
 			_collect_gold(collector)
 		ContentType.HEALTH:
@@ -300,7 +305,7 @@ func _collect(collector: Node2D) -> void:
 			_collect_multi_item(collector)
 	
 	# Emit signal
-	collected.emit(content_type, item_id, quantity if content_type == ContentType.ITEM else value)
+	collected.emit(content_type, item_id, delivered_quantity if content_type == ContentType.ITEM else value)
 	
 	# Cleanup
 	_play_collect_effect()
@@ -314,18 +319,18 @@ func apply_network_collected() -> void:
 	_play_collect_effect()
 
 
-func _collect_item(collector: Node2D) -> void:
+func _collect_item(collector: Node2D) -> int:
 	if item_id.is_empty():
-		return
+		return 0
 	
 	var inventory := _get_inventory(collector)
 	if inventory == null:
-		return
+		return 0
 	
 	var item: ItemData = ItemDatabase.get_item(item_id)
 	if item == null:
 		push_warning("GameItem: Item '%s' not found in database" % item_id)
-		return
+		return 0
 
 	var remaining := inventory.add_item(item, quantity)
 	var collected_qty := quantity - remaining
@@ -337,6 +342,8 @@ func _collect_item(collector: Node2D) -> void:
 		var excess := GameItem.create_item(item_id, remaining)
 		excess.global_position = global_position + Vector2(randf_range(-10, 10), randf_range(-10, 10))
 		get_tree().current_scene.call_deferred("add_child", excess)
+
+	return collected_qty
 
 
 func _collect_gold(collector: Node2D) -> void:
@@ -448,6 +455,18 @@ func _add_item_to_inventory(inventory: InventoryData, p_item_id: String, qty: in
 # ═══════════════════════════════════════════════════════════════════════════════
 # HELPER METHODS
 # ═══════════════════════════════════════════════════════════════════════════════
+
+## Reject unsupported delivery before unlocking or consuming a ground reward.
+func _can_deliver_to(collector: Node2D) -> bool:
+	if not is_instance_valid(collector):
+		return false
+	if content_type in [ContentType.ITEM, ContentType.GOLD, ContentType.MULTI_ITEM]:
+		if _get_inventory(collector) == null:
+			return false
+	if content_type == ContentType.ITEM:
+		return quantity > 0 and not item_id.is_empty() and ItemDatabase.get_item(item_id) != null
+	return true
+
 
 func _get_inventory(node: Node2D) -> InventoryData:
 	if node.has_method("get_inventory"):
@@ -661,7 +680,7 @@ func scatter_from(origin: Vector2) -> void:
 ## Animated magnet-fly-to-player collection (used by auto-collect on room transitions)
 ## Pops up, then arcs toward the collector with a trail-like shrink at the end
 func magnet_collect(collector: Node2D, duration: float = 0.45) -> void:
-	if _is_collected:
+	if _is_collected or (not network_replica and not _can_deliver_to(collector)):
 		return
 	if network_replica:
 		_collect(collector)

@@ -3,6 +3,19 @@
 Date: 2026-11-04
 Status: startup/auth presentation integrated; broader asset registry remains proposed.
 
+## 2026-11-16 Back Equipment Art — SCOUT complete
+
+- Card 161/162 are source `Back_8`/`Back_9` but both Card.json records point to
+  `Icons/Items/5_Back/Back_0`. This is a verified source mismatch, not an art
+  identity decision.
+- Unity-data and addressable exports differ in logical canvas and dimensions;
+  metadata/pivots/PPU are recorded in `docs/reports/back-equipment-art-scout.md`.
+- Current runtime has seven equipment slots and no back slot. No Back asset ID,
+  manifest entry, scene, or gameplay file was changed. Agent B must resolve the
+  icon resolver/authoritative variant in the shared contract before COOK.
+- No live Card 161/162 capture was obtained; account ownership is unknown.
+  Android is disconnected at the 2026-11-17 recheck.
+
 ## 2026-11-16 Equipment Detail Dismissal — REVIEW complete
 
 - Branch feature/th-art-equipment-close from origin/develop@bd5a5e482.

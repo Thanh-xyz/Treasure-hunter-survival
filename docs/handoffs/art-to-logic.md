@@ -3,6 +3,17 @@
 Date: 2026-11-04
 Status: startup/auth presentation integrated; broader asset registry remains proposed.
 
+## 2026-11-17 Equipment red Sell artwork — REVIEW complete
+
+- Exact local_only ui.reference.button.red (32x32 Button_Red source) supplies
+  normal/hover/pressed Sell artwork. Disabled gameplay state/style unchanged.
+- Existing Godot detail action/render suite passes; disabled screenshot has
+  zero pixel diff. Isolated enabled preview does not connect any sale command.
+- No action required from Agent B. Enabling equipped sale remains a separate
+  gameplay contract; this art feature does not authorize or implement it.
+- Evidence: docs/reports/equipment-detail-sell-art.md.
+
+
 ## 2026-11-17 Equipment Remove style — REVIEW complete
 
 - New direct Android cloak-detail capture confirms blue Tháo button.

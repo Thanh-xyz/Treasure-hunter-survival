@@ -27,6 +27,7 @@ func _ready() -> void:
 	_test_skill_cooldown_lifecycle()
 	_test_health_bonus_removal()
 	await _test_map_load_recovery()
+	await _test_hurtbox_reset_race()
 	_test_equipment_enhancement()
 	_test_equipment_quest_objectives()
 	_test_inventory_removal_invariants()
@@ -1349,3 +1350,39 @@ func _test_map_load_recovery() -> void:
 	DirAccess.remove_absolute(map_path)
 	service.queue_free()
 	root_node.queue_free()
+
+
+## A pre-reset timer must not shorten invincibility for a newer accepted hit.
+func _test_hurtbox_reset_race() -> void:
+	var hurtbox := HurtboxComponent.new()
+	add_child(hurtbox)
+	hurtbox.invincibility_time = 0.10
+	_check(hurtbox.take_damage(1, 0.0, Vector2.ZERO), "initial hurtbox damage rejected")
+	await get_tree().create_timer(0.03).timeout
+	hurtbox.reset()
+	hurtbox.invincibility_time = 0.30
+	_check(not hurtbox.take_resolved_damage(1, false, 0.0, Vector2.ZERO).is_empty(), "post-reset resolved damage rejected")
+	await get_tree().create_timer(0.14).timeout
+	_check(not hurtbox.can_take_damage, "pre-reset timer released a newer hit's invincibility")
+	_check(not hurtbox.take_damage(1, 0.0, Vector2.ZERO), "raw damage bypassed newer invincibility")
+	await get_tree().create_timer(0.20).timeout
+	_check(hurtbox.can_take_damage, "new hit timer did not release invincibility")
+
+	# Synchronous signal observers can reset and accept another hit immediately.
+	var replaced := [false]
+	var callback := func(_amount: int, _knockback: float, _position: Vector2) -> void:
+		if replaced[0]:
+			return
+		replaced[0] = true
+		hurtbox.reset()
+		hurtbox.invincibility_time = 0.30
+		hurtbox.take_damage(1, 0.0, Vector2.ZERO)
+	hurtbox.damage_received.connect(callback)
+	hurtbox.invincibility_time = 0.10
+	hurtbox.take_damage(1, 0.0, Vector2.ZERO)
+	hurtbox.damage_received.disconnect(callback)
+	await get_tree().create_timer(0.14).timeout
+	_check(not hurtbox.can_take_damage, "reentrant reset let old damage callback unlock the new hit")
+	await get_tree().create_timer(0.20).timeout
+	_check(hurtbox.can_take_damage, "reentrant hit did not expire normally")
+	hurtbox.queue_free()

@@ -13,6 +13,7 @@ signal resolved_damage_received(amount: int, critical: bool, knockback: float, f
 
 var can_take_damage: bool = true
 var _confirmed_result: Dictionary = {}
+var _invincibility_generation: int = 0
 
 func _ready() -> void:
 	# Layer/Mask should be set in scene inspector based on entity type:
@@ -30,9 +31,12 @@ func take_damage(amount: int, knockback: float, from_position: Vector2) -> bool:
 		return false
 	
 	can_take_damage = false
+	_invincibility_generation += 1
+	var generation := _invincibility_generation
+	var duration := invincibility_time
 	# print("[HURTBOX] Emitting damage_received signal")
 	damage_received.emit(amount, knockback, from_position)
-	_release_invincibility.call_deferred()
+	_release_invincibility.call_deferred(generation, duration)
 	return true
 
 
@@ -43,6 +47,9 @@ func take_resolved_damage(amount: int, critical: bool, knockback: float, from_po
 	if not can_take_damage or amount <= 0:
 		return {}
 	can_take_damage = false
+	_invincibility_generation += 1
+	var generation := _invincibility_generation
+	var duration := invincibility_time
 	_confirmed_result = {}
 	if resolved_damage_received.get_connections().is_empty():
 		damage_received.emit(amount, knockback, from_position)
@@ -51,7 +58,7 @@ func take_resolved_damage(amount: int, critical: bool, knockback: float, from_po
 		resolved_damage_received.emit(amount, critical, knockback, from_position)
 	var result := _confirmed_result.duplicate()
 	_confirmed_result = {}
-	_release_invincibility.call_deferred()
+	_release_invincibility.call_deferred(generation, duration)
 	return result
 
 
@@ -59,11 +66,16 @@ func confirm_resolved_damage(amount: int, critical: bool) -> void:
 	_confirmed_result = {"amount": maxi(amount, 0), "crit": critical}
 
 
-func _release_invincibility() -> void:
-	await get_tree().create_timer(invincibility_time).timeout
-	can_take_damage = true
+## Ignore stale timers after reset or a newer hit starts its own invincibility.
+func _release_invincibility(generation: int, duration: float) -> void:
+	if generation != _invincibility_generation:
+		return
+	await get_tree().create_timer(duration).timeout
+	if generation == _invincibility_generation:
+		can_take_damage = true
 
 
 ## Reset invincibility (useful when respawning)
 func reset() -> void:
+	_invincibility_generation += 1
 	can_take_damage = true

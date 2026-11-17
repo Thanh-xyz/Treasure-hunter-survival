@@ -3,6 +3,19 @@
 Date: 2026-11-04
 Status: startup/auth presentation integrated; broader asset registry remains proposed.
 
+## 2026-11-17 Equipment Remove style — REVIEW complete
+
+- New direct Android cloak-detail capture confirms blue Tháo button.
+  EquipmentDetailPanel now reuses existing button_blue texture helper for Remove.
+- Existing Godot detail renderer/action suite passes before/after; screenshot
+  diff stays inside Remove bounds. No callback, gameplay or public contract change.
+- Capture /tmp/th-art-back-live-detail.png also confirms the cloak slot is the
+  second right-hand HUD slot. Card ID/icon mapping remains unknown; BackSlot
+  proposal is still pending. Do not infer Card161/162 identity from this item.
+- Mira guide icon integrated through PR #143; clean-archive import/native render
+  passed. Back evidence PR #141 is integrated. Main remains excluded.
+
+
 ## 2026-11-17 Mira guide icon — REVIEW complete
 
 - Stable metadata-only ID actor.npc.mira.icon maps to

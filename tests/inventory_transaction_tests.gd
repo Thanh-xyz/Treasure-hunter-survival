@@ -39,6 +39,8 @@ func _ready() -> void:
 	_test_hotbar_equipment_instance_binding()
 	_test_hotbar_stackable_binding()
 	_test_hotbar_equip_swap_binding()
+	_test_hotbar_source_lifecycle()
+	_test_hud_hotbar_source_lifecycle()
 	_test_reward_box_resolver()
 	_test_reward_box_checkbox_resolver()
 	_test_reward_box_catalog()
@@ -1089,8 +1091,15 @@ func _test_crafting_panel_inventory_binding() -> void:
 
 func _hotbar_for_inventory(inventory: InventoryData) -> Hotbar:
 	var hotbar := Hotbar.new()
+	for i in range(Hotbar.SKILL_SLOT_COUNT):
+		var slot := HotbarSlotUI.new()
+		slot.slot_index = i
+		slot.slot_mode = HotbarSlotUI.SlotMode.SKILL
+		hotbar.add_child(slot)
+		hotbar.skill_slots.append(slot)
 	for i in range(Hotbar.ITEM_SLOT_COUNT):
 		var slot := HotbarSlotUI.new()
+		slot.slot_index = i
 		hotbar.add_child(slot)
 		hotbar.item_slots.append(slot)
 	hotbar.setup(inventory)
@@ -1194,6 +1203,134 @@ func _test_hotbar_equip_swap_binding() -> void:
 	hotbar.update_slot_after_equip_swap(0, 0)
 	_check(hotbar.item_slots[0].is_empty(), "equip-swap update did not clear an empty inventory slot")
 	hotbar.free()
+
+
+func _hotbar_skill_source() -> SkillComponent:
+	var component := SkillComponent.new()
+	component.get_active_skills_func = func() -> Array:
+		return [{"skill_id": "whirlwind", "source_equip_slot": "weapon"}]
+	component.rebuild_skills()
+	return component
+
+
+func _test_hotbar_source_lifecycle() -> void:
+	var old_inventory := InventoryData.new()
+	old_inventory.add_item(ItemDatabase.get_item("health_potion"), 5)
+	old_inventory.add_item(ItemDatabase.get_item_copy("iron_sword"))
+	var new_inventory := InventoryData.new()
+	new_inventory.add_item(ItemDatabase.get_item("health_potion"), 2)
+	new_inventory.add_item(ItemDatabase.get_item_copy("iron_sword"))
+	var old_skills := _hotbar_skill_source()
+	var new_skills := _hotbar_skill_source()
+	new_skills.get_active_skills_func = func() -> Array:
+		return [
+			{"skill_id": "whirlwind", "source_equip_slot": "weapon"},
+			{"skill_id": "whirlwind", "source_equip_slot": "armor"},
+		]
+	new_skills.rebuild_skills()
+	var hotbar := _hotbar_for_inventory(old_inventory)
+	hotbar.setup(old_inventory, old_skills)
+	hotbar.assign_item_to_slot(0, 0)
+	hotbar.assign_item_to_slot(1, 1)
+	_check(old_skills.try_activate_skill("whirlwind"), "hotbar old-source cooldown setup failed")
+	old_skills._process(0.0)
+	_check(new_skills.try_activate_skill("whirlwind"), "hotbar replacement cooldown setup failed")
+	new_skills._process(3.0)
+
+	hotbar.setup(new_inventory, new_skills)
+	_check(hotbar.item_slots[0].quantity == 2, "hotbar replacement setup retained the old inventory quantity")
+	_check(hotbar.item_slots[1].is_empty(), "hotbar replacement setup substituted a different nonstackable instance")
+	_check(hotbar.skill_slots[0].skill_id == "whirlwind" and is_equal_approx(hotbar.skill_slots[0].cooldown_ratio, 0.5), "hotbar replacement setup did not show the authoritative active cooldown immediately")
+	_check(hotbar.skill_slots[1].skill_id == "whirlwind" and is_equal_approx(hotbar.skill_slots[1].cooldown_ratio, 0.5), "hotbar replacement setup did not restore the shared skill cooldown on its second input binding")
+	_check(not old_inventory.inventory_changed.is_connected(hotbar._refresh_item_slots), "hotbar replacement retained old inventory subscription")
+	_check(old_skills.skills_changed.get_connections().is_empty() and old_skills.skill_cooldown_updated.get_connections().is_empty(), "hotbar replacement retained old skill subscriptions")
+	old_skills._process(1.0)
+	_check(is_equal_approx(hotbar.skill_slots[0].cooldown_ratio, 0.5), "detached skill timer changed replacement hotbar cooldown")
+	# A stale inventory signal must not publish a pending change in the active source.
+	new_inventory.inventory_slots[0].quantity = 3
+	old_inventory.remove_item_at(0)
+	_check(hotbar.item_slots[0].quantity == 2, "detached inventory still refreshed the hotbar")
+	new_inventory.inventory_changed.emit()
+	_check(hotbar.item_slots[0].quantity == 3, "active inventory no longer refreshed the hotbar")
+
+	new_inventory.inventory_changed.disconnect(hotbar._refresh_item_slots)
+	new_skills.skills_changed.disconnect(hotbar._refresh_skill_slots)
+	new_skills.skill_cooldown_updated.disconnect(hotbar._on_skill_cooldown_updated)
+	hotbar.item_slots[0].quantity = 99
+	hotbar.setup(new_inventory, new_skills)
+	hotbar.setup(new_inventory, new_skills)
+	_check(hotbar.item_slots[0].quantity == 3, "same-source setup did not refresh hotbar quantity")
+	_check(new_inventory.inventory_changed.get_connections().size() == 1 and new_skills.skills_changed.get_connections().size() == 1 and new_skills.skill_cooldown_updated.get_connections().size() == 1, "same-source hotbar setup failed connection repair or duplicated subscriptions")
+	new_skills._process(1.0)
+	_check(is_equal_approx(hotbar.skill_slots[0].cooldown_ratio, 2.0 / 6.0) and is_equal_approx(hotbar.skill_slots[1].cooldown_ratio, 2.0 / 6.0), "active skill tick did not update both shared-skill input bindings")
+	new_skills.rebuild_skills()
+	_check(is_equal_approx(hotbar.skill_slots[0].cooldown_ratio, 2.0 / 6.0) and is_equal_approx(hotbar.skill_slots[1].cooldown_ratio, 2.0 / 6.0), "skill-list refresh lost an active shared-skill cooldown")
+
+	hotbar.setup(null, null)
+	_check(hotbar.inventory == null and hotbar.skill_component == null and hotbar.item_slots[0].is_empty() and hotbar.skill_slots[0].is_empty(), "null hotbar setup retained source or bound slots")
+	_check(new_inventory.inventory_changed.get_connections().is_empty() and new_skills.skills_changed.get_connections().is_empty() and new_skills.skill_cooldown_updated.get_connections().is_empty(), "null hotbar setup retained active source subscriptions")
+	new_skills._process(0.5)
+	new_inventory.add_item(ItemDatabase.get_item("health_potion"))
+	_check(hotbar.item_slots[0].is_empty() and hotbar.skill_slots[0].is_empty() and is_zero_approx(hotbar.skill_slots[0].cooldown_ratio), "detached source updated cleared hotbar state")
+
+	var freed_source := _hotbar_skill_source()
+	hotbar.setup(new_inventory, freed_source)
+	freed_source.free()
+	hotbar.setup(new_inventory, new_skills)
+	_check(hotbar.skill_component == new_skills and hotbar.skill_slots[0].skill_id == "whirlwind", "hotbar could not replace an already-freed skill source")
+	hotbar.setup(null, null)
+	hotbar.free()
+	old_skills.free()
+	new_skills.free()
+
+
+func _test_hud_hotbar_source_lifecycle() -> void:
+	var inventory := InventoryData.new()
+	var old_skills := _hotbar_skill_source()
+	var new_skills := _hotbar_skill_source()
+	var hotbar := _hotbar_for_inventory(inventory)
+	var hud = load("res://sense/ui/hud/hud.gd").new()
+	hud.hotbar = hotbar
+	# Match Player._connect_components_to_hud: HUD forwarding first, Hotbar setup next.
+	hud.connect_skill_component(old_skills)
+	hud.setup_hotbar(inventory, old_skills)
+	_check(old_skills.try_activate_skill("whirlwind"), "HUD old-source cooldown setup failed")
+	old_skills._process(0.0)
+	hud.connect_skill_component(new_skills)
+	hud.setup_hotbar(inventory, new_skills)
+	_check(old_skills.skills_changed.get_connections().is_empty() and old_skills.skill_cooldown_updated.get_connections().is_empty(), "HUD replacement retained an old forwarding or direct connection")
+	old_skills._process(1.5)
+	_check(is_zero_approx(hotbar.skill_slots[0].cooldown_ratio), "old HUD-forwarded timer overwrote replacement ready state")
+	hud.connect_skill_component(new_skills)
+	hud.setup_hotbar(inventory, new_skills)
+	_check(new_skills.skills_changed.get_connections().size() == 2 and new_skills.skill_cooldown_updated.get_connections().size() == 2, "repeated HUD wiring duplicated or lost the two existing forwarding/direct routes")
+	new_skills.skills_changed.disconnect(hud._on_skills_changed)
+	new_skills.skill_cooldown_updated.disconnect(hud._on_skill_cooldown_updated)
+	hud.connect_skill_component(new_skills)
+	_check(new_skills.skills_changed.get_connections().size() == 2 and new_skills.skill_cooldown_updated.get_connections().size() == 2, "same-source HUD wiring did not repair missing forwarding callbacks")
+	_check(new_skills.try_activate_skill("whirlwind"), "replacement HUD source failed activation")
+	new_skills._process(2.0)
+	_check(is_equal_approx(hotbar.skill_slots[0].cooldown_ratio, 4.0 / 6.0), "replacement HUD source did not update cooldown display")
+
+	hud.connect_skill_component(null)
+	hud.setup_hotbar(null, null)
+	_check(new_skills.skills_changed.get_connections().is_empty() and new_skills.skill_cooldown_updated.get_connections().is_empty() and inventory.inventory_changed.get_connections().is_empty(), "null HUD wiring retained forwarding or direct subscriptions")
+	new_skills._process(0.5)
+	_check(hotbar.skill_slots[0].is_empty() and is_zero_approx(hotbar.skill_slots[0].cooldown_ratio), "detached HUD source tick updated cleared skill state")
+
+	var freed_source := _hotbar_skill_source()
+	hud.connect_skill_component(freed_source)
+	hud.setup_hotbar(inventory, freed_source)
+	freed_source.free()
+	hud.connect_skill_component(new_skills)
+	hud.setup_hotbar(inventory, new_skills)
+	_check(hotbar.skill_component == new_skills and hotbar.skill_slots[0].skill_id == "whirlwind", "HUD could not replace an already-freed skill source")
+	hud.connect_skill_component(null)
+	hud.setup_hotbar(null, null)
+	hud.free()
+	hotbar.free()
+	old_skills.free()
+	new_skills.free()
 
 
 func _test_crafting_transaction() -> void:

@@ -545,6 +545,8 @@ func _on_inventory_slot_right_clicked(index: int) -> void:
 	if slot_data.item.is_equippable():
 		inventory_data.equip_item(index)
 	elif slot_data.item.is_consumable():
+		if character_stats != null and not character_stats.is_alive():
+			return
 		var result := inventory_data.use_item(index)
 		if result.success:
 			_apply_consumable_effect(result)

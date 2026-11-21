@@ -1124,6 +1124,8 @@ func _on_hotbar_item_used(slot_index: int, _item: ItemData, inv_index: int) -> v
 
 	# Consumable — use it
 	if slot_data.item.is_consumable():
+		if is_dead() or not stats.is_alive():
+			return
 		var result := inventory.use_item(inv_index)
 		if result.get("success", false):
 			_on_item_used(result)

@@ -32,6 +32,7 @@ func _ready() -> void:
 	_test_equipment_quest_objectives()
 	_test_inventory_removal_invariants()
 	_test_recipe_catalog_validation()
+	_test_crafting_panel_inventory_binding()
 	_test_reward_box_resolver()
 	_test_reward_box_checkbox_resolver()
 	_test_reward_box_catalog()
@@ -961,6 +962,29 @@ func _assert_recipe_registration_rejected(recipe: CraftingRecipe, field_descript
 	_check(RecipeDatabase.get_recipe(recipe.id) == null, "%s remained in the recipe catalog" % field_description)
 	if registered:
 		RecipeDatabase.recipes.erase(recipe.id)
+
+
+func _test_crafting_panel_inventory_binding() -> void:
+	var panel := CraftingPanel.new()
+	var old_inventory := InventoryData.new()
+	var new_inventory := InventoryData.new()
+	panel.set_player_inventory(old_inventory)
+	_check(old_inventory.inventory_changed.is_connected(panel._refresh_all), "crafting panel did not subscribe to its initial inventory")
+
+	panel.set_player_inventory(new_inventory)
+	_check(not old_inventory.inventory_changed.is_connected(panel._refresh_all), "crafting panel remained connected to its old inventory")
+	_check(new_inventory.inventory_changed.is_connected(panel._refresh_all), "crafting panel did not subscribe to its replacement inventory")
+
+	panel.set_player_inventory(new_inventory)
+	_check(new_inventory.inventory_changed.get_connections().size() == 1, "setting the same inventory added duplicate connections")
+	new_inventory.inventory_changed.disconnect(panel._refresh_all)
+	panel.set_player_inventory(new_inventory)
+	_check(new_inventory.inventory_changed.is_connected(panel._refresh_all), "setting the same inventory did not restore its missing connection")
+
+	panel.set_player_inventory(null)
+	_check(not new_inventory.inventory_changed.is_connected(panel._refresh_all), "clearing crafting inventory left its signal connected")
+	_check(panel.player_inventory == null, "clearing crafting inventory retained the old resource")
+	panel.free()
 
 
 func _test_crafting_transaction() -> void:

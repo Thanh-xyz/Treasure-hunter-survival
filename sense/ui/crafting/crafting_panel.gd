@@ -53,6 +53,8 @@ func _ready() -> void:
 
 ## Set player inventory data (called by smith shop or standalone popup)
 func set_player_inventory(inventory_data: InventoryData) -> void:
+	if player_inventory != inventory_data and player_inventory and player_inventory.inventory_changed.is_connected(_refresh_all):
+		player_inventory.inventory_changed.disconnect(_refresh_all)
 	player_inventory = inventory_data
 	if player_inventory and not player_inventory.inventory_changed.is_connected(_refresh_all):
 		player_inventory.inventory_changed.connect(_refresh_all)

@@ -349,53 +349,28 @@ func swap_slots(index_a: int, index_b: int) -> void:
 	inventory_changed.emit()
 
 
-## Equip item from inventory slot
-func equip_item(inventory_index: int) -> bool:
+## Equip to an explicit compatible slot, or choose the usual slot when omitted.
+func equip_item(inventory_index: int, target_slot: String = "") -> bool:
 	var slot := get_item_at(inventory_index)
 	if slot.item == null or not slot.item.is_equippable():
 		return false
 	
 	var item: ItemData = slot.item
-	var equipped_item: ItemData = null
-	var slot_type := ""
-	
-	# Determine which slot to equip to
-	match item.item_type:
-		ItemData.ItemType.HELMET:
-			equipped_item = equipped_helmet
-			equipped_helmet = item
-			slot_type = "helmet"
-		ItemData.ItemType.ARMOR:
-			equipped_item = equipped_armor
-			equipped_armor = item
-			slot_type = "armor"
-		ItemData.ItemType.WEAPON:
-			equipped_item = equipped_weapon
-			equipped_weapon = item
-			slot_type = "weapon"
-		ItemData.ItemType.SHIELD:
-			equipped_item = equipped_shield
-			equipped_shield = item
-			slot_type = "shield"
-		ItemData.ItemType.BOOTS:
-			equipped_item = equipped_boots
-			equipped_boots = item
-			slot_type = "boots"
-		ItemData.ItemType.ACCESSORY:
-			# Try first slot, then second
-			if equipped_accessory_1 == null:
-				equipped_accessory_1 = item
-				slot_type = "accessory_1"
-			elif equipped_accessory_2 == null:
-				equipped_accessory_2 = item
-				slot_type = "accessory_2"
-			else:
-				# Swap with first accessory
-				equipped_item = equipped_accessory_1
-				equipped_accessory_1 = item
-				slot_type = "accessory_1"
-		_:
-			return false
+	var slot_type := target_slot
+	if slot_type.is_empty():
+		match item.item_type:
+			ItemData.ItemType.HELMET: slot_type = "helmet"
+			ItemData.ItemType.ARMOR: slot_type = "armor"
+			ItemData.ItemType.WEAPON: slot_type = "weapon"
+			ItemData.ItemType.SHIELD: slot_type = "shield"
+			ItemData.ItemType.BOOTS: slot_type = "boots"
+			ItemData.ItemType.ACCESSORY:
+				# Preserve automatic first-empty selection and slot-one replacement.
+				slot_type = "accessory_2" if equipped_accessory_1 != null and equipped_accessory_2 == null else "accessory_1"
+	if not EQUIPMENT_SLOTS.has(slot_type) or not _item_fits_slot(item, slot_type):
+		return false
+	var equipped_item := get_equipped(slot_type)
+	_set_equipped(slot_type, item)
 	
 	# Remove item from inventory
 	inventory_slots[inventory_index].item = null

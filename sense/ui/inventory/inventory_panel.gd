@@ -448,7 +448,7 @@ func _on_inventory_to_equipment_dropped(from_index: int, to_slot_type: String) -
 		return
 	
 	# Equip the item (this handles swapping with currently equipped)
-	inventory_data.equip_item(from_index)
+	inventory_data.equip_item(from_index, to_slot_type)
 	
 	# Clear selection
 	if selected_slot_index != -1:

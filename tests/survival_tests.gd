@@ -78,6 +78,7 @@ func run_all() -> bool:
 	_test_combat_roll()
 	await _test_resolved_combat_hit()
 	await _test_player_combat_modifiers()
+	await _test_dead_consumable_use()
 
 	_stub_player.queue_free()
 	SaveService.delete_save()
@@ -1200,6 +1201,94 @@ func _test_player_combat_modifiers() -> void:
 	_check(bool(upgrade_event["seen"]) and int(upgrade_event["level"]) == 2 and int(upgrade_event["cost"]) == upgrade_cost, "player did not forward the stable equipment upgrade event")
 	GameEvent.equipment_upgraded.disconnect(on_equipment_upgraded)
 	local_player.queue_free()
+
+
+## Neither item-use route may spend consumables or apply effects while dead.
+func _test_dead_consumable_use() -> void:
+	var local_player = preload("res://sense/entities/player/player.tscn").instantiate()
+	local_player.set_physics_process(false)
+	add_child(local_player)
+	await get_tree().process_frame
+	local_player.buff_component.set_process(false)
+	var inventory: InventoryData = local_player.inventory
+	var stats: CharacterStats = local_player.stats
+	var panel: InventoryPanel = local_player.inventory_panel
+	var notifications := {"inventory": 0, "health": 0, "stamina": 0, "buffs": 0, "item_used": 0}
+	inventory.inventory_changed.connect(func() -> void: notifications["inventory"] += 1)
+	stats.health_changed.connect(func(_current: int, _maximum: int) -> void: notifications["health"] += 1)
+	stats.stamina_changed.connect(func(_current: float, _maximum: float) -> void: notifications["stamina"] += 1)
+	local_player.buff_component.buffs_changed.connect(func() -> void: notifications["buffs"] += 1)
+	panel.item_used.connect(func(_result: Dictionary) -> void: notifications["item_used"] += 1)
+	var previous_shop_open: bool = GameEvent.is_shop_open
+	GameEvent.is_shop_open = false
+	for use_panel in [false, true]:
+		for item_id: String in ["health_potion", "stamina_potion", "vitality_tonic_t1"]:
+			local_player.buff_component.clear_all_buffs()
+			local_player.reset_player()
+			inventory.add_item(ItemDatabase.get_item(item_id), 2)
+			stats.current_stamina = 10.0
+			stats.current_health = 0
+			var route := "inventory" if use_panel else "hotbar"
+			var context := "%s dead %s" % [route, item_id]
+			var before := inventory.get_item_count(item_id)
+			for key: String in notifications:
+				notifications[key] = 0
+			var index := _find_slot(inventory, item_id)
+			if use_panel:
+				panel._on_inventory_slot_right_clicked(index)
+			else:
+				local_player._on_hotbar_item_used(0, ItemDatabase.get_item(item_id), index)
+			_check(inventory.get_item_count(item_id) == before, context + " consumed an item")
+			_check(stats.current_health == 0 and local_player.is_dead(), context + " changed death/HP state")
+			_check(is_equal_approx(stats.current_stamina, 10.0), context + " restored stamina")
+			_check(local_player.buff_component.active_buffs.is_empty(), context + " applied a buff")
+			_check(notifications == {"inventory": 0, "health": 0, "stamina": 0, "buffs": 0, "item_used": 0}, context + " emitted mutation/effect notifications")
+			_check(not local_player.quick_use_potion(), context + " allowed quick potion while dead")
+
+			# The same routes work again after the normal respawn lifecycle.
+			local_player.respawn()
+			stats.current_health = 25
+			stats.current_stamina = 10.0
+			before = inventory.get_item_count(item_id)
+			for key: String in notifications:
+				notifications[key] = 0
+			index = _find_slot(inventory, item_id)
+			if use_panel:
+				panel._on_inventory_slot_right_clicked(index)
+			else:
+				local_player._on_hotbar_item_used(0, ItemDatabase.get_item(item_id), index)
+			_check(not local_player.is_dead() and inventory.get_item_count(item_id) == before - 1, route + " did not consume exactly one item after respawn")
+			_check(stats.current_health == (75 if item_id == "health_potion" else 25), route + " living consumable changed the wrong HP amount")
+			_check(is_equal_approx(stats.current_stamina, 60.0 if item_id == "stamina_potion" else 10.0), route + " living consumable changed the wrong stamina amount")
+			_check(local_player.buff_component.active_buffs.size() == (1 if item_id == "vitality_tonic_t1" else 0), route + " living consumable applied the wrong buff")
+			_check(int(notifications["inventory"]) == 1 and int(notifications["item_used"]) == (1 if use_panel else 0), route + " living consumable notification count drifted")
+
+	# Hotbar eligibility checks both the state machine and living stats.
+	local_player.buff_component.clear_all_buffs()
+	local_player.reset_player()
+	inventory.add_item(ItemDatabase.get_item("health_potion"), 2)
+	var potion_count := inventory.get_item_count("health_potion")
+	local_player.die()
+	local_player._on_hotbar_item_used(0, ItemDatabase.get_item("health_potion"), _find_slot(inventory, "health_potion"))
+	_check(inventory.get_item_count("health_potion") == potion_count, "hotbar spent potion with DEATH state and positive HP")
+	stats.current_health = 0
+	local_player.current_state = local_player.State.IDLE
+	local_player._on_hotbar_item_used(0, ItemDatabase.get_item("health_potion"), _find_slot(inventory, "health_potion"))
+	_check(inventory.get_item_count("health_potion") == potion_count and stats.current_health == 0, "hotbar spent potion with nonliving stats before DEATH state")
+	local_player.queue_free()
+
+	# Panels without an actor retain their existing optional-stats behavior.
+	var unbound_panel: InventoryPanel = preload("res://sense/ui/inventory/inventory_panel.tscn").instantiate()
+	add_child(unbound_panel)
+	var unbound_inventory := InventoryData.new()
+	unbound_inventory.add_item(ItemDatabase.get_item("health_potion"), 1)
+	unbound_panel.setup(unbound_inventory)
+	var results: Array[Dictionary] = []
+	unbound_panel.item_used.connect(func(result: Dictionary) -> void: results.append(result))
+	unbound_panel._on_inventory_slot_right_clicked(0)
+	_check(unbound_inventory.get_item_count("health_potion") == 0 and results.size() == 1 and bool(results[0].get("success", false)), "optional-stats inventory panel rejected normal consumable use")
+	unbound_panel.queue_free()
+	GameEvent.is_shop_open = previous_shop_open
 
 
 ## Pickup events must reflect delivered quantity and reject collectors without inventory.

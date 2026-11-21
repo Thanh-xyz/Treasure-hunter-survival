@@ -56,6 +56,13 @@ func _ready() -> void:
 
 
 func setup(inv: InventoryData, skill_comp: SkillComponent = null) -> void:
+	if inventory != inv and inventory and inventory.inventory_changed.is_connected(_refresh_item_slots):
+		inventory.inventory_changed.disconnect(_refresh_item_slots)
+	if is_instance_valid(skill_component) and skill_component != skill_comp:
+		if skill_component.skills_changed.is_connected(_refresh_skill_slots):
+			skill_component.skills_changed.disconnect(_refresh_skill_slots)
+		if skill_component.skill_cooldown_updated.is_connected(_on_skill_cooldown_updated):
+			skill_component.skill_cooldown_updated.disconnect(_on_skill_cooldown_updated)
 	inventory = inv
 	skill_component = skill_comp
 
@@ -69,7 +76,8 @@ func setup(inv: InventoryData, skill_comp: SkillComponent = null) -> void:
 			skill_component.skills_changed.connect(_refresh_skill_slots)
 		if not skill_component.skill_cooldown_updated.is_connected(_on_skill_cooldown_updated):
 			skill_component.skill_cooldown_updated.connect(_on_skill_cooldown_updated)
-		_refresh_skill_slots()
+	_refresh_item_slots()
+	_refresh_skill_slots()
 
 
 # ============================================================================
@@ -134,6 +142,7 @@ func _refresh_skill_slots() -> void:
 		if action_idx >= 0 and action_idx < SKILL_SLOT_COUNT:
 			if skill_slots[action_idx].skill_id == "":
 				skill_slots[action_idx].set_skill(s_id)
+				_on_skill_cooldown_updated(s_id, float(skill_entry.get("current_cooldown", 0.0)))
 
 
 func _on_skill_cooldown_updated(s_id: String, remaining: float) -> void:
@@ -146,7 +155,6 @@ func _on_skill_cooldown_updated(s_id: String, remaining: float) -> void:
 				slot.set_cooldown(remaining / skill_data.cooldown)
 			else:
 				slot.set_cooldown(0.0)
-			break
 
 
 func _on_skill_slot_activated(idx: int) -> void:
@@ -248,6 +256,8 @@ func _on_hotbar_item_dropped(slot_idx: int, drag_data: Dictionary) -> void:
 ## Uses a two-pass algorithm to avoid stale-index collisions after sort/swap.
 func _refresh_item_slots() -> void:
 	if inventory == null:
+		for slot in item_slots:
+			slot.clear_slot()
 		return
 
 	# Pass 1 — fast path: confirm slots whose stored index still matches

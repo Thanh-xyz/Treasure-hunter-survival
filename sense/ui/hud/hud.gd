@@ -38,6 +38,7 @@ const FEED_MERGE_WINDOW := 0.8
 const FEED_ENTRY_DURATION := 2.5
 
 var _feed_entries: Array[Dictionary] = []
+var _skill_component: SkillComponent
 
 
 func _ready() -> void:
@@ -123,8 +124,17 @@ func connect_buff_component(buff_comp: BuffComponent) -> void:
 ## Connect SkillComponent signals to HUD skill display
 ## Called by Player after creating SkillComponent
 func connect_skill_component(skill_comp: SkillComponent) -> void:
-	skill_comp.skills_changed.connect(_on_skills_changed)
-	skill_comp.skill_cooldown_updated.connect(_on_skill_cooldown_updated)
+	if is_instance_valid(_skill_component) and _skill_component != skill_comp:
+		if _skill_component.skills_changed.is_connected(_on_skills_changed):
+			_skill_component.skills_changed.disconnect(_on_skills_changed)
+		if _skill_component.skill_cooldown_updated.is_connected(_on_skill_cooldown_updated):
+			_skill_component.skill_cooldown_updated.disconnect(_on_skill_cooldown_updated)
+	_skill_component = skill_comp
+	if _skill_component:
+		if not _skill_component.skills_changed.is_connected(_on_skills_changed):
+			_skill_component.skills_changed.connect(_on_skills_changed)
+		if not _skill_component.skill_cooldown_updated.is_connected(_on_skill_cooldown_updated):
+			_skill_component.skill_cooldown_updated.connect(_on_skill_cooldown_updated)
 
 
 func _on_buff_applied(buff_data: Dictionary) -> void:

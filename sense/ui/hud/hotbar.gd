@@ -258,10 +258,9 @@ func _refresh_item_slots() -> void:
 		var slot := item_slots[i]
 		if slot.item == null:
 			continue
-		var target_id: String = slot.item.id
 		if slot.inventory_index >= 0:
 			var slot_data := inventory.get_item_at(slot.inventory_index)
-			if slot_data.item != null and slot_data.item.id == target_id:
+			if _matches_bound_item(slot_data.item, slot.item):
 				claimed_indices[slot.inventory_index] = i
 				slot.quantity = slot_data.quantity
 				slot.queue_redraw()
@@ -271,13 +270,12 @@ func _refresh_item_slots() -> void:
 	# Pass 2 — slow path: relocate items whose index changed (sort / swap)
 	for i in needs_relocate:
 		var slot := item_slots[i]
-		var target_id: String = slot.item.id
 		var found := false
 		for inv_idx in range(inventory.INVENTORY_SIZE):
 			if inv_idx in claimed_indices:
 				continue
 			var inv_slot := inventory.get_item_at(inv_idx)
-			if inv_slot.item != null and inv_slot.item.id == target_id:
+			if _matches_bound_item(inv_slot.item, slot.item):
 				claimed_indices[inv_idx] = i
 				slot.inventory_index = inv_idx
 				slot.quantity = inv_slot.quantity
@@ -289,18 +287,16 @@ func _refresh_item_slots() -> void:
 
 
 ## Validate that a hotbar slot still references a valid inventory item.
-## Re-locates the item by id if it has moved (e.g. after sort/swap).
+## Re-locates the bound instance, or matching stack, after sort/swap.
 func _validate_slot(idx: int) -> bool:
 	var slot := item_slots[idx]
 	if slot.item == null or inventory == null:
 		return false
 
-	var target_id: String = slot.item.id
-
 	# Fast path: check stored index
 	if slot.inventory_index >= 0:
 		var slot_data := inventory.get_item_at(slot.inventory_index)
-		if slot_data.item != null and slot_data.item.id == target_id:
+		if _matches_bound_item(slot_data.item, slot.item):
 			slot.quantity = slot_data.quantity
 			slot.queue_redraw()
 			return true
@@ -314,15 +310,15 @@ func _validate_slot(idx: int) -> bool:
 		if other.item == null or other.inventory_index < 0:
 			continue
 		var other_data := inventory.get_item_at(other.inventory_index)
-		if other_data.item != null and other_data.item.id == other.item.id:
+		if _matches_bound_item(other_data.item, other.item):
 			claimed[other.inventory_index] = true
 
-	# Slow path: search inventory for the same item id
+	# Slow path: search inventory for the bound instance or matching stack
 	for inv_idx in range(inventory.INVENTORY_SIZE):
 		if inv_idx in claimed:
 			continue
 		var inv_slot := inventory.get_item_at(inv_idx)
-		if inv_slot.item != null and inv_slot.item.id == target_id:
+		if _matches_bound_item(inv_slot.item, slot.item):
 			slot.inventory_index = inv_idx
 			slot.quantity = inv_slot.quantity
 			slot.queue_redraw()
@@ -330,6 +326,14 @@ func _validate_slot(idx: int) -> bool:
 
 	slot.clear_slot()
 	return false
+
+
+## Equipment instances can share a catalog ID while carrying different stats.
+## Stackable items remain interchangeable by ID when their stack moves or empties.
+func _matches_bound_item(candidate: ItemData, bound_item: ItemData) -> bool:
+	if candidate == null or bound_item == null:
+		return false
+	return candidate == bound_item or (bound_item.stackable and candidate.id == bound_item.id)
 
 
 # ============================================================================

@@ -33,6 +33,9 @@ func _ready() -> void:
 	_test_inventory_removal_invariants()
 	_test_recipe_catalog_validation()
 	_test_crafting_panel_inventory_binding()
+	_test_hotbar_equipment_instance_binding()
+	_test_hotbar_stackable_binding()
+	_test_hotbar_equip_swap_binding()
 	_test_reward_box_resolver()
 	_test_reward_box_checkbox_resolver()
 	_test_reward_box_catalog()
@@ -985,6 +988,115 @@ func _test_crafting_panel_inventory_binding() -> void:
 	_check(not new_inventory.inventory_changed.is_connected(panel._refresh_all), "clearing crafting inventory left its signal connected")
 	_check(panel.player_inventory == null, "clearing crafting inventory retained the old resource")
 	panel.free()
+
+
+func _hotbar_for_inventory(inventory: InventoryData) -> Hotbar:
+	var hotbar := Hotbar.new()
+	for i in range(Hotbar.ITEM_SLOT_COUNT):
+		var slot := HotbarSlotUI.new()
+		hotbar.add_child(slot)
+		hotbar.item_slots.append(slot)
+	hotbar.setup(inventory)
+	return hotbar
+
+
+func _check_hotbar_equipment_use(hotbar: Hotbar, hotbar_index: int, expected: ItemData, context: String) -> void:
+	var used: Array[Dictionary] = []
+	var capture := func(_slot: int, item: ItemData, index: int) -> void:
+		used.append({"item": item, "index": index})
+	hotbar.hotbar_item_used.connect(capture)
+	hotbar._activate_item_slot(hotbar_index)
+	hotbar.hotbar_item_used.disconnect(capture)
+	if expected == null:
+		_check(used.is_empty(), context + " emitted use for a missing equipment instance")
+		return
+	_check(used.size() == 1, context + " did not emit exactly one equipment use")
+	if used.size() == 1:
+		_check(used[0].item == expected, context + " emitted a different equipment instance")
+		_check(hotbar.inventory.get_item_at(used[0].index).item == expected, context + " selected the wrong inventory instance")
+
+
+func _test_hotbar_equipment_instance_binding() -> void:
+	var inventory := InventoryData.new()
+	var first := ReferenceEquipmentCatalog.materialize(28, {"health": 13.9, "damage": 29.8, "speed": 0.08})
+	var second := ReferenceEquipmentCatalog.materialize(28, {"health": 13.9, "damage": 49.0, "speed": 0.08})
+	inventory.add_item(first)
+	inventory.add_item(second)
+	var hotbar := _hotbar_for_inventory(inventory)
+	hotbar.assign_item_to_slot(0, 0)
+	hotbar.assign_item_to_slot(1, 1)
+	inventory.swap_slots(0, 1)
+	_check(hotbar.item_slots[0].inventory_index == 1 and hotbar.item_slots[1].inventory_index == 0, "same-ID inventory swap did not relocate both hotbar bindings")
+	_check_hotbar_equipment_use(hotbar, 0, first, "same-ID swap first binding")
+	_check_hotbar_equipment_use(hotbar, 1, second, "same-ID swap second binding")
+
+	# Activation must repair stale indices even if the inventory signal was missed.
+	inventory.inventory_changed.disconnect(hotbar._refresh_item_slots)
+	inventory.swap_slots(0, 1)
+	_check_hotbar_equipment_use(hotbar, 0, first, "activation after missed signal")
+	_check_hotbar_equipment_use(hotbar, 1, second, "other binding after missed signal")
+	inventory.inventory_changed.connect(hotbar._refresh_item_slots)
+
+	inventory.swap_slots(0, 6)
+	inventory.add_item(ItemDatabase.get_item("wood"))
+	inventory.sort_inventory()
+	_check_hotbar_equipment_use(hotbar, 0, first, "sort first binding")
+	_check_hotbar_equipment_use(hotbar, 1, second, "sort second binding")
+	_check(hotbar.item_slots[0].inventory_index != hotbar.item_slots[1].inventory_index, "sorting collapsed distinct hotbar equipment bindings")
+
+	var removed_index := hotbar.item_slots[0].inventory_index
+	inventory.remove_item_at(removed_index)
+	_check(hotbar.item_slots[0].is_empty(), "removing selected equipment substituted another same-ID instance")
+	_check_hotbar_equipment_use(hotbar, 0, null, "removed binding")
+	_check_hotbar_equipment_use(hotbar, 1, second, "surviving same-ID binding")
+	hotbar.free()
+
+
+func _test_hotbar_stackable_binding() -> void:
+	var inventory := InventoryData.new()
+	var potion := ItemDatabase.get_item_copy("health_potion")
+	inventory.add_item(potion, 3)
+	var hotbar := _hotbar_for_inventory(inventory)
+	hotbar.assign_item_to_slot(0, 0)
+	# Stackable bindings remain by ID when a stack's resource is replaced.
+	var replacement := ItemDatabase.get_item_copy("health_potion")
+	inventory.inventory_slots[0] = {"item": replacement, "quantity": 2}
+	inventory.inventory_changed.emit()
+	inventory.swap_slots(0, 5)
+	_check(hotbar.item_slots[0].inventory_index == 5 and hotbar.item_slots[0].quantity == 2, "stackable hotbar binding lost ID relocation or quantity refresh")
+	inventory.remove_item_at(5)
+	_check(hotbar.item_slots[0].quantity == 1, "consuming from relocated stack left stale hotbar quantity")
+	inventory.inventory_changed.disconnect(hotbar._refresh_item_slots)
+	inventory.swap_slots(5, 8)
+	var used := {"count": 0, "index": -1, "id": ""}
+	hotbar.hotbar_item_used.connect(func(_slot: int, item: ItemData, index: int) -> void:
+		used.count += 1
+		used.index = index
+		used.id = item.id
+	)
+	hotbar._activate_item_slot(0)
+	_check(used.count == 1 and used.index == 8 and used.id == potion.id, "stackable activation did not recover its moved inventory stack")
+	_check(inventory.get_item_at(8).item == replacement and hotbar.item_slots[0].quantity == 1, "stackable activation changed item identity or quantity")
+	hotbar.free()
+
+
+func _test_hotbar_equip_swap_binding() -> void:
+	var inventory := InventoryData.new()
+	var old_weapon := ReferenceEquipmentCatalog.materialize(28, {"health": 13.9, "damage": 29.8, "speed": 0.08})
+	var new_weapon := ReferenceEquipmentCatalog.materialize(28, {"health": 13.9, "damage": 49.0, "speed": 0.08})
+	inventory.add_item(old_weapon)
+	inventory.equip_item(0)
+	inventory.add_item(new_weapon)
+	var hotbar := _hotbar_for_inventory(inventory)
+	hotbar.assign_item_to_slot(0, 0)
+	_check(inventory.equip_item(0), "hotbar equip-swap setup failed")
+	hotbar.update_slot_after_equip_swap(0, 0)
+	_check(inventory.get_equipped("weapon") == new_weapon, "hotbar equip-swap equipped the wrong weapon")
+	_check_hotbar_equipment_use(hotbar, 0, old_weapon, "explicit equip-swap rebinding")
+	inventory.remove_item_at(0)
+	hotbar.update_slot_after_equip_swap(0, 0)
+	_check(hotbar.item_slots[0].is_empty(), "equip-swap update did not clear an empty inventory slot")
+	hotbar.free()
 
 
 func _test_crafting_transaction() -> void:

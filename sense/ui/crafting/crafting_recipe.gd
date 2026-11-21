@@ -48,6 +48,8 @@ func validate_catalog() -> PackedStringArray:
 	var errors := PackedStringArray()
 	if id.strip_edges().is_empty():
 		errors.append("recipe id is empty")
+	elif id != id.strip_edges():
+		errors.append("recipe id is not canonical")
 	if recipe_name.strip_edges().is_empty():
 		errors.append("recipe name is empty")
 	if evidence_source.strip_edges().is_empty():
@@ -59,14 +61,19 @@ func validate_catalog() -> PackedStringArray:
 	var seen_tiers := {}
 	for tier_index in range(tiers.size()):
 		var tier_data: Dictionary = tiers[tier_index]
-		var tier := int(tier_data.get("tier", 0))
 		var prefix := "tier[%d]" % tier_index
-		if tier <= 0:
-			errors.append("%s has a non-positive tier" % prefix)
-		elif seen_tiers.has(tier):
-			errors.append("%s duplicates tier %d" % [prefix, tier])
+		var raw_tier: Variant = tier_data.get("tier", null)
+		var tier := 0
+		if typeof(raw_tier) != TYPE_INT:
+			errors.append("%s tier is not an integer" % prefix)
 		else:
-			seen_tiers[tier] = true
+			tier = raw_tier
+			if tier <= 0:
+				errors.append("%s has a non-positive tier" % prefix)
+			elif seen_tiers.has(tier):
+				errors.append("%s duplicates tier %d" % [prefix, tier])
+			else:
+				seen_tiers[tier] = true
 
 		var ingredients: Variant = tier_data.get("ingredients", [])
 		if not ingredients is Array or ingredients.is_empty():
@@ -79,25 +86,42 @@ func validate_catalog() -> PackedStringArray:
 				if not ingredient is Dictionary:
 					errors.append("%s is not a dictionary" % ingredient_prefix)
 					continue
-				var item_id := str(ingredient.get("item_id", "")).strip_edges()
-				var quantity := int(ingredient.get("quantity", 0))
-				if item_id.is_empty():
-					errors.append("%s has an empty item id" % ingredient_prefix)
-				elif seen_ingredients.has(item_id):
-					errors.append("%s duplicates item %s" % [ingredient_prefix, item_id])
-				elif ItemDatabase.get_item(item_id) == null:
-					errors.append("%s references unknown item %s" % [ingredient_prefix, item_id])
+				var raw_item_id: Variant = ingredient.get("item_id", null)
+				if typeof(raw_item_id) != TYPE_STRING:
+					errors.append("%s has a non-string item id" % ingredient_prefix)
 				else:
-					seen_ingredients[item_id] = true
-				if quantity <= 0:
+					var item_id: String = raw_item_id
+					if item_id.is_empty():
+						errors.append("%s has an empty item id" % ingredient_prefix)
+					elif item_id != item_id.strip_edges():
+						errors.append("%s item id is not canonical" % ingredient_prefix)
+					elif seen_ingredients.has(item_id):
+						errors.append("%s duplicates item %s" % [ingredient_prefix, item_id])
+					elif ItemDatabase.get_item(item_id) == null:
+						errors.append("%s references unknown item %s" % [ingredient_prefix, item_id])
+					else:
+						seen_ingredients[item_id] = true
+				var raw_quantity: Variant = ingredient.get("quantity", null)
+				if typeof(raw_quantity) != TYPE_INT:
+					errors.append("%s quantity is not an integer" % ingredient_prefix)
+				elif raw_quantity <= 0:
 					errors.append("%s has a non-positive quantity" % ingredient_prefix)
 
-		var result_item_id := str(tier_data.get("result_item_id", "")).strip_edges()
-		if result_item_id.is_empty():
-			errors.append("%s has an empty result item id" % prefix)
-		elif ItemDatabase.get_item(result_item_id) == null:
-			errors.append("%s references unknown result item %s" % [prefix, result_item_id])
-		if int(tier_data.get("result_quantity", 0)) <= 0:
+		var raw_result_item_id: Variant = tier_data.get("result_item_id", null)
+		if typeof(raw_result_item_id) != TYPE_STRING:
+			errors.append("%s result item id is not a string" % prefix)
+		else:
+			var result_item_id: String = raw_result_item_id
+			if result_item_id.is_empty():
+				errors.append("%s has an empty result item id" % prefix)
+			elif result_item_id != result_item_id.strip_edges():
+				errors.append("%s result item id is not canonical" % prefix)
+			elif ItemDatabase.get_item(result_item_id) == null:
+				errors.append("%s references unknown result item %s" % [prefix, result_item_id])
+		var raw_result_quantity: Variant = tier_data.get("result_quantity", null)
+		if typeof(raw_result_quantity) != TYPE_INT:
+			errors.append("%s result quantity is not an integer" % prefix)
+		elif raw_result_quantity <= 0:
 			errors.append("%s has a non-positive result quantity" % prefix)
 	return errors
 

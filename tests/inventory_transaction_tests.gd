@@ -916,6 +916,52 @@ func _test_recipe_catalog_validation() -> void:
 	_check(not RecipeDatabase.register_recipe(existing, false), "duplicate recipe id overwrote the catalog")
 	_check(RecipeDatabase.get_recipe("flame_augment") == existing, "duplicate registration replaced the original recipe")
 
+	var padded_recipe_id := _copy_recipe_with_id(" recipe_with_padded_id ")
+	_assert_recipe_registration_rejected(padded_recipe_id, "padded recipe id")
+
+	var string_tier := _copy_recipe_with_id("string_tier_recipe")
+	string_tier.tiers[0]["tier"] = "1"
+	_assert_recipe_registration_rejected(string_tier, "string tier")
+
+	var padded_ingredient_id := _copy_recipe_with_id("padded_ingredient_recipe")
+	padded_ingredient_id.tiers[0]["ingredients"][0]["item_id"] = " fire_shard "
+	_assert_recipe_registration_rejected(padded_ingredient_id, "padded ingredient id")
+	var non_string_ingredient_id := _copy_recipe_with_id("non_string_ingredient_recipe")
+	non_string_ingredient_id.tiers[0]["ingredients"][0]["item_id"] = 123
+	_check(non_string_ingredient_id.validate_catalog().size() == 1, "non-string ingredient id produced duplicate validation errors")
+	_assert_recipe_registration_rejected(non_string_ingredient_id, "non-string ingredient id")
+
+	var padded_result_id := _copy_recipe_with_id("padded_result_recipe")
+	padded_result_id.tiers[0]["result_item_id"] = " flame_augment_t1 "
+	_assert_recipe_registration_rejected(padded_result_id, "padded result id")
+	var non_string_result_id := _copy_recipe_with_id("non_string_result_recipe")
+	non_string_result_id.tiers[0]["result_item_id"] = 123
+	_check(non_string_result_id.validate_catalog().size() == 1, "non-string result id produced duplicate validation errors")
+	_assert_recipe_registration_rejected(non_string_result_id, "non-string result id")
+
+	var string_ingredient_quantity := _copy_recipe_with_id("string_ingredient_quantity_recipe")
+	string_ingredient_quantity.tiers[0]["ingredients"][0]["quantity"] = "3"
+	_assert_recipe_registration_rejected(string_ingredient_quantity, "string ingredient quantity")
+
+	var string_result_quantity := _copy_recipe_with_id("string_result_quantity_recipe")
+	string_result_quantity.tiers[0]["result_quantity"] = "1"
+	_assert_recipe_registration_rejected(string_result_quantity, "string result quantity")
+
+
+func _copy_recipe_with_id(recipe_id: String) -> CraftingRecipe:
+	var recipe := (RecipeDatabase.get_recipe("flame_augment") as CraftingRecipe).duplicate(true) as CraftingRecipe
+	recipe.id = recipe_id
+	return recipe
+
+
+func _assert_recipe_registration_rejected(recipe: CraftingRecipe, field_description: String) -> void:
+	_check(not recipe.validate_catalog().is_empty(), "%s passed catalog validation" % field_description)
+	var registered := RecipeDatabase.register_recipe(recipe, false)
+	_check(not registered, "%s entered the recipe catalog" % field_description)
+	_check(RecipeDatabase.get_recipe(recipe.id) == null, "%s remained in the recipe catalog" % field_description)
+	if registered:
+		RecipeDatabase.recipes.erase(recipe.id)
+
 
 func _test_crafting_transaction() -> void:
 	var inventory := _full_inventory_with_craft_materials()

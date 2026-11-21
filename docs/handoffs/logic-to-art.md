@@ -1,5 +1,25 @@
 # Logic-to-Art Contract Proposal
 
+## 2026-11-16 — Back equipment contract proposal (not implemented)
+
+Completed: q312 via PR #136, q313/Mosqui via PR #137, both integrated into develop. Five-file Mosqui implementation consumes existing actor.monster.mosqui.atlas without changing Agent A assets, scenes, layout or colors. Tests: Godot 4.6 import, Inventory/Survival/Legacy, generic menu renders, deterministic Mosqui catalog render (zero pixel diff) and two-process LAN combat pass. Main remains separate Cinderwild history.
+
+Next source quest 314 requires one Epic equipment item. Runtime audit /tmp/th-q313/audit.log confirms zero Epic-or-better equippable catalog items and exactly seven existing equipment slots, with no back slot. Source Card 37's Box 159 supplies Epic Card 162 (Back_9); Snailu supplies Rare Card 161 (Back_8). Neither source card has a stable art ID or runtime item mapping in this branch. Do not activate q314 until a playable acquisition/equip path exists.
+
+Proposed interface, requiring coordination approval:
+
+- New stable equipment slot ID `back`, separate from armor, shield and accessories. Preserve all seven existing slot IDs and all current item/rarity enum values; append any new enum member.
+- Agent A chooses the source-faithful `BackSlot` location and scene hierarchy. Candidate parent is existing `EquipGrid`; that location is a proposal only, not approval to modify layout. Required behavior: display equipped back item, select details, equip/unequip and drag/drop through the same gameplay commands as existing slots. Node layout/size/colors and source capture are Agent A decisions.
+- Agent A supplies approved stable icon IDs for source Cards 161/162, exact source metadata and local_only provenance. Proposed names `item.back.card_161.icon` and `item.back.card_162.icon` are NOT registered contracts. World-worn cape animation is a separate optional future visual scope; no invented player sprite overlay.
+- Agent B then owns append-only ItemType/slot mapping, inventory totals and rarity queries, exact instance/card/rank materialization, Snailu/Mosqui equipment drops, persistence and pending-claim validation, and LAN payload compatibility. No source raw rarity integer is copied into Emberfield's enum.
+- Save hydration must accept old saves with no back item and restore new back instances without deleting older equipment or pending rewards. Version/protocol decision must be explicit after tracing the actual serializer/transport; no bump or migration is implemented by this proposal.
+- Source cards share HP range 6..24, movement raw range 0.3..0.6, damage range 3..12, upgrade base Gold 10 and raw rate 1.5. These ranges do not establish Rare/Epic stat RNG or rounding. Do not reuse Common weapon RNG without evidence. Exact-stat authority remains required until those algorithms are verified.
+
+Acceptance before q314 activation: obtain a canonical Epic Card162 through authoritative Mosqui loot; equip it via the agreed BackSlot; reject wrong-type drops; full-bag unequip rolls back atomically; aggregate stats count once; old/new save and pending-claim recovery succeed; LAN host/client see identical instances; q314 completes and grants one Diamond once; source-aligned UI screenshot and visual comparison supplied by A.
+
+Dependencies/risks: missing BackSlot presentation, missing Card161/162 art IDs, unverified Rare/Epic stat generation. Current Agent A equipment-close changes are disjoint and preserved. No requested work has been assigned to A through messaging; this file records the proposal for review.
+
+
 ## 2026-11-06 — Quest 311 / Equip Rare Equipment
 
 - Gameplay exposes q311 through the unchanged generic quest contract with Vietnamese

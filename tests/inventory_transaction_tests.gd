@@ -24,6 +24,9 @@ func _ready() -> void:
 	_test_shop_purchase_transaction()
 	_test_sale_transaction()
 	_test_equipment_transactions()
+	_test_equipment_drop_targets()
+	_test_equipment_target_validation()
+	_test_equipment_automatic_target_policy()
 	_test_skill_cooldown_lifecycle()
 	_test_health_bonus_removal()
 	await _test_map_load_recovery()
@@ -737,6 +740,100 @@ func _test_equipment_transactions() -> void:
 	_check(inventory.remove_augment("weapon", 0), "augment removal failed after freeing capacity")
 	_check(inventory.get_item_count("flame_augment_t1") == 1 and inventory.get_equipped("weapon").applied_augments.is_empty(), "augment removal did not commit final state")
 	_check(int(inventory_signals["value"]) == 1 and int(equipment_signals["value"]) == 1 and int(augment_signals["value"]) == 1, "augment removal emitted duplicate or missing signals")
+
+
+func _test_equipment_drop_targets() -> void:
+	for target_slot: String in ["accessory_1", "accessory_2"]:
+		for occupied_mask in range(4):
+			var inventory := InventoryData.new()
+			var incoming := ItemDatabase.get_item_copy("silver_ring")
+			var first := ItemDatabase.get_item_copy("gold_ring")
+			var second := ItemDatabase.get_item_copy("diamond_ring")
+			inventory.equipped_accessory_1 = first if (occupied_mask & 1) != 0 else null
+			inventory.equipped_accessory_2 = second if (occupied_mask & 2) != 0 else null
+			inventory.add_item(incoming)
+			inventory.swap_slots(0, 7)
+			var other_slot := "accessory_2" if target_slot == "accessory_1" else "accessory_1"
+			var displaced := inventory.get_equipped(target_slot)
+			var unrelated := inventory.get_equipped(other_slot)
+			var expected_quantity := 0 if displaced == null else 1
+			var observed := {"equipment": 0, "inventory": 0, "slot": "", "complete": true}
+			var observe_final_state := func() -> void:
+				observed.complete = observed.complete and inventory.get_equipped(target_slot) == incoming \
+					and inventory.get_equipped(other_slot) == unrelated \
+					and inventory.get_item_at(7).item == displaced \
+					and inventory.get_item_at(7).quantity == expected_quantity
+			var on_equipment := func(changed_slot: String) -> void:
+				observed.equipment += 1
+				observed.slot = changed_slot
+				observe_final_state.call()
+			var on_inventory := func() -> void:
+				observed.inventory += 1
+				observe_final_state.call()
+			inventory.equipment_changed.connect(on_equipment)
+			inventory.inventory_changed.connect(on_inventory)
+			var panel := InventoryPanel.new()
+			panel.inventory_data = inventory
+			panel._on_inventory_to_equipment_dropped(7, target_slot)
+			var context := "drag to %s with occupied mask %d" % [target_slot, occupied_mask]
+			_check(inventory.get_equipped(target_slot) == incoming, context + " equipped the wrong target")
+			_check(inventory.get_equipped(other_slot) == unrelated, context + " changed unrelated equipment")
+			_check(inventory.get_item_at(7).item == displaced and inventory.get_item_at(7).quantity == expected_quantity, context + " lost the exact displaced instance or source-slot quantity")
+			_check(inventory.get_item_count(incoming.id) == 0, context + " duplicated incoming equipment")
+			_check(observed.equipment == 1 and observed.inventory == 1 and observed.slot == target_slot, context + " emitted incorrect equipment/inventory signals")
+			_check(observed.complete, context + " published an incomplete equipment/inventory state")
+			inventory.equipment_changed.disconnect(on_equipment)
+			inventory.inventory_changed.disconnect(on_inventory)
+			panel.free()
+
+
+func _test_equipment_target_validation() -> void:
+	var inventory := InventoryData.new()
+	var ring := ItemDatabase.get_item_copy("silver_ring")
+	var first := ItemDatabase.get_item_copy("gold_ring")
+	var second := ItemDatabase.get_item_copy("diamond_ring")
+	var weapon := ItemDatabase.get_item_copy("iron_sword")
+	inventory.equipped_accessory_1 = first
+	inventory.equipped_accessory_2 = second
+	inventory.equipped_weapon = weapon
+	inventory.add_item(ring)
+	var signals := {"equipment": 0, "inventory": 0}
+	inventory.equipment_changed.connect(func(_slot: String) -> void: signals.equipment += 1)
+	inventory.inventory_changed.connect(func() -> void: signals.inventory += 1)
+	var panel := InventoryPanel.new()
+	panel.inventory_data = inventory
+	for target_slot: String in ["weapon", "helmet", "accessory_3", "unknown_slot"]:
+		_check(not inventory.equip_item(0, target_slot), "explicit equip accepted incompatible/unknown target " + target_slot)
+		panel._on_inventory_to_equipment_dropped(0, target_slot)
+		_check(inventory.get_item_at(0).item == ring and inventory.get_item_at(0).quantity == 1, "rejected target consumed the source ring")
+		_check(inventory.equipped_accessory_1 == first and inventory.equipped_accessory_2 == second and inventory.equipped_weapon == weapon, "rejected target changed equipped instances")
+	_check(signals.equipment == 0 and signals.inventory == 0, "rejected equipment targets emitted mutation signals")
+	panel.free()
+
+	var incoming_weapon := ItemDatabase.get_item_copy("fire_blade")
+	inventory.add_item(incoming_weapon)
+	signals.equipment = 0
+	signals.inventory = 0
+	_check(inventory.equip_item(1, "weapon"), "explicit weapon target rejected compatible equipment")
+	_check(inventory.equipped_weapon == incoming_weapon and inventory.get_item_at(1).item == weapon, "explicit weapon target did not preserve the exact swapped instances")
+	_check(inventory.equipped_accessory_1 == first and inventory.equipped_accessory_2 == second, "explicit weapon target changed accessory slots")
+	_check(signals.equipment == 1 and signals.inventory == 1, "explicit weapon target emitted incorrect mutation signals")
+
+
+func _test_equipment_automatic_target_policy() -> void:
+	var inventory := InventoryData.new()
+	var first := ItemDatabase.get_item_copy("silver_ring")
+	var second := ItemDatabase.get_item_copy("gold_ring")
+	var third := ItemDatabase.get_item_copy("diamond_ring")
+	inventory.add_item(first)
+	inventory.add_item(second)
+	inventory.add_item(third)
+	_check(inventory.equip_item(0), "automatic accessory equip failed for first empty slot")
+	_check(inventory.equipped_accessory_1 == first and inventory.equipped_accessory_2 == null, "automatic accessory equip did not prefer slot one")
+	_check(inventory.equip_item(1), "automatic accessory equip failed for second empty slot")
+	_check(inventory.equipped_accessory_1 == first and inventory.equipped_accessory_2 == second, "automatic accessory equip did not choose the remaining empty slot")
+	_check(inventory.equip_item(2), "automatic accessory equip failed when both slots were occupied")
+	_check(inventory.equipped_accessory_1 == third and inventory.equipped_accessory_2 == second and inventory.get_item_at(2).item == first, "automatic accessory replacement no longer swaps with slot one at the original inventory index")
 
 
 func _test_equipment_enhancement() -> void:

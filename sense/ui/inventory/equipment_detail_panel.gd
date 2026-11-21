@@ -64,95 +64,105 @@ func _build_ui() -> void:
 	_modal = Panel.new()
 	_modal.name = "Modal"
 	_modal.anchor_left = 0.5
-	_modal.anchor_top = 0.69
+	_modal.anchor_top = 0.55
 	_modal.anchor_right = 0.5
-	_modal.anchor_bottom = 0.69
-	_modal.offset_left = -240.0
-	_modal.offset_top = -235.0
-	_modal.offset_right = 240.0
-	_modal.offset_bottom = 235.0
-	_modal.add_theme_stylebox_override("panel", _panel_style())
+	_modal.anchor_bottom = 0.55
+	_modal.offset_left = -264.0
+	_modal.offset_top = -273.0
+	_modal.offset_right = 264.0
+	_modal.offset_bottom = 273.0
+	_modal.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_modal.add_theme_stylebox_override("panel", ArtCatalog.stylebox("ui.panel.default"))
 	add_child(_modal)
 
-	_name_label = _label("Item Name", 32, UiTheme.C_TEXT)
-	_name_label.name = "ItemName"
-	_name_label.position = Vector2(24, 18)
-	_name_label.size = Vector2(432, 42)
-	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_modal.add_child(_name_label)
-
-	_level_label = _label("Level 1 (Max 10)", 23, UiTheme.C_TEXT)
-	_level_label.name = "Level"
-	_level_label.position = Vector2(24, 58)
-	_level_label.size = Vector2(432, 34)
-	_level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_modal.add_child(_level_label)
-
-	var separator := ColorRect.new()
-	separator.name = "HeaderSeparator"
-	separator.position = Vector2(24, 100)
-	separator.size = Vector2(432, 2)
-	separator.color = Color(0.12, 0.11, 0.14, 0.85)
-	_modal.add_child(separator)
+	var ember_rule := ColorRect.new()
+	ember_rule.position = Vector2(28, 13)
+	ember_rule.size = Vector2(64, 4)
+	ember_rule.color = ArtPalette.color("y")
+	ember_rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_modal.add_child(ember_rule)
 
 	_item_field = Panel.new()
 	_item_field.name = "ItemField"
-	_item_field.position = Vector2(52, 126)
-	_item_field.size = Vector2(104, 104)
+	_item_field.position = Vector2(28, 30)
+	_item_field.size = Vector2(84, 84)
 	_modal.add_child(_item_field)
 
 	_item_icon = TextureRect.new()
 	_item_icon.name = "ItemIcon"
-	_item_icon.position = Vector2(8, 8)
-	_item_icon.size = Vector2(88, 88)
+	_item_icon.position = Vector2(10, 10)
+	_item_icon.size = Vector2(64, 64)
 	_item_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_item_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_item_icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_item_field.add_child(_item_icon)
+
+	_name_label = _label("", 32, UiTheme.C_TEXT)
+	_name_label.name = "ItemName"
+	_name_label.position = Vector2(128, 30)
+	_name_label.size = Vector2(298, 50)
+	_name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_modal.add_child(_name_label)
+
+	_level_label = _label("", 24, UiTheme.C_GOLD)
+	_level_label.name = "Level"
+	_level_label.position = Vector2(128, 82)
+	_level_label.size = Vector2(298, 32)
+	_modal.add_child(_level_label)
+
+	var stats_label := _label("Thuộc tính", 22, UiTheme.C_MUTED)
+	stats_label.position = Vector2(28, 128)
+	_modal.add_child(stats_label)
 
 	_stats = VBoxContainer.new()
 	_stats.name = "Stats"
-	_stats.position = Vector2(184, 122)
-	_stats.size = Vector2(244, 132)
+	_stats.position = Vector2(28, 160)
+	_stats.size = Vector2(472, 176)
 	_stats.add_theme_constant_override("separation", 5)
 	_modal.add_child(_stats)
 
 	_description = _label("", 23, UiTheme.C_TEXT)
 	_description.name = "Description"
-	_description.position = Vector2(34, 268)
-	_description.size = Vector2(412, 62)
-	_description.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_description.position = Vector2(28, 356)
+	_description.size = Vector2(472, 68)
 	_description.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_description.max_lines_visible = 2
+	_description.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	_modal.add_child(_description)
 
-	_remove_button = _action_button("Tháo", Vector2(30, 360), Vector2(126, 70))
+	_remove_button = _action_button("Tháo", Vector2(28, 432), Vector2(126, 88))
 	_remove_button.name = "RemoveButton"
-	_apply_flat_button_styles(_remove_button, Color8(96, 97, 101), Color8(144, 145, 148))
+	_remove_button.add_theme_stylebox_override("normal", ArtCatalog.stylebox("ui.button.secondary"))
+	_remove_button.add_theme_stylebox_override("hover", ArtCatalog.stylebox("ui.button.secondary.hover"))
+	_remove_button.add_theme_stylebox_override("pressed", ArtCatalog.stylebox("ui.button.secondary.pressed"))
 	_remove_button.pressed.connect(_on_remove_pressed)
 	_modal.add_child(_remove_button)
 
-	_upgrade_button = _action_button("Nâng cấp", Vector2(174, 360), Vector2(132, 70))
+	_upgrade_button = _action_button("Nâng cấp", Vector2(166, 432), Vector2(196, 88))
 	_upgrade_button.name = "UpgradeButton"
 	_upgrade_button.icon = ICON_GOLD
-	_apply_texture_button_styles(_upgrade_button)
 	_upgrade_button.pressed.connect(_on_upgrade_pressed)
 	_modal.add_child(_upgrade_button)
 
-	_sell_button = _action_button("Bán", Vector2(324, 360), Vector2(126, 70))
+	_sell_button = _action_button("Bán", Vector2(374, 432), Vector2(126, 88))
 	_sell_button.name = "SellButton"
 	_sell_button.disabled = true
+	_sell_button.add_theme_stylebox_override("disabled", UiTheme.box(ArtPalette.color("o"), UiTheme.C_TRIM, 2))
+	_sell_button.add_theme_color_override("font_disabled_color", UiTheme.C_MUTED)
 	_sell_button.tooltip_text = "Chưa hỗ trợ bán trực tiếp trang bị đang mặc."
-	_apply_flat_button_styles(_sell_button, Color8(179, 44, 58), Color8(235, 75, 86))
 	_modal.add_child(_sell_button)
 
 	var close_button := Button.new()
 	close_button.name = "CloseButton"
-	close_button.text = "X"
-	close_button.position = Vector2(424, 10)
-	close_button.size = Vector2(42, 42)
+	close_button.text = "×"
+	close_button.position = Vector2(428, 20)
+	close_button.size = Vector2(88, 88)
 	close_button.focus_mode = Control.FOCUS_NONE
-	close_button.add_theme_font_size_override("font_size", 20)
+	close_button.add_theme_font_size_override("font_size", 40)
+	close_button.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
+	close_button.add_theme_stylebox_override("hover", ArtCatalog.stylebox("ui.panel.dark"))
+	close_button.add_theme_stylebox_override("pressed", ArtCatalog.stylebox("ui.panel.dark"))
 	close_button.pressed.connect(close_panel)
 	_modal.add_child(close_button)
 
@@ -167,8 +177,10 @@ func _refresh() -> void:
 		return
 
 	_name_label.text = item.name
+	_name_label.tooltip_text = item.name
 	_level_label.text = "Cấp %d (Tối đa %d)" % [item.enhancement_level, item.max_upgrade_level]
 	_description.text = item.description
+	_description.tooltip_text = item.description
 	_item_icon.texture = item.get_icon()
 	_item_field.add_theme_stylebox_override("panel", _item_field_style(item.rarity))
 	_rebuild_stats(item)
@@ -187,41 +199,63 @@ func _refresh() -> void:
 
 func _rebuild_stats(item: ItemData) -> void:
 	for child in _stats.get_children():
+		_stats.remove_child(child)
 		child.queue_free()
-	var rows := 0
-	if item.get_scaled_health_bonus() != 0:
-		_add_stat_row(ICON_HEALTH, _signed_number(item.get_scaled_health_bonus(), 0))
-		rows += 1
-	if item.get_scaled_attack_bonus() != 0:
-		_add_stat_row(ICON_DAMAGE, _signed_number(item.get_scaled_attack_bonus(), 0))
-		rows += 1
-	if item.get_scaled_speed_bonus() != 0.0:
-		_add_stat_row(ICON_SPEED, _signed_number(item.get_scaled_speed_bonus(), 0))
-		rows += 1
-	if item.get_scaled_defense_bonus() != 0:
-		_add_stat_row(null, "DEF %s" % _signed_number(item.get_scaled_defense_bonus(), 0))
-		rows += 1
-	if rows == 0:
-		var empty := _label("Không có thuộc tính cộng thêm", 20, UiTheme.C_MUTED)
+	var health := item.get_scaled_health_bonus()
+	var attack := item.get_scaled_attack_bonus()
+	var speed := item.get_scaled_speed_bonus()
+	var defense := item.get_scaled_defense_bonus()
+	if health != 0:
+		_add_stat_row(ICON_HEALTH, "Máu", _signed_number(health, 0))
+	if attack != 0:
+		_add_stat_row(ICON_DAMAGE, "Tấn công", _signed_number(attack, 0))
+	if speed != 0.0:
+		_add_stat_row(ICON_SPEED, "Tốc độ", _signed_number(speed, 0))
+	if defense != 0:
+		_add_stat_row(null, "Phòng thủ", _signed_number(defense, 0))
+	if _stats.get_child_count() == 0:
+		var empty := _label("Không có thuộc tính cộng thêm", 24, UiTheme.C_MUTED)
 		empty.name = "EmptyStats"
 		_stats.add_child(empty)
 
 
-func _add_stat_row(icon: Texture2D, value: String) -> void:
+func _add_stat_row(icon: Texture2D, title: String, value: String) -> void:
+	var strip := PanelContainer.new()
+	strip.custom_minimum_size.y = 40
+	strip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := StyleBoxFlat.new()
+	style.bg_color = ArtPalette.color("o")
+	style.border_color = ArtPalette.color("A")
+	style.border_width_left = 4
+	style.content_margin_left = 12
+	style.content_margin_right = 14
+	style.content_margin_top = 0
+	style.content_margin_bottom = 0
+	strip.add_theme_stylebox_override("panel", style)
+	_stats.add_child(strip)
+
 	var row := HBoxContainer.new()
-	row.custom_minimum_size = Vector2(0, STAT_ICON_SIZE)
-	row.add_theme_constant_override("separation", 8)
-	if icon != null:
-		var icon_rect := TextureRect.new()
-		icon_rect.texture = icon
-		icon_rect.custom_minimum_size = Vector2(STAT_ICON_SIZE, STAT_ICON_SIZE)
-		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-		row.add_child(icon_rect)
-	var value_label := _label(value, 24, UiTheme.C_TEXT)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_constant_override("separation", 10)
+	strip.add_child(row)
+
+	var glyph := TextureRect.new()
+	glyph.texture = icon
+	glyph.custom_minimum_size = Vector2(STAT_ICON_SIZE, STAT_ICON_SIZE)
+	glyph.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	glyph.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(glyph)
+
+	var title_label := _label(title, 24, UiTheme.C_TEXT)
+	title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(title_label)
+
+	var value_label := _label(value, 28, UiTheme.C_GOLD)
+	value_label.name = "Value"
+	value_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(value_label)
-	_stats.add_child(row)
 
 
 func _signed_number(value: float, decimals: int) -> String:
@@ -292,34 +326,7 @@ func _action_button(text: String, position: Vector2, button_size: Vector2) -> Bu
 	return button
 
 
-func _panel_style() -> StyleBoxFlat:
-	var style := UiTheme.box(Color8(75, 70, 80), Color8(143, 143, 146), 5)
-	style.shadow_color = Color(0, 0, 0, 0.7)
-	style.shadow_size = 6
-	return style
-
-
 func _item_field_style(rarity: int) -> StyleBoxFlat:
 	var style := UiTheme.box(InventorySlotUI.get_rarity_field_color(rarity), Color8(31, 29, 34), 4)
 	style.set_corner_radius_all(2)
-	return style
-
-
-func _apply_texture_button_styles(button: Button) -> void:
-	button.add_theme_stylebox_override("normal", ArtCatalog.stylebox("ui.button.secondary"))
-	button.add_theme_stylebox_override("hover", ArtCatalog.stylebox("ui.button.secondary.hover"))
-	button.add_theme_stylebox_override("pressed", ArtCatalog.stylebox("ui.button.secondary.pressed"))
-	button.add_theme_stylebox_override("disabled", ArtCatalog.stylebox("ui.button.disabled"))
-
-
-func _apply_flat_button_styles(button: Button, base: Color, border: Color) -> void:
-	button.add_theme_stylebox_override("normal", _flat_button_style(base, border))
-	button.add_theme_stylebox_override("hover", _flat_button_style(base.lightened(0.08), border.lightened(0.08)))
-	button.add_theme_stylebox_override("pressed", _flat_button_style(base.darkened(0.1), border))
-	button.add_theme_stylebox_override("disabled", _flat_button_style(base.darkened(0.35), border.darkened(0.35)))
-
-
-func _flat_button_style(base: Color, border: Color) -> StyleBoxFlat:
-	var style := UiTheme.box(base, border, 3)
-	style.set_corner_radius_all(1)
 	return style

@@ -288,20 +288,44 @@ func _setup_equipment_slots() -> void:
 
 ## Setup inventory with data and optional character stats
 func setup(data: InventoryData, stats: CharacterStats = null) -> void:
+	if inventory_data != data:
+		if inventory_data:
+			if inventory_data.inventory_changed.is_connected(_refresh_inventory):
+				inventory_data.inventory_changed.disconnect(_refresh_inventory)
+			if inventory_data.equipment_changed.is_connected(_refresh_equipment):
+				inventory_data.equipment_changed.disconnect(_refresh_equipment)
+			if inventory_data.gold_changed.is_connected(_refresh_gold):
+				inventory_data.gold_changed.disconnect(_refresh_gold)
+		if selected_slot_index >= 0 and selected_slot_index < inventory_slots.size():
+			inventory_slots[selected_slot_index].set_selected(false)
+		selected_slot_index = -1
+		tooltip_panel.visible = false
+		if equipment_detail_panel:
+			equipment_detail_panel.close_panel()
+	if character_stats != stats and character_stats:
+		if character_stats.health_changed.is_connected(_on_stats_health_changed):
+			character_stats.health_changed.disconnect(_on_stats_health_changed)
 	inventory_data = data
 	character_stats = stats
-	inventory_data.inventory_changed.connect(_refresh_inventory)
-	inventory_data.equipment_changed.connect(_refresh_equipment)
-	inventory_data.gold_changed.connect(_refresh_gold)
+	if not inventory_data.inventory_changed.is_connected(_refresh_inventory):
+		inventory_data.inventory_changed.connect(_refresh_inventory)
+	if not inventory_data.equipment_changed.is_connected(_refresh_equipment):
+		inventory_data.equipment_changed.connect(_refresh_equipment)
+	if not inventory_data.gold_changed.is_connected(_refresh_gold):
+		inventory_data.gold_changed.connect(_refresh_gold)
 	
 	# Refresh stats when buffs change (via health_changed which fires on buff apply)
-	if character_stats:
-		character_stats.health_changed.connect(func(_c: int, _m: int) -> void: _refresh_stats())
+	if character_stats and not character_stats.health_changed.is_connected(_on_stats_health_changed):
+		character_stats.health_changed.connect(_on_stats_health_changed)
 	
 	_refresh_inventory()
 	_refresh_equipment("")
 	_refresh_stats()
 	_refresh_gold(inventory_data.gold)
+
+
+func _on_stats_health_changed(_current: int, _maximum: int) -> void:
+	_refresh_stats()
 
 
 func open_inventory() -> void:

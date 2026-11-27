@@ -41,6 +41,7 @@ func _ready() -> void:
 	_test_hotbar_equip_swap_binding()
 	_test_hotbar_source_lifecycle()
 	_test_hud_hotbar_source_lifecycle()
+	_test_hud_stats_source_lifecycle()
 	_test_reward_box_resolver()
 	_test_reward_box_checkbox_resolver()
 	_test_reward_box_catalog()
@@ -1282,6 +1283,70 @@ func _test_hotbar_source_lifecycle() -> void:
 	hotbar.free()
 	old_skills.free()
 	new_skills.free()
+
+
+func _test_hud_stats_source_lifecycle() -> void:
+	var hud = load("res://sense/ui/hud/hud.gd").new()
+	hud.health_bar = PixelBar.new()
+	hud.stamina_bar = PixelBar.new()
+	var old := CharacterStats.new()
+	var current := CharacterStats.new()
+	current.base_max_health = 300
+	current.current_health = 40
+	current.max_stamina = 160.0
+	current.current_stamina = 20.0
+	var observations := {"health": 0, "stamina": 0, "old": 0}
+	hud.health_bar.value_changed.connect(func(_value: float, _maximum: float) -> void: observations["health"] += 1)
+	hud.stamina_bar.value_changed.connect(func(_value: float, _maximum: float) -> void: observations["stamina"] += 1)
+	# PixelBar updates its clamped value when setting max, then assigns current.
+	# Measure its existing notification policy independently of HUD subscriptions.
+	hud.health_bar.set_values(100.0, 100.0)
+	hud.stamina_bar.set_values(100.0, 100.0)
+	var health_events_per_refresh := int(observations["health"])
+	var stamina_events_per_refresh := int(observations["stamina"])
+	var old_observer := func(_value: float, _maximum: float) -> void: observations["old"] += 1
+	old.health_changed.connect(old_observer)
+	old.stamina_changed.connect(old_observer)
+	hud.setup(old)
+	hud.setup(current)
+	_check(hud.health_bar.current_value == 40.0 and hud.health_bar.max_value == 300.0, "HUD replacement did not refresh current/max health")
+	_check(hud.stamina_bar.current_value == 20.0 and hud.stamina_bar.max_value == 160.0, "HUD replacement did not refresh current/max stamina")
+	_check(not old.health_changed.is_connected(hud._on_health_changed) and not old.stamina_changed.is_connected(hud._on_stamina_changed), "HUD stats replacement retained old subscriptions")
+	old.current_health = 5
+	old.current_stamina = 7.0
+	_check(hud.health_bar.current_value == 40.0 and hud.stamina_bar.current_value == 20.0, "old CharacterStats overwrote replacement HUD bars")
+	_check(int(observations["old"]) == 2, "HUD stats detachment removed unrelated observers")
+	current.current_health = 35
+	current.current_stamina = 18.0
+	_check(hud.health_bar.current_value == 35.0 and hud.stamina_bar.current_value == 18.0, "current CharacterStats did not update HUD bars")
+	observations["health"] = 0
+	observations["stamina"] = 0
+	hud.setup(current)
+	_check(int(observations["health"]) == health_events_per_refresh and int(observations["stamina"]) == stamina_events_per_refresh, "same-source HUD setup did not refresh each bar once")
+	_check(current.health_changed.get_connections().size() == 1 and current.stamina_changed.get_connections().size() == 1, "same-source HUD setup duplicated stats subscriptions")
+	current.health_changed.disconnect(hud._on_health_changed)
+	current.stamina_changed.disconnect(hud._on_stamina_changed)
+	hud.setup(current)
+	_check(current.health_changed.is_connected(hud._on_health_changed) and current.stamina_changed.is_connected(hud._on_stamina_changed), "same-source HUD setup did not repair missing stats subscriptions")
+	observations["health"] = 0
+	observations["stamina"] = 0
+	current.current_health = 30
+	current.current_stamina = 15.0
+	_check(int(observations["health"]) == health_events_per_refresh and int(observations["stamina"]) == stamina_events_per_refresh, "repaired HUD subscriptions duplicated live updates")
+	hud.setup(null)
+	_check(current.health_changed.get_connections().is_empty() and current.stamina_changed.get_connections().is_empty(), "null HUD setup retained stats subscriptions")
+	_check(hud.stats == null and hud.health_bar.current_value == 0.0 and hud.stamina_bar.current_value == 0.0, "null HUD setup did not clear bars")
+	_check(hud.health_bar.max_value == 1.0 and hud.stamina_bar.max_value == 1.0, "null HUD setup did not preserve PixelBar's minimum maximum")
+	current.current_health = 1
+	current.current_stamina = 1.0
+	_check(hud.health_bar.current_value == 0.0 and hud.stamina_bar.current_value == 0.0, "detached stats updated cleared HUD bars")
+	hud.setup(null)
+	hud.setup(current)
+	_check(hud.health_bar.current_value == 1.0 and hud.stamina_bar.current_value == 1.0, "HUD stats did not reconnect after null setup")
+	hud.setup(null)
+	hud.health_bar.free()
+	hud.stamina_bar.free()
+	hud.free()
 
 
 func _test_hud_hotbar_source_lifecycle() -> void:

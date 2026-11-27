@@ -39,6 +39,7 @@ func _ready() -> void:
 	_test_crafting_panel_inventory_binding()
 	_test_inventory_panel_source_lifecycle()
 	_test_augment_panel_source_lifecycle()
+	await _test_augment_child_source_context()
 	_test_hotbar_equipment_instance_binding()
 	_test_hotbar_stackable_binding()
 	_test_hotbar_equip_swap_binding()
@@ -1130,6 +1131,48 @@ func _assert_recipe_registration_rejected(recipe: CraftingRecipe, field_descript
 	_check(RecipeDatabase.get_recipe(recipe.id) == null, "%s remained in the recipe catalog" % field_description)
 	if registered:
 		RecipeDatabase.recipes.erase(recipe.id)
+
+
+func _test_augment_child_source_context() -> void:
+	var panel: InventoryPanel = preload("res://sense/ui/inventory/inventory_panel.tscn").instantiate()
+	add_child(panel)
+	var old := InventoryData.new()
+	var current := InventoryData.new()
+	for inventory: InventoryData in [old, current]:
+		inventory.add_item(ItemDatabase.get_item_copy("fire_blade"), 1)
+		inventory.equip_item(0)
+		inventory.add_item(ItemDatabase.get_item("flame_augment_t1"), 1)
+	panel.setup(old)
+	await panel._open_augment_panel("weapon")
+	var child: AugmentPanel = panel.get_node("AugmentPanel")
+	panel.setup(old)
+	_check(child.visible and child.inventory == old and not child.is_queued_for_deletion(), "same-source parent setup retired valid augment child")
+	var closes := {"value": 0}
+	child.panel_closed.connect(func() -> void: closes["value"] += 1)
+	panel.setup(current)
+	_check(child.inventory == null and not child.visible and child.is_queued_for_deletion(), "parent rebind did not clear/retire old augment child immediately")
+	child._on_augment_clicked(0)
+	_check(old.get_item_count("flame_augment_t1") == 1 and old.get_equipped("weapon").applied_augments.is_empty(), "queued stale child mutated old inventory")
+	_check(int(closes["value"]) == 1, "parent rebind duplicated or missed existing child-close event")
+	await get_tree().process_frame
+	_check(not is_instance_valid(child), "old augment child survived source replacement")
+	await panel._open_augment_panel("weapon")
+	var replacement: AugmentPanel = panel.get_node("AugmentPanel")
+	_check(replacement.inventory == current, "new augment child retained old parent source")
+	replacement._on_augment_clicked(0)
+	_check(current.get_item_count("flame_augment_t1") == 0 and current.get_equipped("weapon").applied_augments == ["flame_augment_t1"], "current augment child did not apply exactly one current item")
+	panel.setup(old)
+	await get_tree().process_frame
+	# Rebind while the opening coroutine is still waiting to position the child.
+	panel._open_augment_panel("weapon")
+	var opening: AugmentPanel = panel.get_node("AugmentPanel")
+	panel.setup(current)
+	_check(opening.inventory == null and opening.is_queued_for_deletion(), "source replacement retained an opening augment child")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_check(not is_instance_valid(opening), "opening child survived replacement or stale positioning")
+	panel.queue_free()
+	await get_tree().process_frame
 
 
 func _test_augment_panel_source_lifecycle() -> void:

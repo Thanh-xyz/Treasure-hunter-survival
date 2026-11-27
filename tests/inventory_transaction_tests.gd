@@ -36,6 +36,7 @@ func _ready() -> void:
 	_test_inventory_removal_invariants()
 	_test_recipe_catalog_validation()
 	_test_crafting_panel_inventory_binding()
+	_test_inventory_panel_source_lifecycle()
 	_test_hotbar_equipment_instance_binding()
 	_test_hotbar_stackable_binding()
 	_test_hotbar_equip_swap_binding()
@@ -1066,6 +1067,62 @@ func _assert_recipe_registration_rejected(recipe: CraftingRecipe, field_descript
 	_check(RecipeDatabase.get_recipe(recipe.id) == null, "%s remained in the recipe catalog" % field_description)
 	if registered:
 		RecipeDatabase.recipes.erase(recipe.id)
+
+
+func _test_inventory_panel_source_lifecycle() -> void:
+	var panel: InventoryPanel = preload("res://sense/ui/inventory/inventory_panel.tscn").instantiate()
+	add_child(panel)
+	var old := InventoryData.new()
+	var current := InventoryData.new()
+	var old_stats := CharacterStats.new()
+	var current_stats := CharacterStats.new()
+	current_stats.base_attack_damage = 37
+	current_stats.base_defense = 12
+	old.add_item(ItemDatabase.get_item("iron_sword"), 1)
+	old.add_item(ItemDatabase.get_item("wood"), 2)
+	old.equip_item(0)
+	current.add_item(ItemDatabase.get_item("stone"), 3)
+	current.gold = 20
+	var other_events := {"gold": 0, "health": 0}
+	old.gold_changed.connect(func(_value: int) -> void: other_events["gold"] += 1)
+	old_stats.health_changed.connect(func(_value: int, _maximum: int) -> void: other_events["health"] += 1)
+	panel.setup(old, old_stats)
+	panel._on_inventory_slot_clicked(1)
+	panel.equipment_detail_panel.setup(old, "weapon")
+	panel.tooltip_panel.show()
+	panel.setup(current, current_stats)
+	_check(panel.selected_slot_index == -1 and not panel.inventory_slots[1].is_selected, "inventory replacement retained old slot selection")
+	_check(not panel.tooltip_panel.visible and not panel.equipment_detail_panel.visible, "inventory replacement retained old tooltip or equipment context")
+	_check(not old.inventory_changed.is_connected(panel._refresh_inventory) and not old.equipment_changed.is_connected(panel._refresh_equipment) and not old.gold_changed.is_connected(panel._refresh_gold), "inventory panel retained old inventory subscriptions")
+	_check(not old_stats.health_changed.is_connected(panel._on_stats_health_changed), "inventory panel retained old stats subscription")
+	old.gold = 999
+	old_stats.current_health = 30
+	_check(panel.gold_value.text == "20" and other_events == {"gold": 1, "health": 1}, "inventory detachment overwrote current gold or removed unrelated listeners")
+	_check(panel.inventory_slots[0].item.id == "stone" and panel.inventory_slots[0].quantity == 3, "inventory replacement did not refresh current slots")
+	_check(panel.atk_value.text == "37" and panel.def_value.text == "12", "inventory replacement did not refresh current stats")
+	current.gold = 1234
+	current_stats.base_attack_damage = 41
+	current_stats.health_changed.emit(current_stats.current_health, current_stats.max_health)
+	_check(panel.gold_value.text == "1,234" and panel.atk_value.text == "41", "current inventory or stats events did not refresh panel")
+	panel.setup(current, current_stats)
+	_check(current.inventory_changed.get_connections().size() == 1 and current.equipment_changed.get_connections().size() == 1 and current.gold_changed.get_connections().size() == 1 and current_stats.health_changed.get_connections().size() == 1, "same-source inventory setup duplicated subscriptions")
+	current.inventory_changed.disconnect(panel._refresh_inventory)
+	current.equipment_changed.disconnect(panel._refresh_equipment)
+	current.gold_changed.disconnect(panel._refresh_gold)
+	current_stats.health_changed.disconnect(panel._on_stats_health_changed)
+	panel.setup(current, current_stats)
+	_check(current.inventory_changed.is_connected(panel._refresh_inventory) and current.equipment_changed.is_connected(panel._refresh_equipment) and current.gold_changed.is_connected(panel._refresh_gold) and current_stats.health_changed.is_connected(panel._on_stats_health_changed), "same-source inventory setup did not repair missing subscriptions")
+	panel.setup(current)
+	_check(current_stats.health_changed.get_connections().is_empty() and panel.atk_value.text == "0" and panel.def_value.text == "0", "optional null stats retained old callback or missed equipment-only fallback")
+	current.add_item(ItemDatabase.get_item("iron_sword"), 1)
+	_check(current.equip_item(1), "current source fixture could not equip sword")
+	panel._on_inventory_slot_clicked(0)
+	panel.equipment_detail_panel.setup(current, "weapon")
+	panel.tooltip_panel.show()
+	panel.setup(current)
+	_check(panel.selected_slot_index == 0 and panel.inventory_slots[0].is_selected and panel.tooltip_panel.visible and panel.equipment_detail_panel.visible, "same-source inventory setup dismissed valid transient context")
+	_check(panel.equipment_slots["weapon"].item == current.get_equipped("weapon"), "current equipment event did not refresh panel")
+	panel.queue_free()
 
 
 func _test_crafting_panel_inventory_binding() -> void:

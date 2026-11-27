@@ -997,7 +997,10 @@ func _setup_components() -> void:
 	skill_component.name = "SkillComponent"
 	add_child(skill_component)
 	skill_component.get_active_skills_func = func() -> Array: return inventory.get_all_augment_active_skills()
-	skill_component.use_stamina_func = func(cost: float) -> bool: return stats.use_stamina(cost)
+	skill_component.use_stamina_func = func(cost: float) -> bool:
+		if is_dead() or not stats.is_alive():
+			return false
+		return stats.use_stamina(cost)
 	skill_component.skill_activated.connect(_on_skill_activated)
 
 	# --- SkillExecutor: spawns skill hitboxes/effects ---

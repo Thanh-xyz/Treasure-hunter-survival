@@ -50,14 +50,26 @@ func _ready() -> void:
 
 
 func setup(inv: InventoryData, slot: String) -> void:
+	if inventory and inventory != inv:
+		if inventory.inventory_changed.is_connected(_refresh):
+			inventory.inventory_changed.disconnect(_refresh)
+		if inventory.equipment_changed.is_connected(_on_equipment_changed):
+			inventory.equipment_changed.disconnect(_on_equipment_changed)
 	inventory = inv
 	equip_slot = slot
-	equipment_item = inventory.get_equipped(slot)
 
-	if inventory and not inventory.inventory_changed.is_connected(_refresh):
-		inventory.inventory_changed.connect(_refresh)
+	if inventory:
+		if not inventory.inventory_changed.is_connected(_refresh):
+			inventory.inventory_changed.connect(_refresh)
+		if not inventory.equipment_changed.is_connected(_on_equipment_changed):
+			inventory.equipment_changed.connect(_on_equipment_changed)
 
 	_refresh()
+
+
+func _on_equipment_changed(slot: String) -> void:
+	if slot == equip_slot:
+		_refresh()
 
 
 func _refresh() -> void:

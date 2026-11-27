@@ -79,6 +79,7 @@ func run_all() -> bool:
 	await _test_resolved_combat_hit()
 	await _test_player_combat_modifiers()
 	await _test_dead_consumable_use()
+	await _test_dead_skill_use()
 
 	_stub_player.queue_free()
 	SaveService.delete_save()
@@ -1201,6 +1202,81 @@ func _test_player_combat_modifiers() -> void:
 	_check(bool(upgrade_event["seen"]) and int(upgrade_event["level"]) == 2 and int(upgrade_event["cost"]) == upgrade_cost, "player did not forward the stable equipment upgrade event")
 	GameEvent.equipment_upgraded.disconnect(on_equipment_upgraded)
 	local_player.queue_free()
+
+
+## Skill admission must reject death before stamina, cooldowns or effects commit.
+func _test_dead_skill_use() -> void:
+	var local_player = preload("res://sense/entities/player/player.tscn").instantiate()
+	local_player.set_physics_process(false)
+	add_child(local_player)
+	await get_tree().process_frame
+	var component: SkillComponent = local_player.skill_component
+	component.set_process(false)
+	component.set_process_unhandled_input(false)
+	var stats: CharacterStats = local_player.stats
+	var notifications := {"stamina": 0, "activated": 0, "used": 0}
+	stats.stamina_changed.connect(func(_value: float, _maximum: float) -> void: notifications["stamina"] += 1)
+	component.skill_activated.connect(func(_id: String) -> void: notifications["activated"] += 1)
+	var on_skill_used := func(_id: String) -> void: notifications["used"] += 1
+	GameEvent.skill_used.connect(on_skill_used)
+	var input := InputEventAction.new()
+	input.action = "skill_1"
+	input.pressed = true
+	for skill_id: String in ["whirlwind", "shield_bash", "fire_burst"]:
+		var skill: SkillData = SkillDatabase.get_skill(skill_id)
+		component.get_active_skills_func = func() -> Array: return [{"skill_id": skill_id, "source_equip_slot": "weapon"}]
+		component.rebuild_skills()
+		for death_mode: String in ["natural", "state_only", "stats_only"]:
+			for via_input in [false, true]:
+				local_player.reset_player()
+				if death_mode == "state_only":
+					local_player.die()
+				else:
+					stats.current_health = 0
+					if death_mode == "stats_only":
+						local_player.current_state = local_player.State.IDLE
+				var before_state: int = local_player.current_state
+				var before_health := stats.current_health
+				var before_stamina := stats.current_stamina
+				var before_children := get_child_count()
+				for key: String in notifications:
+					notifications[key] = 0
+				var context := "%s %s %s" % [skill_id, death_mode, "input" if via_input else "direct"]
+				if via_input:
+					component._unhandled_input(input)
+				else:
+					_check(not component.try_activate_skill(skill_id), context + " accepted a dead skill")
+				_check(is_equal_approx(stats.current_stamina, before_stamina), context + " spent stamina")
+				_check(component.is_skill_ready(skill_id) and is_zero_approx(float(component.available_skills[0].get("current_cooldown", -1.0))), context + " started cooldown")
+				_check(notifications == {"stamina": 0, "activated": 0, "used": 0}, context + " emitted activation/resource events")
+				_check(local_player.current_state == before_state and stats.current_health == before_health, context + " changed actor state/HP")
+				_check(get_child_count() == before_children, context + " spawned skill effects")
+
+		# Both routes work through the same owner callback after actual respawn.
+		for via_input in [false, true]:
+			local_player.respawn()
+			for key: String in notifications:
+				notifications[key] = 0
+			if via_input:
+				component._unhandled_input(input)
+			else:
+				_check(component.try_activate_skill(skill_id), skill_id + " rejected live skill after respawn")
+			_check(is_equal_approx(stats.current_stamina, stats.max_stamina - skill.stamina_cost), skill_id + " live skill charged wrong stamina")
+			_check(not component.is_skill_ready(skill_id) and is_equal_approx(float(component.available_skills[0].get("current_cooldown", 0.0)), skill.cooldown), skill_id + " live skill cooldown drifted")
+			_check(notifications == {"stamina": 1, "activated": 1, "used": 1}, skill_id + " live skill notification count drifted")
+			_check(local_player.current_state == local_player.State.SKILL, skill_id + " live skill did not execute")
+			await get_tree().create_timer(0.65).timeout
+			_check(local_player.current_state == local_player.State.IDLE, skill_id + " did not finish execution")
+			component._process(skill.cooldown + 1.0)
+
+		stats.current_stamina = skill.stamina_cost - 1.0
+		for key: String in notifications:
+			notifications[key] = 0
+		_check(not component.try_activate_skill(skill_id), skill_id + " accepted insufficient stamina")
+		_check(component.is_skill_ready(skill_id) and notifications == {"stamina": 0, "activated": 0, "used": 0}, skill_id + " insufficient-stamina rejection mutated state")
+	GameEvent.skill_used.disconnect(on_skill_used)
+	local_player.queue_free()
+	await get_tree().process_frame
 
 
 ## Neither item-use route may spend consumables or apply effects while dead.

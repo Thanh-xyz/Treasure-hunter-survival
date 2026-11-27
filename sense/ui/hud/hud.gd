@@ -39,6 +39,7 @@ const FEED_ENTRY_DURATION := 2.5
 
 var _feed_entries: Array[Dictionary] = []
 var _skill_component: SkillComponent
+var _buff_component: BuffComponent
 
 
 func _ready() -> void:
@@ -126,8 +127,18 @@ func show_freeze_icon(value: bool = true) -> void:
 ## Connect BuffComponent signals to HUD status icons
 ## Called by Player after creating BuffComponent
 func connect_buff_component(buff_comp: BuffComponent) -> void:
-	buff_comp.buff_applied.connect(_on_buff_applied)
-	buff_comp.buff_expired.connect(_on_buff_expired)
+	if is_instance_valid(_buff_component) and _buff_component != buff_comp:
+		if _buff_component.buff_applied.is_connected(_on_buff_applied):
+			_buff_component.buff_applied.disconnect(_on_buff_applied)
+		if _buff_component.buff_expired.is_connected(_on_buff_expired):
+			_buff_component.buff_expired.disconnect(_on_buff_expired)
+	_buff_component = buff_comp
+	if _buff_component:
+		if not _buff_component.buff_applied.is_connected(_on_buff_applied):
+			_buff_component.buff_applied.connect(_on_buff_applied)
+		if not _buff_component.buff_expired.is_connected(_on_buff_expired):
+			_buff_component.buff_expired.connect(_on_buff_expired)
+	_refresh_buff_icons()
 
 
 ## Connect SkillComponent signals to HUD skill display
@@ -147,25 +158,34 @@ func connect_skill_component(skill_comp: SkillComponent) -> void:
 
 
 func _on_buff_applied(buff_data: Dictionary) -> void:
+	_refresh_buff_icons()
 	var source_id: String = buff_data.get("source_item_id", "")
-	# Map known buff IDs to existing icon slots
-	if "speed" in source_id:
-		show_speed_icon(true)
-	elif "vitality" in source_id or "health" in source_id:
-		show_heal_icon(true)
-	elif "defense" in source_id:
-		show_shield_icon(true)
+	if "defense" in source_id and not "speed" in source_id and not "vitality" in source_id and not "health" in source_id:
 		if feed_container:
 			feed_container.visible = false # TODO: Add duration overlay (Label with countdown) on each icon
 
 
-func _on_buff_expired(buff_id: String) -> void:
-	if "speed" in buff_id:
-		show_speed_icon(false)
-	elif "vitality" in buff_id or "health" in buff_id:
-		show_heal_icon(false)
-	elif "defense" in buff_id:
-		show_shield_icon(false)
+func _on_buff_expired(_buff_id: String) -> void:
+	_refresh_buff_icons()
+
+
+func _refresh_buff_icons() -> void:
+	var speed := false
+	var heal := false
+	var shield := false
+	if is_instance_valid(_buff_component):
+		for buff: Dictionary in _buff_component.active_buffs:
+			var source_id: String = buff.get("source_item_id", "")
+			# Keep the existing source-ID mapping and priority.
+			if "speed" in source_id:
+				speed = true
+			elif "vitality" in source_id or "health" in source_id:
+				heal = true
+			elif "defense" in source_id:
+				shield = true
+	show_speed_icon(speed)
+	show_heal_icon(heal)
+	show_shield_icon(shield)
 
 
 func _on_skills_changed() -> void:

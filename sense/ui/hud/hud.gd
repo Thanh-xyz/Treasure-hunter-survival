@@ -51,13 +51,22 @@ func _ready() -> void:
 
 
 func setup(character_stats: CharacterStats) -> void:
+	if stats and stats != character_stats:
+		if stats.health_changed.is_connected(_on_health_changed):
+			stats.health_changed.disconnect(_on_health_changed)
+		if stats.stamina_changed.is_connected(_on_stamina_changed):
+			stats.stamina_changed.disconnect(_on_stamina_changed)
 	stats = character_stats
-	
-	# Kết nối signals
-	stats.health_changed.connect(_on_health_changed)
-	stats.stamina_changed.connect(_on_stamina_changed)
-	
-	# Cập nhật giá trị ban đầu
+	if stats == null:
+		_on_health_changed(0, 1)
+		_on_stamina_changed(0.0, 1.0)
+		return
+
+	if not stats.health_changed.is_connected(_on_health_changed):
+		stats.health_changed.connect(_on_health_changed)
+	if not stats.stamina_changed.is_connected(_on_stamina_changed):
+		stats.stamina_changed.connect(_on_stamina_changed)
+
 	_on_health_changed(stats.current_health, stats.max_health)
 	_on_stamina_changed(stats.current_stamina, stats.max_stamina)
 

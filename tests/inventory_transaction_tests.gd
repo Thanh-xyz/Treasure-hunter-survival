@@ -40,6 +40,7 @@ func _ready() -> void:
 	_test_inventory_panel_source_lifecycle()
 	_test_augment_panel_source_lifecycle()
 	await _test_augment_child_source_context()
+	await _test_augment_repeated_opening()
 	_test_hotbar_equipment_instance_binding()
 	_test_hotbar_stackable_binding()
 	_test_hotbar_equip_swap_binding()
@@ -1131,6 +1132,41 @@ func _assert_recipe_registration_rejected(recipe: CraftingRecipe, field_descript
 	_check(RecipeDatabase.get_recipe(recipe.id) == null, "%s remained in the recipe catalog" % field_description)
 	if registered:
 		RecipeDatabase.recipes.erase(recipe.id)
+
+
+func _test_augment_repeated_opening() -> void:
+	var panel: InventoryPanel = preload("res://sense/ui/inventory/inventory_panel.tscn").instantiate()
+	add_child(panel)
+	var inventory := InventoryData.new()
+	inventory.add_item(ItemDatabase.get_item_copy("fire_blade"), 1)
+	inventory.equip_item(0)
+	inventory.add_item(ItemDatabase.get_item("flame_augment_t1"), 1)
+	panel.setup(inventory)
+	panel._open_augment_panel("weapon")
+	var retiring: AugmentPanel = panel.get_node("AugmentPanel")
+	var closes := {"value": 0}
+	retiring.panel_closed.connect(func() -> void: closes["value"] += 1)
+	panel._open_augment_panel("weapon")
+	var replacement: AugmentPanel = panel.get_node("AugmentPanel")
+	_check(replacement != retiring and not replacement.is_queued_for_deletion() and replacement.inventory == inventory, "repeated augment opening lost canonical live child ownership")
+	_check(retiring.inventory == null and retiring.get_parent() == null and retiring.is_queued_for_deletion() and int(closes["value"]) == 1, "repeated augment opening did not clear/detach/close prior child once")
+	retiring._on_augment_clicked(0)
+	_check(inventory.get_item_count("flame_augment_t1") == 1, "retiring repeated-open child could consume an augment")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_check(not is_instance_valid(retiring) and panel.get_node_or_null("AugmentPanel") == replacement, "repeated opening did not retain canonical replacement after deletion frame")
+	var children := 0
+	for child in panel.get_children():
+		if child is AugmentPanel:
+			children += 1
+	_check(children == 1, "repeated augment opening left multiple live children")
+	replacement._on_augment_clicked(0)
+	_check(inventory.get_item_count("flame_augment_t1") == 0 and inventory.get_equipped("weapon").applied_augments == ["flame_augment_t1"], "canonical repeated-open replacement could not apply current augment")
+	panel.setup(InventoryData.new())
+	await get_tree().process_frame
+	_check(not is_instance_valid(replacement) and panel.get_node_or_null("AugmentPanel") == null, "canonical replacement escaped later source-change retirement")
+	panel.queue_free()
+	await get_tree().process_frame
 
 
 func _test_augment_child_source_context() -> void:

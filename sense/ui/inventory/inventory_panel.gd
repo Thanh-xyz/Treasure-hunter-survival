@@ -302,10 +302,7 @@ func setup(data: InventoryData, stats: CharacterStats = null) -> void:
 		tooltip_panel.visible = false
 		if equipment_detail_panel:
 			equipment_detail_panel.close_panel()
-		var augment_panel := get_node_or_null("AugmentPanel") as AugmentPanel
-		if augment_panel:
-			augment_panel.setup(null, augment_panel.equip_slot)
-			augment_panel._on_close_pressed()
+		_close_augment_panel()
 	if character_stats != stats and character_stats:
 		if character_stats.health_changed.is_connected(_on_stats_health_changed):
 			character_stats.health_changed.disconnect(_on_stats_health_changed)
@@ -775,16 +772,23 @@ func _apply_consumable_effect(result: Dictionary) -> void:
 # AUGMENT PANEL INTEGRATION
 # =============================================================================
 
-## Open the augment panel for a specific equipment slot
+## Retire the current child immediately so its name and commands cannot linger.
+func _close_augment_panel() -> void:
+	var panel := get_node_or_null("AugmentPanel") as AugmentPanel
+	if panel:
+		panel.setup(null, panel.equip_slot)
+		remove_child(panel)
+		panel._on_close_pressed()
+
+
+## Open the augment panel for a specific equipment slot.
 func _open_augment_panel(equip_slot: String) -> void:
 	var equipment: ItemData = inventory_data.get_equipped(equip_slot)
 	if equipment == null or equipment.get_augment_slot_count() == 0:
 		return
 
 	# Remove existing augment panel if any
-	var existing := get_node_or_null("AugmentPanel")
-	if existing:
-		existing.queue_free()
+	_close_augment_panel()
 
 	var panel : AugmentPanel = preload("res://sense/ui/augment/AugmentPanel.tscn").instantiate()
 	panel.name = "AugmentPanel"

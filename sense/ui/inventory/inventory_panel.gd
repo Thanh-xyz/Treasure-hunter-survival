@@ -302,6 +302,10 @@ func setup(data: InventoryData, stats: CharacterStats = null) -> void:
 		tooltip_panel.visible = false
 		if equipment_detail_panel:
 			equipment_detail_panel.close_panel()
+		var augment_panel := get_node_or_null("AugmentPanel") as AugmentPanel
+		if augment_panel:
+			augment_panel.setup(null, augment_panel.equip_slot)
+			augment_panel._on_close_pressed()
 	if character_stats != stats and character_stats:
 		if character_stats.health_changed.is_connected(_on_stats_health_changed):
 			character_stats.health_changed.disconnect(_on_stats_health_changed)
@@ -791,6 +795,8 @@ func _open_augment_panel(equip_slot: String) -> void:
 	var eq_slot_ui: Control = equipment_slots.get(equip_slot)
 	if eq_slot_ui:
 		await get_tree().process_frame
+		if not is_instance_valid(panel) or panel.is_queued_for_deletion():
+			return
 		var slot_rect := eq_slot_ui.get_global_rect()
 		panel.global_position = Vector2(slot_rect.end.x + 10, slot_rect.position.y)
 

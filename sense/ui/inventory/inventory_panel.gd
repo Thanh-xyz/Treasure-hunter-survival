@@ -579,6 +579,11 @@ func _on_inventory_slot_right_clicked(index: int) -> void:
 ## Handle right-click on equipment slot (unequip or augment)
 ## Show sell confirmation and process sale
 func _request_sell_item(index: int, item: ItemData, quantity: int) -> void:
+	if inventory_data == null or item == null:
+		return
+	var requested_inventory := inventory_data
+	if requested_inventory.get_item_at(index).get("item") != item:
+		return
 	var catalog_item := ItemDatabase.get_item(item.id)
 	var sell_price: int = catalog_item.sell_price if catalog_item != null else 0
 	if sell_price <= 0:
@@ -589,6 +594,8 @@ func _request_sell_item(index: int, item: ItemData, quantity: int) -> void:
 	var message := "Sell %s%s for %d G?" % [catalog_item.name, qty_text, sell_price]
 	
 	ConfirmDialog.show_confirm(message, func() -> void:
+		if inventory_data != requested_inventory or requested_inventory.get_item_at(index).get("item") != item:
+			return
 		_execute_sell(index, catalog_item)
 	)
 

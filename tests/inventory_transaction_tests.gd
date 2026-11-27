@@ -23,6 +23,7 @@ func _ready() -> void:
 	_test_economy_transaction()
 	_test_shop_purchase_transaction()
 	_test_sale_transaction()
+	_test_sale_confirmation_context()
 	_test_equipment_transactions()
 	_test_equipment_drop_targets()
 	_test_equipment_target_validation()
@@ -676,6 +677,67 @@ func _test_sale_transaction() -> void:
 	inventory.inventory_slots[1] = {"item": unsellable, "quantity": 1}
 	_check(inventory.sell_item_at(1, unsellable.id) == 0, "unsellable item credited gold")
 	_check(inventory.get_item_at(1).item == unsellable, "failed unsellable sale removed the item")
+
+
+func _test_sale_confirmation_context() -> void:
+	var panel: InventoryPanel = preload("res://sense/ui/inventory/inventory_panel.tscn").instantiate()
+	add_child(panel)
+	var old := InventoryData.new()
+	var current := InventoryData.new()
+	var first: ItemData = ItemDatabase.get_item_copy("iron_sword")
+	var second: ItemData = ItemDatabase.get_item_copy("iron_sword")
+	first.enhancement_level = 1
+	second.enhancement_level = 4
+	old.add_item(first, 1)
+	current.add_item(second, 1)
+	var mutations := {"inventory": 0, "gold": 0}
+	current.inventory_changed.connect(func() -> void: mutations["inventory"] += 1)
+	current.gold_changed.connect(func(_gold: int) -> void: mutations["gold"] += 1)
+	panel.setup(old)
+	panel._request_sell_item(0, first, 1)
+	panel.setup(current)
+	ConfirmDialog._on_yes()
+	_check(old.get_item_at(0).item == first and old.gold == 0 and current.get_item_at(0).item == second and current.gold == 0, "stale source sale mutated an unconfirmed inventory")
+	_check(mutations == {"inventory": 0, "gold": 0}, "stale source sale emitted mutation signals")
+	current.add_item(first, 1)
+	panel._request_sell_item(0, second, 1)
+	current.swap_slots(0, 1)
+	mutations["inventory"] = 0
+	ConfirmDialog._on_yes()
+	_check(current.get_item_at(0).item == first and current.get_item_at(1).item == second and current.gold == 0 and mutations == {"inventory": 0, "gold": 0}, "same-ID swapped sale removed another equipment instance")
+	panel._request_sell_item(0, second, 1)
+	_check(not ConfirmDialog._panel.visible, "sale opened a dialog for a stale item/index request")
+	panel._request_sell_item(0, first, 1)
+	current.remove_item_at(0)
+	mutations["inventory"] = 0
+	ConfirmDialog._on_yes()
+	_check(current.get_item_count("iron_sword") == 1 and current.gold == 0 and mutations == {"inventory": 0, "gold": 0}, "sale of removed slot mutated another item or emitted events")
+	current.add_item(ItemDatabase.get_item("wood"), 2)
+	panel._request_sell_item(0, current.get_item_at(0).item, 2)
+	current.swap_slots(0, 1)
+	mutations["inventory"] = 0
+	ConfirmDialog._on_yes()
+	_check(current.get_item_count("wood") == 2 and current.get_item_count("iron_sword") == 1 and current.gold == 0 and mutations == {"inventory": 0, "gold": 0}, "different-ID replacement sale mutated inventory")
+	panel._request_sell_item(0, second, 1)
+	ConfirmDialog._on_no()
+	_check(current.get_item_at(0).item == second and mutations == {"inventory": 0, "gold": 0}, "sale cancellation mutated inventory")
+	panel._request_sell_item(0, second, 1)
+	var rebind_on_confirm := func() -> void: panel.setup(old)
+	ConfirmDialog.confirmed.connect(rebind_on_confirm, CONNECT_ONE_SHOT)
+	ConfirmDialog._on_yes()
+	_check(old.get_item_at(0).item == first and current.get_item_at(0).item == second and old.gold == 0 and current.gold == 0, "sale validated source before confirmed listeners instead of at execution")
+	panel.setup(current)
+	second.sell_price = 999999
+	var observed := {"final": false}
+	var catalog_price := ItemDatabase.get_item(second.id).sell_price
+	current.gold_changed.connect(func(amount: int) -> void:
+		observed["final"] = amount == catalog_price and current.get_item_at(0).item == null
+	)
+	panel._request_sell_item(0, second, 1)
+	ConfirmDialog._on_yes()
+	_check(current.get_item_count("iron_sword") == 0 and current.get_item_count("wood") == 2 and current.gold == catalog_price, "matching sale did not sell exactly the requested item at catalog price")
+	_check(mutations == {"inventory": 1, "gold": 1} and bool(observed["final"]), "matching sale signal count or final transaction state drifted")
+	panel.queue_free()
 
 
 func _test_equipment_transactions() -> void:
